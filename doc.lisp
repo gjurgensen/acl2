@@ -1939,8 +1939,8 @@ Subtopics
   developed for Nqthm) that helps you identify the rules that are
   causing ACL2's search space to explode.
 
-  For other proof debugging utilities, see [break-rewrite] and see
-  [dmr].
+  For other proof debugging utilities, see [break-rewrite],
+  [with-brr-data], and [dmr].
 
   Accumulated persistence tracking can be turned on or off.  It is
   generally off.  When on, proofs may take a little more time than
@@ -6584,6 +6584,8 @@ Proof debugging and output control:
     * See [set-raw-warning-format] to make some warnings display in a
       ``raw'' s-expression format.
     * See [skip-proofs] to skip proofs for a given form.
+    * See [with-brr-data] for finding the source of a term in prover
+      output.
 
 
 Program debugging:
@@ -14691,8 +14693,9 @@ Subtopics
   about the context in which the lemma is being tried.  These
   keywords are called break-rewrite ``commands''; see [brr-commands].
 
-  For a related utility, see [dmr] (Dynamically Monitor Rewrites),
-  which allows you to watch progress of the rewriter in real time.
+  For a related proof debugging utility, see [with-brr-data].  Also see
+  [dmr] (Dynamically Monitor Rewrites), which allows you to watch
+  progress of the rewriter in real time.
 
   To abort from inside break-rewrite at any time, execute :[a!].
 
@@ -14987,7 +14990,7 @@ Subtopics
       Installing ACL2 on Windows
 
   [With-brr-data]
-      Collecting [break-rewrite] information")
+      Finding the source of a term in prover output")
  (BREAKS
   (ERRORS)
   "Common Lisp breaks
@@ -15206,7 +15209,8 @@ Subtopics
   settings.  The normal mode is ``disabled.''
 
   For a more thorough introduction to the break rewrite system see
-  [break-rewrite].
+  [break-rewrite].  For a related proof debugging utility see
+  [with-brr-data].
 
   When brr mode is ``enabled'' the ACL2 rewriter monitors the attempts
   to apply certain rules and advises the user of those attempts by
@@ -21936,9 +21940,10 @@ Subtopics
   (BREAK-REWRITE DEBUGGING)
   "Debug a rewriting loop or stack overflow
 
-  After [break-rewrite] is enabled (with :[brr] t), cw-gstack can be
-  invoked to show a stack backtrace when a proof is interrupted
-  (because of control-c or because of a loop).
+  After [break-rewrite] is enabled (with :[brr] t or in the scope of
+  [with-brr-data]), cw-gstack can be invoked to show a stack
+  backtrace when a proof is interrupted (because of control-c or
+  because of a loop).
 
     Example Forms:
     (cw-gstack)
@@ -21983,6 +21988,14 @@ Subtopics
   Suggestion: Once you have found the loop and fixed it, you should
   execute the ACL2 command :[brr] nil, so that you don't slow down
   subsequent proof attempts.")
+ (CW-GSTACK-FOR-SUBTERM (POINTERS)
+                        "See [with-brr-data].")
+ (CW-GSTACK-FOR-SUBTERM* (POINTERS)
+                         "See [with-brr-data].")
+ (CW-GSTACK-FOR-TERM (POINTERS)
+                     "See [with-brr-data].")
+ (CW-GSTACK-FOR-TERM* (POINTERS)
+                      "See [with-brr-data].")
  (CW-PRINT-BASE-RADIX
   (IO ACL2-BUILT-INS)
   "Print to the comment window in a given print-base
@@ -22545,7 +22558,10 @@ Subtopics
       Improve a built-in [type-prescription] rule
 
   [Walkabout]
-      Explore an ACL2 cons tree")
+      Explore an ACL2 cons tree
+
+  [With-brr-data]
+      Finding the source of a term in prover output")
  (DECLARATION (POINTERS)
               "See [declare].")
  (DECLARE
@@ -29828,7 +29844,7 @@ Subtopics
   The utility disable-ubt is probably only relevant to those who write
   ACL2-based tools, in particular using [wormhole]s.  Its initial
   application (and perhaps still its only application) is to arrange
-  that insider the [break-rewrite] interactive loop, it is impossible
+  that inside the [break-rewrite] interactive loop, it is impossible
   to undo the [ld-keyword-aliases] supporting the [brr-commands].
 
     General Forms:
@@ -30017,17 +30033,18 @@ Subtopics
   "Dynamically monitor rewrites and other prover activity
 
   In addition to utilities that allow you to set breakpoints or print
-  rewriting information to the screen --- see [break-rewrite] ---
-  ACL2 provides a utility for watching the activity of the rewriter
-  and some other proof processes, in real time.  This utility is
-  called ``dmr'', which is an acronym for ``dynamically monitor
-  rewrites''.  The utility comes in two parts: an ACL2 component that
-  frequently updates a file (the ``dmr file'') containing the
-  relevant information, and an Emacs component that frequently
-  updates an Emacs buffer (the ``dmr buffer'') with the contents of
-  that file.  Other editors could, in principle, be programmed to
-  display that file; anyone developing such a capability is invited
-  to contribute it to the ACL2 community.
+  rewriting information to the screen --- see [break-rewrite] (also
+  see related utility [with-brr-data]) --- ACL2 provides a utility
+  for watching the activity of the rewriter and some other proof
+  processes, in real time.  This utility is called ``dmr'', which is
+  an acronym for ``dynamically monitor rewrites''.  The utility comes
+  in two parts: an ACL2 component that frequently updates a file (the
+  ``dmr file'') containing the relevant information, and an Emacs
+  component that frequently updates an Emacs buffer (the ``dmr
+  buffer'') with the contents of that file.  Other editors could, in
+  principle, be programmed to display that file; anyone developing
+  such a capability is invited to contribute it to the ACL2
+  community.
 
   The dmr utility can be extremely helpful for expensive proofs,
   especially when ACL2 is not providing any output to the terminal.
@@ -37068,8 +37085,9 @@ Subtopics
   see relevant subtopics of the topic, [debugging].  Some
   frequently-used tools for proof debugging that are discussed in
   those subtopics include [accumulated-persistence], [break-rewrite],
-  [cgen], and [proof-builder].  Also see [nil-goal] for ideas about
-  how to proceed when the prover generates a goal of NIL.
+  [with-brr-data], [cgen], and [proof-builder].  Also see [nil-goal]
+  for ideas about how to proceed when the prover generates a goal of
+  NIL.
 
   We turn now to the problem of dealing with proof failures.
 
@@ -74486,9 +74504,9 @@ Subtopics
   than those three.)
 
   Monitor does not affect proof attempts until the [break-rewrite]
-  utility is turned on with [brr], for example, using :brr t.  For a
-  shortcut that does this automatically while avoiding output, see
-  [monitor!].
+  utility is turned on with [brr] (for example, using :brr t) or in
+  the scope of [with-brr-data].  For a shortcut that turns on
+  break-rewrite automatically while avoiding output, see [monitor!].
 
   When a [rune] is [monitor]ed any attempt to apply it may result in an
   interactive break in an ACL2 ``[wormhole] [state].'' There you will
@@ -99127,9 +99145,12 @@ New Features
   which appears in a comment in the definition of function
   stobjs-in-out in the ACL2 sources.
 
-  An advanced feature, [with-brr-data], is available for collecting the
-  same information as [break-rewrite], but non-interactively.  Thanks
-  to Eric Smith for requesting such a feature.
+  A new utility, [with-brr-data], together with related query
+  utilities, allows one to find the source of a term in prover
+  output.  Thanks to Sol Swords for requesting something like this in
+  2008 (!) and to Eric Smith for requesting a related utility (see
+  [community-books] kestrel/utilities/brr-data-failures.lisp and
+  kestrel/utilities/brr-data-all.lisp).  See [with-brr-data].
 
 
 Heuristic and Efficiency Improvements
@@ -104103,6 +104124,18 @@ Subtopics
 
   [Context]
       See [ctx].
+
+  [Cw-gstack-for-subterm]
+      See [with-brr-data].
+
+  [Cw-gstack-for-subterm*]
+      See [with-brr-data].
+
+  [Cw-gstack-for-term]
+      See [with-brr-data].
+
+  [Cw-gstack-for-term*]
+      See [with-brr-data].
 
   [D<]
       See [l<].
@@ -134077,6 +134110,14 @@ Summary of attachable system functions
   non-recursively defined functions the stack-based limitation on
   opening recursively-defined functions.
 
+  BRKPT1-BRR-DATA-ENTRY
+  Built-in attachment: BRKPT1-BRR-DATA-ENTRY-BUILTIN
+  Documentation: See [with-brr-data].
+
+  BRKPT2-BRR-DATA-ENTRY
+  Built-in attachment: BRKPT2-BRR-DATA-ENTRY-BUILTIN
+  Documentation: See [with-brr-data].
+
   CONJOIN-CLAUSE-SETS-BOUND
   Built-in attachment: CONJOIN-CLAUSE-SETS-BOUND-BUILTIN
   Documentation: Attach to a constant function that returns a natural
@@ -134159,6 +134200,14 @@ Summary of attachable system functions
   UNTRANSLATE-LAMBDA-OBJECT-P
   Built-in attachment: CONSTANT-T-FUNCTION-ARITY-0
   Documentation: See [lambda$].
+
+  UPDATE-BRR-DATA-1
+  Built-in attachment: UPDATE-BRR-DATA-1-BUILTIN
+  Documentation: See [with-brr-data].
+
+  UPDATE-BRR-DATA-2
+  Built-in attachment: UPDATE-BRR-DATA-2-BUILTIN
+  Documentation: See [with-brr-data].
 
   WORSE-THAN
   Built-in attachment: WORSE-THAN-BUILTIN
@@ -144537,7 +144586,7 @@ Subtopics
   explanation of these key checkpoints.  Note that [pso] is also not
   supported.
 
-  The :[brr] utility is not supported.
+  The :[brr] and [with-brr-data] utilities are not supported.
 
   The [accumulated-persistence] utility is not supported.
 
@@ -149589,49 +149638,559 @@ Concluding Remark
   which mimics some of Linux and provides Emacs.  Updated ACL2
   binaries have been successfully installed in such an environment.")
  (WITH-BRR-DATA
-  (BREAK-REWRITE)
-  "Collecting [break-rewrite] information
+  (DEBUGGING BREAK-REWRITE)
+  "Finding the source of a term in prover output
 
-  Warning: This topic provides only minimal documentation of a feature
-  that we expect will be used only by advanced, system-level ACL2
-  programmers.
+  When a proof attempt fails, a good first step is typically to look at
+  checkpoints; see [the-method].  That step is often sufficient.  But
+  occasionally a checkpoint contains an undesirable term whose source
+  is a mystery, and it may be useful to find the origin of that term.
+  With-brr-data is a utility that collects such data that can be
+  queried by various utilities, for example as follows.
 
-    General Forms:
-    (with-brr-data form)     ; Collect break-rewrite data for form.
-    (with-brr-data form nil) ; Same as above
-    (with-brr-data form t)   ; Collect and return break-rewrite data for form.
+    Example:
 
-  where form returns an [error-triple], (mv erp val state).  That error
-  triple is returned by (with-brr-data form).  But for (with-brr-data
-  form t), then (mv erp x state) is returned where x is a list of
-  brr-data records as described below, each representing a top-level
-  entry and corresponding exit from [break-rewrite] that resulted in
-  a failure.  Either way, that list of records is available is
-  available as the value component of the error triple returned by
-  (brr-data-lst state), until the next time that either a call of
-  with-brr-data or the form (clear-brr-data-lst) is evaluated.
-
-    Example Forms:
-
-    ; Collect break-rewrite data when attempting the indicated proof.
+    ; Collect brr-data when attempting the indicated proof:
     (with-brr-data (thm (equal (append x y) (append y x))))
 
-    ; Unlike the form above, actually return the data.
-    (with-brr-data (thm (equal (append x y) (append y x)))
-                   t)
+    ; Show a path leading to a rewrite result that contains
+    ; (append y (cdr x)) as a subterm:
+    (cw-gstack-for-subterm (append y (cdr x)))
 
-  Each record in the list described above --- that is, from
-  (brr-data-lst state) --- has following data type (also see
-  [defrec]), which is actually a recursive data type definition as
-  described below.
+    ; Same as above, except enter a loop to query for additional such results:
+    (cw-gstack-for-subterm* (append y (cdr x)))
+
+  The rest of this documentation topic is structured as follows.  It
+  may suffice to read only the first (Introduction) section.
+
+    * Introduction
+    * Connections with [break-rewrite]
+    * General form of with-brr-data calls
+    * General forms of queries
+    * Keyword arguments of with-brr-data (optional)
+    * Low-level details (optional)
+    * Using attachments to modify functionality of with-brr-data
+
+
+Introduction
+
+  (With-brr-data form) evaluates form while collecting data on rule
+  application --- often [rewrite] and [definition] rules, but also
+  [linear] and [rewrite-quoted-constant] rules.  Query utilities
+  allow one to search the collected data for a specified result of a
+  rule application and print a stack of operations leading to that
+  result.  The name ``brr'' is suggestive of the [break-rewrite]
+  utility, which shares some aspects with the with-brr-data utility:
+  in particular, the :path+ command of break-rewrite shows a stack of
+  operations in the same way as the query utilities for
+  with-brr-data.  The next section, ``Connection with
+  [break-rewrite]'', further explores the relationship between
+  break-rewrite and with-brr-data.
+
+  The collection of break-rewrite data can slow down the theorem
+  prover, but the slowdown will probably be modest, perhaps adding an
+  extra 15% or so to the time.
+
+  We turn now to examples that illustrate how with-brr-data works with
+  associated query utilities.  These examples are intended to make it
+  clear how to use these utilities, but further information is
+  provided in later sections for those who are interested.  Note that
+  each of these examples attempts to prove a non-theorem; they are
+  chosen simply to illustrate tool usage.
+
+  Example Set 1
+
+  Our first illustration of with-brr-data and associated query
+  utilities uses the following (non-theorem) example, mentioned
+  earlier.
+
+    (with-brr-data (thm (equal (append x y) (append y x))))
+
+  ACL2 produces the following checkpoints, exactly as though the [thm]
+  call were evaluated without the surrounding call of with-brr-data.
+  (The optional section on ``Low-level details'' discusses the ``ACL2
+  Observation:'' printed at the end by with-brr-data.)
+
+    *** Key checkpoint at the top level: ***
+
+    Goal
+    (EQUAL (APPEND X Y) (APPEND Y X))
+
+    *** Key checkpoints under a top-level induction
+        before generating a goal of NIL (see :DOC nil-goal): ***
+
+    Subgoal *1/2''
+    (IMPLIES (AND (CONSP X)
+                  (EQUAL (APPEND (CDR X) Y)
+                         (APPEND Y (CDR X))))
+             (EQUAL (CONS (CAR X) (APPEND Y (CDR X)))
+                    (APPEND Y X)))
+
+    Subgoal *1/1''
+    (IMPLIES (NOT (CONSP X))
+             (EQUAL Y (APPEND Y X)))
+
+    ACL2 Error [Failure] in ( THM ...):  See :DOC failure.
+
+    ******** FAILED ********
+
+    ACL2 Observation:  (LENGTH (@ BRR-DATA-LST)) = 16
+    ACL2 !>
+
+  Consider the term (APPEND Y (CDR X)) occurring in one of these
+  checkpoints.  It might not be clear, at least at first glance, how
+  this term came about during the proof.  We can find at least one
+  source of that term by issuing the cw-gstack-for-subterm query
+  shown below, which searches ``top-level'' rewrites --- those not
+  invoked when relieving hypotheses of rules --- for a result that
+  contains the given term, in this case (append y (cdr x)), as a
+  subterm.  The output is similar to the output of the utility,
+  [cw-gstack], followed by the result of the bottom-most rewriter
+  call, which contains the given term as a subterm.  (See [term] for
+  discussion of ``translated'' and ``untranslated'' terms.)
+
+    ACL2 !>(cw-gstack-for-subterm (append y (cdr x)))
+    1. Simplifying the clause
+         ((NOT (CONSP X))
+          (NOT (EQUAL (BINARY-APPEND (CDR X) Y)
+                      (BINARY-APPEND Y (CDR X))))
+          (EQUAL (BINARY-APPEND X Y)
+                 (BINARY-APPEND Y X)))
+    2. Rewriting (to simplify) the atom of the third literal,
+         (EQUAL (BINARY-APPEND X Y)
+                (BINARY-APPEND Y X)),
+    3. Rewriting (to simplify) the first argument,
+         (BINARY-APPEND X Y),
+    4. Attempting to apply (:DEFINITION BINARY-APPEND) to
+         (BINARY-APPEND X Y)
+    The resulting (translated) term is
+      (CONS (CAR X)
+            (BINARY-APPEND Y (CDR X))).
+    ACL2 !>
+
+  One might realize that (BINARY-APPEND Y (CDR X)) comes about from
+  expanding (BINARY-APPEND X Y) to expose the term (BINARY-APPEND
+  (CDR X) Y) and then using the inductive hypothesis to swap the
+  arguments.  In that case, the mystery of the term's appearance is
+  solved!  But if that isn't clear, one at least has the clue from
+  Frame 4 above that the term is produced by applying the definition
+  of [binary-append].  With that information one can issue a
+  [monitor!] command as follows.
+
+    :monitor! (:definition binary-append)
+              (equal (brr@ :target) '(binary-append x y))
+
+  We now issue the [thm] call above, with or without the wrapper of
+  with-brr-data.  After breaking twice (see [break-rewrite]) and
+  proceeding with :go to find two failed attempts to use the
+  definition of binary-append, we explore at the third break as
+  follows.
+
+    1 ACL2 >:type-alist
+
+    Decoded type-alist:
+    -----
+    Terms with type *TS-T*:
+    (EQUAL (APPEND (CDR X) Y)
+           (APPEND Y (CDR X)))
+    -----
+    Terms with type *TS-CONS*:
+    X
+
+    ==========
+    Use (GET-BRR-LOCAL 'TYPE-ALIST STATE) to see actual type-alist.
+    1 ACL2 >:target
+    (BINARY-APPEND X Y)
+    1 ACL2 >:eval
+
+    1! (:DEFINITION BINARY-APPEND) produced
+    (CONS (CAR X) (BINARY-APPEND Y (CDR X))).
+
+    1 ACL2 >
+
+  The log above shows how the term (BINARY-APPEND Y (CDR X)) was
+  produced: the definition of binary-append was expanded on the term
+  (BINARY-APPEND X Y), and the inductive hypothesis --- represented
+  in the :type-alist command's output --- is applied to swap the
+  resulting arguments.
+
+  We can find more sources of the same term by using the ``*'' version
+  of the cw-gstack-for-subterm command as follows.  By repeatedly
+  responding with ``y'' to the query presented by the system, we find
+  three additional paths leading to the desired subterm.
+
+    (cw-gstack-for-subterm* (append y (cdr x)))
+
+  While cw-gstack-for-subterm and cw-gstack-for-subterm* may be the
+  most useful queries in general, one may wish to search for paths
+  leading to exactly a given term rather than paths to a term
+  containing that term (as above).  The queries cw-gstack-for-term
+  and cw-gstack-for-term* may be used for this purpose, for example
+  as follows.
+
+    (cw-gstack-for-term (append y (cdr x)))
+    (cw-gstack-for-term* (append y (cdr x)))
+
+  Finally, these queries support searching for instances of a term or
+  subterm, by supplying a ``term'' of the form (:free (v1 ... vn) u)
+  where v1 through vn are distinct variables and u is a term.  Each
+  of the following produces the path shown above.
+
+    (cw-gstack-for-term (:free (u v) (cons u v)))
+    (cw-gstack-for-term* (:free (u v) (cons u v)))
+
+  Notice that the use of this :free construct allows one to search for
+  the source of a call of any function symbol f, as with cons above.
+  If f has k formals, then one can supply the argument (:free (x1 ...
+  xk) (f x1 ... xk)) to find a rewriter call that produces a call of
+  f.
+
+  Example Set 2
+
+  Consider the following (admittedly contrived) example.
+
+    (defstub f0 (x) t)
+
+    (defun f1 (x)
+      (cons x x))
+
+    (defun f2 (x)
+      (f1 (f0 x)))
+
+    (defun f3 (x)
+      (if (atom x)
+          (f2 x)
+        (f2 (car x))))
+
+    (with-brr-data
+     (thm (equal (f3 x)
+                 yyy)))
+
+  The call of [thm] produces the following checkpoint.
+
+    (IMPLIES (CONSP X)
+             (EQUAL (CONS (F0 (CAR X)) (F0 (CAR X)))
+                    YYY))
+
+  In this simple example it's easy to figure out how the term (F0 (CAR
+  X)) was produced.  But suppose we were surprised to see that term.
+  We might issue the following query but be disappointed in the
+  result.
+
+    ACL2 !>(cw-gstack-for-term (F0 (CAR X)))
+    There are no results.
+    ACL2 !>
+
+  To see why there are no results, recall that with-brr-data collects
+  data from rule applications.  However, no rule produced the term
+  (F0 (CAR X)).  This becomes clear if we issue a query that looks
+  for that term as a subterm of a rule application's result.
+
+    ACL2 !>(cw-gstack-for-subterm (F0 (CAR X)))
+    1. Simplifying the clause
+         ((EQUAL (F3 X) YYY))
+    2. Rewriting (to simplify) the atom of the first literal,
+         (EQUAL (F3 X) YYY),
+    3. Rewriting (to simplify) the first argument,
+         (F3 X),
+    4. Attempting to apply (:DEFINITION F3) to
+         (F3 X)
+    5. Rewriting (to simplify) the body,
+         (IF (CONSP X) (F2 (CAR X)) (F2 X)),
+       under the substitution
+         X : X
+    6. Rewriting (to simplify) the second argument,
+         (F2 (CAR X)),
+       under the substitution
+         X : X
+    7. Attempting to apply (:DEFINITION F2) to
+         (F2 (CAR X))
+    8. Rewriting (to simplify) the rhs of the conclusion,
+         (F1 (F0 X)),
+       under the substitution
+         X : (CAR X)
+    9. Attempting to apply (:DEFINITION F1) to
+         (F1 (F0 (CAR X)))
+    The resulting (translated) term is
+      (CONS (F0 (CAR X)) (F0 (CAR X))).
+    Note: The first lemma application above that provides a suitable result
+    is at position 4, and that result is
+      (IF (CONSP X)
+          (CONS (F0 (CAR X)) (F0 (CAR X)))
+        (CONS (F0 X) (F0 X))).
+    ACL2 !>
+
+  We see that the term (FO (CAR X)) is not itself the result of a rule
+  application.  This example illustrates that one may often get
+  better results using cw-gstack-for-subterm rather than
+  cw-gstack-for-term.
+
+  It is also interesting to look at the ``Note'' printed at the end.
+  The query utilities search for the first rule application that
+  produced a suitable result, and then they search from that point
+  for a maximally deeper rule application that produced a suitable
+  result.  In this case, the first rule that produced a term
+  containing (FO (CAR X)) is shown in the frame 4 (i.e., the frame at
+  position 4), as per the Note.  The rule at frame 9 also produced
+  such a term (though a different one than at frame 4), and there was
+  no deeper such rule application --- that is, from the time the
+  definition at frame 9 was applied till the time its body was fully
+  rewritten, no rule produced a term containing (FO (CAR X)).  (This
+  notion of ``deeper'' is discussed at some length in the section
+  below on ``General forms of queries''.)
+
+  Next we'll explore a limitation of these tools and how to get around
+  it.  We start as follows (following the definitions above).
+
+    (with-brr-data
+     (thm (equal (append (f3 x) y)
+                 z)
+          :hints ((\"Goal\" :in-theory (disable append)))))
+
+  This proof attempt results in the following checkpoint.
+
+    (IMPLIES (CONSP X)
+             (EQUAL (APPEND (CONS (F0 (CAR X)) (F0 (CAR X)))
+                            Y)
+                    Z))
+
+  The following log may be surprising, especially since the indicated
+  term need only be a subterm of a rewriter result, and we see this
+  exact term in the checkpoint above!
+
+    ACL2 !>(cw-gstack-for-subterm (APPEND (CONS (F0 (CAR X)) (F0 (CAR X))) Y))
+    There are no results.
+    ACL2 !>
+
+  A solution is to choose a subterm of that input term, as shown in the
+  log below.  The resulting output shows why the query above yielded
+  no results: frame 6 below shows that the first argument, (F3 X), of
+  binary-append (see frame 3 below) generates a call of IF, so the
+  rewrite at frame 3 will generate a term of the form (BINARY-APPEND
+  (IF ...)  ...), not of the form (BINARY-APPEND (CONS ...) ...).
+
+    ACL2 !>(cw-gstack-for-subterm (cons (f0 (car x)) (f0 (car x))))
+    1. Simplifying the clause
+         ((EQUAL (BINARY-APPEND (F3 X) Y) Z))
+    2. Rewriting (to simplify) the atom of the first literal,
+         (EQUAL (BINARY-APPEND (F3 X) Y) Z),
+    3. Rewriting (to simplify) the first argument,
+         (BINARY-APPEND (F3 X) Y),
+    4. Rewriting (to simplify) the first argument,
+         (F3 X),
+    5. Attempting to apply (:DEFINITION F3) to
+         (F3 X)
+    6. Rewriting (to simplify) the body,
+         (IF (CONSP X) (F2 (CAR X)) (F2 X)),
+       under the substitution
+         X : X
+    7. Rewriting (to simplify) the second argument,
+         (F2 (CAR X)),
+       under the substitution
+         X : X
+    8. Attempting to apply (:DEFINITION F2) to
+         (F2 (CAR X))
+    9. Rewriting (to simplify) the rhs of the conclusion,
+         (F1 (F0 X)),
+       under the substitution
+         X : (CAR X)
+    10. Attempting to apply (:DEFINITION F1) to
+         (F1 (F0 (CAR X)))
+    The resulting (translated) term is
+      (CONS (F0 (CAR X)) (F0 (CAR X))).
+    Note: The first lemma application above that provides a suitable result
+    is at position 5, and that result is
+      (IF (CONSP X)
+          (CONS (F0 (CAR X)) (F0 (CAR X)))
+        (CONS (F0 X) (F0 X))).
+    ACL2 !>
+
+  The careful reader may notice another reason that the append call
+  does not yield a match: no such call is the result of a rewriter
+  call.
+
+  The moral of this story is that if a term fails to give you a match,
+  then use a subterm of it.  You can also use the :free construct
+  mentioned above, for example as follows --- this gives the same
+  output as shown in the log just above.
+
+    (cw-gstack-for-subterm (:free (v) (cons (f0 v) (f0 v))))
+
+
+Connections with break-rewrite
+
+  We noted above that after running with-brr-data, the stacks (paths)
+  displayed by query commands such as cw-gstack-for-term are the same
+  as the stacks displayed by the [break-rewrite] command, :path+.
+
+  But there are these additional connections between with-brr-data and
+  the break-rewrite utility.
+
+    * [Monitor]ed [rune]s are indeed monitored during evaluation of a call
+      of with-brr-data, even if break-rewrite has not been enabled
+      globally (using :[brr] or [monitor!]).  If this is not desired,
+      then [unmonitor] runes before calling with-brr-data.
+    * The same rewriting processes are considered by with-brr-data as by
+      break-rewrite; in particular, abbreviation rules are not
+      considered during preprocessing (see [monitor]).
+    * There is the following low-level way to collect brr-data for queries
+      such as cw-gstack-for-term without calling with-brr-data:
+      (assign gstack :brr-data).  But you may want to clear such data
+      afterwards, which you can do by evaluating the form,
+      (clear-brr-data-lst).  Otherwise the brr-data from later proof
+      attempts will be combined, probably in unexpected ways, with
+      brr-data from earlier proof attempts.
+
+
+General form of with-brr-data calls
+
+  The general form, including optional keyword arguments, is
+
+    (with-brr-data form :global-var var :brr-data-returned bool)
+
+  where form is typically an event but is only required to evaluate to
+  an [error-triple].  By default (i.e., when the keyword arguments
+  are omitted), that error triple is returned by the with-brr-data
+  call.
+
+  There is probably little reason for most users to supply either
+  keyword argument.  They are documented in the section after next.
+
+
+General forms of queries
+
+  The four queries (all illustrated above) are as follows, where the
+  keyword argument is optional.
+
+    (cw-gstack-for-subterm u :global-var var)
+    (cw-gstack-for-subterm* u :global-var var)
+    (cw-gstack-for-term u :global-var var)
+    (cw-gstack-for-term* u :global-var var)
+
+  In each case, u is either a term (which can be a user-level term,
+  i.e., not necessarily translated; see [term]) or of the form (:free
+  (v1 ... vk) u1) where u1 is a term.  In the latter case, v1 through
+  vk must be distinct variables that all occur in (the translation
+  of) u1.
+
+  These queries are effective after data collection using
+  with-brr-data, which is typically wrapped around an event that
+  calls the theorem prover.  To understand how the queries work, it
+  is useful to view a proof attempt as generating ``initial'' calls
+  of the rewriter, such as when rewriting a hypothesis or the
+  conclusion of a goal (technically, a literal of the goal clause):
+  that is, initial rewriter calls are those that are not under
+  another rewriter call.  Then data collection under each initial
+  call creates a tree of ``top-level'' calls --- those not made under
+  an attempt to relieve a hypothesis --- for which that initial call
+  is the root.  Thus each node of that tree corresponds to a rewriter
+  call, and each child of that node is a top-level call of the
+  rewriter that is immediately under that call, where the order of
+  calls is respected by the ordering of child nodes from left to
+  right.  For example, the top-level application a rewrite rule
+  corresponds to a node, and the call to rewrite the right-hand side
+  of the rule (with appropriate variable bindings) corresponds to a
+  child of that node.  Another example is when an attempt to rewrite
+  a function call leads to an attempt to rewrite an argument of that
+  call: the latter corresponds to a child node of the former.  Each
+  of the four query utilities looks for the first root node, and the
+  left-most branch under that node, that results in a rewriter result
+  that ``matches'' the input in the following sense.
+
+  This notion of ``matches'' depends on the call, as follows.  First
+  assume that the input is a term.  For cw-gstack-for-subterm and
+  cw-gstack-for-subterm*, the result matches when it contains the
+  given term as a subterm.  For cw-gstack-for-term and
+  cw-gstack-for-term*, the result matches when it is exactly the
+  given term.  Now suppose the input is (:free (v1 ... vk) u).  Then
+  the notion of ``matches'' is modified to allow any instance u/s for
+  a substitution s that instantiates only the variables vi.
+
+  When a matching node N1 is found for the input term, or in the case
+  of (:free (v1 ... vk) u), some instance of u, then a further search
+  below N is made to find a maximal left-most branch below it that
+  terminates in a node N2 that also matches, using the same
+  substitution in the case of :free.  If no such branch is found,
+  then N2 is N.  Either way, the term or instance that matched at N
+  (as a subterm in the case of cw-gstack-for-subterm or
+  cw-gstack-for-subterm*, else as an exact match) also matches at N2.
+  The output then shows a path to N2, but if N1 and N2 differ then
+  the output also notes that the first match was at N1, as we have
+  seen in each ``Note'' at the end of logs displayed above.
+
+  The discussion above characterizes the behavior of
+  cw-gstack-for-subterm and cw-gstack-for-term; now let us consider
+  cw-gstack-for-subterm* and cw-gstack-for-term*.  These ``*''
+  versions query after each result to ask if another result is
+  desired.  If so, the search starts strictly after N; it does not
+  look for a second successor N2 of N.  The search continues until
+  either the user answers n (regardless of the package; the query
+  cares only that the [symbol-name] is \"Y\" or \"N\") or there are no
+  more results.
+
+
+Keyword arguments of with-brr-data (optional)
+
+  As noted above, the general form of a call of with-brr-data is as
+  follows.
+
+    (with-brr-data form :global-var var :brr-data-returned bool)
+
+  The keywords have aspects that are quite technical, so unless you are
+  somewhat familiar with ACL2 implementation issues you will probably
+  want to skip this section.
+
+  Neither keyword argument is evaluated.  The behavior of the keyword
+  arguments depends on a list, BDL (``Brr-Data List''), that is
+  typically made available by a call of with-brr-data, as described
+  below.  The members of BDL represent successful initial calls of
+  the rewriter, in order.  Each of those members is a brr-data
+  record, as described in the next section.  After the with-brr-data
+  call returns, then (mv nil BDL state) is returned by evaluation of
+  (brr-data-lst state), until the next time that either a call of
+  with-brr-data or the form (clear-brr-data-lst) is evaluated.
+  Implementation notes: information is stored in the brr-data
+  [wormhole]; (brr-data-lst state) extracts that information and
+  reorders appropriately before producing BDL; and
+  (clear-brr-data-lst) removes that information from the brr-data
+  wormhole.
+
+  We now explain the keyword arguments in terms of the list BDL.
+
+    * :global-var var
+      The symbol var defaults to the symbol, brr-data-lst.  Var is either
+      nil or a state global variable (see [programming-with-state]),
+      which by default is brr-data-lst.  If var is not nil, then the
+      with-brr-data call modifies [state] by setting the value of the
+      state global, var, to BDL.
+    * :brr-data-returned bool
+      Suppose that the form argument of the with-brr-data call evaluates
+      to (mv erp val state).  Then when bool is nil (which is the
+      default), the with-brr-data call returns that same
+      [error-triple], (mv erp val state).  If however bool is not
+      nil, then instead the with-brr-data call returns (mv erp BDL
+      state).
+
+
+Low-level details (optional)
+
+  This implementation-level section further describes the brr-data
+  structure mentioned above.  It is probably of interest only to
+  those who consider writing their own tools to query the data
+  produced by with-brr-data.
+
+  A brr-data record is a structure that has a field :brr-data-1
+  representing information from entry into the rewriter, a field
+  :brr-data-2 representing information from the corresponding exit
+  from the rewriter, and a field :completed that is the list of
+  brr-data records produced between that entry and exit, in order.
+  (Implementation detail: these are produced inside the brr-data
+  [wormhole] by the same functions, brkpt1 and brkpt2, that implement
+  the [break-rewrite] utility.)
 
     (defrec brr-data
       (pre post . completed)
       nil)
-
-  In each such record, the :pre and :post fields are respectively a
-  brr-data-1 record and a brr-data-2 record, each of which records
-  information upon entering or exiting a break (respectively).
 
     (defrec brr-data-1
       (((lemma . target) . (unify-subst . type-alist))
@@ -149645,13 +150204,11 @@ Concluding Remark
        (rcnst final-ttree . gstack))
       nil)
 
-  The :completed field of a brr-data record is a list of brr-data
-  records, corresponding to the rewrite breaks that are one level
-  lower.
-
-  You may notice that this collection of break-rewrite data slows down
-  the theorem prover.  The slowdown will probably be modest, perhaps
-  adding an extra 25% or so to the time.
+  The brr-data definition introduces a recursive data type (as per ACL2
+  source function brr-data-p, since the :completed field is a list of
+  brr-data records.  These correspond to immediate sub-calls of the
+  rewriter, yielding ``child nodes'' as described in the section,
+  ``General forms of queries''.
 
   We have seen above that the use of with-brr-data activates the
   collection of break-rewrite data.  Collection may also be activated
@@ -149662,35 +150219,82 @@ Concluding Remark
   to :brr-data has the effect of :[brr] t but enhanced with
   collection of brr-data records.  When gstackp has value :brr-data,
   :brr t is treated as a no-op and :brr nil is an error, to avoid
-  inadvertently turning off brr-data record collection.
+  inadvertently turning off brr-data record collection.  Note that
+  although with-brr-data is disallowed in ACL2(p) (see [parallelism])
+  when [waterfall-parallelism] is enabled, this prohibition can be
+  circumvented by assigning gstackp to :brr-data; however, in that
+  case with-brr-data might well not behave correctly.
 
-  Future documentation may be written as needed.  For now, the
-  programmer using this utility may wish to look at the ACL2 source
-  code and the [break-rewrite] documentation to understand the fields
-  of the brr-data-1 and brr-data-2 records.  The form (brr-data-listp
-  t lst) recognizes a list of well-formed brr-data records.  The
-  :failure-reason field of the brr-data-2 record may be of particular
-  interest; see ACL2 source function tilde-@-failure-reason-phrase1
-  for the forms that this field may take.
+  The programmer who manipulates brr-data records may wish to look at
+  the ACL2 source code and the [break-rewrite] documentation to
+  understand the fields of the brr-data-1 and brr-data-2 records.
+  The form (brr-data-listp t lst) recognizes a list of well-formed
+  brr-data records.  The :failure-reason field of the brr-data-2
+  record may be of particular interest; see ACL2 source function
+  tilde-@-failure-reason-phrase1 for the forms that this field may
+  take.
 
-  Here is a handy way to store the current list of brr-data records
-  into a state global, in this case, brr-data-lst (but you can choose
-  your own state global name).  After collecting data, evaluating
-  this definition, and then evaluating the form (set-brr-data-lst
-  state), the form (brr-data-listp t (@ brr-data-lst)) should return
-  t.
+  It is easy to see the list of brr-data records created by a call of
+  with-brr-data.  A big hint is given in the output printed at the
+  completion of a with-brr-data call, as suggested in the first
+  example in the introduction, with the following output.
 
-    (defun set-brr-data-lst (state)
-      (declare (xargs :stobjs state))
-      (er-let* ((x (brr-data-lst state)))
-        (cond ((eq x :none)
-               (value (er hard? 'set-brr-data-lst
-                          \"There is no brr-data available.\")))
-              (t
-               (pprogn (f-put-global 'brr-data-lst x state)
-                       (value (list '=
-                                    '(length (@ brr-data-lst))
-                                    (len x))))))))")
+    ACL2 Observation:  (LENGTH (@ BRR-DATA-LST)) = 16
+
+  The form (@ BRR-DATA-LST) evaluates to the resulting list of brr-data
+  records, one for each so-called ``initial call'' of the rewriter,
+  in the sense described in the section above on ``Keyword
+  arguments''.  The utility show-brr-data-lst can be applied to such
+  a list to show the most interesting parts of each record, for
+  example, (show-brr-data-lst (@ brr-data-lst)).  Also you can call
+  the utility show-brr-data on a single brr-data record.
+
+
+Using attachments to modify functionality of with-brr-data
+
+  The behavior of with-brr-data is customizable by using attachments
+  (see [defattach]).  The macro, set-brr-data-attachments, has been
+  provided for this purpose.  This section provides only minimal
+  documentation on this customizability; those who want to implement
+  new such attachments can look at the following examples in the
+  [community-books] to get a sense of how that might be done.  Note
+  that the query utilities work the same regardless of the
+  attachments, and the relevant data structures are also unchanged.
+
+    books/kestrel/utilities/brr-data-all.lisp
+    books/kestrel/utilities/brr-data-failures.lisp
+
+  When the macro is called with no arguments, i.e.,
+  (set-brr-data-attachments), behavior is restored to the built-in
+  behavior as described above.  But this macro can be given an
+  argument that indicates a string: it is either a string or a
+  symbol, where a symbol indicates its [symbol-name].  The indicated
+  string, which we write below as \"<S>\", is added as a suffix after a
+  hyphen to create four system attachments.  These are [defattach]
+  calls rather than [defattach-system] calls, so that their effect is
+  not [local] to the enclosing book.
+
+    (defattach (brkpt1-brr-data-entry brkpt1-brr-data-entry-<S> :system-ok t)
+    (defattach (brkpt2-brr-data-entry brkpt2-brr-data-entry-<S> :system-ok t)
+    (defattach (update-brr-data-1 update-brr-data-1-<S>) :system-ok t)
+    (defattach (update-brr-data-2 update-brr-data-2-<S>) :system-ok t)
+
+  The four \"-<S>\" functions must be defined to match the signatures of
+  the functions to which they are attached.  Those functions have the
+  following arguments and results, where * indicates an ordinary
+  (non-[stobj]) value.
+
+    (brkpt1-brr-data-entry ancestors gstack rcnst state) => *
+    (brkpt2-brr-data-entry ancestors gstack rcnst state) => *
+    (update-brr-data-1 lemma target unify-subst type-alist ancestors
+                       initial-ttree gstack rcnst pot-lst whs-data) => *
+    (update-brr-data-2 wonp failure-reason unify-subst gstack brr-result
+                       final-ttree rcnst ancestors whs-data) => *
+
+  Note that (set-brr-data-attachments) is actually equivalent to
+  (set-brr-data-attachments builtin).  That is, the initial
+  (built-in) attachments to the functions above all have the suffix,
+  \"-BUILTIN\".")
  (WITH-CBD
   (BOOKS-REFERENCE)
   "To set the connected book directory
