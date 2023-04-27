@@ -38837,7 +38837,9 @@ Example 2
   (the value of constant *fmt-hard-right-margin-default*), except
   when using ~S.  See [set-fmt-hard-right-margin] for a discussion of
   how linebreaks are inserted and how to change the relevant default
-  settings.
+  settings.  A right margin of 40 is used for pretty printing with
+  ~y, ~Y, ~q, and ~Q and can be changed to a positive integer N with
+  (set-ppr-flat-right-margin N state).
 
   The formatting functions scan the string from left to right, printing
   each successive character unless it is a tilde (~).  Upon
@@ -124417,7 +124419,11 @@ Subtopics
   that equals or exceeds the value of (@ fmt-hard-right-margin).
   Such a ``hard'' linebreak follows the insertion of a backslash (\\)
   character unless [fmt!], [fms!], or [fmt1!] is used, or state
-  global write-for-read is true.")
+  global write-for-read is true.
+
+  Note that A right margin of 40 is used for pretty printing with [fmt]
+  directives ~y, ~Y, ~q, and ~Q and can be changed to a positive
+  integer N with (set-ppr-flat-right-margin N state).")
  (SET-FMT-SOFT-RIGHT-MARGIN
   (IO ACL2-BUILT-INS)
   "Set the soft right margin for formatted output

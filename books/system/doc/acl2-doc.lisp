@@ -35342,7 +35342,10 @@ current fast alists."
  printing past column @('77') (the value of constant
  @('*fmt-hard-right-margin-default*')), except when using @('~S').  See @(see
  set-fmt-hard-right-margin) for a discussion of how linebreaks are inserted and
- how to change the relevant default settings.</p>
+ how to change the relevant default settings.  A right margin of 40 is used for
+ pretty printing with @('~y'), @('~Y'), @('~q'), and @('~Q') and can be changed
+ to a positive integer @('N') with @('(set-ppr-flat-right-margin N
+ state)').</p>
 
  <p>The formatting functions scan the string from left to right, printing each
  successive character unless it is a tilde @('(~)').  Upon encountering tildes
@@ -125736,7 +125739,11 @@ work on <tt>(q x)</tt>.</p>
  a column that equals or exceeds the value of @('(@ fmt-hard-right-margin)').
  Such a ``hard'' linebreak follows the insertion of a backslash (@('\\'))
  character unless @(tsee fmt!), @(tsee fms!), or @(tsee fmt1!) is used, or
- state global @('write-for-read') is true.</p>")
+ state global @('write-for-read') is true.</p>
+
+ <p>Note that A right margin of 40 is used for pretty printing with @(tsee fmt)
+ directives @('~y'), @('~Y'), @('~q'), and @('~Q') and can be changed to a
+ positive integer @('N') with @('(set-ppr-flat-right-margin N state)').</p>")
 
 (defxdoc set-fmt-soft-right-margin
   :parents (io acl2-built-ins)
