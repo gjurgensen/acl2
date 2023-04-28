@@ -2664,6 +2664,7 @@
   <Return>        acl2-doc-go!
   Shift-<Return>  acl2-doc-go!-new-buffer
   g               acl2-doc-go
+  G               acl2-doc-go-new-buffer
   h               acl2-doc-help
   ?               acl2-doc-summary
   i               acl2-doc-index
@@ -2709,6 +2710,9 @@
 
   g             acl2-doc-go
      Go to the specified topic; performs completion.
+
+  g             acl2-doc-go-new-buffer
+     Go to the specified topic in a new buffer; performs completion.
 
   h             acl2-doc-help
      Go to the ACL2-DOC topic to read about how to use the ACL2-Doc browser.
@@ -101710,41 +101714,6 @@ it."
 ; setter (i.e., when a binding is of the form (var val set-var)).  Modified
 ; channel-to-string accordingly.
 
-; Here is the "example on iprinting" promised in :DOC note-8-6, to show how
-; iprinting behaves better with break-rewrite.  We start as follows.
-
-;   (monitor! 'len t)
-;   (iprint-enabledp state)
-;   (f-get-global 'iprint-ar state)
-;   (set-evisc-tuple (evisc-tuple 5 6 nil nil) :iprint :same :sites :all)
-;   (mv-let (step-limit term ttree)
-;     (rewrite '(len (cons a b))
-;               nil 1 20 100 nil '? nil nil (w state)
-;               state nil nil nil nil
-;               (make-rcnst (ens state) (w state) state
-;                           :force-info t)
-;               nil nil)
-;     (declare (ignore step-limit term ttree))
-;     (make-list 10))
-
-; When we then turn on iprinting during the break, we may have been surprised
-; in Version_8.5 to see that the result is printed without iprinting.
-
-;   (1 Breaking (:DEFINITION LEN) on (LEN (CONS A B)):
-;   1 ACL2 !>(set-iprint t)
-;
-;   ACL2 Observation in SET-IPRINT:  Iprinting has been enabled.
-;   1 ACL2 !>:go!
-;
-;   1 (:DEFINITION LEN) produced (BINARY-+ '1 (LEN B)).
-;   1)
-;   (NIL NIL NIL NIL NIL NIL ...)
-;   ACL2 !>
-
-; Now the final value is printed appropriately, as follows.
-
-;   (NIL NIL NIL NIL NIL NIL . #@1#)
-
 ; We now avoid a raw Lisp error when not catching tag RAW-EV-FNCALL because
 ; hard-error is called outside the scope of raw-ev-fncall, e.g.:
 ;   (flet ((lambda$ (x) (cons x x))) (lambda$ 3))
@@ -101973,9 +101942,11 @@ it."
  for suggesting @('up').</p>
 
  <p>Arranged that @(see iprinting) that takes place during @(see break-rewrite)
- is better reflected outside break-rewrite.  For an example, see the example on
- iprinting in a comment in the form @('(defxdoc note-8-6 ...)') in @(see
- community-book) @('books/system/doc/acl2-doc.lisp').</p>
+ is better reflected outside break-rewrite.  For examples, see @(see
+ community-books) input file @('books/system/tests/iprint-and-brr-input.lsp'),
+ which contains comments on what went wrong in Version 8.5, and which
+ generates (via the @(tsee run-script) utility) the output in file
+ @('iprint-and-brr-log.txt') in that directory.</p>
 
  <p>When a defined function has a @(tsee declare) form with @('(optimize
  ...)'), that is now included in a declare form of the executable-counterpart

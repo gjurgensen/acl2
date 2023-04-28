@@ -4951,6 +4951,7 @@ Silent loading of ACL2 customization files
     <Return>        acl2-doc-go!
     Shift-<Return>  acl2-doc-go!-new-buffer
     g               acl2-doc-go
+    G               acl2-doc-go-new-buffer
     h               acl2-doc-help
     ?               acl2-doc-summary
     i               acl2-doc-index
@@ -4994,6 +4995,9 @@ Silent loading of ACL2 customization files
 
     g             acl2-doc-go
        Go to the specified topic; performs completion.
+
+    g             acl2-doc-go-new-buffer
+       Go to the specified topic in a new buffer; performs completion.
 
     h             acl2-doc-help
        Go to the ACL2-DOC topic to read about how to use the ACL2-Doc browser.
@@ -98886,9 +98890,12 @@ Changes to Existing Features
   Thanks to Eric Smith for suggesting up.
 
   Arranged that [iprinting] that takes place during [break-rewrite] is
-  better reflected outside break-rewrite.  For an example, see the
-  example on iprinting in a comment in the form (defxdoc note-8-6
-  ...) in [community-book] books/system/doc/acl2-doc.lisp.
+  better reflected outside break-rewrite.  For examples, see
+  [community-books] input file
+  books/system/tests/iprint-and-brr-input.lsp, which contains
+  comments on what went wrong in Version 8.5, and which generates
+  (via the [run-script] utility) the output in file
+  iprint-and-brr-log.txt in that directory.
 
   When a defined function has a [declare] form with (optimize ...),
   that is now included in a declare form of the
