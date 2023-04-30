@@ -77,7 +77,7 @@ Subtopics
   [defthm], [in-theory], [xargs], [state], etc., without an acl2::
   prefix.
 
-  The constant *acl2-exports* lists 1573 symbols, including most
+  The constant *acl2-exports* lists 1574 symbols, including most
   documented ACL2 system constants, functions, and macros.  You will
   typically also want to import many symbols from Common Lisp; see
   [*common-lisp-symbols-from-main-lisp-package*].
@@ -138,7 +138,6 @@ Subtopics
        assume atom atom-listp
        atom-listp-forward-to-true-listp
        backchain-limit badge badge-userfn
-       big-clock-entry big-clock-negative-p
        binary-* binary-+ binary-append
        bind-free bit bitp boole$ boolean-listp
        boolean-listp-cons boolean-listp-forward
@@ -215,11 +214,14 @@ Subtopics
        cond cond-clausesp cond-macro
        conjugate cons cons-equal cons-subtrees
        cons-with-hint consp consp-assoc-equal
-       constraint-info corollary count-keys
-       cpu-core-count ctx ctxp current-package
-       current-theory cw cw! cw!+ cw+ cw-gstack
+       constraint-info corollary
+       count-keys cpu-core-count ctx ctxp
+       current-package current-theory cw cw!
+       cw!+ cw+ cw-gstack cw-gstack-for-subterm
+       cw-gstack-for-subterm*
+       cw-gstack-for-term cw-gstack-for-term*
        cw-print-base-radix cw-print-base-radix!
-       d< declare decrement-big-clock defabbrev
+       d< declare defabbrev
        defabsstobj defabsstobj-missing-events
        defattach defattach-system
        default default-*-1 default-*-2
@@ -760,7 +762,7 @@ Subtopics
        untrace$ untrans-table
        untranslate update-acl2-oracle
        update-acl2-oracle-preserves-state-p1
-       update-big-clock-entry update-file-clock
+       update-file-clock
        update-global-table update-idates
        update-nth update-nth-array
        update-open-input-channels
@@ -779,8 +781,9 @@ Subtopics
        w walkabout warning! warrant
        waterfall-parallelism waterfall-printing
        weak-ld-history-entry-p
-       well-formed-lambda-objectp wet
-       when$ when$+ with-cbd with-fast-alist
+       well-formed-lambda-objectp
+       wet when$ when$+
+       with-brr-data with-cbd with-fast-alist
        with-global-stobj with-guard-checking
        with-guard-checking-error-triple
        with-guard-checking-event
@@ -99003,10 +99006,11 @@ Changes to Existing Features
   [do-loop$] documentation, which has new, relevant explanation
   (first in brief, later in detail) regarding such messages.
 
-  Three obsolete fields of the ACL2 [state] have been removed: t-stack,
-  32-bit-integer-stack, and list-all-package-names-lst, as have some
-  related built-in, undocumented definitions and theorems, including
-  old-check-sum-obj and supporting functions.
+  Four obsolete fields of the ACL2 [state] have been removed:
+  big-clock-entry, t-stack, 32-bit-integer-stack, and
+  list-all-package-names-lst, as have some related built-in,
+  undocumented definitions and theorems, including old-check-sum-obj
+  and supporting functions.
 
   Improved [hide] calls in prover output from failed execution of
   [warrant]s, by adding suitable notes about attachments or warrant
@@ -129952,9 +129956,6 @@ Subtopics
 
       Global-table, an alist associating symbols (to be used as ``global
       variables'') with values.  See [@], and see [assign].
-
-      Big-clock-entry, an integer, that is used logically to bound the
-      amount of effort spent to evaluate a quoted form.
 
       Idates, a list of dates and times, used to implement the function
       print-current-idate, which prints the date and time.

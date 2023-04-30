@@ -102063,10 +102063,11 @@ it."
  the @(see do-loop$) documentation, which has new, relevant explanation (first
  in brief, later in detail) regarding such messages.</p>
 
- <p>Three obsolete fields of the ACL2 @(see state) have been removed:
- @('t-stack'), @('32-bit-integer-stack'), and @('list-all-package-names-lst'),
- as have some related built-in, undocumented definitions and theorems,
- including @('old-check-sum-obj') and supporting functions.</p>
+ <p>Four obsolete fields of the ACL2 @(see state) have been removed:
+ @('big-clock-entry'), @('t-stack'), @('32-bit-integer-stack'), and
+ @('list-all-package-names-lst'), as have some related built-in, undocumented
+ definitions and theorems, including @('old-check-sum-obj') and supporting
+ functions.</p>
 
  <p>Improved @(tsee hide) calls in prover output from failed execution of @(see
  warrant)s, by adding suitable notes about attachments or warrant functions not
@@ -131437,9 +131438,6 @@ work on <tt>(q x)</tt>.</p>
 
  <p>@('Global-table'), an alist associating symbols (to be used as ``global
  variables'') with values.  See @(see @), and see @(see assign).</p>
-
- <p>@('Big-clock-entry'), an integer, that is used logically to bound the
- amount of effort spent to evaluate a quoted form.</p>
 
  <p>@('Idates'), a list of dates and times, used to implement the function
  @('print-current-idate'), which prints the date and time.</p>
