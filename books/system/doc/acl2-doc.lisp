@@ -102105,6 +102105,15 @@ it."
  changed from @('t') to @('nil'), which (by default) eliminates noise from the
  output.</p>
 
+ <p>When a proof attempt is halted so that it reverts to prove the original
+ goal by induction, the top-level checkpoints are printed under the @(see
+ summary) under the banner, &ldquo;@('Key checkpoints before reverting to proof
+ by induction')&rdquo;.  This was normally the case already, but not in the
+ special case that the proof is eventually aborted either because a goal of
+ @('NIL') is produced or because proof by induction is not allowed (due to a
+ @(':DO-NOT-INDUCT') hint or an @(see induction-depth-limit) being exceeded).
+ Thanks to Eric Smith for a chat that helped lead to this improvement.</p>
+
  <h3>New Features</h3>
 
  <p>The new zero-ary attachable system function, @(tsee heavy-linear-p), allows

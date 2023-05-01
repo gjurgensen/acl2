@@ -99045,6 +99045,16 @@ Changes to Existing Features
   The default for [memoize] keyword argument :verbose has been changed
   from t to nil, which (by default) eliminates noise from the output.
 
+  When a proof attempt is halted so that it reverts to prove the
+  original goal by induction, the top-level checkpoints are printed
+  under the [summary] under the banner, ``Key checkpoints before
+  reverting to proof by induction''.  This was normally the case
+  already, but not in the special case that the proof is eventually
+  aborted either because a goal of NIL is produced or because proof
+  by induction is not allowed (due to a :DO-NOT-INDUCT hint or an
+  [induction-depth-limit] being exceeded).  Thanks to Eric Smith for
+  a chat that helped lead to this improvement.
+
 
 New Features
 
