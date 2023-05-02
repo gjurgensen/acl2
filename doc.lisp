@@ -4994,12 +4994,16 @@ Silent loading of ACL2 customization files
     Shift-<Return>  acl2-doc-go!-new-buffer
        Go to the topic occurring at the cursor position in a new buffer.  In the
        case of <NAME>, instead go to the source code definition of NAME for the
-       current manual (as for `/', but without a minibuffer query).
+       current manual (as for `/', but without a minibuffer query).  The new
+       buffer's name reflects that topic name, but it stays the same even if the
+       topic is subequently changed there.
 
     g             acl2-doc-go
-       Go to the specified topic; performs completion.
+       Go to the specified topic; performs completion.  The new buffer's name
+       reflects that topic name, but it stays the same even if the topic is
+       subequently changed there.
 
-    g             acl2-doc-go-new-buffer
+    G             acl2-doc-go-new-buffer
        Go to the specified topic in a new buffer; performs completion.
 
     h             acl2-doc-help
@@ -99460,6 +99464,22 @@ EMACS Support
   emacs/html-to-xdoc.el.  Note that its release was approved by DARPA
   with ``DISTRIBUTION STATEMENT A. Approved for public release.
   Distribution is unlimited.''
+
+  When new [ACL2-doc] buffers are created by using the G or
+  Shift-<Return> commands, their name reflects the topic name, e.g.,
+  acl2-doc<REWRITE> if the topic visited in the new buffer is
+  REWRITE.  Note that the new buffer name stays the same even if
+  other topics are visited there; its name reflects its topic at the
+  time it was created.  Thanks to Warren Hunt for requesting such an
+  enhancement.  Note that the former behavior can be restored by
+  evaluating the form (setq *acl2-doc-short-new-buffer-names* t) in
+  Emacs.
+
+  The initialization file for recent Emacs versions,
+  books/emacs/emacs-acl2.el, now correctly loads related files ---
+  notable acl2-doc.el --- from that same directory, rather than from
+  the emacs/ directory that is directly under the top level of the
+  ACL2 distribution.
 
 
 Experimental Versions
