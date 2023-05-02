@@ -64358,8 +64358,8 @@ Preface
   sections in the order shown.  Each section ends with a pointer to
   the next section but also includes a link to the Table of Contents.
 
-  Now go to [lp-section-1].  The  Table of Contents (see
-  [LP-SECTION-0]) is at [lp-section-0].
+  Now go to [lp-section-1].  The Table of Contents is at
+  [lp-section-0].
 
 
 Subtopics
@@ -64369,6 +64369,30 @@ Subtopics
 
   [Lp-section-1]
       Background Reviews
+
+  [Lp-section-2]
+      Loop in Common Lisp and loop$ in ACL2
+
+  [Lp-section-3]
+      Examples of FOR Loop$s
+
+  [Lp-section-4]
+      Syntax of FOR Loop$s
+
+  [Lp-section-5]
+      Informal Semantics of FOR Loop$s
+
+  [Lp-section-6]
+      Challenge Problems about FOR Loop$s
+
+  [Lp-section-7]
+      Using Loop$s and Guards in Defuns
+
+  [Lp-section-8]
+      Challenge Problems about FOR Loop$ in Defuns
+
+  [Lp-section-9]
+      Semantics of FOR Loop$s
 
   [Lp-section-10]
       The Evaluation of the Formal Semantics of a Fancy Loop$
@@ -64395,31 +64419,7 @@ Subtopics
       Challenge Proof Problems for DO Loop$s
 
   [Lp-section-18]
-      Conclusion
-
-  [Lp-section-2]
-      Loop in Common Lisp and loop$ in ACL2
-
-  [Lp-section-3]
-      Examples of FOR Loop$s
-
-  [Lp-section-4]
-      Syntax of FOR Loop$s
-
-  [Lp-section-5]
-      Informal Semantics of FOR Loop$s
-
-  [Lp-section-6]
-      Challenge Problems about FOR Loop$s
-
-  [Lp-section-7]
-      Using Loop$s and Guards in Defuns
-
-  [Lp-section-8]
-      Challenge Problems about FOR Loop$ in Defuns
-
-  [Lp-section-9]
-      Semantics of FOR Loop$s")
+      Conclusion")
  (LOOP$-RECURSION
   (LOOP$)
   "Defining functions that recur from within FOR loop$ expressions
@@ -149685,7 +149685,7 @@ Concluding Remark
     (cw-gstack-for-subterm* (append y (cdr x)))
 
   The rest of this documentation topic is structured as follows.  It
-  may suffice to read only the first (Introduction) section.
+  may suffice to read only the first two sections.
 
     * Introduction
     * Connections with [break-rewrite]
@@ -150050,13 +150050,17 @@ Connections with break-rewrite
   But there are these additional connections between with-brr-data and
   the break-rewrite utility.
 
+    * The same rewriting processes are considered by with-brr-data as by
+      break-rewrite; in particular, abbreviation rules are not
+      considered during preprocessing (see [monitor]).
+    * When a query command (cw-gstack-for-term etc.) finds a match with a
+      rewriting result, it discards the result if the input --- the
+      :target, in the parlance of [break-rewrite] --- contains that
+      match.
     * [Monitor]ed [rune]s are indeed monitored during evaluation of a call
       of with-brr-data, even if break-rewrite has not been enabled
       globally (using :[brr] or [monitor!]).  If this is not desired,
       then [unmonitor] runes before calling with-brr-data.
-    * The same rewriting processes are considered by with-brr-data as by
-      break-rewrite; in particular, abbreviation rules are not
-      considered during preprocessing (see [monitor]).
     * There is the following low-level way to collect brr-data for queries
       such as cw-gstack-for-term without calling with-brr-data:
       (assign gstack :brr-data).  But you may want to clear such data
@@ -150064,6 +150068,82 @@ Connections with break-rewrite
       (clear-brr-data-lst).  Otherwise the brr-data from later proof
       attempts will be combined, probably in unexpected ways, with
       brr-data from earlier proof attempts.
+
+  The first item above is worth emphasizing.  Consider the following
+  example.
+
+    (include-book \"std/lists/rev\" :dir :system)
+    (with-brr-data
+     (thm (implies (and (natp n)
+                        (< n (len x)))
+                   (equal (nth n (revappend x y))
+                          (nth n (reverse x))))
+          :hints ((\"Goal\" :do-not '(preprocess)))))
+    (cw-gstack-for-subterm (APPEND (REV X) Y))
+
+  The cw-gstack-for-subterm query yields a result in this example, but
+  not if we change it to remove the :[hints].  If we use :[pso] on
+  the proof attempt without the :hints, we notice that the requested
+  subterm was introduced by ``the simple :rewrite rule
+  REVAPPEND-REMOVAL''; here ``simple'' indicates the use of the
+  preprocess process for simplification, which avoids the usual
+  rewriter.  If we instead query the no-hints version with
+  (cw-gstack-for-subterm (REV X)), the output below shows that a
+  chain of rewrites generates (APPEND (REV X) Y) as an intermediate
+  term but not as the result of a rewrite.
+
+    ACL2 !>(cw-gstack-for-subterm (REV X))
+    1. Simplifying the clause
+         ((NOT (INTEGERP N))
+          (< N '0)
+          (NOT (< N (LEN X)))
+          (EQUAL (NTH N (BINARY-APPEND (REV X) Y))
+                 (NTH N (REVERSE X))))
+    2. Rewriting (to simplify) the atom of the fourth literal,
+         (EQUAL (NTH N (BINARY-APPEND (REV X) Y))
+                (NTH N (REVERSE X))),
+    3. Rewriting (to simplify) the second argument,
+         (NTH N (REVERSE X)),
+    4. Rewriting (to simplify) the second argument,
+         (REVERSE X),
+    5. Attempting to apply (:DEFINITION REVERSE) to
+         (REVERSE X)
+    6. Rewriting (to simplify) the body,
+         (IF (STRINGP X)
+             (COERCE (REVAPPEND (COERCE X 'LIST) 'NIL)
+                     'STRING)
+           (REVAPPEND X 'NIL)),
+       under the substitution
+         X : X
+    7. Rewriting (to simplify) the third argument,
+         (REVAPPEND X 'NIL),
+       under the substitution
+         X : X
+    8. Attempting to apply (:REWRITE REVAPPEND-REMOVAL) to
+         (REVAPPEND X 'NIL)
+    9. Rewriting (to simplify) the rhs of the conclusion,
+         (BINARY-APPEND (REV X) Y),
+       under the substitution
+         Y : 'NIL
+         X : X
+    10. Attempting to apply (:REWRITE APPEND-ATOM-UNDER-LIST-EQUIV) to
+         (BINARY-APPEND (REV X) 'NIL)
+    The resulting (translated) term is
+      (REV X).
+    Note: The first lemma application above that provides a suitable result
+    is at position 5, and that result is
+      (IF (STRINGP X)
+          (COERCE (REV (COERCE X 'LIST)) 'STRING)
+        (REV X)).
+    ACL2 !>
+
+  The version of this example without :hints also illustrates the
+  second item above, about discarding matches that occur in the
+  :target of rewriting.  Without that restriction we would see a
+  result for the query (cw-gstack-for-subterm (APPEND (REV X) Y))
+  from an attempt to rewrite the term (NTH N (APPEND (REV X) Y)).
+  But that would not help us to find the source of the term (APPEND
+  (REV X) Y).
 
 
 General form of with-brr-data calls

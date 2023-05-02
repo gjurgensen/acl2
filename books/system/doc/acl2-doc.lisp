@@ -60507,8 +60507,34 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
   the order shown.  Each section ends with a pointer to the next section but
   also includes a link to the Table of Contents.</p>
 
-  <p>Now go to @(see lp-section-1).  The <see topic='@(url lp-section-0)'>
-  Table of Contents</see> is at @(see lp-section-0).</p>")
+  <p>Now go to @(see lp-section-1).  The Table of Contents is at @(see
+  lp-section-0).</p>")
+
+(xdoc::order-subtopics
+
+; Release approved by DARPA with "DISTRIBUTION STATEMENT A. Approved
+; for public release. Distribution is unlimited."
+
+ loop$-primer
+ (Lp-section-0
+  Lp-section-1
+  Lp-section-2
+  Lp-section-3
+  Lp-section-4
+  Lp-section-5
+  Lp-section-6
+  Lp-section-7
+  Lp-section-8
+  Lp-section-9
+  Lp-section-10
+  Lp-section-11
+  Lp-section-12
+  Lp-section-13
+  Lp-section-14
+  Lp-section-15
+  Lp-section-16
+  Lp-section-17
+  Lp-section-18))
 
 ; The following topics lp-xxx, which aren't in alphabetical order, are
 ; subtopics of loop$-primer just above.
@@ -151231,7 +151257,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  })
 
  <p>The rest of this documentation topic is structured as follows.  It may
- suffice to read only the first (Introduction) section.</p>
+ suffice to read only the first two sections.</p>
 
  <ul>
 
@@ -151631,14 +151657,19 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
 
  <ul>
 
+ <li>The same rewriting processes are considered by @('with-brr-data') as by
+ break-rewrite; in particular, abbreviation rules are not considered during
+ preprocessing (see @(see monitor)).</li>
+
+ <li>When a query command (@('cw-gstack-for-term') etc.) finds a match with a
+ rewriting result, it discards the result if the input &mdash; the
+ @(':target'), in the parlance of @(see break-rewrite) &mdash; contains that
+ match.</li>
+
  <li>@(csee Monitor)ed @(see rune)s are indeed monitored during evaluation of a
  call of @('with-brr-data'), even if break-rewrite has not been enabled
  globally (using @(':')@(tsee brr) or @(tsee monitor!)).  If this is not
  desired, then @(see unmonitor) runes before calling @('with-brr-data').</li>
-
- <li>The same rewriting processes are considered by @('with-brr-data') as by
- break-rewrite; in particular, abbreviation rules are not considered during
- preprocessing (see @(see monitor)).</li>
 
  <li>There is the following low-level way to collect brr-data for queries such
  as @('cw-gstack-for-term') without calling @('with-brr-data'): @('(assign
@@ -151648,6 +151679,85 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  ways, with brr-data from earlier proof attempts.</li>
 
  </ul>
+
+ <p>The first item above is worth emphasizing.  Consider the following
+ example.</p>
+
+ @({
+ (include-book \"std/lists/rev\" :dir :system)
+ (with-brr-data
+  (thm (implies (and (natp n)
+                     (< n (len x)))
+                (equal (nth n (revappend x y))
+                       (nth n (reverse x))))
+       :hints ((\"Goal\" :do-not '(preprocess)))))
+ (cw-gstack-for-subterm (APPEND (REV X) Y))
+ })
+
+ <p>The @('cw-gstack-for-subterm') query yields a result in this example, but
+ not if we change it to remove the @(':')@(tsee hints).  If we use @(':')@(tsee
+ pso) on the proof attempt without the @(':hints'), we notice that the
+ requested subterm was introduced by &ldquo;the simple :rewrite rule
+ REVAPPEND-REMOVAL&rdquo;; here &ldquo;simple&rdquo; indicates the use of the
+ <i>preprocess</i> process for simplification, which avoids the usual rewriter.
+ If we instead query the no-hints version with @('(cw-gstack-for-subterm (REV
+ X))'), the output below shows that a chain of rewrites generates
+ @('(APPEND (REV X) Y)') as an intermediate term but not as the result of a
+ rewrite.</p>
+
+ @({
+ ACL2 !>(cw-gstack-for-subterm (REV X))
+ 1. Simplifying the clause
+      ((NOT (INTEGERP N))
+       (< N '0)
+       (NOT (< N (LEN X)))
+       (EQUAL (NTH N (BINARY-APPEND (REV X) Y))
+              (NTH N (REVERSE X))))
+ 2. Rewriting (to simplify) the atom of the fourth literal,
+      (EQUAL (NTH N (BINARY-APPEND (REV X) Y))
+             (NTH N (REVERSE X))),
+ 3. Rewriting (to simplify) the second argument,
+      (NTH N (REVERSE X)),
+ 4. Rewriting (to simplify) the second argument,
+      (REVERSE X),
+ 5. Attempting to apply (:DEFINITION REVERSE) to
+      (REVERSE X)
+ 6. Rewriting (to simplify) the body,
+      (IF (STRINGP X)
+          (COERCE (REVAPPEND (COERCE X 'LIST) 'NIL)
+                  'STRING)
+        (REVAPPEND X 'NIL)),
+    under the substitution
+      X : X
+ 7. Rewriting (to simplify) the third argument,
+      (REVAPPEND X 'NIL),
+    under the substitution
+      X : X
+ 8. Attempting to apply (:REWRITE REVAPPEND-REMOVAL) to
+      (REVAPPEND X 'NIL)
+ 9. Rewriting (to simplify) the rhs of the conclusion,
+      (BINARY-APPEND (REV X) Y),
+    under the substitution
+      Y : 'NIL
+      X : X
+ 10. Attempting to apply (:REWRITE APPEND-ATOM-UNDER-LIST-EQUIV) to
+      (BINARY-APPEND (REV X) 'NIL)
+ The resulting (translated) term is
+   (REV X).
+ Note: The first lemma application above that provides a suitable result
+ is at position 5, and that result is
+   (IF (STRINGP X)
+       (COERCE (REV (COERCE X 'LIST)) 'STRING)
+     (REV X)).
+ ACL2 !>
+ })
+ 
+ <p>The version of this example without @(':hints') also illustrates the second
+ item above, about discarding matches that occur in the @(':target') of
+ rewriting.  Without that restriction we would see a result for the query
+ @('(cw-gstack-for-subterm (APPEND (REV X) Y))') from an attempt to rewrite the
+ term @('(NTH N (APPEND (REV X) Y))').  But that would not help us to find the
+ source of the term @('(APPEND (REV X) Y)').</p>
 
  <h3>General form of @('with-brr-data') calls</h3>
 
