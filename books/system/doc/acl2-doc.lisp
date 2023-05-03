@@ -151431,7 +151431,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  (BINARY-APPEND X Y)
  1 ACL2 >:eval
 
- 1! (:DEFINITION BINARY-APPEND) produced 
+ 1! (:DEFINITION BINARY-APPEND) produced
  (CONS (CAR X) (BINARY-APPEND Y (CDR X))).
 
  1 ACL2 >
@@ -151555,7 +151555,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  The resulting (translated) term is
    (CONS (F0 (CAR X)) (F0 (CAR X))).
  Note: The first lemma application above that provides a suitable result
- is at position 4, and that result is
+ is at frame 4, and that result is
    (IF (CONSP X)
        (CONS (F0 (CAR X)) (F0 (CAR X)))
      (CONS (F0 X) (F0 X))).
@@ -151570,14 +151570,14 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  end.  The query utilities search for the first rule application that produced
  a suitable result, and then they search from that point for a maximally deeper
  rule application that produced a suitable result.  In this case, the first
- rule that produced a term containing @('(FO (CAR X))') is shown in the frame 4
- (i.e., the frame at position 4), as per the Note.  The rule at frame 9 also
- produced such a term (though a different one than at frame 4), and there was
- no deeper such rule application &mdash; that is, from the time the definition
- at frame 9 was applied till the time its body was fully rewritten, no rule
- produced a term containing @('(FO (CAR X))').  (This notion of
- &ldquo;deeper&rdquo; is discussed at some length in the section below on
- &ldquo;General forms of queries&rdquo;.)</p>
+ rule that produced a term containing @('(FO (CAR X))') is shown in the frame
+ at position 4, as per the Note.  The rule at frame 9 also produced such a
+ term (though a different one than at frame 4), and there was no deeper such
+ rule application &mdash; that is, from the time the definition at frame 9 was
+ applied till the time its body was fully rewritten, no rule produced a term
+ containing @('(FO (CAR X))').  (This notion of &ldquo;deeper&rdquo; is
+ discussed at some length in the section below on &ldquo;General forms of
+ queries&rdquo;.)</p>
 
  <p>Next we'll explore a limitation of these tools and how to get around
  it.  We start as follows (following the definitions above).</p>
@@ -151646,7 +151646,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  The resulting (translated) term is
    (CONS (F0 (CAR X)) (F0 (CAR X))).
  Note: The first lemma application above that provides a suitable result
- is at position 5, and that result is
+ is at frame 5, and that result is
    (IF (CONSP X)
        (CONS (F0 (CAR X)) (F0 (CAR X)))
      (CONS (F0 X) (F0 X))).
@@ -151764,13 +151764,13 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  The resulting (translated) term is
    (REV X).
  Note: The first lemma application above that provides a suitable result
- is at position 5, and that result is
+ is at frame 5, and that result is
    (IF (STRINGP X)
        (COERCE (REV (COERCE X 'LIST)) 'STRING)
      (REV X)).
  ACL2 !>
  })
- 
+
  <p>The version of this example without @(':hints') also illustrates the second
  item above, about discarding matches that occur in the @(':target') of
  rewriting.  Without that restriction we would see a result for the query
