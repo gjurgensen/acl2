@@ -82105,7 +82105,7 @@ it."
  Russinoff for providing this new version.</p>
 
  <p>We thank David Russinoff for providing a proof of the law of quadratic
- reciprocity.  See @('books/numbers/Readme.lsp').</p>
+ reciprocity.  See @('books/quadratic-reciprocity/Readme.lsp').</p>
 
  <p>Eliminated a slow array warning (see @(see slow-array-warning)) that could
  occur when exiting a @(see wormhole) after executing an @(tsee in-theory)
@@ -82443,7 +82443,7 @@ it."
  hints.</p>
 
  <p>David Russinoff has contributed an updated version of
- @('books/numbers/') including minor modifications of the
+ @('books/quadratic-reciprocity/') including minor modifications of the
  treatment of prime numbers and a proof that there exist infinitely many
  primes.  Thanks to David for contributing this work, and to Jose Luis
  Ruiz-Reina for posing the challenge.</p>
