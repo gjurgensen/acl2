@@ -77,7 +77,7 @@ Subtopics
   [defthm], [in-theory], [xargs], [state], etc., without an acl2::
   prefix.
 
-  The constant *acl2-exports* lists 1573 symbols, including most
+  The constant *acl2-exports* lists 1574 symbols, including most
   documented ACL2 system constants, functions, and macros.  You will
   typically also want to import many symbols from Common Lisp; see
   [*common-lisp-symbols-from-main-lisp-package*].
@@ -138,7 +138,6 @@ Subtopics
        assume atom atom-listp
        atom-listp-forward-to-true-listp
        backchain-limit badge badge-userfn
-       big-clock-entry big-clock-negative-p
        binary-* binary-+ binary-append
        bind-free bit bitp boole$ boolean-listp
        boolean-listp-cons boolean-listp-forward
@@ -215,11 +214,14 @@ Subtopics
        cond cond-clausesp cond-macro
        conjugate cons cons-equal cons-subtrees
        cons-with-hint consp consp-assoc-equal
-       constraint-info corollary count-keys
-       cpu-core-count ctx ctxp current-package
-       current-theory cw cw! cw!+ cw+ cw-gstack
+       constraint-info corollary
+       count-keys cpu-core-count ctx ctxp
+       current-package current-theory cw cw!
+       cw!+ cw+ cw-gstack cw-gstack-for-subterm
+       cw-gstack-for-subterm*
+       cw-gstack-for-term cw-gstack-for-term*
        cw-print-base-radix cw-print-base-radix!
-       d< declare decrement-big-clock defabbrev
+       d< declare defabbrev
        defabsstobj defabsstobj-missing-events
        defattach defattach-system
        default default-*-1 default-*-2
@@ -760,7 +762,7 @@ Subtopics
        untrace$ untrans-table
        untranslate update-acl2-oracle
        update-acl2-oracle-preserves-state-p1
-       update-big-clock-entry update-file-clock
+       update-file-clock
        update-global-table update-idates
        update-nth update-nth-array
        update-open-input-channels
@@ -779,8 +781,9 @@ Subtopics
        w walkabout warning! warrant
        waterfall-parallelism waterfall-printing
        weak-ld-history-entry-p
-       well-formed-lambda-objectp wet
-       when$ when$+ with-cbd with-fast-alist
+       well-formed-lambda-objectp
+       wet when$ when$+
+       with-brr-data with-cbd with-fast-alist
        with-global-stobj with-guard-checking
        with-guard-checking-error-triple
        with-guard-checking-event
@@ -4951,6 +4954,7 @@ Silent loading of ACL2 customization files
     <Return>        acl2-doc-go!
     Shift-<Return>  acl2-doc-go!-new-buffer
     g               acl2-doc-go
+    G               acl2-doc-go-new-buffer
     h               acl2-doc-help
     ?               acl2-doc-summary
     i               acl2-doc-index
@@ -4990,10 +4994,17 @@ Silent loading of ACL2 customization files
     Shift-<Return>  acl2-doc-go!-new-buffer
        Go to the topic occurring at the cursor position in a new buffer.  In the
        case of <NAME>, instead go to the source code definition of NAME for the
-       current manual (as for `/', but without a minibuffer query).
+       current manual (as for `/', but without a minibuffer query).  The new
+       buffer's name reflects that topic name, but it stays the same even if the
+       topic is subequently changed there.
 
     g             acl2-doc-go
-       Go to the specified topic; performs completion.
+       Go to the specified topic; performs completion.  The new buffer's name
+       reflects that topic name, but it stays the same even if the topic is
+       subequently changed there.
+
+    G             acl2-doc-go-new-buffer
+       Go to the specified topic in a new buffer; performs completion.
 
     h             acl2-doc-help
        Go to the ACL2-DOC topic to read about how to use the ACL2-Doc browser.
@@ -38837,7 +38848,9 @@ Example 2
   (the value of constant *fmt-hard-right-margin-default*), except
   when using ~S.  See [set-fmt-hard-right-margin] for a discussion of
   how linebreaks are inserted and how to change the relevant default
-  settings.
+  settings.  A right margin of 40 is used for pretty printing with
+  ~y, ~Y, ~q, and ~Q and can be changed to a positive integer N with
+  (set-ppr-flat-right-margin N state).
 
   The formatting functions scan the string from left to right, printing
   each successive character unless it is a tilde (~).  Upon
@@ -64349,8 +64362,8 @@ Preface
   sections in the order shown.  Each section ends with a pointer to
   the next section but also includes a link to the Table of Contents.
 
-  Now go to [lp-section-1].  The  Table of Contents (see
-  [LP-SECTION-0]) is at [lp-section-0].
+  Now go to [lp-section-1].  The Table of Contents is at
+  [lp-section-0].
 
 
 Subtopics
@@ -64360,6 +64373,30 @@ Subtopics
 
   [Lp-section-1]
       Background Reviews
+
+  [Lp-section-2]
+      Loop in Common Lisp and loop$ in ACL2
+
+  [Lp-section-3]
+      Examples of FOR Loop$s
+
+  [Lp-section-4]
+      Syntax of FOR Loop$s
+
+  [Lp-section-5]
+      Informal Semantics of FOR Loop$s
+
+  [Lp-section-6]
+      Challenge Problems about FOR Loop$s
+
+  [Lp-section-7]
+      Using Loop$s and Guards in Defuns
+
+  [Lp-section-8]
+      Challenge Problems about FOR Loop$ in Defuns
+
+  [Lp-section-9]
+      Semantics of FOR Loop$s
 
   [Lp-section-10]
       The Evaluation of the Formal Semantics of a Fancy Loop$
@@ -64386,31 +64423,7 @@ Subtopics
       Challenge Proof Problems for DO Loop$s
 
   [Lp-section-18]
-      Conclusion
-
-  [Lp-section-2]
-      Loop in Common Lisp and loop$ in ACL2
-
-  [Lp-section-3]
-      Examples of FOR Loop$s
-
-  [Lp-section-4]
-      Syntax of FOR Loop$s
-
-  [Lp-section-5]
-      Informal Semantics of FOR Loop$s
-
-  [Lp-section-6]
-      Challenge Problems about FOR Loop$s
-
-  [Lp-section-7]
-      Using Loop$s and Guards in Defuns
-
-  [Lp-section-8]
-      Challenge Problems about FOR Loop$ in Defuns
-
-  [Lp-section-9]
-      Semantics of FOR Loop$s")
+      Conclusion")
  (LOOP$-RECURSION
   (LOOP$)
   "Defining functions that recur from within FOR loop$ expressions
@@ -84276,7 +84289,7 @@ Subtopics
   Russinoff for providing this new version.
 
   We thank David Russinoff for providing a proof of the law of
-  quadratic reciprocity.  See books/quadratic-reciprocity/Readme.lsp.
+  quadratic reciprocity.  See books/numbers/Readme.lsp.
 
   Eliminated a slow array warning (see [slow-array-warning]) that could
   occur when exiting a [wormhole] after executing an [in-theory]
@@ -84486,7 +84499,7 @@ Subtopics
   such computed hints.
 
   David Russinoff has contributed an updated version of
-  books/quadratic-reciprocity/ including minor modifications of the
+  books/numbers/ including minor modifications of the
   treatment of prime numbers and a proof that there exist infinitely
   many primes.  Thanks to David for contributing this work, and to
   Jose Luis Ruiz-Reina for posing the challenge.
@@ -98884,9 +98897,12 @@ Changes to Existing Features
   Thanks to Eric Smith for suggesting up.
 
   Arranged that [iprinting] that takes place during [break-rewrite] is
-  better reflected outside break-rewrite.  For an example, see the
-  example on iprinting in a comment in the form (defxdoc note-8-6
-  ...) in [community-book] books/system/doc/acl2-doc.lisp.
+  better reflected outside break-rewrite.  For examples, see
+  [community-books] input file
+  books/system/tests/iprint-and-brr-input.lsp, which contains
+  comments on what went wrong in Version 8.5, and which generates
+  (via the [run-script] utility) the output in file
+  iprint-and-brr-log.txt in that directory.
 
   When a defined function has a [declare] form with (optimize ...),
   that is now included in a declare form of the
@@ -98994,10 +99010,11 @@ Changes to Existing Features
   [do-loop$] documentation, which has new, relevant explanation
   (first in brief, later in detail) regarding such messages.
 
-  Three obsolete fields of the ACL2 [state] have been removed: t-stack,
-  32-bit-integer-stack, and list-all-package-names-lst, as have some
-  related built-in, undocumented definitions and theorems, including
-  old-check-sum-obj and supporting functions.
+  Four obsolete fields of the ACL2 [state] have been removed:
+  big-clock-entry, t-stack, 32-bit-integer-stack, and
+  list-all-package-names-lst, as have some related built-in,
+  undocumented definitions and theorems, including old-check-sum-obj
+  and supporting functions.
 
   Improved [hide] calls in prover output from failed execution of
   [warrant]s, by adding suitable notes about attachments or warrant
@@ -99031,6 +99048,16 @@ Changes to Existing Features
 
   The default for [memoize] keyword argument :verbose has been changed
   from t to nil, which (by default) eliminates noise from the output.
+
+  When a proof attempt is halted so that it reverts to prove the
+  original goal by induction, the top-level checkpoints are printed
+  under the [summary] under the banner, ``Key checkpoints before
+  reverting to proof by induction''.  This was normally the case
+  already, but not in the special case that the proof is eventually
+  aborted either because a goal of NIL is produced or because proof
+  by induction is not allowed (due to a :DO-NOT-INDUCT hint or an
+  [induction-depth-limit] being exceeded).  Thanks to Eric Smith for
+  a chat that helped lead to this improvement.
 
 
 New Features
@@ -99437,6 +99464,22 @@ EMACS Support
   emacs/html-to-xdoc.el.  Note that its release was approved by DARPA
   with ``DISTRIBUTION STATEMENT A. Approved for public release.
   Distribution is unlimited.''
+
+  When new [ACL2-doc] buffers are created by using the G or
+  Shift-<Return> commands, their name reflects the topic name, e.g.,
+  acl2-doc<REWRITE> if the topic visited in the new buffer is
+  REWRITE.  Note that the new buffer name stays the same even if
+  other topics are visited there; its name reflects its topic at the
+  time it was created.  Thanks to Warren Hunt for requesting such an
+  enhancement.  Note that the former behavior can be restored by
+  evaluating the form (setq *acl2-doc-short-new-buffer-names* t) in
+  Emacs.
+
+  The initialization file for recent Emacs versions,
+  books/emacs/emacs-acl2.el, now correctly loads related files ---
+  notable acl2-doc.el --- from that same directory, rather than from
+  the emacs/ directory that is directly under the top level of the
+  ACL2 distribution.
 
 
 Experimental Versions
@@ -124417,7 +124460,11 @@ Subtopics
   that equals or exceeds the value of (@ fmt-hard-right-margin).
   Such a ``hard'' linebreak follows the insertion of a backslash (\\)
   character unless [fmt!], [fms!], or [fmt1!] is used, or state
-  global write-for-read is true.")
+  global write-for-read is true.
+
+  Note that A right margin of 40 is used for pretty printing with [fmt]
+  directives ~y, ~Y, ~q, and ~Q and can be changed to a positive
+  integer N with (set-ppr-flat-right-margin N state).")
  (SET-FMT-SOFT-RIGHT-MARGIN
   (IO ACL2-BUILT-INS)
   "Set the soft right margin for formatted output
@@ -129939,9 +129986,6 @@ Subtopics
 
       Global-table, an alist associating symbols (to be used as ``global
       variables'') with values.  See [@], and see [assign].
-
-      Big-clock-entry, an integer, that is used logically to bound the
-      amount of effort spent to evaluate a quoted form.
 
       Idates, a list of dates and times, used to implement the function
       print-current-idate, which prints the date and time.
@@ -149661,7 +149705,7 @@ Concluding Remark
     (cw-gstack-for-subterm* (append y (cdr x)))
 
   The rest of this documentation topic is structured as follows.  It
-  may suffice to read only the first (Introduction) section.
+  may suffice to read only the first two sections.
 
     * Introduction
     * Connections with [break-rewrite]
@@ -150026,13 +150070,17 @@ Connections with break-rewrite
   But there are these additional connections between with-brr-data and
   the break-rewrite utility.
 
+    * The same rewriting processes are considered by with-brr-data as by
+      break-rewrite; in particular, abbreviation rules are not
+      considered during preprocessing (see [monitor]).
+    * When a query command (cw-gstack-for-term etc.) finds a match with a
+      rewriting result, it discards the result if the input --- the
+      :target, in the parlance of [break-rewrite] --- contains that
+      match.
     * [Monitor]ed [rune]s are indeed monitored during evaluation of a call
       of with-brr-data, even if break-rewrite has not been enabled
       globally (using :[brr] or [monitor!]).  If this is not desired,
       then [unmonitor] runes before calling with-brr-data.
-    * The same rewriting processes are considered by with-brr-data as by
-      break-rewrite; in particular, abbreviation rules are not
-      considered during preprocessing (see [monitor]).
     * There is the following low-level way to collect brr-data for queries
       such as cw-gstack-for-term without calling with-brr-data:
       (assign gstack :brr-data).  But you may want to clear such data
@@ -150040,6 +150088,82 @@ Connections with break-rewrite
       (clear-brr-data-lst).  Otherwise the brr-data from later proof
       attempts will be combined, probably in unexpected ways, with
       brr-data from earlier proof attempts.
+
+  The first item above is worth emphasizing.  Consider the following
+  example.
+
+    (include-book \"std/lists/rev\" :dir :system)
+    (with-brr-data
+     (thm (implies (and (natp n)
+                        (< n (len x)))
+                   (equal (nth n (revappend x y))
+                          (nth n (reverse x))))
+          :hints ((\"Goal\" :do-not '(preprocess)))))
+    (cw-gstack-for-subterm (APPEND (REV X) Y))
+
+  The cw-gstack-for-subterm query yields a result in this example, but
+  not if we change it to remove the :[hints].  If we use :[pso] on
+  the proof attempt without the :hints, we notice that the requested
+  subterm was introduced by ``the simple :rewrite rule
+  REVAPPEND-REMOVAL''; here ``simple'' indicates the use of the
+  preprocess process for simplification, which avoids the usual
+  rewriter.  If we instead query the no-hints version with
+  (cw-gstack-for-subterm (REV X)), the output below shows that a
+  chain of rewrites generates (APPEND (REV X) Y) as an intermediate
+  term but not as the result of a rewrite.
+
+    ACL2 !>(cw-gstack-for-subterm (REV X))
+    1. Simplifying the clause
+         ((NOT (INTEGERP N))
+          (< N '0)
+          (NOT (< N (LEN X)))
+          (EQUAL (NTH N (BINARY-APPEND (REV X) Y))
+                 (NTH N (REVERSE X))))
+    2. Rewriting (to simplify) the atom of the fourth literal,
+         (EQUAL (NTH N (BINARY-APPEND (REV X) Y))
+                (NTH N (REVERSE X))),
+    3. Rewriting (to simplify) the second argument,
+         (NTH N (REVERSE X)),
+    4. Rewriting (to simplify) the second argument,
+         (REVERSE X),
+    5. Attempting to apply (:DEFINITION REVERSE) to
+         (REVERSE X)
+    6. Rewriting (to simplify) the body,
+         (IF (STRINGP X)
+             (COERCE (REVAPPEND (COERCE X 'LIST) 'NIL)
+                     'STRING)
+           (REVAPPEND X 'NIL)),
+       under the substitution
+         X : X
+    7. Rewriting (to simplify) the third argument,
+         (REVAPPEND X 'NIL),
+       under the substitution
+         X : X
+    8. Attempting to apply (:REWRITE REVAPPEND-REMOVAL) to
+         (REVAPPEND X 'NIL)
+    9. Rewriting (to simplify) the rhs of the conclusion,
+         (BINARY-APPEND (REV X) Y),
+       under the substitution
+         Y : 'NIL
+         X : X
+    10. Attempting to apply (:REWRITE APPEND-ATOM-UNDER-LIST-EQUIV) to
+         (BINARY-APPEND (REV X) 'NIL)
+    The resulting (translated) term is
+      (REV X).
+    Note: The first lemma application above that provides a suitable result
+    is at position 5, and that result is
+      (IF (STRINGP X)
+          (COERCE (REV (COERCE X 'LIST)) 'STRING)
+        (REV X)).
+    ACL2 !>
+
+  The version of this example without :hints also illustrates the
+  second item above, about discarding matches that occur in the
+  :target of rewriting.  Without that restriction we would see a
+  result for the query (cw-gstack-for-subterm (APPEND (REV X) Y))
+  from an attempt to rewrite the term (NTH N (APPEND (REV X) Y)).
+  But that would not help us to find the source of the term (APPEND
+  (REV X) Y).
 
 
 General form of with-brr-data calls

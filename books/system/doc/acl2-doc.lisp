@@ -2664,6 +2664,7 @@
   <Return>        acl2-doc-go!
   Shift-<Return>  acl2-doc-go!-new-buffer
   g               acl2-doc-go
+  G               acl2-doc-go-new-buffer
   h               acl2-doc-help
   ?               acl2-doc-summary
   i               acl2-doc-index
@@ -2705,10 +2706,17 @@
   Shift-<Return>  acl2-doc-go!-new-buffer
      Go to the topic occurring at the cursor position in a new buffer.  In the
      case of <NAME>, instead go to the source code definition of NAME for the
-     current manual (as for `/', but without a minibuffer query).
+     current manual (as for `/', but without a minibuffer query).  The new
+     buffer's name reflects that topic name, but it stays the same even if the
+     topic is subequently changed there.
 
   g             acl2-doc-go
-     Go to the specified topic; performs completion.
+     Go to the specified topic; performs completion.  The new buffer's name
+     reflects that topic name, but it stays the same even if the topic is
+     subequently changed there.
+
+  G             acl2-doc-go-new-buffer
+     Go to the specified topic in a new buffer; performs completion.
 
   h             acl2-doc-help
      Go to the ACL2-DOC topic to read about how to use the ACL2-Doc browser.
@@ -35342,7 +35350,10 @@ current fast alists."
  printing past column @('77') (the value of constant
  @('*fmt-hard-right-margin-default*')), except when using @('~S').  See @(see
  set-fmt-hard-right-margin) for a discussion of how linebreaks are inserted and
- how to change the relevant default settings.</p>
+ how to change the relevant default settings.  A right margin of 40 is used for
+ pretty printing with @('~y'), @('~Y'), @('~q'), and @('~Q') and can be changed
+ to a positive integer @('N') with @('(set-ppr-flat-right-margin N
+ state)').</p>
 
  <p>The formatting functions scan the string from left to right, printing each
  successive character unless it is a tilde @('(~)').  Upon encountering tildes
@@ -60500,8 +60511,34 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
   the order shown.  Each section ends with a pointer to the next section but
   also includes a link to the Table of Contents.</p>
 
-  <p>Now go to @(see lp-section-1).  The <see topic='@(url lp-section-0)'>
-  Table of Contents</see> is at @(see lp-section-0).</p>")
+  <p>Now go to @(see lp-section-1).  The Table of Contents is at @(see
+  lp-section-0).</p>")
+
+(xdoc::order-subtopics
+
+; Release approved by DARPA with "DISTRIBUTION STATEMENT A. Approved
+; for public release. Distribution is unlimited."
+
+ loop$-primer
+ (Lp-section-0
+  Lp-section-1
+  Lp-section-2
+  Lp-section-3
+  Lp-section-4
+  Lp-section-5
+  Lp-section-6
+  Lp-section-7
+  Lp-section-8
+  Lp-section-9
+  Lp-section-10
+  Lp-section-11
+  Lp-section-12
+  Lp-section-13
+  Lp-section-14
+  Lp-section-15
+  Lp-section-16
+  Lp-section-17
+  Lp-section-18))
 
 ; The following topics lp-xxx, which aren't in alphabetical order, are
 ; subtopics of loop$-primer just above.
@@ -82068,7 +82105,7 @@ it."
  Russinoff for providing this new version.</p>
 
  <p>We thank David Russinoff for providing a proof of the law of quadratic
- reciprocity.  See @('books/quadratic-reciprocity/Readme.lsp').</p>
+ reciprocity.  See @('books/numbers/Readme.lsp').</p>
 
  <p>Eliminated a slow array warning (see @(see slow-array-warning)) that could
  occur when exiting a @(see wormhole) after executing an @(tsee in-theory)
@@ -82406,7 +82443,7 @@ it."
  hints.</p>
 
  <p>David Russinoff has contributed an updated version of
- @('books/quadratic-reciprocity/') including minor modifications of the
+ @('books/numbers/') including minor modifications of the
  treatment of prime numbers and a proof that there exist infinitely many
  primes.  Thanks to David for contributing this work, and to Jose Luis
  Ruiz-Reina for posing the challenge.</p>
@@ -101707,41 +101744,6 @@ it."
 ; setter (i.e., when a binding is of the form (var val set-var)).  Modified
 ; channel-to-string accordingly.
 
-; Here is the "example on iprinting" promised in :DOC note-8-6, to show how
-; iprinting behaves better with break-rewrite.  We start as follows.
-
-;   (monitor! 'len t)
-;   (iprint-enabledp state)
-;   (f-get-global 'iprint-ar state)
-;   (set-evisc-tuple (evisc-tuple 5 6 nil nil) :iprint :same :sites :all)
-;   (mv-let (step-limit term ttree)
-;     (rewrite '(len (cons a b))
-;               nil 1 20 100 nil '? nil nil (w state)
-;               state nil nil nil nil
-;               (make-rcnst (ens state) (w state) state
-;                           :force-info t)
-;               nil nil)
-;     (declare (ignore step-limit term ttree))
-;     (make-list 10))
-
-; When we then turn on iprinting during the break, we may have been surprised
-; in Version_8.5 to see that the result is printed without iprinting.
-
-;   (1 Breaking (:DEFINITION LEN) on (LEN (CONS A B)):
-;   1 ACL2 !>(set-iprint t)
-;
-;   ACL2 Observation in SET-IPRINT:  Iprinting has been enabled.
-;   1 ACL2 !>:go!
-;
-;   1 (:DEFINITION LEN) produced (BINARY-+ '1 (LEN B)).
-;   1)
-;   (NIL NIL NIL NIL NIL NIL ...)
-;   ACL2 !>
-
-; Now the final value is printed appropriately, as follows.
-
-;   (NIL NIL NIL NIL NIL NIL . #@1#)
-
 ; We now avoid a raw Lisp error when not catching tag RAW-EV-FNCALL because
 ; hard-error is called outside the scope of raw-ev-fncall, e.g.:
 ;   (flet ((lambda$ (x) (cons x x))) (lambda$ 3))
@@ -101970,9 +101972,11 @@ it."
  for suggesting @('up').</p>
 
  <p>Arranged that @(see iprinting) that takes place during @(see break-rewrite)
- is better reflected outside break-rewrite.  For an example, see the example on
- iprinting in a comment in the form @('(defxdoc note-8-6 ...)') in @(see
- community-book) @('books/system/doc/acl2-doc.lisp').</p>
+ is better reflected outside break-rewrite.  For examples, see @(see
+ community-books) input file @('books/system/tests/iprint-and-brr-input.lsp'),
+ which contains comments on what went wrong in Version 8.5, and which
+ generates (via the @(tsee run-script) utility) the output in file
+ @('iprint-and-brr-log.txt') in that directory.</p>
 
  <p>When a defined function has a @(tsee declare) form with @('(optimize
  ...)'), that is now included in a declare form of the executable-counterpart
@@ -102089,10 +102093,11 @@ it."
  the @(see do-loop$) documentation, which has new, relevant explanation (first
  in brief, later in detail) regarding such messages.</p>
 
- <p>Three obsolete fields of the ACL2 @(see state) have been removed:
- @('t-stack'), @('32-bit-integer-stack'), and @('list-all-package-names-lst'),
- as have some related built-in, undocumented definitions and theorems,
- including @('old-check-sum-obj') and supporting functions.</p>
+ <p>Four obsolete fields of the ACL2 @(see state) have been removed:
+ @('big-clock-entry'), @('t-stack'), @('32-bit-integer-stack'), and
+ @('list-all-package-names-lst'), as have some related built-in, undocumented
+ definitions and theorems, including @('old-check-sum-obj') and supporting
+ functions.</p>
 
  <p>Improved @(tsee hide) calls in prover output from failed execution of @(see
  warrant)s, by adding suitable notes about attachments or warrant functions not
@@ -102129,6 +102134,15 @@ it."
  <p>The default for @(tsee memoize) keyword argument @(':verbose') has been
  changed from @('t') to @('nil'), which (by default) eliminates noise from the
  output.</p>
+
+ <p>When a proof attempt is halted so that it reverts to prove the original
+ goal by induction, the top-level checkpoints are printed under the @(see
+ summary) under the banner, &ldquo;@('Key checkpoints before reverting to proof
+ by induction')&rdquo;.  This was normally the case already, but not in the
+ special case that the proof is eventually aborted either because a goal of
+ @('NIL') is produced or because proof by induction is not allowed (due to a
+ @(':DO-NOT-INDUCT') hint or an @(see induction-depth-limit) being exceeded).
+ Thanks to Eric Smith for a chat that helped lead to this improvement.</p>
 
  <h3>New Features</h3>
 
@@ -102553,6 +102567,21 @@ it."
  XDOC) may be found, without much documentation, in @('emacs/html-to-xdoc.el').
  Note that its release was approved by DARPA with &ldquo;DISTRIBUTION STATEMENT
  A. Approved for public release. Distribution is unlimited.&rdquo;</p>
+
+ <p>When new @(see acl2-doc) buffers are created by using the @('G') or
+ @('Shift-<Return>') commands, their name reflects the topic name, e.g.,
+ @('acl2-doc<REWRITE>') if the topic visited in the new buffer is @('REWRITE').
+ Note that the new buffer name stays the same even if other topics are visited
+ there; its name reflects its topic at the time it was created.  Thanks to
+ Warren Hunt for requesting such an enhancement.  Note that the former behavior
+ can be restored by evaluating the form @('(setq
+ *acl2-doc-short-new-buffer-names* t)') in Emacs.</p>
+
+ <p>The initialization file for recent Emacs versions,
+ @('books/emacs/emacs-acl2.el'), now correctly loads related files &mdash;
+ notable @('acl2-doc.el') &mdash; from that same directory, rather than from
+ the @('emacs/') directory that is directly under the top level of the ACL2
+ distribution.</p>
 
  <h3>Experimental Versions</h3>
 
@@ -125736,7 +125765,11 @@ work on <tt>(q x)</tt>.</p>
  a column that equals or exceeds the value of @('(@ fmt-hard-right-margin)').
  Such a ``hard'' linebreak follows the insertion of a backslash (@('\\'))
  character unless @(tsee fmt!), @(tsee fms!), or @(tsee fmt1!) is used, or
- state global @('write-for-read') is true.</p>")
+ state global @('write-for-read') is true.</p>
+
+ <p>Note that A right margin of 40 is used for pretty printing with @(tsee fmt)
+ directives @('~y'), @('~Y'), @('~q'), and @('~Q') and can be changed to a
+ positive integer @('N') with @('(set-ppr-flat-right-margin N state)').</p>")
 
 (defxdoc set-fmt-soft-right-margin
   :parents (io acl2-built-ins)
@@ -131459,9 +131492,6 @@ work on <tt>(q x)</tt>.</p>
 
  <p>@('Global-table'), an alist associating symbols (to be used as ``global
  variables'') with values.  See @(see @), and see @(see assign).</p>
-
- <p>@('Big-clock-entry'), an integer, that is used logically to bound the
- amount of effort spent to evaluate a quoted form.</p>
 
  <p>@('Idates'), a list of dates and times, used to implement the function
  @('print-current-idate'), which prints the date and time.</p>
@@ -151246,7 +151276,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  })
 
  <p>The rest of this documentation topic is structured as follows.  It may
- suffice to read only the first (Introduction) section.</p>
+ suffice to read only the first two sections.</p>
 
  <ul>
 
@@ -151646,14 +151676,19 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
 
  <ul>
 
+ <li>The same rewriting processes are considered by @('with-brr-data') as by
+ break-rewrite; in particular, abbreviation rules are not considered during
+ preprocessing (see @(see monitor)).</li>
+
+ <li>When a query command (@('cw-gstack-for-term') etc.) finds a match with a
+ rewriting result, it discards the result if the input &mdash; the
+ @(':target'), in the parlance of @(see break-rewrite) &mdash; contains that
+ match.</li>
+
  <li>@(csee Monitor)ed @(see rune)s are indeed monitored during evaluation of a
  call of @('with-brr-data'), even if break-rewrite has not been enabled
  globally (using @(':')@(tsee brr) or @(tsee monitor!)).  If this is not
  desired, then @(see unmonitor) runes before calling @('with-brr-data').</li>
-
- <li>The same rewriting processes are considered by @('with-brr-data') as by
- break-rewrite; in particular, abbreviation rules are not considered during
- preprocessing (see @(see monitor)).</li>
 
  <li>There is the following low-level way to collect brr-data for queries such
  as @('cw-gstack-for-term') without calling @('with-brr-data'): @('(assign
@@ -151663,6 +151698,85 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  ways, with brr-data from earlier proof attempts.</li>
 
  </ul>
+
+ <p>The first item above is worth emphasizing.  Consider the following
+ example.</p>
+
+ @({
+ (include-book \"std/lists/rev\" :dir :system)
+ (with-brr-data
+  (thm (implies (and (natp n)
+                     (< n (len x)))
+                (equal (nth n (revappend x y))
+                       (nth n (reverse x))))
+       :hints ((\"Goal\" :do-not '(preprocess)))))
+ (cw-gstack-for-subterm (APPEND (REV X) Y))
+ })
+
+ <p>The @('cw-gstack-for-subterm') query yields a result in this example, but
+ not if we change it to remove the @(':')@(tsee hints).  If we use @(':')@(tsee
+ pso) on the proof attempt without the @(':hints'), we notice that the
+ requested subterm was introduced by &ldquo;the simple :rewrite rule
+ REVAPPEND-REMOVAL&rdquo;; here &ldquo;simple&rdquo; indicates the use of the
+ <i>preprocess</i> process for simplification, which avoids the usual rewriter.
+ If we instead query the no-hints version with @('(cw-gstack-for-subterm (REV
+ X))'), the output below shows that a chain of rewrites generates
+ @('(APPEND (REV X) Y)') as an intermediate term but not as the result of a
+ rewrite.</p>
+
+ @({
+ ACL2 !>(cw-gstack-for-subterm (REV X))
+ 1. Simplifying the clause
+      ((NOT (INTEGERP N))
+       (< N '0)
+       (NOT (< N (LEN X)))
+       (EQUAL (NTH N (BINARY-APPEND (REV X) Y))
+              (NTH N (REVERSE X))))
+ 2. Rewriting (to simplify) the atom of the fourth literal,
+      (EQUAL (NTH N (BINARY-APPEND (REV X) Y))
+             (NTH N (REVERSE X))),
+ 3. Rewriting (to simplify) the second argument,
+      (NTH N (REVERSE X)),
+ 4. Rewriting (to simplify) the second argument,
+      (REVERSE X),
+ 5. Attempting to apply (:DEFINITION REVERSE) to
+      (REVERSE X)
+ 6. Rewriting (to simplify) the body,
+      (IF (STRINGP X)
+          (COERCE (REVAPPEND (COERCE X 'LIST) 'NIL)
+                  'STRING)
+        (REVAPPEND X 'NIL)),
+    under the substitution
+      X : X
+ 7. Rewriting (to simplify) the third argument,
+      (REVAPPEND X 'NIL),
+    under the substitution
+      X : X
+ 8. Attempting to apply (:REWRITE REVAPPEND-REMOVAL) to
+      (REVAPPEND X 'NIL)
+ 9. Rewriting (to simplify) the rhs of the conclusion,
+      (BINARY-APPEND (REV X) Y),
+    under the substitution
+      Y : 'NIL
+      X : X
+ 10. Attempting to apply (:REWRITE APPEND-ATOM-UNDER-LIST-EQUIV) to
+      (BINARY-APPEND (REV X) 'NIL)
+ The resulting (translated) term is
+   (REV X).
+ Note: The first lemma application above that provides a suitable result
+ is at position 5, and that result is
+   (IF (STRINGP X)
+       (COERCE (REV (COERCE X 'LIST)) 'STRING)
+     (REV X)).
+ ACL2 !>
+ })
+ 
+ <p>The version of this example without @(':hints') also illustrates the second
+ item above, about discarding matches that occur in the @(':target') of
+ rewriting.  Without that restriction we would see a result for the query
+ @('(cw-gstack-for-subterm (APPEND (REV X) Y))') from an attempt to rewrite the
+ term @('(NTH N (APPEND (REV X) Y))').  But that would not help us to find the
+ source of the term @('(APPEND (REV X) Y)').</p>
 
  <h3>General form of @('with-brr-data') calls</h3>
 
