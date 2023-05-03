@@ -84289,7 +84289,7 @@ Subtopics
   Russinoff for providing this new version.
 
   We thank David Russinoff for providing a proof of the law of
-  quadratic reciprocity.  See books/numbers/Readme.lsp.
+  quadratic reciprocity.  See books/quadratic-reciprocity/Readme.lsp.
 
   Eliminated a slow array warning (see [slow-array-warning]) that could
   occur when exiting a [wormhole] after executing an [in-theory]
@@ -84499,7 +84499,7 @@ Subtopics
   such computed hints.
 
   David Russinoff has contributed an updated version of
-  books/numbers/ including minor modifications of the
+  books/quadratic-reciprocity/ including minor modifications of the
   treatment of prime numbers and a proof that there exist infinitely
   many primes.  Thanks to David for contributing this work, and to
   Jose Luis Ruiz-Reina for posing the challenge.
@@ -149958,7 +149958,7 @@ Introduction
     The resulting (translated) term is
       (CONS (F0 (CAR X)) (F0 (CAR X))).
     Note: The first lemma application above that provides a suitable result
-    is at position 4, and that result is
+    is at frame 4, and that result is
       (IF (CONSP X)
           (CONS (F0 (CAR X)) (F0 (CAR X)))
         (CONS (F0 X) (F0 X))).
@@ -149974,14 +149974,14 @@ Introduction
   produced a suitable result, and then they search from that point
   for a maximally deeper rule application that produced a suitable
   result.  In this case, the first rule that produced a term
-  containing (FO (CAR X)) is shown in the frame 4 (i.e., the frame at
-  position 4), as per the Note.  The rule at frame 9 also produced
-  such a term (though a different one than at frame 4), and there was
-  no deeper such rule application --- that is, from the time the
-  definition at frame 9 was applied till the time its body was fully
-  rewritten, no rule produced a term containing (FO (CAR X)).  (This
-  notion of ``deeper'' is discussed at some length in the section
-  below on ``General forms of queries''.)
+  containing (FO (CAR X)) is shown in the frame at position 4, as per
+  the Note.  The rule at frame 9 also produced such a term (though a
+  different one than at frame 4), and there was no deeper such rule
+  application --- that is, from the time the definition at frame 9
+  was applied till the time its body was fully rewritten, no rule
+  produced a term containing (FO (CAR X)).  (This notion of
+  ``deeper'' is discussed at some length in the section below on
+  ``General forms of queries''.)
 
   Next we'll explore a limitation of these tools and how to get around
   it.  We start as follows (following the definitions above).
@@ -150043,7 +150043,7 @@ Introduction
     The resulting (translated) term is
       (CONS (F0 (CAR X)) (F0 (CAR X))).
     Note: The first lemma application above that provides a suitable result
-    is at position 5, and that result is
+    is at frame 5, and that result is
       (IF (CONSP X)
           (CONS (F0 (CAR X)) (F0 (CAR X)))
         (CONS (F0 X) (F0 X))).
@@ -150151,7 +150151,7 @@ Connections with break-rewrite
     The resulting (translated) term is
       (REV X).
     Note: The first lemma application above that provides a suitable result
-    is at position 5, and that result is
+    is at frame 5, and that result is
       (IF (STRINGP X)
           (COERCE (REV (COERCE X 'LIST)) 'STRING)
         (REV X)).
