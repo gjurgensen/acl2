@@ -84289,7 +84289,7 @@ Subtopics
   Russinoff for providing this new version.
 
   We thank David Russinoff for providing a proof of the law of
-  quadratic reciprocity.  See books/quadratic-reciprocity/Readme.lsp.
+  quadratic reciprocity.  See books/numbers/Readme.lsp.
 
   Eliminated a slow array warning (see [slow-array-warning]) that could
   occur when exiting a [wormhole] after executing an [in-theory]
@@ -84499,7 +84499,7 @@ Subtopics
   such computed hints.
 
   David Russinoff has contributed an updated version of
-  books/quadratic-reciprocity/ including minor modifications of the
+  books/numbers/ including minor modifications of the
   treatment of prime numbers and a proof that there exist infinitely
   many primes.  Thanks to David for contributing this work, and to
   Jose Luis Ruiz-Reina for posing the challenge.
