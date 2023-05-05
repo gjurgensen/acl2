@@ -144050,11 +144050,12 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   :short "ACL2 reasoning with &ldquo;types&rdquo;"
   :long "<p>ACL2 has a &ldquo;type reasoning&rdquo; system, which may be viewed
  as a relatively basic rule-based theorem prover for questions about Common
- Lisp types, e.g., ``does this expression produce a @(tsee consp)?'',  ``does
+ Lisp types, e.g., ``does this expression produce a @(tsee consp)?'', ``does
  this expression produce some kind of ACL2 number, e.g., an @(tsee integerp), a
- @(tsee rationalp), or a @(tsee complex-rationalp)?'', etc.  This system uses
- built-in reasoning about types, for example that a rational number is not a
- cons; when the ACL2 prover reports that a goal is simplified using
+ @(tsee rationalp), or a @(tsee complex-rationalp)?'', &ldquo;does this
+ expression produce a non-@('nil') value (i.e., is it true)?&rdquo;, etc.  This
+ system uses built-in reasoning about types, for example that a rational number
+ is not a cons; when the ACL2 prover reports that a goal is simplified using
  &ldquo;primitive type reasoning&rdquo;, it is referring to such built-in type
  reasoning.  However, type reasoning is also driven by @(see type-prescription)
  rules, as we'll discuss shortly.</p>
@@ -144067,29 +144068,59 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  not need to know more than that about these two notions.  (If you're curious
  about them, you can see @(see type-set) and see @(see type-alist).)  For
  example, when ACL2 attempts to prove a conjecture @('(implies (and (p
- x) (integerp (f x))) ...)'), it builds a type-alist recording that @('(p x)')
- and @('(integerp (f x))') are true when attempting to reason about
- @('(integerp (* x x))').  That type-alist associates @('(p x)') with a value
- representing the complement of the set, @('{nil}'), meaning that @('(p x)') is
- non-@('nil').  But for @('(integerp (f x))') something a bit more clever takes
+ x) (integerp (f x))) (p2 x))'), it builds a type-alist recording that @('(p
+ x)') and @('(integerp (f x))') are true when attempting to reason about @('(p2
+ x)').  That type-alist associates @('(p x)') with a value representing the
+ complement of the set, @('{nil}'), meaning that @('(p x)') is non-@('nil'),
+ i.e., true.  But for @('(integerp (f x))') something a bit more clever takes
  place: since @('integerp') recognizes a Boolean combination of built-in types
  &mdash; see @(see compound-recognizer) &mdash; the context associates @('(f
  x)') with a value representing the set of integers.  So for example, type
- reasoning can conclude from that type-alist that @('(not (consp (f x)))'), is
+ reasoning can conclude from that type-alist that @('(not (consp (f x)))') is
  true, since the built-in types for integer and cons are disjoint.</p>
 
- <p>As noted above, type reasoning can take advantage of type-prescription
- rules; see @(see type-prescription) for details.  In short, such a rule tells
- ACL2 that any instance of the &ldquo;typed-term&rdquo; of the rule must have a
- specified type.  To relieve the hypotheses of type-prescription rules, the
- type-reasoning system recursively invokes itself.  This can be done for any
- hypothesis, whether it is ``type-like'' or not, since any proposition, @('p'),
- can be phrased as the type-like question ``does @('p') produce an object of
- type @('nil')?''  However, as you might expect, the type system is not very
- good at establishing hypotheses that are not type-like, unless are represented
- rather explicitly in the context in which the question is posed.  See @(see
- force) for how to involve the ACL2 rewriter to establish hypotheses of
- type-prescription rules.</p>")
+ <p>As noted above, type reasoning can take advantage of @(see
+ type-prescription) rules.  In short, such a rule tells ACL2 that any instance
+ of the &ldquo;typed-term&rdquo; of the rule must have a specified type.  To
+ relieve the hypotheses of type-prescription rules, the type-reasoning system
+ recursively invokes itself.  This can be done for any hypothesis, whether it
+ is ``type-like'' or not, since any proposition, @('p'), can be phrased as the
+ type-like question ``does @('p') produce an object of type @('nil')?''
+ However, as you might expect, the type system is not very good at establishing
+ hypotheses that are not type-like, unless are represented rather explicitly in
+ the context in which the question is posed.  Consider the following example
+ from the @(see type-prescription) documentation.</p>
+
+ @({
+  (defthm characterp-nth-type-prescription   ; (Nth n lst) is of type character
+    (implies                                 ; provided the hypotheses can be
+     (and (character-listp lst)              ; established by type reasoning.
+          (<= 0 n)
+          (< n (len lst)))
+     (characterp (nth n lst)))
+    :rule-classes :type-prescription)
+ })
+
+ <p>It may seem impossible to relieve the hypothesis @('(character-listp lst)')
+ by type reasoning, since there is no suitable &ldquo;type&rdquo; for @('lst'),
+ i.e., @('character-listp') does not recognize a Boolean combination of ACL2
+ types (see @(see compound-recognizer)).  However, suppose we are attempting to
+ prove a theorem of the form @('(implies (and (character-listp x) p) q)') and
+ ACL2 is in the process of simplifying either @('p') or @('q').  In that case,
+ the context &mdash; that is, the type-alist &mdash; will associate the term
+ @('(character-listp x)') with a value indicating that this term is true, i.e.,
+ non-@('nil').  Then if ACL2 encounters the term @('(nth k x)'), it will try to
+ apply the type-prescription rule above, matching @('k') to @('n') and matching
+ @('lst') to @('x').  The instantiated first hypothesis of that rule will then
+ be @('(character-listp x)').  Since the type-alist designates
+ @('(character-listp x)') as true, that hypothesis is successfully relieved.
+ Again, there was no @('character-listp') &ldquo;type&rdquo; involved; what was
+ typed was the entire term, @('(character-listp x)').</p>
+
+ <p>The instantiated hypothesis above was relieved because it was in the
+ context, so no rewriting was necessary to establish it.  See @(see force) for
+ how to involve the ACL2 rewriter to establish hypotheses of type-prescription
+ rules.</p>")
 
 (defxdoc type-set
   :parents (miscellaneous)
