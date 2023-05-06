@@ -77,7 +77,7 @@ Subtopics
   [defthm], [in-theory], [xargs], [state], etc., without an acl2::
   prefix.
 
-  The constant *acl2-exports* lists 1573 symbols, including most
+  The constant *acl2-exports* lists 1574 symbols, including most
   documented ACL2 system constants, functions, and macros.  You will
   typically also want to import many symbols from Common Lisp; see
   [*common-lisp-symbols-from-main-lisp-package*].
@@ -138,7 +138,6 @@ Subtopics
        assume atom atom-listp
        atom-listp-forward-to-true-listp
        backchain-limit badge badge-userfn
-       big-clock-entry big-clock-negative-p
        binary-* binary-+ binary-append
        bind-free bit bitp boole$ boolean-listp
        boolean-listp-cons boolean-listp-forward
@@ -215,11 +214,14 @@ Subtopics
        cond cond-clausesp cond-macro
        conjugate cons cons-equal cons-subtrees
        cons-with-hint consp consp-assoc-equal
-       constraint-info corollary count-keys
-       cpu-core-count ctx ctxp current-package
-       current-theory cw cw! cw!+ cw+ cw-gstack
+       constraint-info corollary
+       count-keys cpu-core-count ctx ctxp
+       current-package current-theory cw cw!
+       cw!+ cw+ cw-gstack cw-gstack-for-subterm
+       cw-gstack-for-subterm*
+       cw-gstack-for-term cw-gstack-for-term*
        cw-print-base-radix cw-print-base-radix!
-       d< declare decrement-big-clock defabbrev
+       d< declare defabbrev
        defabsstobj defabsstobj-missing-events
        defattach defattach-system
        default default-*-1 default-*-2
@@ -760,7 +762,7 @@ Subtopics
        untrace$ untrans-table
        untranslate update-acl2-oracle
        update-acl2-oracle-preserves-state-p1
-       update-big-clock-entry update-file-clock
+       update-file-clock
        update-global-table update-idates
        update-nth update-nth-array
        update-open-input-channels
@@ -779,8 +781,9 @@ Subtopics
        w walkabout warning! warrant
        waterfall-parallelism waterfall-printing
        weak-ld-history-entry-p
-       well-formed-lambda-objectp wet
-       when$ when$+ with-cbd with-fast-alist
+       well-formed-lambda-objectp
+       wet when$ when$+
+       with-brr-data with-cbd with-fast-alist
        with-global-stobj with-guard-checking
        with-guard-checking-error-triple
        with-guard-checking-event
@@ -2238,8 +2241,9 @@ Subtopics
   difference is the 211 frames created for the rewrite rule itself.
   Even if the total had been a bit more than 462, one need not be
   surprised, as there could be some work recorded during application
-  of the rewrite rule, such as type-prescription reasoning, that is
-  not done during rewriting of a hypothesis or the conclusion.
+  of the rewrite rule, such as type reasoning (see [TYPE-REASONING]),
+  that is not done during rewriting of a hypothesis or the
+  conclusion.
 
   Now suppose we have executed (accumulated-persistence :all) and
   attempted some proofs, and now we are ready to see statistics.  The
@@ -4648,8 +4652,8 @@ Silent loading of ACL2 customization files
 
   This key's value is a list of two ``numbers.'' Either ``number'' may
   optionally be nil, which is treated like positive infinity.  The
-  numbers control backchaining through hypotheses during type-set
-  reasoning and rewriting.  See [backchain-limit].
+  numbers control backchaining through hypotheses during
+  [type-reasoning] and rewriting.  See [backchain-limit].
 
     :default-backchain-limit
 
@@ -4951,6 +4955,7 @@ Silent loading of ACL2 customization files
     <Return>        acl2-doc-go!
     Shift-<Return>  acl2-doc-go!-new-buffer
     g               acl2-doc-go
+    G               acl2-doc-go-new-buffer
     h               acl2-doc-help
     ?               acl2-doc-summary
     i               acl2-doc-index
@@ -4990,10 +4995,17 @@ Silent loading of ACL2 customization files
     Shift-<Return>  acl2-doc-go!-new-buffer
        Go to the topic occurring at the cursor position in a new buffer.  In the
        case of <NAME>, instead go to the source code definition of NAME for the
-       current manual (as for `/', but without a minibuffer query).
+       current manual (as for `/', but without a minibuffer query).  The new
+       buffer's name reflects that topic name, but it stays the same even if the
+       topic is subequently changed there.
 
     g             acl2-doc-go
-       Go to the specified topic; performs completion.
+       Go to the specified topic; performs completion.  The new buffer's name
+       reflects that topic name, but it stays the same even if the topic is
+       subequently changed there.
+
+    G             acl2-doc-go-new-buffer
+       Go to the specified topic in a new buffer; performs completion.
 
     h             acl2-doc-help
        Go to the ACL2-DOC topic to read about how to use the ACL2-Doc browser.
@@ -5436,7 +5448,16 @@ Silent loading of ACL2 customization files
   list: acl2-help@utlists.utexas.edu.  If you have more general
   questions about ACL2, for example, about projects completed using
   ACL2, you may prefer the acl2 mailing list,
-  acl2@utlists.utexas.edu, which tends to have wider distribution.")
+  acl2@utlists.utexas.edu, which tends to have wider distribution.
+
+  The following mailing list pages include links to their archives.
+
+    * acl2-help list:
+      {https://utlists.utexas.edu/sympa/info/acl2-help |
+      https://utlists.utexas.edu/sympa/info/acl2-help}
+    * acl2-help list:
+      {https://utlists.utexas.edu/sympa/info/acl2 |
+      https://utlists.utexas.edu/sympa/info/acl2}")
  (ACL2-NUMBER-LISTP
   (NUMBERS LISTS ACL2-BUILT-INS)
   "Recognizer for a true list of numbers
@@ -10672,23 +10693,24 @@ Subtopics
   Moreover, the user may set global backchain-limits that limit the
   total backchaining depth.  See [set-backchain-limit].  One limit is
   for the use of [rewrite], [meta], and [linear] rules, while the
-  other limit is for so-called ``[type-set] reasoning'', which uses
-  rules of class [type-prescription] rules.  The two limits operate
-  independently.  Below, we discuss the first kind of backchain
-  limits, i.e., for other than [type-prescription] rules, except as
-  otherwise indicated; but the mechanism for those rules is similar.
+  other limit is for so-called ``type reasoning'', which uses rules
+  of class [type-prescription] rules (see [type-reasoning]).  The two
+  limits operate independently.  Below, we discuss the first kind of
+  backchain limits, i.e., for other than [type-prescription] rules,
+  except as otherwise indicated; but the mechanism for those rules is
+  similar.
 
   Below we lay out the precise sense in which a global backchain-limit
   interacts with the backchain-limits of individual rules in order to
   limit backchaining.  But first we note that when further
   backchaining is disallowed, ACL2 can still prove a hypothesis in a
-  given context by using that contextual information.  In fact,
-  [type-set] reasoning may be used (except that a weaker version of
-  it is used in the second case above, i.e., where we are already
-  doing type-set reasoning).  Thus, the relieving of hypotheses may
-  be limited to the use of contextual information (without
-  backchaining, i.e., without recursively rewriting hypotheses) by
-  executing :set-backchain-limit 0.
+  given context by using that contextual information.  In fact, type
+  reasoning may be used (except that a weaker version of it is used
+  in the second case above, i.e., where we are already doing type-set
+  reasoning).  Thus, the relieving of hypotheses may be limited to
+  the use of contextual information (without backchaining, i.e.,
+  without recursively rewriting hypotheses) by executing
+  :set-backchain-limit 0.
 
   Recall that there are two sorts of backchain limits: those applied to
   hypotheses of individual rules, as assigned by their
@@ -11378,7 +11400,7 @@ Subtopics
   sets of terms for which the above equivalent criteria hold and yet
   the sets of terms are not noted as as being ``known to be
   Boolean.'' However, ACL2 uses a number of tricks, including
-  [type-set] reasoning and analysis of the structure of the top-level
+  [type-reasoning] and analysis of the structure of the top-level
   goal, to attempt to establish that a sufficiently inclusive set of
   terms is known to be Boolean.
 
@@ -12271,9 +12293,9 @@ Subtopics
       (floor x 1))
 
     (defun int-binding (term mfc state)
-      ;; The call to mfc-ts returns the encoded type of term. ;
-      ;; Thus, we are asking if term is known by type reasoning to ;
-      ;; be an integer. ;
+      ;; The call to mfc-ts returns the encoded type of term.
+      ;; Thus, we are asking if term is known by type reasoning to
+      ;; be an integer.
       (declare (xargs :stobjs (state) :mode :program))
       (if (ts-subsetp (mfc-ts term mfc state)
                       *ts-integer*)
@@ -19545,8 +19567,8 @@ Subtopics
   general and expensive form, are used ``at the top level'' of the
   simplification process: we forward chain from assumptions in the
   goal being proved.  But compound recognizer rules are built in at
-  the bottom-most level of the simplifier, where type reasoning is
-  done.
+  the bottom-most level of the simplifier, where type reasoning (see
+  [TYPE-REASONING]) is done.
 
   All that said, compound recognizer rules are a rather fancy,
   specialized mechanism.  It may be more appropriate to create
@@ -38837,7 +38859,9 @@ Example 2
   (the value of constant *fmt-hard-right-margin-default*), except
   when using ~S.  See [set-fmt-hard-right-margin] for a discussion of
   how linebreaks are inserted and how to change the relevant default
-  settings.
+  settings.  A right margin of 40 is used for pretty printing with
+  ~y, ~Y, ~q, and ~Q and can be changed to a positive integer N with
+  (set-ppr-flat-right-margin N state).
 
   The formatting functions scan the string from left to right, printing
   each successive character unless it is a tilde (~).  Upon
@@ -40091,37 +40115,25 @@ Semantics
   arguments will be required to be of the expected type.  In applying
   this advice it might be wise to avoid forcing those hypotheses that
   are in fact just type predicates on the arguments, since the
-  routine that applies [type-prescription] lemmas has fairly thorough
-  knowledge of the types of all terms.
+  application of [type-prescription] lemmas generally has fairly
+  thorough knowledge of the types of all terms (see
+  [type-prescription] for relevant background).
 
   Force can have the additional benefit of causing the ACL2 typing
   mechanism to interact with the ACL2 rewriter to establish the
-  hypotheses of [type-prescription] rules.  To understand this
-  remark, think of the ACL2 type reasoning system as a rather
-  primitive rule-based theorem prover for questions about Common Lisp
-  types, e.g., ``does this expression produce a [consp]?'' ``does
-  this expression produce some kind of ACL2 number, e.g., an
-  [integerp], a [rationalp], or a [complex-rationalp]?'' etc.  It is
-  driven by [type-prescription] rules.  To relieve the hypotheses of
-  such rules, the type system recursively invokes itself.  This can
-  be done for any hypothesis, whether it is ``type-like'' or not,
-  since any proposition, p, can be phrased as the type-like question
-  ``does p produce an object of type nil?'' However, as you might
-  expect, the type system is not very good at establishing hypotheses
-  that are not type-like, unless they happen to be assumed explicitly
-  in the context in which the question is posed, e.g., ``If p
-  produces a [consp] then does p produce nil?'' If type reasoning
-  alone is insufficient to prove some instance of a hypothesis, then
-  the instance will not be proved by the type system and a
-  [type-prescription] rule with that hypothesis will be inapplicable
-  in that case.  But by embedding such hypotheses in force
-  expressions you can effectively cause the type system to ``punt''
-  them to the rest of the theorem prover.  Of course, as already
-  noted, this should only be done on hypotheses that are ``always
-  true.'' In particular, if rewriting is required to establish some
-  hypothesis of a [type-prescription] rule, then the rule will be
-  found inapplicable because the hypothesis will not be established
-  by type reasoning alone.
+  hypotheses of [type-prescription] rules.  See [type-reasoning] for
+  relevant background for the following explanation.  If type
+  reasoning alone is insufficient to prove some instance of a
+  hypothesis, then the instance will not be proved by type reasoning
+  and a [type-prescription] rule with that hypothesis will be
+  inapplicable in that case.  But by embedding such hypotheses in
+  force expressions you can effectively cause the type system to
+  ``punt'' them to the rest of the theorem prover.  Of course, as
+  already noted, this should only be done on hypotheses that are
+  ``always true.'' In particular, if rewriting is required to
+  establish some hypothesis of a [type-prescription] rule, then the
+  rule will be found inapplicable because the hypothesis will not be
+  established by type reasoning alone.
 
   The ACL2 rewriter uses the type reasoning system as a subsystem.  It
   is therefore possible that the type system will force a hypothesis
@@ -40513,9 +40525,9 @@ Subtopics
   is an instance of a trigger of some forward chaining rule, we try
   to establish the hypotheses of that forward chaining theorem (from
   the negation of the goal).  To relieve a hypothesis we only use
-  type reasoning, evaluation of ground terms, and presence among our
-  known assumptions.  We do not use rewriting.  So-called free
-  variables in hypotheses are treated specially; see
+  type reasoning (see [TYPE-REASONING]), evaluation of ground terms,
+  and presence among our known assumptions.  We do not use rewriting.
+  So-called free variables in hypotheses are treated specially; see
   [free-variables].  If all hypotheses are relieved, and certain
   heuristics approve of the newly derived conclusion, we add the
   instantiated conclusion to our known assumptions.  Since this might
@@ -49796,23 +49808,22 @@ Subtopics
 
             :vars --- A list of ACL2 variables, which are to be treated as
             Boolean variables.  The prover must be able to check,
-            using trivial reasoning (see [type-set]), that each of
-            these variables is Boolean in the context of the current
-            goal.  Note that the prover will use very simple
-            heuristics to order any variables that do not occur in
-            :vars (so that they are ``greater than'' the variables
-            that do occur in :vars), and these heuristics are often
-            far from optimal.  In addition, any variables not listed
-            may fail to be assumed Boolean by the prover, which is
-            likely to seriously impede the effectiveness of ACL2's
-            BDD algorithm.  Thus, users are encouraged not to rely on
-            the default order, but to supply a list of variables
-            instead.  Finally, it is allowed to use a value of t for
-            vars.  This means the same as a nil value, except that
-            the BDD algorithm is directed to fail unless it can
-            guarantee that all variables in the input term are known
-            to be Boolean (in a sense discussed elsewhere; see
-            [bdd-algorithm]).
+            using [type-reasoning], that each of these variables is
+            Boolean in the context of the current goal.  Note that
+            the prover will use very simple heuristics to order any
+            variables that do not occur in :vars (so that they are
+            ``greater than'' the variables that do occur in :vars),
+            and these heuristics are often far from optimal.  In
+            addition, any variables not listed may fail to be assumed
+            Boolean by the prover, which is likely to seriously
+            impede the effectiveness of ACL2's BDD algorithm.  Thus,
+            users are encouraged not to rely on the default order,
+            but to supply a list of variables instead.  Finally, it
+            is allowed to use a value of t for vars.  This means the
+            same as a nil value, except that the BDD algorithm is
+            directed to fail unless it can guarantee that all
+            variables in the input term are known to be Boolean (in a
+            sense discussed elsewhere; see [bdd-algorithm]).
 
             :literal --- An indication of which part of the current goal should
             receive BDD processing.  Possible values are:
@@ -52926,8 +52937,8 @@ Subtopics
   The induction rule created is used as follows.  When an instance of
   the :pattern term occurs in a conjecture to be proved by induction
   and the corresponding instance of the :condition term is known to
-  be non-nil (by type reasoning alone), the corresponding instance of
-  the :scheme term is created and the rule ``suggests'' the
+  be non-nil (by [type-reasoning] alone), the corresponding instance
+  of the :scheme term is created and the rule ``suggests'' the
   induction, if any, suggested by that term.  (Analysis of that term
   may further involve induction rules, though the applied rule is
   removed from consideration during that further analysis, in order
@@ -64349,8 +64360,8 @@ Preface
   sections in the order shown.  Each section ends with a pointer to
   the next section but also includes a link to the Table of Contents.
 
-  Now go to [lp-section-1].  The  Table of Contents (see
-  [LP-SECTION-0]) is at [lp-section-0].
+  Now go to [lp-section-1].  The Table of Contents is at
+  [lp-section-0].
 
 
 Subtopics
@@ -64360,6 +64371,30 @@ Subtopics
 
   [Lp-section-1]
       Background Reviews
+
+  [Lp-section-2]
+      Loop in Common Lisp and loop$ in ACL2
+
+  [Lp-section-3]
+      Examples of FOR Loop$s
+
+  [Lp-section-4]
+      Syntax of FOR Loop$s
+
+  [Lp-section-5]
+      Informal Semantics of FOR Loop$s
+
+  [Lp-section-6]
+      Challenge Problems about FOR Loop$s
+
+  [Lp-section-7]
+      Using Loop$s and Guards in Defuns
+
+  [Lp-section-8]
+      Challenge Problems about FOR Loop$ in Defuns
+
+  [Lp-section-9]
+      Semantics of FOR Loop$s
 
   [Lp-section-10]
       The Evaluation of the Formal Semantics of a Fancy Loop$
@@ -64386,31 +64421,7 @@ Subtopics
       Challenge Proof Problems for DO Loop$s
 
   [Lp-section-18]
-      Conclusion
-
-  [Lp-section-2]
-      Loop in Common Lisp and loop$ in ACL2
-
-  [Lp-section-3]
-      Examples of FOR Loop$s
-
-  [Lp-section-4]
-      Syntax of FOR Loop$s
-
-  [Lp-section-5]
-      Informal Semantics of FOR Loop$s
-
-  [Lp-section-6]
-      Challenge Problems about FOR Loop$s
-
-  [Lp-section-7]
-      Using Loop$s and Guards in Defuns
-
-  [Lp-section-8]
-      Challenge Problems about FOR Loop$ in Defuns
-
-  [Lp-section-9]
-      Semantics of FOR Loop$s")
+      Conclusion")
  (LOOP$-RECURSION
   (LOOP$)
   "Defining functions that recur from within FOR loop$ expressions
@@ -76955,16 +76966,17 @@ Subtopics
   following three parts:
 
     * propagation upward of if tests;
-    * potential simplification with [type-set] reasoning; and
+    * potential simplification with type reasoning (see [TYPE-REASONING]);
+      and
     * the expansion of calls of a few built-in functions like [implies]
       (the full list is the value of the constant,
       *expandable-boot-strap-non-rec-fns*).
 
-  We have seen an example where [type-set] reasoning can be expensive.
-  So when ACL2 normalizes [definition] bodies and [guard]s, it
-  establishes a [backchain-limit] for [type-set] reasoning of 1,
-  unless that limit is currently 0.  (The global default is to have
-  no limit.)
+  We have seen an example where type reasoning (see [TYPE-REASONING])
+  can be expensive.  So when ACL2 normalizes [definition] bodies and
+  [guard]s, it establishes a [backchain-limit] for [type-set]
+  reasoning of 1, unless that limit is currently 0.  (The global
+  default is to have no limit.)
 
   Also see the [community-books] utility [install-not-normalized].")
  (NORMED
@@ -98884,9 +98896,12 @@ Changes to Existing Features
   Thanks to Eric Smith for suggesting up.
 
   Arranged that [iprinting] that takes place during [break-rewrite] is
-  better reflected outside break-rewrite.  For an example, see the
-  example on iprinting in a comment in the form (defxdoc note-8-6
-  ...) in [community-book] books/system/doc/acl2-doc.lisp.
+  better reflected outside break-rewrite.  For examples, see
+  [community-books] input file
+  books/system/tests/iprint-and-brr-input.lsp, which contains
+  comments on what went wrong in Version 8.5, and which generates
+  (via the [run-script] utility) the output in file
+  iprint-and-brr-log.txt in that directory.
 
   When a defined function has a [declare] form with (optimize ...),
   that is now included in a declare form of the
@@ -98994,10 +99009,11 @@ Changes to Existing Features
   [do-loop$] documentation, which has new, relevant explanation
   (first in brief, later in detail) regarding such messages.
 
-  Three obsolete fields of the ACL2 [state] have been removed: t-stack,
-  32-bit-integer-stack, and list-all-package-names-lst, as have some
-  related built-in, undocumented definitions and theorems, including
-  old-check-sum-obj and supporting functions.
+  Four obsolete fields of the ACL2 [state] have been removed:
+  big-clock-entry, t-stack, 32-bit-integer-stack, and
+  list-all-package-names-lst, as have some related built-in,
+  undocumented definitions and theorems, including old-check-sum-obj
+  and supporting functions.
 
   Improved [hide] calls in prover output from failed execution of
   [warrant]s, by adding suitable notes about attachments or warrant
@@ -99024,13 +99040,23 @@ Changes to Existing Features
     (defaxiom foo (equal (car (cons x x)) x))
 
   The prover sometimes reduces a goal without hypotheses (technically
-  speaking, a one-element clause) to nil using [type-set] reasoning.
-  This heuristic has not changed, but formerly there was no
-  explanation given.  Now ACL2 reports the rules (of class
-  :[type-prescription]) that were used.
+  speaking, a one-element clause) to nil using type reasoning (see
+  [TYPE-REASONING]).  This heuristic has not changed, but formerly
+  there was no explanation given.  Now ACL2 reports the rules (of
+  class :[type-prescription]) that were used.
 
   The default for [memoize] keyword argument :verbose has been changed
   from t to nil, which (by default) eliminates noise from the output.
+
+  When a proof attempt is halted so that it reverts to prove the
+  original goal by induction, the top-level checkpoints are printed
+  under the [summary] under the banner, ``Key checkpoints before
+  reverting to proof by induction''.  This was normally the case
+  already, but not in the special case that the proof is eventually
+  aborted either because a goal of NIL is produced or because proof
+  by induction is not allowed (due to a :DO-NOT-INDUCT hint or an
+  [induction-depth-limit] being exceeded).  Thanks to Eric Smith for
+  a chat that helped lead to this improvement.
 
 
 New Features
@@ -99411,8 +99437,9 @@ Changes at the System Level
 
   Significant new [documentation] topics, together with subtopics and
   books supporting those topics, include the following.  Note that
-  their release was approved by DARPA with ``DISTRIBUTION STATEMENT
-  A. Approved for public release. Distribution is unlimited.''
+  for all but the their release was approved by DARPA with
+  ``DISTRIBUTION STATEMENT A. Approved for public release.
+  Distribution is unlimited.''
 
     * [Start-here] provides a guide for those getting started with ACL2.
     * [Recursion-and-induction] has been extensively modified from past,
@@ -99424,6 +99451,10 @@ Changes at the System Level
       documentation.
     * [Loop$-primer] provides an extensive primer on the the ACL2 [loop$]
       feature.
+    * [Type-reasoning] gives a basic introduction to what is sometimes
+      called ``type-set reasoning''.  This new topic is now
+      referenced in many other built-in documentation topics.  Thanks
+      to Warren Hunt for communication leading to this new topic.
 
   Allow [ld] output in [raw-mode] to go to other than the channel,
   *standard-co*.  Thanks to Vivek Ramanathan and Warren Hunt for an
@@ -99437,6 +99468,22 @@ EMACS Support
   emacs/html-to-xdoc.el.  Note that its release was approved by DARPA
   with ``DISTRIBUTION STATEMENT A. Approved for public release.
   Distribution is unlimited.''
+
+  When new [ACL2-doc] buffers are created by using the G or
+  Shift-<Return> commands, their name reflects the topic name, e.g.,
+  acl2-doc<REWRITE> if the topic visited in the new buffer is
+  REWRITE.  Note that the new buffer name stays the same even if
+  other topics are visited there; its name reflects its topic at the
+  time it was created.  Thanks to Warren Hunt for requesting such an
+  enhancement.  Note that the former behavior can be restored by
+  evaluating the form (setq *acl2-doc-short-new-buffer-names* t) in
+  Emacs.
+
+  The initialization file for recent Emacs versions,
+  books/emacs/emacs-acl2.el, now correctly loads related files ---
+  notable acl2-doc.el --- from that same directory, rather than from
+  the emacs/ directory that is directly under the top level of the
+  ACL2 distribution.
 
 
 Experimental Versions
@@ -103792,9 +103839,9 @@ Implementation
   finally :[type-prescription] rules.  Each rule is displayed with
   additional information, such as the hypotheses that remain after
   applying some simple techniques to discharge them that are likely
-  to apply in any context.  (Those techniques include [type-set]
-  reasoning, [forward-chaining], and some attempts to deal with
-  [free-variables] including handling of binding hypotheses,
+  to apply in any context.  (Those techniques include
+  [type-reasoning], [forward-chaining], and some attempts to deal
+  with [free-variables] including handling of binding hypotheses,
   [syntaxp] and [bind-free].)
 
   It is important to remember that rules displayed as ``applicable'' by
@@ -121410,6 +121457,9 @@ Subtopics
   [Type-prescription]
       Make a rule that specifies the type of a term
 
+  [Type-reasoning]
+      ACL2 reasoning with ``types''
+
   [Type-set-inverter]
       Exhibit a new decoding for an ACL2 type-set
 
@@ -121470,9 +121520,9 @@ Subtopics
       [compound-recognizer], which also describes how to make a rule
       that designates a function as a compound-recognizer.)  But note
       that hypotheses of such a rule are proved (``relieved'') by
-      ACL2 only using [type-set] reasoning.  If you want rewriting to
-      be used for relieving the hypotheses, you can wrap them in
-      [force] or [case-split].
+      ACL2 only using type reasoning (see [TYPE-REASONING]).  If you
+      want rewriting to be used for relieving the hypotheses, you can
+      wrap them in [force] or [case-split].
     * If the conclusion is an inequality or negated inequality, consider
       making a [linear] rule, but generally only if you can identify
       a reasonable maximal term, which very roughly is a syntactially
@@ -123155,7 +123205,7 @@ Subtopics
   :backchain-limit-rw.
 
     :set-backchain-limit nil  ; do not impose any additional limits
-    :set-backchain-limit 0    ; allow only type-set reasoning for rewriting
+    :set-backchain-limit 0    ; allow only type reasoning for rewriting
                               ; hypotheses
     :set-backchain-limit 500  ; allow backchaining to a depth of no more
                               ; than 500 for rewriting hypotheses
@@ -123879,7 +123929,7 @@ Subtopics
 
     :set-default-backchain-limit nil  ; do not impose backchain limits for the
                                       ; rule
-    :set-default-backchain-limit 0    ; allow only type-set reasoning for
+    :set-default-backchain-limit 0    ; allow only type reasoning for
                                       ; relieving a new rule's hypotheses
     :set-default-backchain-limit 500  ; allow backchaining through a new rewrite,
                                       ; linear, or meta rule's hypotheses to a
@@ -124417,7 +124467,11 @@ Subtopics
   that equals or exceeds the value of (@ fmt-hard-right-margin).
   Such a ``hard'' linebreak follows the insertion of a backslash (\\)
   character unless [fmt!], [fms!], or [fmt1!] is used, or state
-  global write-for-read is true.")
+  global write-for-read is true.
+
+  Note that A right margin of 40 is used for pretty printing with [fmt]
+  directives ~y, ~Y, ~q, and ~Q and can be changed to a positive
+  integer N with (set-ppr-flat-right-margin N state).")
  (SET-FMT-SOFT-RIGHT-MARGIN
   (IO ACL2-BUILT-INS)
   "Set the soft right margin for formatted output
@@ -129939,9 +129993,6 @@ Subtopics
 
       Global-table, an alist associating symbols (to be used as ``global
       variables'') with values.  See [@], and see [assign].
-
-      Big-clock-entry, an integer, that is used logically to bound the
-      amount of effort spent to evaluate a quoted form.
 
       Idates, a list of dates and times, used to implement the function
       print-current-idate, which prints the date and time.
@@ -136049,11 +136100,12 @@ Logical Definitions
   satisfying q provided that the arguments satisfy the respective pi
   and provided that dep-hyp occurs in the current context.  Note: to
   be precise, dependent hypotheses are relieved only by applying
-  ACL2's most primitive form of reasoning, [type-set].  In
-  particular, tau reasoning is not used to establish dependent
-  hypotheses.  The presence of a dep-hyp in a signature rule may
-  severely restrict its applicability.  We discuss this after showing
-  a few mundane examples.
+  ACL2's most primitive form of reasoning, type reasoning (see
+  [TYPE-REASONING]) (using [type-set]).  In particular, tau reasoning
+  is not used to establish dependent hypotheses.  The presence of a
+  dep-hyp in a signature rule may severely restrict its
+  applicability.  We discuss this after showing a few mundane
+  examples.
 
   An example Signature rule is
 
@@ -140142,9 +140194,7 @@ Subtopics
   reasonable to ignore almost all the prover output, and to avoid
   pondering the meaning of the other ``processes'' that ACL2 uses
   besides simplification (such as elimination, cross-fertilization,
-  generalization, and elimination of irrelevance).  For example, you
-  don't need to worry about prover output that mentions ``type
-  reasoning'' or ``abbreviations,'' for example.")
+  generalization, and elimination of irrelevance).")
  (TOGGLE-INHIBIT-ER
   (OUTPUT-CONTROLS ERRORS)
   "Add or delete an error output string from the inhibit-er-table
@@ -143126,7 +143176,8 @@ Subtopics
       ACL2 can reason about and compute with certain different kinds of
       objects, such as [numbers], [strings], [characters], and
       [conses].  See [About_Types] for basic background on the
-      different kinds of ACL2 objects.
+      different kinds of ACL2 objects; also see [type-reasoning] more
+      relevant background.
     User-Defined Types
       When modeling systems with ACL2, you may often want to introduce
       certain concepts as new data types.  For instance, if you are
@@ -143146,14 +143197,16 @@ Subtopics
       you can prove your type declarations are correct.  See also
       [declare] and [the], and also [patbind-the].
     Type Prescriptions
-      ACL2 includes a limited but efficient ``[type-set] reasoning engine
-      for determining whether objects are of certain built-in types.
-      This engine can be extended with [type-prescription] rules.
-      Such rules are often inferred automatically when new functions
-      are introduced with [defun].  Type-set reasoning can assist
-      other reasoning engines like [forward-chaining],
-      [linear-arithmetic], and rewriting.  Type-set information is
-      stored in a [type-alist] data structure.
+      ACL2 includes a limited but efficient ``type reasoning (see
+      [TYPE-REASONING])'' engine for determining whether objects are
+      of certain built-in types.  This engine can be extended with
+      [type-prescription] rules.  Such rules are often inferred
+      automatically when new functions are introduced with [defun].
+      Type reasoning can assist other reasoning engines like
+      [forward-chaining], [linear-arithmetic], and rewriting.
+      Type-set information is stored in a [type-alist] data
+      structure; see [type-reasoning] for relevant basic
+      background...
     Tau
       ACL2 includes another reasoning engine, the [tau-system], for
       reasoning about type-like predicates.  Unlike [type-set], Tau
@@ -143164,6 +143217,8 @@ Subtopics
  (TYPE-ALIST
   (TYPE-SET)
   "An ACL2 representation of contextual knowledge
+
+  See [type-reasoning] for basic background on type reasoning in ACL2.
 
   The ACL2 prover maintains many structures that need not be understood
   by the user.  One of these, the type-alist structure, is usually in
@@ -143213,8 +143268,11 @@ Subtopics
 
   See [rule-classes] for a general discussion of rule classes,
   including how they are used to build rules from formulas and a
-  discussion of the various keywords in a rule class description.  In
-  this topic we focus on user-defined type-prescription rules, but
+  discussion of the various keywords in a rule class description.
+  Also see [type-reasoning] for basic background on type reasoning in
+  ACL2.
+
+  In this topic we focus on user-defined type-prescription rules, but
   note that ACL2 also introduces type-prescription rules when
   introducing a function with [defun]; see
   [type-prescription-debugging] for discussion of how to influence
@@ -143496,10 +143554,92 @@ Subtopics
   stored for f at definition time, which is why the subsequent proof
   attempt failed to use such a rule.  So you avoid disabling
   (:TYPE-PRESCRIPTION ALISTP) until after submitting the [defun] for
-  f, and now ACL2's type reasoning knows that f returns a Boolean.")
+  f, and now ACL2's type reasoning (see [TYPE-REASONING]) knows that
+  f returns a Boolean.")
+ (TYPE-REASONING
+  (RULE-CLASSES)
+  "ACL2 reasoning with ``types''
+
+  ACL2 has a ``type reasoning'' system, which may be viewed as a
+  relatively basic rule-based theorem prover for questions about
+  Common Lisp types, e.g., ``does this expression produce a
+  [consp]?'', ``does this expression produce some kind of ACL2
+  number, e.g., an [integerp], a [rationalp], or a
+  [complex-rationalp]?'', ``does this expression produce a non-nil
+  value (i.e., is it true)?'', etc.  This system uses built-in
+  reasoning about types, for example that a rational number is not a
+  cons; when the ACL2 prover reports that a goal is simplified using
+  ``primitive type reasoning'', it is referring to such built-in type
+  reasoning.  However, type reasoning is also driven by
+  [type-prescription] rules, as we'll discuss shortly.
+
+  ACL2 reasoning, including type reasoning, takes place with respect to
+  a context that associates terms with values that represent their
+  ``types''.  These contexts are called [type-alist]s, and those
+  values are called [type-set]s; however, unless you write certain
+  sophisticated tools, perhaps such as [clause-processor]s, you
+  probably do not need to know more than that about these two
+  notions.  (If you're curious about them, you can see [type-set] and
+  see [type-alist].)  For example, when ACL2 attempts to prove a
+  conjecture (implies (and (p x) (integerp (f x))) (p2 x)), it builds
+  a type-alist recording that (p x) and (integerp (f x)) are true
+  when attempting to reason about (p2 x).  That type-alist associates
+  (p x) with a value representing the complement of the set, {nil},
+  meaning that (p x) is non-nil, i.e., true.  But for (integerp (f
+  x)) something a bit more clever takes place: since integerp
+  recognizes a Boolean combination of built-in types --- see
+  [compound-recognizer] --- the context associates (f x) with a value
+  representing the set of integers.  So for example, type reasoning
+  can conclude from that type-alist that (not (consp (f x))) is true,
+  since the built-in types for integer and cons are disjoint.
+
+  As noted above, type reasoning can take advantage of
+  [type-prescription] rules.  In short, such a rule tells ACL2 that
+  any instance of the ``typed-term'' of the rule must have a
+  specified type.  To relieve the hypotheses of type-prescription
+  rules, the type-reasoning system recursively invokes itself.  This
+  can be done for any hypothesis, whether it is ``type-like'' or not,
+  since any proposition, p, can be phrased as the type-like question
+  ``does p produce an object of type nil?'' However, as you might
+  expect, the type system is not very good at establishing hypotheses
+  that are not type-like, unless are represented rather explicitly in
+  the context in which the question is posed.  Consider the following
+  example from the [type-prescription] documentation.
+
+    (defthm characterp-nth-type-prescription   ; (Nth n lst) is of type character
+      (implies                                 ; provided the hypotheses can be
+       (and (character-listp lst)              ; established by type reasoning.
+            (<= 0 n)
+            (< n (len lst)))
+       (characterp (nth n lst)))
+      :rule-classes :type-prescription)
+
+  It may seem impossible to relieve the hypothesis (character-listp
+  lst) by type reasoning, since there is no suitable ``type'' for
+  lst, i.e., character-listp does not recognize a Boolean combination
+  of ACL2 types (see [compound-recognizer]).  However, suppose we are
+  attempting to prove a theorem of the form (implies (and
+  (character-listp x) p) q) and ACL2 is in the process of simplifying
+  either p or q.  In that case, the context --- that is, the
+  type-alist --- will associate the term (character-listp x) with a
+  value indicating that this term is true, i.e., non-nil.  Then if
+  ACL2 encounters the term (nth k x), it will try to apply the
+  type-prescription rule above, matching k to n and matching lst to
+  x.  The instantiated first hypothesis of that rule will then be
+  (character-listp x).  Since the type-alist designates
+  (character-listp x) as true, that hypothesis is successfully
+  relieved.  Again, there was no character-listp ``type'' involved;
+  what was typed was the entire term, (character-listp x).
+
+  The instantiated hypothesis above was relieved because it was in the
+  context, so no rewriting was necessary to establish it.  See
+  [force] for how to involve the ACL2 rewriter to establish
+  hypotheses of type-prescription rules.")
  (TYPE-SET
   (MISCELLANEOUS)
   "How type information is encoded in ACL2
+
+  See [type-reasoning] for basic background on type reasoning in ACL2.
 
   To help you experiment with type-sets we briefly note the following
   utility functions.
@@ -143662,6 +143802,8 @@ Subtopics
   See [rule-classes] for a general discussion of rule classes,
   including how they are used to build rules from formulas and a
   discussion of the various keywords in a rule class description.
+  Also see [type-reasoning] for basic background on type reasoning in
+  ACL2.
 
     Example Rule Class:
     (:type-set-inverter
@@ -149661,7 +149803,7 @@ Concluding Remark
     (cw-gstack-for-subterm* (append y (cdr x)))
 
   The rest of this documentation topic is structured as follows.  It
-  may suffice to read only the first (Introduction) section.
+  may suffice to read only the first two sections.
 
     * Introduction
     * Connections with [break-rewrite]
@@ -149914,7 +150056,7 @@ Introduction
     The resulting (translated) term is
       (CONS (F0 (CAR X)) (F0 (CAR X))).
     Note: The first lemma application above that provides a suitable result
-    is at position 4, and that result is
+    is at frame 4, and that result is
       (IF (CONSP X)
           (CONS (F0 (CAR X)) (F0 (CAR X)))
         (CONS (F0 X) (F0 X))).
@@ -149930,14 +150072,14 @@ Introduction
   produced a suitable result, and then they search from that point
   for a maximally deeper rule application that produced a suitable
   result.  In this case, the first rule that produced a term
-  containing (FO (CAR X)) is shown in the frame 4 (i.e., the frame at
-  position 4), as per the Note.  The rule at frame 9 also produced
-  such a term (though a different one than at frame 4), and there was
-  no deeper such rule application --- that is, from the time the
-  definition at frame 9 was applied till the time its body was fully
-  rewritten, no rule produced a term containing (FO (CAR X)).  (This
-  notion of ``deeper'' is discussed at some length in the section
-  below on ``General forms of queries''.)
+  containing (FO (CAR X)) is shown in the frame at position 4, as per
+  the Note.  The rule at frame 9 also produced such a term (though a
+  different one than at frame 4), and there was no deeper such rule
+  application --- that is, from the time the definition at frame 9
+  was applied till the time its body was fully rewritten, no rule
+  produced a term containing (FO (CAR X)).  (This notion of
+  ``deeper'' is discussed at some length in the section below on
+  ``General forms of queries''.)
 
   Next we'll explore a limitation of these tools and how to get around
   it.  We start as follows (following the definitions above).
@@ -149999,7 +150141,7 @@ Introduction
     The resulting (translated) term is
       (CONS (F0 (CAR X)) (F0 (CAR X))).
     Note: The first lemma application above that provides a suitable result
-    is at position 5, and that result is
+    is at frame 5, and that result is
       (IF (CONSP X)
           (CONS (F0 (CAR X)) (F0 (CAR X)))
         (CONS (F0 X) (F0 X))).
@@ -150026,13 +150168,17 @@ Connections with break-rewrite
   But there are these additional connections between with-brr-data and
   the break-rewrite utility.
 
+    * The same rewriting processes are considered by with-brr-data as by
+      break-rewrite; in particular, abbreviation rules are not
+      considered during preprocessing (see [monitor]).
+    * When a query command (cw-gstack-for-term etc.) finds a match with a
+      rewriting result, it discards the result if the input --- the
+      :target, in the parlance of [break-rewrite] --- contains that
+      match.
     * [Monitor]ed [rune]s are indeed monitored during evaluation of a call
       of with-brr-data, even if break-rewrite has not been enabled
       globally (using :[brr] or [monitor!]).  If this is not desired,
       then [unmonitor] runes before calling with-brr-data.
-    * The same rewriting processes are considered by with-brr-data as by
-      break-rewrite; in particular, abbreviation rules are not
-      considered during preprocessing (see [monitor]).
     * There is the following low-level way to collect brr-data for queries
       such as cw-gstack-for-term without calling with-brr-data:
       (assign gstack :brr-data).  But you may want to clear such data
@@ -150040,6 +150186,82 @@ Connections with break-rewrite
       (clear-brr-data-lst).  Otherwise the brr-data from later proof
       attempts will be combined, probably in unexpected ways, with
       brr-data from earlier proof attempts.
+
+  The first item above is worth emphasizing.  Consider the following
+  example.
+
+    (include-book \"std/lists/rev\" :dir :system)
+    (with-brr-data
+     (thm (implies (and (natp n)
+                        (< n (len x)))
+                   (equal (nth n (revappend x y))
+                          (nth n (reverse x))))
+          :hints ((\"Goal\" :do-not '(preprocess)))))
+    (cw-gstack-for-subterm (APPEND (REV X) Y))
+
+  The cw-gstack-for-subterm query yields a result in this example, but
+  not if we change it to remove the :[hints].  If we use :[pso] on
+  the proof attempt without the :hints, we notice that the requested
+  subterm was introduced by ``the simple :rewrite rule
+  REVAPPEND-REMOVAL''; here ``simple'' indicates the use of the
+  preprocess process for simplification, which avoids the usual
+  rewriter.  If we instead query the no-hints version with
+  (cw-gstack-for-subterm (REV X)), the output below shows that a
+  chain of rewrites generates (APPEND (REV X) Y) as an intermediate
+  term but not as the result of a rewrite.
+
+    ACL2 !>(cw-gstack-for-subterm (REV X))
+    1. Simplifying the clause
+         ((NOT (INTEGERP N))
+          (< N '0)
+          (NOT (< N (LEN X)))
+          (EQUAL (NTH N (BINARY-APPEND (REV X) Y))
+                 (NTH N (REVERSE X))))
+    2. Rewriting (to simplify) the atom of the fourth literal,
+         (EQUAL (NTH N (BINARY-APPEND (REV X) Y))
+                (NTH N (REVERSE X))),
+    3. Rewriting (to simplify) the second argument,
+         (NTH N (REVERSE X)),
+    4. Rewriting (to simplify) the second argument,
+         (REVERSE X),
+    5. Attempting to apply (:DEFINITION REVERSE) to
+         (REVERSE X)
+    6. Rewriting (to simplify) the body,
+         (IF (STRINGP X)
+             (COERCE (REVAPPEND (COERCE X 'LIST) 'NIL)
+                     'STRING)
+           (REVAPPEND X 'NIL)),
+       under the substitution
+         X : X
+    7. Rewriting (to simplify) the third argument,
+         (REVAPPEND X 'NIL),
+       under the substitution
+         X : X
+    8. Attempting to apply (:REWRITE REVAPPEND-REMOVAL) to
+         (REVAPPEND X 'NIL)
+    9. Rewriting (to simplify) the rhs of the conclusion,
+         (BINARY-APPEND (REV X) Y),
+       under the substitution
+         Y : 'NIL
+         X : X
+    10. Attempting to apply (:REWRITE APPEND-ATOM-UNDER-LIST-EQUIV) to
+         (BINARY-APPEND (REV X) 'NIL)
+    The resulting (translated) term is
+      (REV X).
+    Note: The first lemma application above that provides a suitable result
+    is at frame 5, and that result is
+      (IF (STRINGP X)
+          (COERCE (REV (COERCE X 'LIST)) 'STRING)
+        (REV X)).
+    ACL2 !>
+
+  The version of this example without :hints also illustrates the
+  second item above, about discarding matches that occur in the
+  :target of rewriting.  Without that restriction we would see a
+  result for the query (cw-gstack-for-subterm (APPEND (REV X) Y))
+  from an attempt to rewrite the term (NTH N (APPEND (REV X) Y)).
+  But that would not help us to find the source of the term (APPEND
+  (REV X) Y).
 
 
 General form of with-brr-data calls
@@ -155723,10 +155945,10 @@ Subtopics
 
   Sets the number of recursive calls to the rewriter that are allowed
   for backchaining.  Even with the default of 0, some reasoning is
-  allowed (technically speaking, type-set reasoning is allowed) in
-  the relieving of hypotheses.  The value should be nil or a
-  non-negative integer, and limits backchaining only for rewriting,
-  not for type-set reasoning.
+  allowed (technically speaking, type reasoning (see
+  [TYPE-REASONING]) is allowed) in the relieving of hypotheses.  The
+  value should be nil or a non-negative integer, and limits
+  backchaining only for rewriting, not for type reasoning.
 
     :repeat -- default 0
 
@@ -156025,7 +156247,7 @@ Subtopics
   only simplification (and preprocessing) turned on, and with only a
   few built-in functions (especially, propositional ones) enabled,
   namely, the ones in the list (theory 'minimal-theory).  However,
-  because the prover is called, type-set reasoning can be used to
+  because the prover is called, [type-reasoning] can be used to
   eliminate some cases.  For example, if (true-listp x) is in the
   hypotheses, then probably (true-listp (cdr x)) will be reduced to
   t.")
