@@ -5448,7 +5448,16 @@ Silent loading of ACL2 customization files
   list: acl2-help@utlists.utexas.edu.  If you have more general
   questions about ACL2, for example, about projects completed using
   ACL2, you may prefer the acl2 mailing list,
-  acl2@utlists.utexas.edu, which tends to have wider distribution.")
+  acl2@utlists.utexas.edu, which tends to have wider distribution.
+
+  The following mailing list pages include links to their archives.
+
+    * acl2-help list:
+      {https://utlists.utexas.edu/sympa/info/acl2-help |
+      https://utlists.utexas.edu/sympa/info/acl2-help}
+    * acl2-help list:
+      {https://utlists.utexas.edu/sympa/info/acl2 |
+      https://utlists.utexas.edu/sympa/info/acl2}")
  (ACL2-NUMBER-LISTP
   (NUMBERS LISTS ACL2-BUILT-INS)
   "Recognizer for a true list of numbers

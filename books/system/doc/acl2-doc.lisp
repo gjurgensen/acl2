@@ -3195,7 +3195,21 @@
  list: @('acl2-help@utlists.utexas.edu').  If you have more general questions
  about ACL2, for example, about projects completed using ACL2, you may prefer
  the acl2 mailing list, @('acl2@utlists.utexas.edu'), which tends to have wider
- distribution.</p>")
+ distribution.</p>
+
+ <p>The following mailing list pages include links to their archives.</p>
+
+ <ul>
+
+ <li>acl2-help list:<br/>
+ <tt><a
+ href='https://utlists.utexas.edu/sympa/info/acl2-help'>https://utlists.utexas.edu/sympa/info/acl2-help</a></tt></li>
+
+ <li>acl2-help list:<br/>
+ <tt><a
+ href='https://utlists.utexas.edu/sympa/info/acl2'>https://utlists.utexas.edu/sympa/info/acl2</a></tt></li>
+
+ </ul>")
 
 (defxdoc acl2-number-listp
   :parents (numbers lists acl2-built-ins)
