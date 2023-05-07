@@ -101798,6 +101798,8 @@ it."
 ; - Slightly simplified implementation of with-ubt! to avoid unnecessary
 ;   binding of inhibit-output-lst.
 
+; Deleted the include-book-phase field (no longer used) of certify-book-info.
+
   :parents (release-notes)
   :short "ACL2 Version  8.6 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
