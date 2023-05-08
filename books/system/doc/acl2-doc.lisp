@@ -3205,7 +3205,7 @@
  <tt><a
  href='https://utlists.utexas.edu/sympa/info/acl2-help'>https://utlists.utexas.edu/sympa/info/acl2-help</a></tt></li>
 
- <li>acl2-help list:<br/>
+ <li>acl2 list:<br/>
  <tt><a
  href='https://utlists.utexas.edu/sympa/info/acl2'>https://utlists.utexas.edu/sympa/info/acl2</a></tt></li>
 
