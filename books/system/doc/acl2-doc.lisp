@@ -3205,7 +3205,7 @@
  <tt><a
  href='https://utlists.utexas.edu/sympa/info/acl2-help'>https://utlists.utexas.edu/sympa/info/acl2-help</a></tt></li>
 
- <li>acl2-help list:<br/>
+ <li>acl2 list:<br/>
  <tt><a
  href='https://utlists.utexas.edu/sympa/info/acl2'>https://utlists.utexas.edu/sympa/info/acl2</a></tt></li>
 
@@ -101798,6 +101798,8 @@ it."
 ; - Slightly simplified implementation of with-ubt! to avoid unnecessary
 ;   binding of inhibit-output-lst.
 
+; Deleted the include-book-phase field (no longer used) of certify-book-info.
+
   :parents (release-notes)
   :short "ACL2 Version  8.6 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -101977,11 +101979,15 @@ it."
  for suggesting @('up').</p>
 
  <p>Arranged that @(see iprinting) that takes place during @(see break-rewrite)
- is better reflected outside break-rewrite.  For examples, see @(see
- community-books) input file @('books/system/tests/iprint-and-brr-input.lsp'),
- which contains comments on what went wrong in Version 8.5, and which
- generates (via the @(tsee run-script) utility) the output in file
- @('iprint-and-brr-log.txt') in that directory.</p>
+ or @(tsee cw) is better reflected outside break-rewrite.  For examples, see
+ @(see community-books) input file
+ @('books/system/tests/iprint-and-brr-input.lsp'), which contains comments on
+ problematic interactions between break-rewrite and iprinting in Version 8.5,
+ and which generates (via the @(tsee run-script) utility) the output in file
+ @('iprint-and-brr-log.txt') in that directory.  Note that @(tsee read-object)
+ now updates data structures so that it can read back in what was just printed
+ by @(tsee cw); see a comment in the definition of @('read-object') in the ACL2
+ source code.</p>
 
  <p>When a defined function has a @(tsee declare) form with @('(optimize
  ...)'), that is now included in a declare form of the executable-counterpart
