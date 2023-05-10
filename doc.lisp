@@ -35154,6 +35154,9 @@ Subtopics
   [Set-body]
       Set the definition body
 
+  [Set-table-guard]
+      Set the :guard for a [table]
+
   [Skip-proofs]
       Skip proofs for a given form --- a quick way to introduce
       unsoundness
@@ -99061,6 +99064,12 @@ Changes to Existing Features
   [induction-depth-limit] being exceeded).  Thanks to Eric Smith for
   a chat that helped lead to this improvement.
 
+  For most built-in [table]s, improved error messages for guard
+  failures.  This improvement was made by using a new macro that is
+  also available to ACL2 users, [set-table-guard], which adds a
+  [table] guard that produces a user-friendly error message when the
+  guard fails.
+
 
 New Features
 
@@ -99416,6 +99425,11 @@ Bug Fixes
                       (progn (setq y (cdr x))
                              (setq x (cdr z)))))
                    (t (return y)))))
+
+  Fixed the failed redundancy check when setting a [table] guard that
+  returns two values.  For example, the form (table foo nil nil
+  :guard (mv t nil)) was not formerly seen as [redundant] when
+  evaluating it a second time.
 
 
 Changes at the System Level
@@ -127067,6 +127081,107 @@ Subtopics
 
   The mode is stored in the defaults table, See [ACL2-defaults-table].
   Thus, the mode may be set [local]ly in books.")
+ (SET-TABLE-GUARD
+  (TABLE EVENTS)
+  "Set the :guard for a [table]
+
+  This macro is a convenient interface for setting a table's guard to
+  produce user-friendly error messages when the guard fails.  See
+  [table] for background on table guards.  As noted there, the table
+  guard may reference variables KEY, VAL, WORLD, ENS, and STATE; that
+  is the case for the guard and coda mentioned below.  Also
+  particularly relevant here is the fact that the table guard can
+  return a single value, but it can also return (mv flg msg); in the
+  latter case, if flg is nil then msg is an error message.
+  Set-table-guard is supplied a guard term that returns a single
+  value, but sets the table guard to a corresponding term that
+  returns values (mv flg msg), where msg is constructed to be
+  user-friendly when it is non-nil.
+
+    General Form:
+    (set-table-guard name guard
+                     :topic topic
+                     :show show
+                     :coda coda)
+
+  where name is the name of a table, guard is a term returning a single
+  value that specifies the guard of that table, and the optional
+  keyword arguments are as follows.
+
+    * :Topic defaults to name.  Otherwise it is the name of a
+      [documentation] topic to which the user is directed when the
+      table guard fails.
+    * :Show is nil by default, in which case the guard term is not included
+      in the error message; otherwise it is included.
+    * :Coda is nil by default.  Otherwise it should be a message (see
+      [msgp]) to be printed, preceded by two spaces, after the
+      message that would otherwise be printed.
+
+  The error message when keywords are omitted is as shown in the
+  example below, but (of course) where FOO, MY-KEY, and MY-VAL are
+  replaced respectively by the table name, the key, and the value.
+  We start our example by evaluating the following two events.
+
+    (defun foo-check (key val world)
+      (declare (ignore val))
+      (function-symbolp key world))
+    (set-table-guard foo (foo-check key val world))
+
+  Then evaluation of (table foo 'my-key 'my-val) produces the following
+  error message.
+
+    ACL2 Error in ( TABLE FOO ...):  The TABLE :guard for FOO disallows
+    the combination of key MY-KEY and value MY-VAL.  See :DOC FOO.
+
+  Here we show what happens to the error message if instead we set the
+  table guard as follows.  As before, it should be clear from this
+  example what the message would look like in general.  This time we
+  evaluate:
+
+    (set-table-guard foo (foo-check key val world)
+                     :topic set-foo
+                     :show t
+                     :coda (and (eq val 'my-val)
+                                (msg \"~x0 is an odd name for a value!\"
+                                     val)))
+
+  This time, evaluation of (table foo 'my-key 'my-val) produces an
+  error message that references :DOC topic SET-FOO instead of FOO
+  (because of the :topic argument), shows the table guard (because of
+  the :show argument), and prints a final coda (because of the :coda
+  argument).
+
+    ACL2 Error in ( TABLE FOO ...):  The TABLE :guard for FOO disallows
+    the combination of key MY-KEY and value MY-VAL.  The :guard requires
+    (FOO-CHECK KEY VAL WORLD).  See :DOC SET-FOO.  MY-VAL is an odd name
+    for a value!
+
+  It can be helpful for the table guard to be well-guarded.  For the
+  examples above, the error message from (table foo 3 'my-val) is
+  ugly because 3 fails to satisfy the guard of function-symbolp,
+  which is called by foo-check.  Here is a version of that function
+  that produces the desired error message.
+
+    (defun foo-check (key val world)
+      (declare (xargs :guard t)
+               (ignore val))
+      (and (symbolp key)        ; for guard of function-symbolp
+           (plist-worldp world) ; for guared of function-symbolp
+           (function-symbolp key world)))
+
+  Finally, here are two examples from the ACL2 source code.  They
+  illustrate that :show t is reasonable when the table guard is
+  concise, and that :topic is necessary when the table name is
+  undocumented.
+
+    (set-table-guard invisible-fns-table
+                     (invisible-fns-entryp key val world)
+                     :show t)
+
+    (set-table-guard inhibit-warnings-table
+                     (and (stringp key)
+                          (standard-string-p key))
+                     :topic set-inhibit-warnings)")
  (SET-TAU-AUTO-MODE
   (TAU-SYSTEM)
   "Turn on or off automatic (``greedy'') generation of :tau-system rules
@@ -134849,7 +134964,7 @@ Subtopics
   below, after giving some background information.
 
   Important Note: The table forms above are calls of a macro that
-  expand to involve the special variable [state].  This will prevent
+  expands to involve the special variable [state].  This will prevent
   you from accessing a table from within a hint or theory where you
   do not have the [state] variable.  However, the form
 
@@ -134896,7 +135011,9 @@ Subtopics
   :clear --- clear the table (so that every value is nil), or if val is
   supplied then set table to that value (which must be an alist).
 
-  :guard --- fetch or set the :guard of the table.
+  :guard --- fetch or set the :guard of the table.  See
+  [set-table-guard] for a convenient way to set a table's :guard to
+  produce user-friendly error messages.
 
   When the operations above suggest that the table or its :guard are
   modified, what is actually meant is that the current [state] is
@@ -135055,6 +135172,9 @@ Subtopics
   [ACL2-defaults-table]
       A [table] specifying certain defaults, e.g., the default
       [defun-mode]
+
+  [Set-table-guard]
+      Set the :guard for a [table]
 
   [Using-tables-efficiently]
       Notes on how to use tables efficiently")

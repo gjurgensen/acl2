@@ -102155,6 +102155,11 @@ it."
  @(':DO-NOT-INDUCT') hint or an @(see induction-depth-limit) being exceeded).
  Thanks to Eric Smith for a chat that helped lead to this improvement.</p>
 
+ <p>For most built-in @(see table)s, improved error messages for guard
+ failures.  This improvement was made by using a new macro that is also
+ available to ACL2 users, @(tsee set-table-guard), which adds a @(see table)
+ guard that produces a user-friendly error message when the guard fails.</p>
+
  <h3>New Features</h3>
 
  <p>The new zero-ary attachable system function, @(tsee heavy-linear-p), allows
@@ -102525,6 +102530,11 @@ it."
                           (setq x (cdr z)))))
                 (t (return y)))))
  })
+
+ <p>Fixed the failed redundancy check when setting a @(see table) guard that
+ returns two values.  For example, the form @('(table foo nil nil :guard (mv t
+ nil))') was not formerly seen as @(see redundant) when evaluating it a second
+ time.</p>
 
  <h3>Changes at the System Level</h3>
 
@@ -128459,6 +128469,124 @@ work on <tt>(q x)</tt>.</p>
  <p>The mode is stored in the defaults table, See @(see acl2-defaults-table).
  Thus, the mode may be set @(tsee local)ly in books.</p>")
 
+(defxdoc set-table-guard
+  :parents (table events)
+  :short "Set the @(':guard') for a @(see table)"
+  :long "<p>This macro is a convenient interface for setting a @('table')'s
+ guard to produce user-friendly error messages when the guard fails.  See @(see
+ table) for background on table guards.  As noted there, the table guard may
+ reference variables @('KEY'), @('VAL'), @('WORLD'), @('ENS'), and @('STATE');
+ that is the case for the @('guard') and @('coda') mentioned below.  Also
+ particularly relevant here is the fact that the table guard can return a
+ single value, but it can also return @('(mv flg msg)'); in the latter case, if
+ @('flg') is @('nil') then @('msg') is an error message.  @('Set-table-guard')
+ is supplied a guard term that returns a single value, but sets the table guard
+ to a corresponding term that returns values @('(mv flg msg')), where @('msg')
+ is constructed to be user-friendly when it is non-@('nil').</p>
+
+ @({
+ General Form:
+ (set-table-guard name guard
+                  :topic topic
+                  :show show
+                  :coda coda)
+ })
+
+ <p>where @('name') is the name of a table, @('guard') is a term returning a
+ single value that specifies the guard of that table, and the optional keyword
+ arguments are as follows.</p>
+
+ <ul>
+
+ <li>@(':Topic') defaults to @('name').  Otherwise it is the name of a @(see
+ documentation) topic to which the user is directed when the table guard
+ fails.</li>
+
+ <li>@(':Show') is @('nil') by default, in which case the guard term is not
+ included in the error message; otherwise it is included.</li>
+
+ <li>@(':Coda') is @('nil') by default.  Otherwise it should be a message (see
+ @(see msgp)) to be printed, preceded by two spaces, after the message that
+ would otherwise be printed.</li>
+
+ </ul>
+ 
+ <p>The error message when keywords are omitted is as shown in the example
+ below, but (of course) where @('FOO'), @('MY-KEY'), and @('MY-VAL') are
+ replaced respectively by the table name, the key, and the value.  We start our
+ example by evaluating the following two events.</p>
+
+ @({
+ (defun foo-check (key val world)
+   (declare (ignore val))
+   (function-symbolp key world))
+ (set-table-guard foo (foo-check key val world))
+ })
+
+ <p>Then evaluation of @('(table foo 'my-key 'my-val)') produces the following
+ error message.</p>
+
+ @({
+ ACL2 Error in ( TABLE FOO ...):  The TABLE :guard for FOO disallows
+ the combination of key MY-KEY and value MY-VAL.  See :DOC FOO.
+ })
+
+ <p>Here we show what happens to the error message if instead we set the table
+ guard as follows.  As before, it should be clear from this example what the
+ message would look like in general.  This time we evaluate:</p>
+
+ @({
+ (set-table-guard foo (foo-check key val world)
+                  :topic set-foo
+                  :show t
+                  :coda (and (eq val 'my-val)
+                             (msg \"~x0 is an odd name for a value!\"
+                                  val)))
+ })
+
+ <p>This time, evaluation of @('(table foo 'my-key 'my-val)') produces an error
+ message that references @(':DOC') topic
+ @('SET-FOO') instead of @('FOO') (because of the @(':topic') argument), shows
+ the table guard (because of the @(':show') argument), and prints a final coda
+ (because of the @(':coda') argument).</p>
+
+ @({
+ ACL2 Error in ( TABLE FOO ...):  The TABLE :guard for FOO disallows
+ the combination of key MY-KEY and value MY-VAL.  The :guard requires
+ (FOO-CHECK KEY VAL WORLD).  See :DOC SET-FOO.  MY-VAL is an odd name
+ for a value!
+ })
+
+ <p>It can be helpful for the table guard to be well-guarded.  For the examples
+ above, the error message from @('(table foo 3 'my-val)') is ugly because
+ @('3') fails to satisfy the guard of @('function-symbolp'), which is called by
+ @('foo-check').  Here is a version of that function that produces the desired
+ error message.</p>
+
+ @({
+ (defun foo-check (key val world)
+   (declare (xargs :guard t)
+            (ignore val))
+   (and (symbolp key)        ; for guard of function-symbolp
+        (plist-worldp world) ; for guared of function-symbolp
+        (function-symbolp key world)))
+ })
+
+ <p>Finally, here are two examples from the ACL2 source code.  They illustrate
+ that @(':show t') is reasonable when the table guard is concise, and that
+ @(':topic') is necessary when the table name is undocumented.</p>
+
+ @({
+ (set-table-guard invisible-fns-table
+                  (invisible-fns-entryp key val world)
+                  :show t)
+
+ (set-table-guard inhibit-warnings-table
+                  (and (stringp key)
+                       (standard-string-p key))
+                  :topic set-inhibit-warnings)
+ })")
+
 (defxdoc set-tau-auto-mode
   :parents (tau-system)
   :short "Turn on or off automatic (``greedy'') generation of @(':tau-system')
@@ -136298,7 +136426,7 @@ work on <tt>(q x)</tt>.</p>
  below, after giving some background information.</p>
 
  <p><b>Important Note:</b> The @('table') forms above are calls of a macro that
- expand to involve the special variable @(tsee state).  This will prevent you
+ expands to involve the special variable @(tsee state).  This will prevent you
  from accessing a table from within a hint or theory where you do not have the
  @(tsee state) variable.  However, the form</p>
 
@@ -136344,7 +136472,9 @@ work on <tt>(q x)</tt>.</p>
  <p>@(':clear') &mdash; clear the table (so that every value is nil), or if val
  is supplied then set table to that value (which must be an alist).</p>
 
- <p>@(':guard') &mdash; fetch or set the :guard of the table.</p>
+ <p>@(':guard') &mdash; fetch or set the @(':guard') of the table.  See @(see
+ set-table-guard) for a convenient way to set a table's @(':guard') to produce
+ user-friendly error messages.</p>
 
  <p>When the operations above suggest that the table or its @(':guard') are
  modified, what is actually meant is that the current @(see state) is redefined
