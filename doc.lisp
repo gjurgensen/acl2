@@ -5455,7 +5455,7 @@ Silent loading of ACL2 customization files
     * acl2-help list:
       {https://utlists.utexas.edu/sympa/info/acl2-help |
       https://utlists.utexas.edu/sympa/info/acl2-help}
-    * acl2-help list:
+    * acl2 list:
       {https://utlists.utexas.edu/sympa/info/acl2 |
       https://utlists.utexas.edu/sympa/info/acl2}")
  (ACL2-NUMBER-LISTP
@@ -98895,13 +98895,16 @@ Changes to Existing Features
   although up is highlighted in the documentation; see [walkabout]).
   Thanks to Eric Smith for suggesting up.
 
-  Arranged that [iprinting] that takes place during [break-rewrite] is
-  better reflected outside break-rewrite.  For examples, see
+  Arranged that [iprinting] that takes place during [break-rewrite] or
+  [cw] is better reflected outside break-rewrite.  For examples, see
   [community-books] input file
   books/system/tests/iprint-and-brr-input.lsp, which contains
-  comments on what went wrong in Version 8.5, and which generates
-  (via the [run-script] utility) the output in file
-  iprint-and-brr-log.txt in that directory.
+  comments on problematic interactions between break-rewrite and
+  iprinting in Version 8.5, and which generates (via the [run-script]
+  utility) the output in file iprint-and-brr-log.txt in that
+  directory.  Note that [read-object] now updates data structures so
+  that it can read back in what was just printed by [cw]; see a
+  comment in the definition of read-object in the ACL2 source code.
 
   When a defined function has a [declare] form with (optimize ...),
   that is now included in a declare form of the
