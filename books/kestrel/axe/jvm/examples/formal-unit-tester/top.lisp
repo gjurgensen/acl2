@@ -1,4 +1,4 @@
-; Top file for building all Axe JVM examples.
+; Top file for Axe JVM Formal Unit Tester examples
 ;
 ; Copyright (C) 2023 Kestrel Institute
 ;
@@ -10,7 +10,5 @@
 
 (in-package "ACL2")
 
-(include-book "aes-128-encrypt-light-and-spec")
-(include-book "aes-128-encrypt-regular-and-spec")
-
-(include-book "formal-unit-tester/top")
+(include-book "AbsLong")
+(include-book "Prefix")
