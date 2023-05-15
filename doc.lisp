@@ -122585,8 +122585,13 @@ Subtopics
   (4) If inert-args is nil (for example if keyword :inert-args is
   omitted), then when the generated ACL2 script is invoked with
   command line arguments, those arguments will be passed to the host
-  Lisp; otherwise they will not.  Thus for the example above, suppose
-  we invoke the generated script as follows.
+  Lisp.  If inert-args is supplied a string, then although those
+  arguments will be appended to the supplied arguments (see (5)
+  below), they will be ignored by the host Lisp (except for being
+  recorded; see (6) below).  Inert-args is nil by default (that is,
+  when omitted).  The other legal value of inert-args, t, is
+  discussed in (5) below.  Thus for the example above, suppose we
+  invoke the generated script as follows.
 
     my-saved_acl2 -a bcd -e fgh
 
