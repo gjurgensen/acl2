@@ -12911,7 +12911,7 @@ with any questions about building the community books.</p>")
 (defxdoc canonical-pathname
   :parents (programming-with-state acl2-built-ins)
   :short "The true absolute filename, with soft links resolved"
-  :long "<p>For the name @('fname') of a file, the form @('(Canonical-pathname
+  :long "<p>For the name @('fname') of a file, the form @('(canonical-pathname
  fname nil state)') evaluates to a Unix-style absolute filename representing
  the same file as @('fname'), but generally without any use of soft links in
  the name.  (Below, we explain the qualifier ``generally''.)  If however the
@@ -12919,7 +12919,7 @@ with any questions about building the community books.</p>")
  state)') is @('nil').  Thus, @('canonical-pathname') can be used as one would
  use the raw Lisp function @('probe-file').</p>
 
- <p>The specification of @('(Canonical-pathname fname dir-p state)') when
+ <p>The specification of @('(canonical-pathname fname dir-p state)') when
  @('dir-p') is not @('nil') is similar, except that if the specified file
  exists but is not a directory, then the result is @('nil').</p>
 
@@ -128526,7 +128526,7 @@ work on <tt>(q x)</tt>.</p>
  would otherwise be printed.</li>
 
  </ul>
- 
+
  <p>The error message when keywords are omitted is as shown in the example
  below, but (of course) where @('FOO'), @('MY-KEY'), and @('MY-VAL') are
  replaced respectively by the table name, the key, and the value.  We start our

@@ -15884,7 +15884,7 @@ Subtopics
   (PROGRAMMING-WITH-STATE ACL2-BUILT-INS)
   "The true absolute filename, with soft links resolved
 
-  For the name fname of a file, the form (Canonical-pathname fname nil
+  For the name fname of a file, the form (canonical-pathname fname nil
   state) evaluates to a Unix-style absolute filename representing the
   same file as fname, but generally without any use of soft links in
   the name.  (Below, we explain the qualifier ``generally''.)  If
@@ -15893,7 +15893,7 @@ Subtopics
   canonical-pathname can be used as one would use the raw Lisp
   function probe-file.
 
-  The specification of (Canonical-pathname fname dir-p state) when
+  The specification of (canonical-pathname fname dir-p state) when
   dir-p is not nil is similar, except that if the specified file
   exists but is not a directory, then the result is nil.
 
