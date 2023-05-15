@@ -34684,6 +34684,10 @@ current fast alists."
  actually look at the file and hence is not useful for reasoning about the
  write date.</p>
 
+ <p>This utility provides a reasonable way to determine whether a file exists,
+ like Common Lisp's @('probe-file'), according to whether @('D') is
+ non-@('nil') in when @('(mv D state)') is returned.</p>
+
  @(def file-write-date$)")
 
 (defxdoc finalize-event-user
@@ -108051,6 +108055,14 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  @('fm<..>!-to-string') functions.</li>
 
  </ol>")
+
+(defxdoc probe-file
+  :parents (io programming-with-state)
+  :short "Determine whether a file exists"
+  :long "<p>ACL2 does not directly support the Common Lisp function,
+ @('probe-file'), which indicates whether or not a given file exists.  But see
+ @(see canonical-pathname) and see @(see file-write-date$) for ways to check in
+ ACL2 whether a file exists.</p>")
 
 (defxdoc profile
   :parents (events)

@@ -38191,6 +38191,10 @@ Example 2
   [state].  The logical definition does not actually look at the file
   and hence is not useful for reasoning about the write date.
 
+  This utility provides a reasonable way to determine whether a file
+  exists, like Common Lisp's probe-file, according to whether D is
+  non-nil in when (mv D state) is returned.
+
   Function: <file-write-date$>
 
     (defun file-write-date$ (file state)
@@ -58546,6 +58550,9 @@ Subtopics
 
   [Printing-to-strings]
       Printing to strings instead of files or standard output
+
+  [Probe-file]
+      Determine whether a file exists
 
   [Proofs-co]
       The proofs character output channel
@@ -107055,6 +107062,14 @@ Remarks
       then the fm<..>-to-string functions will be free to insert such
       backslashes; but that pair will have no effect on the
       fm<..>!-to-string functions.")
+ (PROBE-FILE
+  (IO PROGRAMMING-WITH-STATE)
+  "Determine whether a file exists
+
+  ACL2 does not directly support the Common Lisp function, probe-file,
+  which indicates whether or not a given file exists.  But see
+  [canonical-pathname] and see [file-write-date$] for ways to check
+  in ACL2 whether a file exists.")
  (PROFILE
   (EVENTS)
   "Turn on profiling for one function
@@ -108599,6 +108614,9 @@ Subtopics
 
   [Pprogn]
       Evaluate a sequence of forms that return [state]
+
+  [Probe-file]
+      Determine whether a file exists
 
   [Read-ACL2-oracle]
       Pop the oracle field of the state
