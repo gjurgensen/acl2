@@ -46514,12 +46514,12 @@ current fast alists."
  without calling the ACL2 rewriter; the @(':expand') hint will be used by the
  rewriter in subsequent goals.</p>
 
- <p>A very common hint is the @(':use') hint, which in general takes as its
- value a list of ``lemma instances'' (see @(see lemma-instance)) but which
- allows a single lemma name as a special case.  In each case, a goal @('G') is
- replaced by a new goal @('(IMPLIES P G)'), where @('P') is the theorem
- specified by the (conjunction of the) lemma instances provided.  Here are
- some examples.</p>
+ <p>A very common hint is the @(':use') hint, which is described below.  In
+ general it takes as its value a list of ``lemma instances'' (see @(see
+ lemma-instance)), but it allows special cases, including a single lemma name.
+ In each case, a goal @('G') is replaced by a new goal @('(IMPLIES P G)'),
+ where @('P') is the theorem specified by the (conjunction of the) lemma
+ instances provided.  Here are some examples.</p>
 
  @({
   ; Attach :use hint to the top-level goal G, which is named \"Goal\",
