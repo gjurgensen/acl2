@@ -1,6 +1,5 @@
-; Apply the Formal Unit Tester to Prefix
+; Apply the Formal Unit Tester to BinarySearch
 ;
-; Copyright (C) 2016-2020 Kestrel Technology, LLC
 ; Copyright (C) 2020-2023 Kestrel Institute
 ;
 ; License: A 3-clause BSD license. See the file books/3BSD-mod.txt.
@@ -15,9 +14,8 @@
 ;; the Formal Unit Tester would be invoked from the command line or from within
 ;; an IDE.
 
-; (depends-on "Prefix.class")
+; (depends-on "BinarySearch.class")
 
 (include-book "kestrel/axe/jvm/formal-unit-tester" :dir :system)
 
-;; TODO: BV-ARRAY-READ-OF-BV-ARRAY-WRITE introduces <
-(test-file "Prefix.java")
+(test-file "BinarySearch.java")
