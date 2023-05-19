@@ -105294,6 +105294,10 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  involved in the implicit constraints (and those functions are automatically
  included among the supporters, even when not specified by the user).</p>
 
+ <p>For examples of such an application, including explanatory comments, see
+ @(see community-books) and @('books/demos/partial-encapsulate.lisp') and
+ @('books/demos/include-raw-examples/mem-access-sound/mem.lisp').</p>
+
  <p>For an example of such an application, including explanatory comments, see
  @(see community-book) @('books/demos/partial-encapsulate.lisp').</p>
 
