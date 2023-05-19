@@ -12911,7 +12911,7 @@ with any questions about building the community books.</p>")
 (defxdoc canonical-pathname
   :parents (programming-with-state acl2-built-ins)
   :short "The true absolute filename, with soft links resolved"
-  :long "<p>For the name @('fname') of a file, the form @('(Canonical-pathname
+  :long "<p>For the name @('fname') of a file, the form @('(canonical-pathname
  fname nil state)') evaluates to a Unix-style absolute filename representing
  the same file as @('fname'), but generally without any use of soft links in
  the name.  (Below, we explain the qualifier ``generally''.)  If however the
@@ -12919,7 +12919,7 @@ with any questions about building the community books.</p>")
  state)') is @('nil').  Thus, @('canonical-pathname') can be used as one would
  use the raw Lisp function @('probe-file').</p>
 
- <p>The specification of @('(Canonical-pathname fname dir-p state)') when
+ <p>The specification of @('(canonical-pathname fname dir-p state)') when
  @('dir-p') is not @('nil') is similar, except that if the specified file
  exists but is not a directory, then the result is @('nil').</p>
 
@@ -29182,8 +29182,8 @@ ld) and @(tsee include-book)"
  <li>@('x') is of the form @('(SKIP-PROOFS x1)') where @('x1') is
  an embedded event form;</li>
 
- <li>@('x') is of the form @('(WITH-CBD str x1)'), where @('x1') is an embedded
- event form;</li>
+ <li>@('x') is of the form @('(WITH-CBD str x1)'), where @('str') is a string
+ and @('x1') is an embedded event form;</li>
 
  <li>@('x') is of the form @('(WITH-GUARD-CHECKING-EVENT c x1)') or
  @('(WITH-GUARD-CHECKING-EVENT (QUOTE c) form)'), where @('c') is a member of
@@ -34683,6 +34683,10 @@ current fast alists."
  second argument is the ACL2 @(tsee state).  The logical definition does not
  actually look at the file and hence is not useful for reasoning about the
  write date.</p>
+
+ <p>This utility provides a reasonable way to determine whether a file exists,
+ like Common Lisp's @('probe-file'), according to whether @('D') is
+ non-@('nil') in when @('(mv D state)') is returned.</p>
 
  @(def file-write-date$)")
 
@@ -46510,12 +46514,12 @@ current fast alists."
  without calling the ACL2 rewriter; the @(':expand') hint will be used by the
  rewriter in subsequent goals.</p>
 
- <p>A very common hint is the @(':use') hint, which in general takes as its
- value a list of ``lemma instances'' (see @(see lemma-instance)) but which
- allows a single lemma name as a special case.  In each case, a goal @('G') is
- replaced by a new goal @('(IMPLIES P G)'), where @('P') is the theorem
- specified by the (conjunction of the) lemma instances provided.  Here are
- some examples.</p>
+ <p>A very common hint is the @(':use') hint, which is described below.  In
+ general it takes as its value a list of ``lemma instances'' (see @(see
+ lemma-instance)), but it allows special cases, including a single lemma name.
+ In each case, a goal @('G') is replaced by a new goal @('(IMPLIES P G)'),
+ where @('P') is the theorem specified by the (conjunction of the) lemma
+ instances provided.  Here are some examples.</p>
 
  @({
   ; Attach :use hint to the top-level goal G, which is named \"Goal\",
@@ -102239,7 +102243,12 @@ it."
  the connected book directory (see @(see cbd)).  Calls of @('with-cbd') are
  allowed in @(see books) as well as in @(tsee encapsulate) and @(tsee progn)
  @(see events); see @(see embedded-event-form).  Thanks to Sol Swords for
- requesting that @('with-cbd') be legal in embedded events.</p>
+ requesting that @('with-cbd') be legal in embedded events.  Thanks to Sol
+ Swords and Mertcan Temel for reporting a bug in an initial implementation.</p>
+
+ <p>The new utility, @(tsee with-current-package), evaluates a given form with
+ respect to an indicated @(see current-package).  Thanks to Sol Swords for
+ requesting this utility.</p>
 
  <p>See @(see fast-cert) for a &ldquo;fast-cert&rdquo; mode for faster, but
  possibly unsound, book certification, in particular when using a saved
@@ -108051,6 +108060,14 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  @('fm<..>!-to-string') functions.</li>
 
  </ol>")
+
+(defxdoc probe-file
+  :parents (io programming-with-state)
+  :short "Determine whether a file exists"
+  :long "<p>ACL2 does not directly support the Common Lisp function,
+ @('probe-file'), which indicates whether or not a given file exists.  But see
+ @(see canonical-pathname) and see @(see file-write-date$) for ways to check in
+ ACL2 whether a file exists.</p>")
 
 (defxdoc profile
   :parents (events)
@@ -123774,9 +123791,13 @@ work on <tt>(q x)</tt>.</p>
 
  <p>(4) If @('inert-args') is @('nil') (for example if keyword @(':inert-args')
  is omitted), then when the generated ACL2 script is invoked with command line
- arguments, those arguments will be passed to the host Lisp; otherwise they
- will not.  Thus for the example above, suppose we invoke the generated script
- as follows.</p>
+ arguments, those arguments will be passed to the host Lisp.  If
+ @('inert-args') is supplied a string, then although those arguments will be
+ appended to the supplied arguments (see (5) below), they will be ignored by
+ the host Lisp (except for being recorded; see (6) below).  @('Inert-args') is
+ @('nil') by default (that is, when omitted).  The other legal value of
+ @('inert-args'), @('t'), is discussed in (5) below.  Thus for the example
+ above, suppose we invoke the generated script as follows.</p>
 
  @({
   my-saved_acl2 -a bcd -e fgh
@@ -128510,7 +128531,7 @@ work on <tt>(q x)</tt>.</p>
  would otherwise be printed.</li>
 
  </ul>
- 
+
  <p>The error message when keywords are omitted is as shown in the example
  below, but (of course) where @('FOO'), @('MY-KEY'), and @('MY-VAL') are
  replaced respectively by the table name, the key, and the value.  We start our
@@ -152280,19 +152301,27 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
 
 (defxdoc with-cbd
   :parents (books-reference)
-  :short "To set the connected book directory"
-  :long "<p>@('With-cbd') provides a way to set the connected book directory
- (see @(see cbd)) within a given scope.  For example, evaluation of the
- following form is equivalent to evaluation of the form, @('(include-book
- \"arithmetic/top\" :dir :system)').</p>
+  :short "To bind the connected book directory"
+  :long "<p>@('With-cbd') sets the connected book directory (see @(see cbd))
+  within its scope.</p>
 
  @({
+ Example Forms:
+
+ ; Equivalent to (include-book \"dir1/dir2/foo\"):
+ (with-cbd \"dir1\"
+           (include-book \"dir2/foo\"))
+
+ ; Equivalent to evaluation of the form,
+ ; (include-book \"arithmetic/top\" :dir :system)'):
  (with-cbd (cdr (assoc-eq :system (project-dir-alist (w state))))
            (include-book \"arithmetic/top\"))
 
  })
 
- <p>See @(see cbd) for a description of the connected book directory.</p>
+ <p>See @(see cbd) for a description of the connected book directory.  The
+ &ldquo;Technical Remark&rdquo; there, about Lisp using the @('cbd') to
+ elaborate relative pathnames, applied to @('with-cbd') as well.</p>
 
  @({
  General Form:
@@ -152301,16 +152330,109 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
 
  <p>where @('str') evaluates to a nonempty string that represents the desired
  directory (see @(see pathname)) and @('form') evaluates to an @(see
- error-triple).  Thus, the effect of @('(with-cbd str form)') is to evaluate
- first @('(set-cbd str)') and then to evaluate @('form'), after which the
- connected book directory is restored to the value it had before that
- evaluation of @('set-cbd').  However, the implementation is designed so that
- the connected book directory is restored even when the evaluation of @('form')
- causes an error.</p>
+ error-triple).</p>
+
+ <p>The effect of @('(with-cbd str form)') is to evaluate first @('(set-cbd
+ str)') and then to evaluate @('form'), after which the connected book
+ directory is restored to the value it had before that evaluation of
+ @('set-cbd').  However, the implementation is designed so that the connected
+ book directory is restored even when the evaluation of @('form') causes an
+ error.</p>
 
  <p>The form @('(with-cbd str ev)') is an @(see event) form if @('ev') is an
  event form; thus, it may occur in @(see books) as well as @(tsee encapsulate)
- and @(tsee progn) events.  See @(see embedded-event-form).</p>")
+ and @(tsee progn) events.  See @(see embedded-event-form).  But in an @(see
+ event) context, @('str') must be a string, not merely an expression that
+ evaluates to a string.</p>
+
+ <p>Finally, note that Lisp compilers may vary in how they handle functions
+ defined within the scope of @('with-cbd').  If you find an example of slower
+ execution caused by using @('with-cbd'), please feel free to send it to the
+ ACL2 implementors.</p>")
+
+(defxdoc with-current-package
+  :parents (books-reference)
+  :short "To bind the @(see current-package)"
+  :long "<p>Evaluation of a form @('(with-current-package \"pkg\" form'))
+ causes @('form') to be evaluated with the @(see current-package) bound to
+ @('\"pkg\"').</p>
+
+ <p>Example and <b>WARNING</b>.  The current-package is not modified until
+ after the form is read!  Consider the following log that was produced when the
+ value of the current-package was the default, @('\"ACL2\"').</p>
+
+ @({
+ ACL2 !>(with-current-package \"ACL2-USER\"
+                              (value (cw \"~x0~%\" 'abcd)))
+ ACL2::ABCD
+  NIL
+ ACL2 !>
+ })
+
+ <p>We see that the call of @(tsee cw) did its printing relative to the
+ @('\"ACL2-USER\"') package, producing output @('\"ACL2::ABCD\"').  This
+ illustrates that the form was <i>read</i> with respect to package
+ @('\"ACL2\"') but that its <i>evaluation</i> took place with respect to
+ package @('\"ACL2-USER\"').</p>
+
+ @({
+ General Form:
+ (with-current-package str form)
+ })
+
+ <p>where @('str') evaluates to a nonempty string that represents the desired
+ package (see @(see current-package)) and @('form') evaluates to an @(see
+ error-triple).</p>
+
+ <p>Evaluation of @('(with-current-package str form)') first switches to the
+ indicated package, as with @('(in-package str)'), and evaluates @('form'),
+ after which the current-package is restored to the value it had before that
+ evaluation of @('with-current-package').  The implementation is designed so
+ that the current-package is restored even when the evaluation of @('form')
+ causes an error.</p>
+
+ <p>The following example drives home the behavior of
+ @('with-current-package'); explanation follows.</p>
+
+ @({
+ ACL2 !>'common-lisp::defun
+ DEFUN
+ ACL2 !>'acl2-user::defun
+ DEFUN
+ ACL2 !>(with-current-package
+         \"ACL2-USER\"
+         (er-progn (set-current-package \"ACL2-PC\" state)
+                   (value (cw \"~x0~%\" 'defun))))
+ COMMON-LISP::DEFUN
+  NIL
+ ACL2 !>
+ })
+
+ <p>The symbol @('common-lisp::defun') is imported from the
+ @('\"COMMON-LISP\"') package into both the @('\"ACL2\"') package and, as shown
+ in the first two evaluation results above, the @('\"ACL2-USER\"') package.
+ But it's not imported into the @('\"ACL2-PC\"') package.  The call above of
+ @('with-current-package') reads @(''defun') into the current package,
+ @('\"ACL2\"').  Then for evaluation the package changes to @('\"ACL2-USER\"');
+ then the package is changed again to @('\"ACL2-PC\"') before evaluating the
+ @(tsee cw) call in that package, necessitating the @('\"COMMON-LISP::\"')
+ prefix since the @('defun') symbol in that @('cw') call is not in the
+ @('\"ACL2-PC\"') package.  But notice that the prompt comes back as @('\"ACL2
+ !>\"'), indicating that we are back in the @('\"ACL2\"') package.  The
+ original package is restored after the @('with-current-package') call
+ completes evaluation, even when the current-package is changed during
+ evaluation.</p>
+
+ <p>The form @('(with-current-package str ev)') is an @(see event) form if
+ @('ev') is an event form; thus, it may occur in @(see books) as well as @(tsee
+ encapsulate) and @(tsee progn) events.  See @(see embedded-event-form).  But
+ in an @(see event) context, @('str') must be a string, not merely an
+ expression that evaluates to a string.</p>
+
+ <p>Finally, note that Lisp compilers may vary in how they handle functions
+ defined within the scope of @('with-current-package').  If you find an example
+ of slower execution caused by using @('with-current-package'), please feel
+ free to send it to the ACL2 implementors.</p>")
 
 (defxdoc with-fast-alist
   :parents (fast-alists acl2-built-ins)
