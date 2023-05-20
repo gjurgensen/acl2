@@ -103210,6 +103210,10 @@ Applications
   automatically included among the supporters, even when not
   specified by the user).
 
+  For examples of such an application, including explanatory comments,
+  see [community-books] and books/demos/partial-encapsulate.lisp and
+  books/demos/include-raw-examples/mem-access-sound/mem.lisp.
+
   For an example of such an application, including explanatory
   comments, see [community-book]
   books/demos/partial-encapsulate.lisp.
