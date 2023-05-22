@@ -3516,8 +3516,8 @@
  <p>the checker term is evaluated on @('val') to check that @('val') is of the
  expected shape.  Provided @('val') passes the check, the generator term is
  used to compute a standard hint.  Like computed hints, the generator of a
- custom keyword hint is allowed to inspect the actual clause on which it is
- being fired.  Indeed, it is allowed to inspect the entire list of hints
+ custom keyword hint is allowed to inspect the actual @(see clause) on which it
+ is being fired.  Indeed, it is allowed to inspect the entire list of hints
  (standard and custom) supplied for that clause.  Thus, in the most general
  case, a custom keyword hint is just a very special kind of computed hint.</p>
 
@@ -4372,7 +4372,7 @@ and @(tsee include-book)"
  CONGRUENCE), see @(see EQUIVALENCE), see @(see DEFEQUIV), and see @(see
  DEFREFINEMENT).</li>
 
- <li>For meta rules and clause processors see @(see META), see @(see
+ <li>For meta rules and @(see clause) processors see @(see META), see @(see
  DEFEVALUATOR), see @(see CLAUSE-PROCESSOR), see @(see
  DEFINE-TRUSTED-CLAUSE-PROCESSOR) (for connecting with external tools, such as
  SAT solvers), and See @(see EXTENDED-METAFUNCTIONS) (for @(see state) and
@@ -12585,7 +12585,7 @@ with any questions about building the community books.</p>")
 
 (defxdoc built-in-clause
   :parents (rule-classes)
-  :short "To build a clause into the simplifier"
+  :short "To build a @(see clause) into the simplifier"
   :long "<p>See @(see rule-classes) for a general discussion of rule classes,
  including how they are used to build rules from formulas and a discussion of
  the various keywords in a rule class description.</p>
@@ -12606,8 +12606,9 @@ with any questions about building the community books.</p>")
 
  <p>A @(':built-in-clause') rule can be built from any formula other than
  propositional tautologies.  Roughly speaking, the system uses the list of
- built-in clauses as the first method of proof when attacking a new goal.  Any
- goal that is subsumed by a built in clause is proved ``silently.''</p>
+ built-in @(see clause)s as the first method of proof when attacking a new
+ goal.  Any goal that is subsumed by a built in clause is proved
+ ``silently.''</p>
 
  <p>ACL2 maintains a set of ``built-in'' clauses that are used to short-circuit
  certain theorem proving tasks.  We discuss this at length below.  When a
@@ -13206,11 +13207,11 @@ with any questions about building the community books.</p>")
  })
 
  <p>With the setting above, which is the default, @('clausify') will not try
- subsumption/replacement if more than 500 clauses are involved.  Furthermore,
- the simplifier, as it sweeps over a clause, will inhibit further case splits
- when it has accumulated 100 subgoals.  To implement this inhibition, ACL2
- refuses to rewrite subsequent literals, although it continues to split on any
- @('IF') calls in those literals.</p>
+ subsumption/replacement if more than 500 @(see clause)s are involved.
+ Furthermore, the simplifier, as it sweeps over a clause, will inhibit further
+ case splits when it has accumulated 100 subgoals.  To implement this
+ inhibition, ACL2 refuses to rewrite subsequent literals, although it continues
+ to split on any @('IF') calls in those literals.</p>
 
  <p>The following example illustrates how the latter restriction &mdash;
  specifically, not rewriting subsequent literals to avoid further case splits
@@ -14951,11 +14952,185 @@ with any questions about building the community books.</p>")
  @('(checkpoint-forced-goals') @('t')) has been executed.  To return to the
  default behavior, use the command @('(checkpoint-forced-goals nil)').</p>")
 
+(defxdoc clause
+  :parents (miscellaneous)
+  :short "A representation of prover goals"
+  :long "<p>In ACL2, a <i>clause</i> is a list of @(see term)s, and the meaning
+ of a clause is the ACL2 disjunction of those terms where a term @('p') is
+ considered ``false'' if ``@('p') = @('nil')'' and is true otherwise.  The
+ elements of a clause are called ``literals,'' even though they are just terms.
+ For example the goal @('(IMPLIES (AND p q) r)') is internally represented as
+ the clause @('((NOT p) (NOT q) r)').  The literals of that clause are the
+ terms @('(NOT p)'), @('(NOT q)'), and @('r').</p>
+
+ <p>The ACL2 prover acts on clauses: a goal is represented as a clause, and
+ each of the resulting subgoals is represented as a clause.  Thus, the terms
+ (literals) in a clause are all translated (see @(see term)).</p>
+
+ <p>To be precise, suppose that @('(L1 .. Lk M)') is a clause containing at
+ least two literals.  ACL2 proof output displays that clause as an implication;
+ this is called &ldquo;prettyifying a clause&rdquo;.  Below, @('~Li') denotes
+ the <i>negation</i> of @('Li') in the following sense: if @('Li') is of the
+ form @('(NOT P)') then @('~Li') designates @('P'), and otherwise @('~Li')
+ designates @('(NOT Li)').</p>
+
+ <blockquote>
+ <p><b>Prettyifying a clause with at least two literals</b></p>
+ @({
+ (L1 .. Lk M)
+ })
+ <p>transforms it to the term</p>
+ @({
+ (IMPLIES (AND ~L1 ~L2 ... ~Lk)
+          M).
+ })
+ </blockquote>
+
+ <p>Of course, the disjunction represented by the clause is propositionally
+ equivalent to the resulting call of @('IMPLIES').</p>
+
+ <p>It is sometimes helpful to understand that ACL2's proof processes all
+ operate on clauses.  In particular, proof output &mdash; obtained when @(see
+ gag-mode) is turned off or when using @(':')@(tsee pso) or related utilities
+ &mdash; may include a parenthetical remark as follows.  <b>WARNING</b>: This
+ parenthetical remark is printed only by the main simplifier, not by the
+ preprocessor (see @(see simple)).</p>
+
+ @({
+ This simplifies (dropping false conclusion; see :DOC clause), using ....
+ })
+
+ <p>What this remark signifies is that the last literal of the clause is false
+ in at least one subgoal, and therefore does not appear in it (even in
+ rewritten form).  Let's see how that works with the following example.</p>
+
+ @({
+ (defstub foo (x) t)
+ (defaxiom foo-consp (implies (consp x) (foo x)))
+ (set-gag-mode nil)
+ (thm (implies (and (consp x) (natp (car x))) (not (foo x))))
+ })
+
+ <p>The proof attempt starts as follows.</p>
+
+ @({
+ ACL2 !>(thm (implies (and (consp x) (natp (car x))) (not (foo x))))
+
+ By the simple :definition NATP we reduce the conjecture to
+
+ Goal'
+ (IMPLIES (AND (CONSP X)
+               (INTEGERP (CAR X))
+               (<= 0 (CAR X)))
+          (NOT (FOO X))).
+
+ This simplifies (dropping false conclusion; see :DOC clause), using
+ the :rewrite rule FOO-CONSP, to
+
+ Goal''
+ (IMPLIES (AND (CONSP X) (INTEGERP (CAR X)))
+          (< (CAR X) 0)).
+ })
+
+ <p>The change from @('Goal'') to @('Goal''') may be jarring because the
+ &ldquo;conclusion&rdquo; &mdash; the second argument of the displayed
+ @('IMPLIES') call &mdash; has changed drastically.  Let's analyze this change
+ from the perspective of the goals printed; then we'll look at it from the
+ perspective of clauses.</p>
+
+ <p>A moment's reflection shows that because of the rule @('FOO-CONSP'),
+ @('Goal'') is equivalent to</p>
+
+ @({
+ (IMPLIES (AND (CONSP X)
+               (INTEGERP (CAR X))
+               (<= 0 (CAR X)))
+          NIL).
+ })
+
+ <p>And a little more reflection shows that the term above is propositionally
+ equivalent to @('Goal''') above.</p>
+
+ <p>But this may make more sense if we consider the clauses on which the prover
+ operated.  Here are the clauses for @('Goal'') and @('Goal'''); the
+ corresponding @('IMPLIES') terms displayed above are obtained by prettyifying
+ the respective clauses (in the sense of &ldquo;prettyifying&rdquo; discussed
+ above).</p>
+
+ @({
+ Goal'
+ ((NOT (CONSP X))
+  (NOT (INTEGERP (CAR X)))
+  (< (CAR X) '0)
+  (NOT (FOO X)))
+
+ Goal''
+ ((NOT (CONSP X))
+  (NOT (INTEGERP (CAR X)))
+  (< (CAR X) '0))
+ })
+
+ <p>For each of these clauses, the third literal, @('(< (CAR X) '0)'), is just
+ the negation of the (untranslated) @(see term), @('(<= 0 (CAR X))'), shown in
+ the prover output.</p>
+
+ <p>Recall that a clause represents the disjunction of its literals.  Since the
+ last literal of @('Goal''), @('(NOT (FOO X))'), rewrote to @('NIL') using the
+ rule @('FOO-CONSP'), it was dropped when creating @('Goal'''): after all,
+ @('(OR P NIL)') is propositionally equivalent to @('P').  So in @('Goal''')
+ the last literal is @('(< (CAR X) '0)').  Therefore, the conclusion of each
+ @('IMPLIES') term obtained by prettyifying the clause has changed from
+ @('(NOT (FOO X))') to @('(< (CAR X) '0)').</p>
+
+ <p>Finally, note that although &ldquo;dropping false conclusion&rdquo;
+ signifies that the conclusion was dropped in at least one subgoal, if however
+ there are at least two subgoals then it might not be dropped in all of them.
+ Consider the following variant of the earlier example.</p>
+
+ @({
+ (defstub foo (x) t)
+ (defaxiom foo-consp (implies (consp x) (foo x)))
+ (set-gag-mode nil)
+ (defstub bar (x) t)
+ ; The proof fails for the following event (not important here).
+ (thm (implies (and (or (bar x) (consp x)) (natp (car x)))
+               (not (foo x)))
+      :otf-flg t)
+ })
+
+ <p>The output includes the following.</p>
+
+ @({
+ Goal'
+ (IMPLIES (AND (OR (BAR X) (CONSP X))
+               (INTEGERP (CAR X))
+               (<= 0 (CAR X)))
+          (NOT (FOO X))).
+
+ This simplifies (dropping false conclusion; see :DOC clause), using
+ the :rewrite rule FOO-CONSP, to the following two conjectures.
+
+ Subgoal 2
+ (IMPLIES (AND (BAR X)
+               (INTEGERP (CAR X))
+               (<= 0 (CAR X)))
+          (NOT (FOO X))).
+
+ [[.. output elided ..]]
+
+ Subgoal 1
+ (IMPLIES (AND (CONSP X) (INTEGERP (CAR X)))
+          (< (CAR X) 0)).
+ })
+
+ <p>We see that the conclusion was false, hence dropped, in Subgoal 1, but
+ remained in Subgoal 2.</p>")
+
 (defxdoc clause-identifier
   :parents (goal-spec)
   :short "The internal form of a @(see goal-spec)"
-  :long "<p>To each goal-spec, @('str'), there corresponds a clause-identifier
- produced by @('(parse-clause-id str)').  For example,</p>
+  :long "<p>To each goal-spec, @('str'), there corresponds a @(see
+ clause)-identifier produced by @('(parse-clause-id str)').  For example,</p>
 
  @({
   (parse-clause-id \"[2]Subgoal *4.5.6/7.8.9'''\")
@@ -15043,7 +15218,7 @@ with any questions about building the community books.</p>")
  <h4>INTRODUCTION</h4>
 
  <p>A @(':clause-processor') rule installs a simplifier at the level of goals,
- where a goal is represented as a <i>clause</i>: a list of @(see term)s that is
+ where a goal is represented as a @(see clause): a list of @(see term)s that is
  implicitly viewed as a disjunction (the application of @(tsee OR)).  For
  example, if ACL2 prints a goal in the form @('(implies (and p q) r)'), then
  the clause might be the one-element list containing the internal
@@ -16737,10 +16912,10 @@ with any questions about building the community books.</p>")
 
  <p>It remains only to describe the bindings of the free variables.</p>
 
- <p>Suppose the theorem prover is working on some clause, clause, named by some
- @(tsee goal-spec), e.g., \"Subgoal *1/2'''\" in some logical world, world.
- Corresponding to the printed @('goal-spec') is an internal data structure
- called a ``clause identifier'' id.  See @(see clause-identifier).</p>
+ <p>Suppose the theorem prover is working on a @(see clause) named by some
+ @(tsee goal-spec), e.g., \"Subgoal *1/2'''\".  Corresponding to the printed
+ @('goal-spec') is an internal data structure called a ``clause identifier''
+ id.  See @(see clause-identifier).</p>
 
  <p>In the case of a common hint, the hint applies if the goal-spec of the hint
  is the same as the goal-spec of the clause in question.</p>
@@ -16803,8 +16978,9 @@ with any questions about building the community books.</p>")
   :parents (basics acl2-built-ins)
   :short "Conditional based on if-then-else"
   :long "<p>@('Cond') is the construct for IF, THEN, ELSE IF, ...  The test is
- against @('nil').  The argument list for @('cond') is a list of ``clauses'',
- each of which is a list.  In ACL2, clauses must have length 1 or 2.</p>
+ against @('nil').  The argument list for @('cond') is a list of ``cond
+ clauses'', each of which is a list.  In ACL2, cond clauses must have length 1
+ or 2.</p>
 
  @({
  ; Example 1.  The form
@@ -16887,13 +17063,13 @@ with any questions about building the community books.</p>")
  propositionally equivalent to @('(memb e y)'), provided @('x') and @('y') are
  @('set-equal').  The outside equivalence is @(tsee iff) and the inside
  equivalence for the second argument is @('set-equal').  If we see a @('memb')
- expression in a propositional context, e.g., as a literal of a clause or test
- of an @(tsee if) (but not, for example, as an argument to @(tsee cons)), we
- can rewrite its second argument maintaining @('set-equality').  For example, a
- rule stating the commutativity of @(tsee append) (modulo set-equality) could
- be applied in this context.  Since equality is a refinement of all equivalence
- relations, all equality rules are always available.  See @(see
- refinement).</p>
+ expression in a propositional context, e.g., as a literal of a @(see clause)
+ or test of an @(tsee if) (but not, for example, as an argument to @(tsee
+ cons)), we can rewrite its second argument maintaining @('set-equality').  For
+ example, a rule stating the commutativity of @(tsee append) (modulo
+ set-equality) could be applied in this context.  Since equality is a
+ refinement of all equivalence relations, all equality rules are always
+ available.  See @(see refinement).</p>
 
  <p>All known congruence rules about a given outside equivalence and @('fn')
  can be used independently.  That is, consider two congruence rules with the
@@ -22366,7 +22542,7 @@ subtree of X with T, without duplication.</p>
   :long "<p>This @(see documentation) assumes familiarity with
  @(':clause-processor') rules; see @(see clause-processor).  Briefly put, a
  <i>clause-processor</i> is a user-defined function that takes as input the
- ACL2 representation of a goal &mdash; a <i>clause</i> &mdash; and returns a
+ ACL2 representation of a goal &mdash; a @(see clause) &mdash; and returns a
  list of goals (i.e., a list of clauses).  A @(':clause-processor') rule is a
  way to inform ACL2 that a clause-processor has been proved correct and now may
  be specified in @(':clause-processor') @(see hints).</p>
@@ -26820,11 +26996,11 @@ ld) and @(tsee include-book)"
  the line just below it.  Moreover, lines are sometimes collapsed to make the
  display more compact.  Consider for example the first few lines.  Above, we
  are proving a theorem named @('WP-ZCOEF-G-MULTIPLIES').  Lines 1 and 2 show
- the clause simplification process invokes the rewriter on the 18th literal.
- (Recall that a clause is a disjunction of literals; for example the clause
- @('{(NOT A), (NOT B), C}') would be displayed as @('(IMPLIES (AND A B) C)').)
- This 18th literal mentioned on line 2 is a function call @('(f arg1 ...)'),
- and ``@('argument(s) 1')'' indicates that the rewriter, which works
+ the @(see clause) simplification process invokes the rewriter on the 18th
+ literal.  (Recall that a clause is a disjunction of literals; for example the
+ clause @('{(NOT A), (NOT B), C}') would be displayed as @('(IMPLIES (AND A B)
+ C)').)  This 18th literal mentioned on line 2 is a function call @('(f arg1
+ ...)'), and ``@('argument(s) 1')'' indicates that the rewriter, which works
  inside-out, is considering the first argument (``@('arg1')'').  Thus the
  display could instead have shown the following.</p>
 
@@ -29105,7 +29281,7 @@ ld) and @(tsee include-book)"
  in the conjecture by the generalized instantiated @('lhs').  An occurrence of
  @('vi') is ``@('equiv')-hittable'' if sufficient congruence rules (see @(see
  defcong)) have been proved to establish that the propositional value of the
- clause is not altered by replacing that occurrence of @('vi') by some
+ @(see clause) is not altered by replacing that occurrence of @('vi') by some
  @('equiv')-equivalent term.</p>
 
  <p>If an @(':elim') rule is not applied when you think it should have been,
@@ -33099,13 +33275,13 @@ ld) and @(tsee include-book)"
 
  <p>@('(mfc-clause mfc)'): returns the current goal, in clausal form.  A clause
  is a list of ACL2 terms, implicitly denoting the disjunction of the listed
- terms.  The clause returned by @('mfc-clause') is the clausal form of the
- translation (see @(see trans)) of the goal or subgoal on which the rewriter is
- working.  When a metafunction calls @('mfc-clause'), the term, @('term-mf'),
- being rewritten by the metafunction has resulted from an attempt to rewrite
- some term, @('term-cl'), in this clause.  These could be the same term, but
- that need not be the case: for example, @('term-mf') could be a term to which
- the rewriter has backchained while trying to rewrite @('term-cl'), or
+ terms.  The @(see clause) returned by @('mfc-clause') is the clausal form of
+ the translation (see @(see trans)) of the goal or subgoal on which the
+ rewriter is working.  When a metafunction calls @('mfc-clause'), the term,
+ @('term-mf'), being rewritten by the metafunction has resulted from an attempt
+ to rewrite some term, @('term-cl'), in this clause.  These could be the same
+ term, but that need not be the case: for example, @('term-mf') could be a term
+ to which the rewriter has backchained while trying to rewrite @('term-cl'), or
  @('term-mf') could arise from the right-hand side of a rewrite rule applied to
  @('term-cl').</p>
 
@@ -37252,15 +37428,15 @@ current fast alists."
  <p>This report means that the <i>k</i>th use of forward chaining in the most
  recent proof attempt was done on behalf of <i>token</i> (see below).  The
  initial context (set of assumptions) consisted of the negations of the
- literals listed in the clause shown and the initial candidate trigger terms
- are all those appearing in that clause.  This invocation of forward chaining
- proceeded to do <i>m</i> rounds of successive extensions of the initial
- context and ultimately either reached a contradiction (<i>bool</i> = @('T'))
- or returned an extended context (<i>bool</i> = @('NIL')).  Note that reaching
- a contradiction from the negations of all the literals in a clause is ``good''
- because it means the clause is true.  The report concludes with the final
- status of all the forward chaining rules fired during the process.  We explain
- how to read one of these activation reports in the next section.</p>
+ literals listed in the @(see clause) shown and the initial candidate trigger
+ terms are all those appearing in that clause.  This invocation of forward
+ chaining proceeded to do <i>m</i> rounds of successive extensions of the
+ initial context and ultimately either reached a contradiction (<i>bool</i> =
+ @('T')) or returned an extended context (<i>bool</i> = @('NIL')).  Note that
+ reaching a contradiction from the negations of all the literals in a clause is
+ ``good'' because it means the clause is true.  The report concludes with the
+ final status of all the forward chaining rules fired during the process.  We
+ explain how to read one of these activation reports in the next section.</p>
 
  <p>Forward chaining is done on behalf of many proof techniques in the system.
  Each is associated with a <i>token</i>.  The main proof technique that uses
@@ -43599,7 +43775,7 @@ current fast alists."
               '(G ARG1 ... ARGk))
  })
 
- <p>If the same proof obligation (goal clause) arises from more than one
+ <p>If the same proof obligation (goal @(see clause)) arises from more than one
  occurrence of the same call, then a single goal will be generated, which has
  several @('extra-info') hypotheses added to show the multiple sources of that
  proof obligation.</p>
@@ -44960,7 +45136,7 @@ current fast alists."
 
  <p>@(tsee Guard-obligation): This function is a programmatic version of the
  macro, @(tsee verify-guards-formula).  It provides the guard obligation as a
- set of clauses, along with other information.</p>
+ set of @(see clause)s, along with other information.</p>
 
  </blockquote>
 
@@ -45265,9 +45441,9 @@ current fast alists."
  otherwise is a list containing @('x') along with, if @('x') is defined in a
  @('mutual-recursion'), any other functions defined in the same @(tsee
  mutual-recursion) nest; @('cl-set') is a list of lists of terms, viewed as a
- conjunction of clauses (each viewed (as a disjunction); and @('ttree') is an
- assumption-free tag-tree that justifies cl-set.  (The notion of ``tag-tree''
- may probably be ignored except for system developers.)</p>
+ conjunction of @(see clause)s (each viewed (as a disjunction); and @('ttree')
+ is an assumption-free tag-tree that justifies cl-set.  (The notion of
+ ``tag-tree'' may probably be ignored except for system developers.)</p>
 
  <p>@('Guard-obligation') is typically used for function names or non-variable
  terms, but as for @(tsee verify-guards), it may also be applied to theorem
@@ -46714,10 +46890,10 @@ current fast alists."
  <p>We now provide a careful explanation of how @(':backtrack') hints work, but
  we suggest that you keep the example above in mind.  If ``@(':backtrack
  form')'' is part of the hint that has been selected for a goal, then @('form')
- is evaluated when one of ACL2's clause processors successfully applies to the
- current goal to produce a list of subgoals.  This evaluation takes place in an
- environment just like that for any computed hint (see @(see computed-hints)),
- with the following exceptions.  First, the variable
+ is evaluated when one of ACL2's @(see clause) processors successfully applies
+ to the current goal to produce a list of subgoals.  This evaluation takes
+ place in an environment just like that for any computed hint (see @(see
+ computed-hints)), with the following exceptions.  First, the variable
  @('STABLE-UNDER-SIMPLIFICATIONP') is not allowed to occur free in @('form'),
  but instead the following new variables are allowed to occur free and are
  bound for this evaluation as follows: @('PROCESSOR') is bound to the processor
@@ -66086,8 +66262,8 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
  that can apply a given function (which need not be in logic mode) to an
  argument list.  Although the result can be computed, @('magic-ev-fncall') is
  technically a constrained function (with unknown constraints), which can be
- assumed in metafunctions and clause processors to produce correct results, via
- @(see meta-extract).</p>
+ assumed in metafunctions and @(see clause) processors to produce correct
+ results, via @(see meta-extract).</p>
 
  <p>Examples:</p>
 
@@ -70817,8 +70993,8 @@ it."
  </ul>
 
  <p>Here is an example of the use of these fields, which shows how to access
- the literal of the clause (goal) under which the current rewrite is taking
- place.</p>
+ the literal of the @(see clause) (goal) under which the current rewrite is
+ taking place.</p>
 
  @({
  (defevaluator my-ev my-ev-lst ((if x y z)))
@@ -101804,6 +101980,14 @@ it."
 
 ; Deleted the include-book-phase field (no longer used) of certify-book-info.
 
+; The item about "dropping false conclusion" of a goal warns that the
+; "parenthetical remark is printed only by the main simplifier, not by the
+; preprocessor."  We considered trying to get the preprocessor to print it as
+; well, but it seems difficult to determine, when preprocessing a term (implies
+; (and h1 ...) c), when q simplifies to nil.  Even if that were manageable,
+; it's not clear what to print in the case of nested implications such as
+; (implies (and h1 ...) (implies (and k1 ...) c)).
+
   :parents (release-notes)
   :short "ACL2 Version  8.6 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -102141,7 +102325,7 @@ it."
  })
 
  <p>The prover sometimes reduces a goal without hypotheses (technically
- speaking, a one-element clause) to @('nil') using <see topic='@(url
+ speaking, a one-element @(see clause)) to @('nil') using <see topic='@(url
  type-reasoning)'>type reasoning</see>.  This heuristic has not changed, but
  formerly there was no explanation given.  Now ACL2 reports the rules (of class
  @(':')@(tsee type-prescription)) that were used.</p>
@@ -102163,6 +102347,10 @@ it."
  failures.  This improvement was made by using a new macro that is also
  available to ACL2 users, @(tsee set-table-guard), which adds a @(see table)
  guard that produces a user-friendly error message when the guard fails.</p>
+
+ <p>The prover may now print a parenthetical remark about &ldquo;dropping false
+ conclusion&rdquo;.  That remark points to a new documentation topic, which
+ provides explanation: see @(see clause).</p>
 
  <h3>New Features</h3>
 
@@ -102286,18 +102474,18 @@ it."
  for the extra try at simplification made after a goal is not changed by
  simplification.  Thanks to Warren Hunt and Vivek Ramanathan for supplying an
  example of a theorem whose proof had a surprising failure but now
- succeeds.  (Technical Remark describing this change: When a clause has most
- recently settled down at the time that the simplify process is invoked (a
+ succeeds.  (Technical Remark describing this change: When a @(see clause) has
+ most recently settled down at the time that the simplify process is invoked (a
  so-called &ldquo;desperation heuristics&rdquo; attempt), then the literals are
  reordered before building the @(see type-alist), so that the literals that
  involve at most one variable precede the other literals.)</p>
 
- <p>Generation of guard clauses (and, probably rarely, other goals) has been
- sped up in certain extreme cases.  For details, see @(see system-attachments),
- specifically the discussion of CONJOIN-CLAUSE-SETS-BOUND in the &ldquo;Summary
- of attachable system functions&rdquo;.  Thanks to Alessandro Coglio for
- sending an example that led to our discovery of the quadratic behavior
- eliminated by this change.</p>
+ <p>Generation of guard @(see clause)s (and, probably rarely, other goals) has
+ been sped up in certain extreme cases.  For details, see @(see
+ system-attachments), specifically the discussion of CONJOIN-CLAUSE-SETS-BOUND
+ in the &ldquo;Summary of attachable system functions&rdquo;.  Thanks to
+ Alessandro Coglio for sending an example that led to our discovery of the
+ quadratic behavior eliminated by this change.</p>
 
  <p>Duplicate entries in @(see type-alist)s (proof contexts) are now avoided in
  many cases.  (Implementation note: some calls extending the type-alist with an
@@ -107358,9 +107546,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   to warrant trying to speed it up,</i> then here are some tips.</p>
 
   <p>To be converted from @(':BAD') to @(':GOOD') a @('LAMBDA') has to be both
-  well-formed and guard verified.  The cache doesn't try to verify objects that
-  are not well-formed.  So first make sure your object is well-formed and then
-  once it is make sure it is guard verified.</p>
+  well-formed and @(see guard) verified.  The cache doesn't try to verify
+  objects that are not well-formed.  So first make sure your object is
+  well-formed and then once it is make sure it is guard verified.</p>
 
   <p>If the @(':problem') is @('NOT-WELL-FORMED') the @(':lambda-object')
   does not pass the @(tsee well-formed-lambda-objectp) test.  That predicate
@@ -107412,7 +107600,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   need to further extend the world by calling @(tsee verify-guards) on the
   listed function symbols in first two problems or call @('verify-guard') on
   the lambda object itself for an opportunity to supply @(':hints') to prove
-  the guard clauses listed in the third problem.</p>
+  the guard @(see clause)s listed in the third problem.</p>
 
   <p>For example, suppose we define @('squ') with a guard of @('natp'),</p>
 
@@ -111273,7 +111461,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>@('process-assumptions'): creating forcing rounds</p>
 
- <p>@('remove-built-in-clauses'): removing built-in clauses (see @(see
+ <p>@('remove-built-in-clauses'): removing built-in @(see clause)s (see @(see
  built-in-clause))</p>
 
  <p>@('process-equational-polys'): deducing interesting equations</p>
@@ -112783,13 +112971,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   fairly weak model of the simplifier and rewriter, so we sketch that here.</p>
 
   <p>In ACL2, the goals you see printed in proof output are represented
-  internally as clauses.  A clause in our sense is a list of terms and the
-  meaning of a clause is the ACL2 disjunction of those terms where a term
-  @('p') is considered ``false'' if ``@('p') = @('nil')'' and is true
-  otherwise.  The elements of a clause are called ``literals,'' even though
-  they are just terms.  For example the goal @('(IMPLIES (AND p q) r)') is
-  internally represented as the clause @('((NOT p) (NOT q) r)').  The literals
-  of that clause are the terms @('(NOT p)'), @('(NOT q)'), and @('r').</p>
+  internally as clauses.  See @(see clause).</p>
 
   <p>The job of the simplifier is to simplify a clause, returning a set of
   clauses whose conjunction is propositionally equivalent to the input clause.
@@ -118014,27 +118196,26 @@ work on <tt>(q x)</tt>.</p>
  This web page contains the latest release of the ACL2 system in Common Lisp
  source code form.  The system is largely implemented in the subset of Common
  Lisp the prover supports.  ACL2 is distributed without fee under a 3-clause
- BSD license.  A new release is currently made about once per year and the web page also
- contains links to all past releases going back to 1996.  The home page
- includes instructions for installing any of several Common Lisp
+ BSD license.  A new release is currently made about once per year and the web
+ page also contains links to all past releases going back to 1996.  The home
+ page includes instructions for installing any of several Common Lisp
  implementations and instructions for downloading and building ACL2.  The web
  page contains the online user's manual and instructions for how to download
- the regression suite from
- <a href='https://github.com/acl2/acl2'>the ACL2 GitHub repository</a>.
- The regression suite, called the ACL2 &lt;&lt;@(see Community-Books)&gt;&gt;,
- contains thousands of verified files created by
- the ACL2 user community containing definitions and theorems.  If you scan down
- to the <b>Subtopics</b> section of the &lt;&lt;@(see TOP)&gt;&gt; node of the manual you will find a list of many topics for which
- certified &lt;&lt;@(see books)&gt;&gt; are available.  To take just one example from
- that top-level list of Subtopics, scroll down to Hardware Verification.  In
- that Subtopic you find directories dealing with symbolic simulation, register
- transfer logic (including tools for reasoning about floating point
- implementations), a Verilog translator, an x86 ISA model, and many other
- topics.  There are many other nodes besides Hardware Verification.  In fact,
- the tree of books listed among the Subtopics is simply too big and too rapidly
- changing to try to summarize here.  We encourage you to explore, or ask
- &lt;&lt;@(see ACL2-help)&gt;&gt; about resources (if any) for a particular
- topic.</li><p/>
+ the regression suite from <a href='https://github.com/acl2/acl2'>the ACL2
+ GitHub repository</a>.  The regression suite, called the ACL2 &lt;&lt;@(see
+ Community-Books)&gt;&gt;, contains thousands of verified files created by the
+ ACL2 user community containing definitions and theorems.  If you scan down to
+ the <b>Subtopics</b> section of the &lt;&lt;@(see TOP)&gt;&gt; node of the
+ manual you will find a list of many topics for which certified &lt;&lt;@(see
+ books)&gt;&gt; are available.  To take just one example from that top-level
+ list of Subtopics, scroll down to Hardware Verification.  In that Subtopic you
+ find directories dealing with symbolic simulation, register transfer
+ logic (including tools for reasoning about floating point implementations), a
+ Verilog translator, an x86 ISA model, and many other topics.  There are many
+ other nodes besides Hardware Verification.  In fact, the tree of books listed
+ among the Subtopics is simply too big and too rapidly changing to try to
+ summarize here.  We encourage you to explore, or ask &lt;&lt;@(see
+ ACL2-help)&gt;&gt; about resources (if any) for a particular topic.</li><p/>
 
  <li>[5] P. Manolios and D. Vroon.<br/>
  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Ordinal arithmetic in acl2.<br/>
@@ -120672,10 +120853,10 @@ work on <tt>(q x)</tt>.</p>
 
  <ul>
 
- <li>The suggestion, above, that the rewriter looks through the goal clause for
- ``any instance of the @('lhs')'' is not quite true.  @(':Rewrite') rules are
- never applied to quoted constants or any term inside a call of @(tsee hide).
- If you want to rewrite a quoted constant use a @(':')@(tsee
+ <li>The suggestion, above, that the rewriter looks through the goal @(see
+ clause) for ``any instance of the @('lhs')'' is not quite true.  @(':Rewrite')
+ rules are never applied to quoted constants or any term inside a call of
+ @(tsee hide).  If you want to rewrite a quoted constant use a @(':')@(tsee
  rewrite-quoted-constant) rule.</li>
 
  <li>The notion of ``a substitution that makes @('lhs') equal to the target
@@ -120825,14 +121006,15 @@ work on <tt>(q x)</tt>.</p>
   two kinds of @('lambda') body simplification in @(see
   rewriting-versus-cleaning-up-lambda-objects).</p>
 
-  <p>Second, warrant hypotheses in the goal clause are the only contextual
-  information ``imported'' from the goal clause and made available while
-  rewriting a @('lambda') body.  That means type information about variables
-  and other terms is forgotten, as are any linear arithmetic relationships.
-  The reason is simple: the variables in the body are in a different scope than
-  the variables outside the @('lambda') object.  Put another way, we do not
-  know, in general, to what the @('lambda') object will eventually be applied
-  and so, in ACL2's untyped logic, we know nothing about its formal variables.
+  <p>Second, warrant hypotheses in the goal @(see clause) are the only
+  contextual information ``imported'' from the goal clause and made available
+  while rewriting a @('lambda') body.  That means type information about
+  variables and other terms is forgotten, as are any linear arithmetic
+  relationships.  The reason is simple: the variables in the body are in a
+  different scope than the variables outside the @('lambda') object.  Put
+  another way, we do not know, in general, to what the @('lambda') object will
+  eventually be applied and so, in ACL2's untyped logic, we know nothing about
+  its formal variables.
 
   (Actually, we not only ``import'' the warrants from the goal clause, we
   import every ground hypothesis governing the @('lambda') object's occurrence.
@@ -124650,7 +124832,7 @@ work on <tt>(q x)</tt>.</p>
  })
 
  <p>The first of these prevents @('clausify') from trying the
- subsumption/replacement (see below) loop if more than 500 clauses are
+ subsumption/replacement (see below) loop if more than 500 @(see clause)s are
  involved.  It also discourages the clause simplifier from splitting into more
  than 100 cases at once.</p>
 
@@ -127203,7 +127385,7 @@ work on <tt>(q x)</tt>.</p>
 
 (defxdoc set-let*-abstractionp
   :parents (output-controls)
-  :short "To shorten many prettyprinted clauses"
+  :short "To shorten many prettyprinted @(see clause)s"
   :long "<p>Note: This is an event!  It does not print the usual event @(see
  summary) but nevertheless changes the ACL2 logical @(see world) and is so
  recorded.  Moreover, its effect is to set the @(tsee acl2-defaults-table), and
@@ -127211,7 +127393,7 @@ work on <tt>(q x)</tt>.</p>
  containing it; see @(see acl2-defaults-table).</p>
 
  <p>When this flag is set to @('t'), subterms that occur more than once in a
- clause are abstracted away with @(tsee let*), generally shortening the
+ @(see clause) are abstracted away with @(tsee let*), generally shortening the
  displayed size of the clauses.  This flag only affects how clauses are
  printed.  It does not change what terms the theorem prover manipulates.</p>
 
@@ -128340,9 +128522,10 @@ work on <tt>(q x)</tt>.</p>
 
  <p>The result of applying a @(see meta)function (or a hypothesis metafunction)
  must be a term.  Similarly, the result of applying a @(see clause-processor)
- must be a list of clauses, where a clause is a list of terms.  If these
- conditions fail, then an error occurs; see @(see term-table) for how one
- obtains some assistance towards avoiding such errors.</p>
+ must be a list of clauses, where a clause is a list of terms (see @(see
+ clause)).  If these conditions fail, then an error occurs; see @(see
+ term-table) for how one obtains some assistance towards avoiding such
+ errors.</p>
 
  <p>By default, ACL2 actually enforces a stronger requirement: the resulting
  term or clause-list cannot contain any calls of ``forbidden'' function
@@ -136217,7 +136400,7 @@ work on <tt>(q x)</tt>.</p>
  @('books/system/pseudo-good-worldp.lisp').</li>
 
  <li>@('(prettyify-clause cl let*-abstractionp wrld)'): Returns an untranslated
- (user-level) term that is equivalent to the clause, @('cl').</li>
+ (user-level) term that is equivalent to the @(see clause), @('cl').</li>
 
  <li>@('(programp fn w)'): For a function symbol @('fn') of @(see world)
  @('w'), return @('t') when the @('symbol-class') of @('fn') in @('w') is
@@ -138425,7 +138608,7 @@ work on <tt>(q x)</tt>.</p>
 
 (defxdoc term-list-listp
   :parents (acl2-built-ins)
-  :short "recognizer for a list of clauses"
+  :short "recognizer for a list of @(see clause)s"
   :long "@({
   Example:
   (term-list-listp
@@ -138442,21 +138625,21 @@ work on <tt>(q x)</tt>.</p>
  true lists of quotations of well-formed terms in @('w').</p>
 
  <p>This function is the standard ACL2 idiom for recognizing a ``set of
- clauses.''  See @(tsee clause-processor).  Each clause processor is supposed
- to take a clause (i.e., @('term-listp')) as input and yield a list of
- clauses (i.e., @('term-list-listp')) as output.  When a clause processor is
- run by the theorem prover its input is guaranteed to be a well-formed clause
- by invariants maintained by ACL2.  But its output is checked by an explicit
- call to this function unless the user has proved that the clause processor
- always returns a list of clauses (see @(see well-formedness-guarantee)) or has
- taken the risk of disabling the runtime test with @(tsee
- set-skip-meta-termp-checks).</p>
+ clauses.''  See @(see clause) and see @(tsee clause-processor).  Each clause
+ processor is supposed to take a clause (i.e., @('term-listp')) as input and
+ yield a list of clauses (i.e., @('term-list-listp')) as output.  When a clause
+ processor is run by the theorem prover its input is guaranteed to be a
+ well-formed clause by invariants maintained by ACL2.  But its output is
+ checked by an explicit call to this function unless the user has proved that
+ the clause processor always returns a list of clauses (see @(see
+ well-formedness-guarantee)) or has taken the risk of disabling the runtime
+ test with @(tsee set-skip-meta-termp-checks).</p>
 
  @(def term-list-listp)")
 
 (defxdoc term-listp
   :parents (acl2-built-ins)
-  :short "recognizer for a list of quotations of terms and of clauses"
+  :short "recognizer for a list of quotations of terms and of @(see clause)s"
   :long "@({
   Example:
   (term-listp '((ZP X) 'NIL (CONS X Y)) (w state))
@@ -138471,13 +138654,13 @@ work on <tt>(q x)</tt>.</p>
 
  <p>This function is used in the definition of @(tsee termp).  In addition,
  @('term-listp') is the standard ACL2 idiom for recognizing a clause (``set of
- literals'').  See @(tsee clause-processor).  Each clause processor is supposed
- to take a clause (i.e., @('term-listp')) as input and yield a list of
- clauses (i.e., @(tsee term-list-listp)) as output.  When a clause processor is
- run by the theorem prover its input is guaranteed to be a well-formed clause
- by invariants maintained by ACL2.  But its output is checked by an explicit
- call of @(tsee term-list-listp) unless the user has proved that the clause
- processor always returns a list of clauses (see @(see
+ literals'').  See @(see clause) and see @(tsee clause-processor).  Each clause
+ processor is supposed to take a clause (i.e., @('term-listp')) as input and
+ yield a list of clauses (i.e., @(tsee term-list-listp)) as output.  When a
+ clause processor is run by the theorem prover its input is guaranteed to be a
+ well-formed clause by invariants maintained by ACL2.  But its output is
+ checked by an explicit call of @(tsee term-list-listp) unless the user has
+ proved that the clause processor always returns a list of clauses (see @(see
  well-formedness-guarantee)) or has taken the risk of disabling the runtime
  test with @(tsee set-skip-meta-termp-checks).</p>
 
@@ -147425,9 +147608,10 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
 
  <p>The test above is ``overkill'' because it recognizes precisely the clause
  ids in question.  But recall that once a computed hint is used, it is (by
- default) removed from the hints available to the children of the clause.
- Thus, we can widen the set of clause ids recognized to include all the
- children without worrying that the hint will be applied to those children.</p>
+ default) removed from the hints available to the children of the @(see
+ clause).  Thus, we can widen the set of clause ids recognized to include all
+ the children without worrying that the hint will be applied to those
+ children.</p>
 
  <p>In particular, the following test supplies the hint to every top-level goal
  of the first forcing round:</p>
@@ -147483,12 +147667,12 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
       nil)
  })
 
- <p>where @('test') answers the question ``does the clause contain @('(SWAP
- A)')?''  That question can be asked with @('(occur-lst '(SWAP A) clause)').
- Briefly, @('occur-lst') takes the representation of a translated term, x, and
- a list of translated terms, y, and determines whether x occurs as a subterm of
- any term in y.  (By ``subterm'' here we mean proper or improper, e.g., the
- subterms of @('(CAR X)') are @('X') and @('(CAR X)').)</p>
+ <p>where @('test') answers the question ``does the @(see clause) contain
+ @('(SWAP A)')?''  That question can be asked with @('(occur-lst '(SWAP A)
+ clause)').  Briefly, @('occur-lst') takes the representation of a translated
+ term, x, and a list of translated terms, y, and determines whether x occurs as
+ a subterm of any term in y.  (By ``subterm'' here we mean proper or improper,
+ e.g., the subterms of @('(CAR X)') are @('X') and @('(CAR X)').)</p>
 
  <p>Thus, the computed hint:</p>
 
@@ -147596,13 +147780,13 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   :long "<p>So far we have used computed hints only to compute when a fixed set
  of keys and values are to be used as a hint.  But computed hints can, of
  course, compute the set of keys and values.  You might, for example, write a
- hint that recognizes when a clause ``ought'' to be provable by a @(':BDD')
- hint and generate the appropriate hint.  You might build in a set of useful
- lemmas and check to see if the clause is provable @(':BY') one of them.  You
- can keep all function symbols disabled and use computed hints to compute which
- ones you want to @(':EXPAND').  In general, you can write a theorem prover for
- use in your hints, provided you can get it to do its job by directing our
- theorem prover.</p>
+ hint that recognizes when a @(see clause) ``ought'' to be provable by a
+ @(':BDD') hint and generate the appropriate hint.  You might build in a set of
+ useful lemmas and check to see if the clause is provable @(':BY') one of them.
+ You can keep all function symbols disabled and use computed hints to compute
+ which ones you want to @(':EXPAND').  In general, you can write a theorem
+ prover for use in your hints, provided you can get it to do its job by
+ directing our theorem prover.</p>
 
  <p>Suppose for example we wish to find every occurrence of an instance of
  @('(SWAP x)') and provide the corresponding instance of
@@ -147870,9 +148054,9 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  changed, since @('(wrapper a)') is already in the subgoal.</p>
 
  <p>So let's change the experiment a little.  Let's make the hint add the
- hypothesis @('(wrapper p)') where @('p') is the first literal of the clause.
- This is silly but it allows us to explore the behavior of computed hints a
- little more.</p>
+ hypothesis @('(wrapper p)') where @('p') is the first literal of the @(see
+ clause).  This is silly but it allows us to explore the behavior of computed
+ hints a little more.</p>
 
  @({
   (thm (equal u v)
@@ -148215,9 +148399,9 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
 
  <p>Suppose that when @('stage1') is called, @('fn') is the function we want to
  expand, @('max') is the maximum number of iterations of this expansion,
- @('clause') is the current goal clause, and @('flg') is the value of the
- @('stable-under-simplificationp') flag.  Then if @('clause') is stable and we
- can find a call of @('fn') in it, we ask whether @('max') is exhausted.  If
+ @('clause') is the current goal @(see clause), and @('flg') is the value of
+ the @('stable-under-simplificationp') flag.  Then if @('clause') is stable and
+ we can find a call of @('fn') in it, we ask whether @('max') is exhausted.  If
  so, we print an ``error message'' to the comment window with @(tsee cw) and
  return @('nil') (the value of @('cw')).  That @('nil') means the hint does
  nothing.  But if @('max') is not yet exhausted, we return a new hint.  As you
@@ -148347,11 +148531,11 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
 
  <p>None of our examples illustrated the 7 argument form of a computed hint,
  @('(fn ID CLAUSE WORLD STABLE-UNDER-SIMPLIFICATIONP HIST PSPV CTX)').  When
- used, the variables @('HIST'), @('PSPV'), and @('CTX'), are bound to the
- clause history, the package of ``special variables'' governing the clause, and
- the ``error message context.''  These variables are commonly used throughout
- our source code but are, unfortunately, undocumented.  Again, we expect a few
- experts will find them useful in developing computed hints.</p>
+ used, the variables @('HIST'), @('PSPV'), and @('CTX'), are bound to the @(see
+ clause) history, the package of ``special variables'' governing the clause,
+ and the ``error message context.''  These variables are commonly used
+ throughout our source code but are, unfortunately, undocumented.  Again, we
+ expect a few experts will find them useful in developing computed hints.</p>
 
  <p>If you start using computed hints extensively, please contact the
  developers of ACL2 and let us know what you are doing with them and how we can
@@ -152075,21 +152259,22 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  understand how the queries work, it is useful to view a proof attempt as
  generating &ldquo;initial&rdquo; calls of the rewriter, such as when rewriting
  a hypothesis or the conclusion of a goal (technically, a literal of the goal
- clause): that is, initial rewriter calls are those that are not under another
- rewriter call.  Then data collection under each initial call creates a tree of
- &ldquo;top-level&rdquo; calls &mdash; those not made under an attempt to
- relieve a hypothesis &mdash; for which that initial call is the root.  Thus
- each node of that tree corresponds to a rewriter call, and each child of that
- node is a top-level call of the rewriter that is immediately under that call,
- where the order of calls is respected by the ordering of child nodes from left
- to right.  For example, the top-level application a rewrite rule corresponds
- to a node, and the call to rewrite the right-hand side of the rule (with
- appropriate variable bindings) corresponds to a child of that node.  Another
- example is when an attempt to rewrite a function call leads to an attempt to
- rewrite an argument of that call: the latter corresponds to a child node of
- the former.  Each of the four query utilities looks for the first root node,
- and the left-most branch under that node, that results in a rewriter result
- that &ldquo;matches&rdquo; the input in the following sense.</p>
+ clause; see @(see clause)): that is, initial rewriter calls are those that are
+ not under another rewriter call.  Then data collection under each initial call
+ creates a tree of &ldquo;top-level&rdquo; calls &mdash; those not made under
+ an attempt to relieve a hypothesis &mdash; for which that initial call is the
+ root.  Thus each node of that tree corresponds to a rewriter call, and each
+ child of that node is a top-level call of the rewriter that is immediately
+ under that call, where the order of calls is respected by the ordering of
+ child nodes from left to right.  For example, the top-level application a
+ rewrite rule corresponds to a node, and the call to rewrite the right-hand
+ side of the rule (with appropriate variable bindings) corresponds to a child
+ of that node.  Another example is when an attempt to rewrite a function call
+ leads to an attempt to rewrite an argument of that call: the latter
+ corresponds to a child node of the former.  Each of the four query utilities
+ looks for the first root node, and the left-most branch under that node, that
+ results in a rewriter result that &ldquo;matches&rdquo; the input in the
+ following sense.</p>
 
  <p>This notion of &ldquo;matches&rdquo; depends on the call, as follows.
  First assume that the input is a term.  For @('cw-gstack-for-subterm') and
@@ -155130,10 +155315,10 @@ created from the original fast alist during @('form') must be manually freed."
  and the result is stored back into that alist.  This step is performed by
  @(tsee wormhole-eval).  To make things more efficient, @('wormhole-eval') is
  just a macro that expands into a @('let') that binds the @('lambda') formal to
- the current status and whose body is the @('lambda') body.  Guard clauses are
- generated from the body, with one exception: the @('lambda') formal is
- replaced by a new variable so that no prior assumptions are available about
- the value of the wormhole status.</p>
+ the current status and whose body is the @('lambda') body.  @(csee Guard)
+ @(see clause)s are generated from the body, with one exception: the
+ @('lambda') formal is replaced by a new variable so that no prior assumptions
+ are available about the value of the wormhole status.</p>
 
  <p>If the newly computed status has an entry code of @(':ENTER') @(tsee ld)
  will be invoked.  But we don't really copy state, of course.  Instead we will
