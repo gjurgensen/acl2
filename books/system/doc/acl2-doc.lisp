@@ -102733,6 +102733,11 @@ it."
  nil))') was not formerly seen as @(see redundant) when evaluating it a second
  time.</p>
 
+ <p>Fixed a bug that was causing @(tsee cw-gstack) to report
+ &ldquo;Rewriting (to simplify) the first argument&rdquo; when rewriting the
+ second argument of a call of @(tsee implies), and fixed an analogous bug for
+ @(tsee return-last).</p>
+
  <h3>Changes at the System Level</h3>
 
  <p>The `@('make')' target, @('save-exec'), now builds @('custom-saved_acl2')

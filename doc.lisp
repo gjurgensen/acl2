@@ -99613,6 +99613,11 @@ Bug Fixes
   :guard (mv t nil)) was not formerly seen as [redundant] when
   evaluating it a second time.
 
+  Fixed a bug that was causing [cw-gstack] to report ``Rewriting (to
+  simplify) the first argument'' when rewriting the second argument
+  of a call of [implies], and fixed an analogous bug for
+  [return-last].
+
 
 Changes at the System Level
 
