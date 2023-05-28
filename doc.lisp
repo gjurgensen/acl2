@@ -4265,10 +4265,10 @@ Subtopics
       Tenth member of the list
 
   [Term-list-listp]
-      recognizer for a list of clauses
+      recognizer for a list of [clause]s
 
   [Term-listp]
-      recognizer for a list of quotations of terms and of clauses
+      recognizer for a list of quotations of terms and of [clause]s
 
   [Term-order]
       The ordering relation on terms used by ACL2
@@ -5992,7 +5992,7 @@ Subtopics
   expected shape.  Provided val passes the check, the generator term
   is used to compute a standard hint.  Like computed hints, the
   generator of a custom keyword hint is allowed to inspect the actual
-  clause on which it is being fired.  Indeed, it is allowed to
+  [clause] on which it is being fired.  Indeed, it is allowed to
   inspect the entire list of hints (standard and custom) supplied for
   that clause.  Thus, in the most general case, a custom keyword hint
   is just a very special kind of computed hint.
@@ -6715,11 +6715,11 @@ Prover control
 
     * For congruence-based reasoning see [defcong], see [congruence], see
       [equivalence], see [defequiv], and see [defrefinement].
-    * For meta rules and clause processors see [meta], see [defevaluator],
-      see [clause-processor], see [define-trusted-clause-processor]
-      (for connecting with external tools, such as SAT solvers), and
-      See [extended-metafunctions] (for [state] and context-sensitive
-      metafunctions).
+    * For meta rules and [clause] processors see [meta], see
+      [defevaluator], see [clause-processor], see
+      [define-trusted-clause-processor] (for connecting with external
+      tools, such as SAT solvers), and See [extended-metafunctions]
+      (for [state] and context-sensitive metafunctions).
     * For theory control, see [theories] for detailed information, but in
       particular see [deftheory], see [theory-functions], see
       [in-arithmetic-theory] (and see [non-linear-arithmetic]), and
@@ -15580,7 +15580,7 @@ Subtopics
       Installing Steel Bank Common Lisp (SBCL)")
  (BUILT-IN-CLAUSE
   (RULE-CLASSES)
-  "To build a clause into the simplifier
+  "To build a [clause] into the simplifier
 
   See [rule-classes] for a general discussion of rule classes,
   including how they are used to build rules from formulas and a
@@ -15600,7 +15600,7 @@ Subtopics
 
   A :built-in-clause rule can be built from any formula other than
   propositional tautologies.  Roughly speaking, the system uses the
-  list of built-in clauses as the first method of proof when
+  list of built-in [clause]s as the first method of proof when
   attacking a new goal.  Any goal that is subsumed by a built in
   clause is proved ``silently.''
 
@@ -16157,7 +16157,7 @@ Subtopics
     (500 100)
 
   With the setting above, which is the default, clausify will not try
-  subsumption/replacement if more than 500 clauses are involved.
+  subsumption/replacement if more than 500 [clause]s are involved.
   Furthermore, the simplifier, as it sweeps over a clause, will
   inhibit further case splits when it has accumulated 100 subgoals.
   To implement this inhibition, ACL2 refuses to rewrite subsequent
@@ -17965,11 +17965,170 @@ Subtopics
   inaccurate in many senses (for example, we don't always use the
   ascii code and we see numbers as though they were printed in base
   127) but indicates the basic idea.")
+ (CLAUSE
+  (MISCELLANEOUS)
+  "A representation of prover goals
+
+  In ACL2, a clause is a list of [term]s, and the meaning of a clause
+  is the ACL2 disjunction of those terms where a term p is considered
+  ``false'' if ``p = nil'' and is true otherwise.  The elements of a
+  clause are called ``literals,'' even though they are just terms.
+  For example the goal (IMPLIES (AND p q) r) is internally
+  represented as the clause ((NOT p) (NOT q) r).  The literals of
+  that clause are the terms (NOT p), (NOT q), and r.
+
+  The ACL2 prover acts on clauses: a goal is represented as a clause,
+  and each of the resulting subgoals is represented as a clause.
+  Thus, the terms (literals) in a clause are all translated (see
+  [term]).
+
+  To be precise, suppose that (L1 .. Lk M) is a clause containing at
+  least two literals.  ACL2 proof output displays that clause as an
+  implication; this is called ``prettyifying a clause''.  Below, ~Li
+  denotes the negation of Li in the following sense: if Li is of the
+  form (NOT P) then ~Li designates P, and otherwise ~Li designates
+  (NOT Li).
+
+      Prettyifying a clause with at least two literals
+
+        (L1 .. Lk M)
+
+      transforms it to the term
+
+        (IMPLIES (AND ~L1 ~L2 ... ~Lk)
+                 M).
+
+  Of course, the disjunction represented by the clause is
+  propositionally equivalent to the resulting call of IMPLIES.
+
+  It is sometimes helpful to understand that ACL2's proof processes all
+  operate on clauses.  In particular, proof output --- obtained when
+  [gag-mode] is turned off or when using :[pso] or related utilities
+  --- may include a parenthetical remark as follows.  WARNING: This
+  parenthetical remark is printed only by the main simplifier, not by
+  the preprocessor (see [simple]).
+
+    This simplifies (dropping false conclusion; see :DOC clause), using ....
+
+  What this remark signifies is that the last literal of the clause is
+  false in at least one subgoal, and therefore does not appear in it
+  (even in rewritten form).  Let's see how that works with the
+  following example.
+
+    (defstub foo (x) t)
+    (defaxiom foo-consp (implies (consp x) (foo x)))
+    (set-gag-mode nil)
+    (thm (implies (and (consp x) (natp (car x))) (not (foo x))))
+
+  The proof attempt starts as follows.
+
+    ACL2 !>(thm (implies (and (consp x) (natp (car x))) (not (foo x))))
+
+    By the simple :definition NATP we reduce the conjecture to
+
+    Goal'
+    (IMPLIES (AND (CONSP X)
+                  (INTEGERP (CAR X))
+                  (<= 0 (CAR X)))
+             (NOT (FOO X))).
+
+    This simplifies (dropping false conclusion; see :DOC clause), using
+    the :rewrite rule FOO-CONSP, to
+
+    Goal''
+    (IMPLIES (AND (CONSP X) (INTEGERP (CAR X)))
+             (< (CAR X) 0)).
+
+  The change from Goal' to Goal'' may be jarring because the
+  ``conclusion'' --- the second argument of the displayed IMPLIES
+  call --- has changed drastically.  Let's analyze this change from
+  the perspective of the goals printed; then we'll look at it from
+  the perspective of clauses.
+
+  A moment's reflection shows that because of the rule FOO-CONSP, Goal'
+  is equivalent to
+
+    (IMPLIES (AND (CONSP X)
+                  (INTEGERP (CAR X))
+                  (<= 0 (CAR X)))
+             NIL).
+
+  And a little more reflection shows that the term above is
+  propositionally equivalent to Goal'' above.
+
+  But this may make more sense if we consider the clauses on which the
+  prover operated.  Here are the clauses for Goal' and Goal''; the
+  corresponding IMPLIES terms displayed above are obtained by
+  prettyifying the respective clauses (in the sense of
+  ``prettyifying'' discussed above).
+
+    Goal'
+    ((NOT (CONSP X))
+     (NOT (INTEGERP (CAR X)))
+     (< (CAR X) '0)
+     (NOT (FOO X)))
+
+    Goal''
+    ((NOT (CONSP X))
+     (NOT (INTEGERP (CAR X)))
+     (< (CAR X) '0))
+
+  For each of these clauses, the third literal, (< (CAR X) '0), is just
+  the negation of the (untranslated) [term], (<= 0 (CAR X)), shown in
+  the prover output.
+
+  Recall that a clause represents the disjunction of its literals.
+  Since the last literal of Goal', (NOT (FOO X)), rewrote to NIL
+  using the rule FOO-CONSP, it was dropped when creating Goal'':
+  after all, (OR P NIL) is propositionally equivalent to P.  So in
+  Goal'' the last literal is (< (CAR X) '0).  Therefore, the
+  conclusion of each IMPLIES term obtained by prettyifying the clause
+  has changed from (NOT (FOO X)) to (< (CAR X) '0).
+
+  Finally, note that although ``dropping false conclusion'' signifies
+  that the conclusion was dropped in at least one subgoal, if however
+  there are at least two subgoals then it might not be dropped in all
+  of them.  Consider the following variant of the earlier example.
+
+    (defstub foo (x) t)
+    (defaxiom foo-consp (implies (consp x) (foo x)))
+    (set-gag-mode nil)
+    (defstub bar (x) t)
+    ; The proof fails for the following event (not important here).
+    (thm (implies (and (or (bar x) (consp x)) (natp (car x)))
+                  (not (foo x)))
+         :otf-flg t)
+
+  The output includes the following.
+
+    Goal'
+    (IMPLIES (AND (OR (BAR X) (CONSP X))
+                  (INTEGERP (CAR X))
+                  (<= 0 (CAR X)))
+             (NOT (FOO X))).
+
+    This simplifies (dropping false conclusion; see :DOC clause), using
+    the :rewrite rule FOO-CONSP, to the following two conjectures.
+
+    Subgoal 2
+    (IMPLIES (AND (BAR X)
+                  (INTEGERP (CAR X))
+                  (<= 0 (CAR X)))
+             (NOT (FOO X))).
+
+    [[.. output elided ..]]
+
+    Subgoal 1
+    (IMPLIES (AND (CONSP X) (INTEGERP (CAR X)))
+             (< (CAR X) 0)).
+
+  We see that the conclusion was false, hence dropped, in Subgoal 1,
+  but remained in Subgoal 2.")
  (CLAUSE-IDENTIFIER
   (GOAL-SPEC)
   "The internal form of a [goal-spec]
 
-  To each goal-spec, str, there corresponds a clause-identifier
+  To each goal-spec, str, there corresponds a [clause]-identifier
   produced by (parse-clause-id str).  For example,
 
     (parse-clause-id \"[2]Subgoal *4.5.6/7.8.9'''\")
@@ -18057,10 +18216,10 @@ Subtopics
   INTRODUCTION
 
   A :clause-processor rule installs a simplifier at the level of goals,
-  where a goal is represented as a clause: a list of [term]s that is
-  implicitly viewed as a disjunction (the application of [or]).  For
-  example, if ACL2 prints a goal in the form (implies (and p q) r),
-  then the clause might be the one-element list containing the
+  where a goal is represented as a [clause]: a list of [term]s that
+  is implicitly viewed as a disjunction (the application of [or]).
+  For example, if ACL2 prints a goal in the form (implies (and p q)
+  r), then the clause might be the one-element list containing the
   internal representation of this term --- (implies (if p q 'nil) r)
   --- but more likely, the corresponding clause is ((not p) (not q)
   r).  Note that the members of a clause are translated terms; see
@@ -19823,11 +19982,10 @@ Subtopics
 
   It remains only to describe the bindings of the free variables.
 
-  Suppose the theorem prover is working on some clause, clause, named
-  by some [goal-spec], e.g., \"Subgoal *1/2'''\" in some logical world,
-  world.  Corresponding to the printed goal-spec is an internal data
-  structure called a ``clause identifier'' id.  See
-  [clause-identifier].
+  Suppose the theorem prover is working on a [clause] named by some
+  [goal-spec], e.g., \"Subgoal *1/2'''\".  Corresponding to the printed
+  goal-spec is an internal data structure called a ``clause
+  identifier'' id.  See [clause-identifier].
 
   In the case of a common hint, the hint applies if the goal-spec of
   the hint is the same as the goal-spec of the clause in question.
@@ -19911,8 +20069,9 @@ Subtopics
   "Conditional based on if-then-else
 
   Cond is the construct for IF, THEN, ELSE IF, ...  The test is against
-  nil.  The argument list for cond is a list of ``clauses'', each of
-  which is a list.  In ACL2, clauses must have length 1 or 2.
+  nil.  The argument list for cond is a list of ``cond clauses'',
+  each of which is a list.  In ACL2, cond clauses must have length 1
+  or 2.
 
     ; Example 1.  The form
       (COND ((CONSP X) (FOO X Y))
@@ -20013,8 +20172,8 @@ Subtopics
   equivalent to (memb e y), provided x and y are set-equal.  The
   outside equivalence is [iff] and the inside equivalence for the
   second argument is set-equal.  If we see a memb expression in a
-  propositional context, e.g., as a literal of a clause or test of an
-  [if] (but not, for example, as an argument to [cons]), we can
+  propositional context, e.g., as a literal of a [clause] or test of
+  an [if] (but not, for example, as an argument to [cons]), we can
   rewrite its second argument maintaining set-equality.  For example,
   a rule stating the commutativity of [append] (modulo set-equality)
   could be applied in this context.  Since equality is a refinement
@@ -25514,7 +25673,7 @@ Restrictions
   This [documentation] assumes familiarity with :clause-processor
   rules; see [clause-processor].  Briefly put, a clause-processor is
   a user-defined function that takes as input the ACL2 representation
-  of a goal --- a clause --- and returns a list of goals (i.e., a
+  of a goal --- a [clause] --- and returns a list of goals (i.e., a
   list of clauses).  A :clause-processor rule is a way to inform ACL2
   that a clause-processor has been proved correct and now may be
   specified in :clause-processor [hints].
@@ -30125,7 +30284,7 @@ Subtopics
   on the line just below it.  Moreover, lines are sometimes collapsed
   to make the display more compact.  Consider for example the first
   few lines.  Above, we are proving a theorem named
-  WP-ZCOEF-G-MULTIPLIES.  Lines 1 and 2 show the clause
+  WP-ZCOEF-G-MULTIPLIES.  Lines 1 and 2 show the [clause]
   simplification process invokes the rewriter on the 18th literal.
   (Recall that a clause is a disjunction of literals; for example the
   clause {(NOT A), (NOT B), C} would be displayed as (IMPLIES (AND A
@@ -32357,7 +32516,7 @@ Miscellaneous efficiency ideas
   by the generalized instantiated lhs.  An occurrence of vi is
   ``equiv-hittable'' if sufficient congruence rules (see [defcong])
   have been proved to establish that the propositional value of the
-  clause is not altered by replacing that occurrence of vi by some
+  [clause] is not altered by replacing that occurrence of vi by some
   equiv-equivalent term.
 
   If an :elim rule is not applied when you think it should have been,
@@ -36547,7 +36706,7 @@ Subtopics
 
   (mfc-clause mfc): returns the current goal, in clausal form.  A
   clause is a list of ACL2 terms, implicitly denoting the disjunction
-  of the listed terms.  The clause returned by mfc-clause is the
+  of the listed terms.  The [clause] returned by mfc-clause is the
   clausal form of the translation (see [trans]) of the goal or
   subgoal on which the rewriter is working.  When a metafunction
   calls mfc-clause, the term, term-mf, being rewritten by the
@@ -40665,7 +40824,7 @@ Subtopics
   This report means that the kth use of forward chaining in the most
   recent proof attempt was done on behalf of token (see below).  The
   initial context (set of assumptions) consisted of the negations of
-  the literals listed in the clause shown and the initial candidate
+  the literals listed in the [clause] shown and the initial candidate
   trigger terms are all those appearing in that clause.  This
   invocation of forward chaining proceeded to do m rounds of
   successive extensions of the initial context and ultimately either
@@ -46700,10 +46859,10 @@ Subtopics
     (extra-info '(:guard (:guard F))
                 '(G ARG1 ... ARGk))
 
-  If the same proof obligation (goal clause) arises from more than one
-  occurrence of the same call, then a single goal will be generated,
-  which has several extra-info hypotheses added to show the multiple
-  sources of that proof obligation.
+  If the same proof obligation (goal [clause]) arises from more than
+  one occurrence of the same call, then a single goal will be
+  generated, which has several extra-info hypotheses added to show
+  the multiple sources of that proof obligation.
 
   All rules (see [rune]) associated with extra-info are [disable]d by
   default, so that hypotheses of the form described above are not
@@ -48035,7 +48194,7 @@ Subtopics
 
       [Guard-obligation]: This function is a programmatic version of the
       macro, [verify-guards-formula].  It provides the guard
-      obligation as a set of clauses, along with other information.
+      obligation as a set of [clause]s, along with other information.
 
   The second pair of utilities captures the formula provided when a
   :guard-theorem is supplied for a :use hint.
@@ -48355,10 +48514,10 @@ Subtopics
   of x; and otherwise is a list containing x along with, if x is
   defined in a mutual-recursion, any other functions defined in the
   same [mutual-recursion] nest; cl-set is a list of lists of terms,
-  viewed as a conjunction of clauses (each viewed (as a disjunction);
-  and ttree is an assumption-free tag-tree that justifies cl-set.
-  (The notion of ``tag-tree'' may probably be ignored except for
-  system developers.)
+  viewed as a conjunction of [clause]s (each viewed (as a
+  disjunction); and ttree is an assumption-free tag-tree that
+  justifies cl-set.  (The notion of ``tag-tree'' may probably be
+  ignored except for system developers.)
 
   Guard-obligation is typically used for function names or non-variable
   terms, but as for [verify-guards], it may also be applied to
@@ -49761,10 +49920,10 @@ Subtopics
         but we suggest that you keep the example above in mind.  If
         ``:backtrack form'' is part of the hint that has been
         selected for a goal, then form is evaluated when one of
-        ACL2's clause processors successfully applies to the current
-        goal to produce a list of subgoals.  This evaluation takes
-        place in an environment just like that for any computed hint
-        (see [computed-hints]), with the following exceptions.
+        ACL2's [clause] processors successfully applies to the
+        current goal to produce a list of subgoals.  This evaluation
+        takes place in an environment just like that for any computed
+        hint (see [computed-hints]), with the following exceptions.
         First, the variable STABLE-UNDER-SIMPLIFICATIONP is not
         allowed to occur free in form, but instead the following new
         variables are allowed to occur free and are bound for this
@@ -69488,7 +69647,7 @@ Subtopics
   apply a given function (which need not be in logic mode) to an
   argument list.  Although the result can be computed,
   magic-ev-fncall is technically a constrained function (with unknown
-  constraints), which can be assumed in metafunctions and clause
+  constraints), which can be assumed in metafunctions and [clause]
   processors to produce correct results, via [meta-extract].
 
   Examples:
@@ -74036,7 +74195,7 @@ Precise specification
     * wrld: the current ACL2 [world]
 
   Here is an example of the use of these fields, which shows how to
-  access the literal of the clause (goal) under which the current
+  access the literal of the [clause] (goal) under which the current
   rewrite is taking place.
 
     (defevaluator my-ev my-ev-lst ((if x y z)))
@@ -74182,6 +74341,9 @@ Subtopics
 
   [Case-split-limitations]
       Limiting the number of immediate subgoals
+
+  [Clause]
+      A representation of prover goals
 
   [Default-defun-mode]
       The default [defun-mode] of [defun]'d functions
@@ -99056,7 +99218,7 @@ Changes to Existing Features
     (defaxiom foo (equal (car (cons x x)) x))
 
   The prover sometimes reduces a goal without hypotheses (technically
-  speaking, a one-element clause) to nil using type reasoning (see
+  speaking, a one-element [clause]) to nil using type reasoning (see
   [TYPE-REASONING]).  This heuristic has not changed, but formerly
   there was no explanation given.  Now ACL2 reports the rules (of
   class :[type-prescription]) that were used.
@@ -99079,6 +99241,10 @@ Changes to Existing Features
   also available to ACL2 users, [set-table-guard], which adds a
   [table] guard that produces a user-friendly error message when the
   guard fails.
+
+  The prover may now print a parenthetical remark about ``dropping
+  false conclusion''.  That remark points to a new documentation
+  topic, which provides explanation: see [clause].
 
 
 New Features
@@ -99214,13 +99380,13 @@ Heuristic and Efficiency Improvements
   simplification.  Thanks to Warren Hunt and Vivek Ramanathan for
   supplying an example of a theorem whose proof had a surprising
   failure but now succeeds.  (Technical Remark describing this
-  change: When a clause has most recently settled down at the time
+  change: When a [clause] has most recently settled down at the time
   that the simplify process is invoked (a so-called ``desperation
   heuristics'' attempt), then the literals are reordered before
   building the [type-alist], so that the literals that involve at
   most one variable precede the other literals.)
 
-  Generation of guard clauses (and, probably rarely, other goals) has
+  Generation of guard [clause]s (and, probably rarely, other goals) has
   been sped up in certain extreme cases.  For details, see
   [system-attachments], specifically the discussion of
   CONJOIN-CLAUSE-SETS-BOUND in the ``Summary of attachable system
@@ -99446,6 +99612,11 @@ Bug Fixes
   returns two values.  For example, the form (table foo nil nil
   :guard (mv t nil)) was not formerly seen as [redundant] when
   evaluating it a second time.
+
+  Fixed a bug that was causing [cw-gstack] to report ``Rewriting (to
+  simplify) the first argument'' when rewriting the second argument
+  of a call of [implies], and fixed an analogous bug for
+  [return-last].
 
 
 Changes at the System Level
@@ -101396,7 +101567,7 @@ Subtopics
       Control which parts of the [summary] are printed
 
   [Set-let*-abstractionp]
-      To shorten many prettyprinted clauses
+      To shorten many prettyprinted [clause]s
 
   [Set-print-clause-ids]
       Cause subgoal numbers to be printed when 'prove output is inhibited
@@ -103209,6 +103380,10 @@ Applications
   involved in the implicit constraints (and those functions are
   automatically included among the supporters, even when not
   specified by the user).
+
+  For examples of such an application, including explanatory comments,
+  see [community-books] and books/demos/partial-encapsulate.lisp and
+  books/demos/include-raw-examples/mem-access-sound/mem.lisp.
 
   For an example of such an application, including explanatory
   comments, see [community-book]
@@ -106458,7 +106633,7 @@ Using This Information to Speed Up LAMBDA Application
   tips.
 
   To be converted from :BAD to :GOOD a LAMBDA has to be both
-  well-formed and guard verified.  The cache doesn't try to verify
+  well-formed and [guard] verified.  The cache doesn't try to verify
   objects that are not well-formed.  So first make sure your object
   is well-formed and then once it is make sure it is guard verified.
 
@@ -106505,7 +106680,7 @@ Using This Information to Speed Up LAMBDA Application
   to further extend the world by calling [verify-guards] on the
   listed function symbols in first two problems or call verify-guard
   on the lambda object itself for an opportunity to supply :hints to
-  prove the guard clauses listed in the third problem.
+  prove the guard [clause]s listed in the third problem.
 
   For example, suppose we define squ with a guard of natp,
 
@@ -110881,7 +111056,7 @@ Subtopics
 
   process-assumptions: creating forcing rounds
 
-  remove-built-in-clauses: removing built-in clauses (see
+  remove-built-in-clauses: removing built-in [clause]s (see
   [built-in-clause])
 
   process-equational-polys: deducing interesting equations
@@ -115561,13 +115736,7 @@ Recursion and Induction Table of Contents
   rewriter, so we sketch that here.
 
   In ACL2, the goals you see printed in proof output are represented
-  internally as clauses.  A clause in our sense is a list of terms
-  and the meaning of a clause is the ACL2 disjunction of those terms
-  where a term p is considered ``false'' if ``p = nil'' and is true
-  otherwise.  The elements of a clause are called ``literals,'' even
-  though they are just terms.  For example the goal (IMPLIES (AND p
-  q) r) is internally represented as the clause ((NOT p) (NOT q) r).
-  The literals of that clause are the terms (NOT p), (NOT q), and r.
+  internally as clauses.  See [clause].
 
   The job of the simplifier is to simplify a clause, returning a set of
   clauses whose conjunction is propositionally equivalent to the
@@ -119504,7 +119673,7 @@ Subtopics
   following.
 
     * The suggestion, above, that the rewriter looks through the goal
-      clause for ``any instance of the lhs'' is not quite true.
+      [clause] for ``any instance of the lhs'' is not quite true.
       :Rewrite rules are never applied to quoted constants or any
       term inside a call of [hide].  If you want to rewrite a quoted
       constant use a :[rewrite-quoted-constant] rule.
@@ -119737,17 +119906,17 @@ Restrictions During Rewriting of a Lambda Body
   two kinds of lambda body simplification in
   [rewriting-versus-cleaning-up-lambda-objects].
 
-  Second, warrant hypotheses in the goal clause are the only contextual
-  information ``imported'' from the goal clause and made available
-  while rewriting a lambda body.  That means type information about
-  variables and other terms is forgotten, as are any linear
-  arithmetic relationships.  The reason is simple: the variables in
-  the body are in a different scope than the variables outside the
-  lambda object.  Put another way, we do not know, in general, to
-  what the lambda object will eventually be applied and so, in ACL2's
-  untyped logic, we know nothing about its formal variables.
-  (Actually, we not only ``import'' the warrants from the goal
-  clause, we import every ground hypothesis governing the lambda
+  Second, warrant hypotheses in the goal [clause] are the only
+  contextual information ``imported'' from the goal clause and made
+  available while rewriting a lambda body.  That means type
+  information about variables and other terms is forgotten, as are
+  any linear arithmetic relationships.  The reason is simple: the
+  variables in the body are in a different scope than the variables
+  outside the lambda object.  Put another way, we do not know, in
+  general, to what the lambda object will eventually be applied and
+  so, in ACL2's untyped logic, we know nothing about its formal
+  variables.  (Actually, we not only ``import'' the warrants from the
+  goal clause, we import every ground hypothesis governing the lambda
   object's occurrence.  But practically speaking that means we only
   import warrant hypotheses.  A more sophisticated handling of
   contextual information can be imagined.  For example, if the lambda
@@ -121427,7 +121596,7 @@ Subtopics
       Attempting to relieve the hypotheses of a rule
 
   [Built-in-clause]
-      To build a clause into the simplifier
+      To build a [clause] into the simplifier
 
   [Clause-processor]
       Make or apply a :clause-processor rule (goal-level simplifier)
@@ -123397,7 +123566,7 @@ Subtopics
     (set-case-split-limitations '(500 nil))
 
   The first of these prevents clausify from trying the
-  subsumption/replacement (see below) loop if more than 500 clauses
+  subsumption/replacement (see below) loop if more than 500 [clause]s
   are involved.  It also discourages the clause simplifier from
   splitting into more than 100 cases at once.
 
@@ -125858,7 +126027,7 @@ Example
                        "See [set-let*-abstractionp].")
  (SET-LET*-ABSTRACTIONP
   (OUTPUT-CONTROLS)
-  "To shorten many prettyprinted clauses
+  "To shorten many prettyprinted [clause]s
 
   Note: This is an event!  It does not print the usual event [summary]
   but nevertheless changes the ACL2 logical [world] and is so
@@ -125867,7 +126036,7 @@ Example
   or [encapsulate] form containing it; see [ACL2-defaults-table].
 
   When this flag is set to t, subterms that occur more than once in a
-  clause are abstracted away with [let*], generally shortening the
+  [clause] are abstracted away with [let*], generally shortening the
   displayed size of the clauses.  This flag only affects how clauses
   are printed.  It does not change what terms the theorem prover
   manipulates.
@@ -126959,9 +127128,9 @@ Subtopics
   The result of applying a [meta]function (or a hypothesis
   metafunction) must be a term.  Similarly, the result of applying a
   [clause-processor] must be a list of clauses, where a clause is a
-  list of terms.  If these conditions fail, then an error occurs; see
-  [term-table] for how one obtains some assistance towards avoiding
-  such errors.
+  list of terms (see [clause]).  If these conditions fail, then an
+  error occurs; see [term-table] for how one obtains some assistance
+  towards avoiding such errors.
 
   By default, ACL2 actually enforces a stronger requirement: the
   resulting term or clause-list cannot contain any calls of
@@ -134842,7 +135011,7 @@ List of a few built-in system utilities
       use in [guard]s.  Note: for a somewhat deeper check, see
       community book books/system/pseudo-good-worldp.lisp.
     * (prettyify-clause cl let*-abstractionp wrld): Returns an untranslated
-      (user-level) term that is equivalent to the clause, cl.
+      (user-level) term that is equivalent to the [clause], cl.
     * (programp fn w): For a function symbol fn of [world] w, return t when
       the symbol-class of fn in w is :program, else nil.  (See
       symbol-class, below.)
@@ -136990,7 +137159,7 @@ Subtopics
       recognizer for the quotation of a [term]")
  (TERM-LIST-LISTP
   (ACL2-BUILT-INS)
-  "recognizer for a list of clauses
+  "recognizer for a list of [clause]s
 
     Example:
     (term-list-listp
@@ -137006,15 +137175,16 @@ Subtopics
   lists of quotations of well-formed terms in w.
 
   This function is the standard ACL2 idiom for recognizing a ``set of
-  clauses.'' See [clause-processor].  Each clause processor is
-  supposed to take a clause (i.e., term-listp) as input and yield a
-  list of clauses (i.e., term-list-listp) as output.  When a clause
-  processor is run by the theorem prover its input is guaranteed to
-  be a well-formed clause by invariants maintained by ACL2.  But its
-  output is checked by an explicit call to this function unless the
-  user has proved that the clause processor always returns a list of
-  clauses (see [well-formedness-guarantee]) or has taken the risk of
-  disabling the runtime test with [set-skip-meta-termp-checks].
+  clauses.'' See [clause] and see [clause-processor].  Each clause
+  processor is supposed to take a clause (i.e., term-listp) as input
+  and yield a list of clauses (i.e., term-list-listp) as output.
+  When a clause processor is run by the theorem prover its input is
+  guaranteed to be a well-formed clause by invariants maintained by
+  ACL2.  But its output is checked by an explicit call to this
+  function unless the user has proved that the clause processor
+  always returns a list of clauses (see [well-formedness-guarantee])
+  or has taken the risk of disabling the runtime test with
+  [set-skip-meta-termp-checks].
 
   Function: <term-list-listp>
 
@@ -137026,7 +137196,7 @@ Subtopics
              (term-list-listp (cdr l) w))))")
  (TERM-LISTP
   (ACL2-BUILT-INS)
-  "recognizer for a list of quotations of terms and of clauses
+  "recognizer for a list of quotations of terms and of [clause]s
 
     Example:
     (term-listp '((ZP X) 'NIL (CONS X Y)) (w state))
@@ -137040,14 +137210,14 @@ Subtopics
 
   This function is used in the definition of [termp].  In addition,
   term-listp is the standard ACL2 idiom for recognizing a clause
-  (``set of literals'').  See [clause-processor].  Each clause
-  processor is supposed to take a clause (i.e., term-listp) as input
-  and yield a list of clauses (i.e., [term-list-listp]) as output.
-  When a clause processor is run by the theorem prover its input is
-  guaranteed to be a well-formed clause by invariants maintained by
-  ACL2.  But its output is checked by an explicit call of
-  [term-list-listp] unless the user has proved that the clause
-  processor always returns a list of clauses (see
+  (``set of literals'').  See [clause] and see [clause-processor].
+  Each clause processor is supposed to take a clause (i.e.,
+  term-listp) as input and yield a list of clauses (i.e.,
+  [term-list-listp]) as output.  When a clause processor is run by
+  the theorem prover its input is guaranteed to be a well-formed
+  clause by invariants maintained by ACL2.  But its output is checked
+  by an explicit call of [term-list-listp] unless the user has proved
+  that the clause processor always returns a list of clauses (see
   [well-formedness-guarantee]) or has taken the risk of disabling the
   runtime test with [set-skip-meta-termp-checks].
 
@@ -145974,7 +146144,7 @@ Subtopics
   The test above is ``overkill'' because it recognizes precisely the
   clause ids in question.  But recall that once a computed hint is
   used, it is (by default) removed from the hints available to the
-  children of the clause.  Thus, we can widen the set of clause ids
+  children of the [clause].  Thus, we can widen the set of clause ids
   recognized to include all the children without worrying that the
   hint will be applied to those children.
 
@@ -146023,8 +146193,8 @@ Subtopics
         '(:use (:instance all-swaps-have-the-property (x A)))
         nil)
 
-  where test answers the question ``does the clause contain (SWAP A)?''
-  That question can be asked with (occur-lst '(SWAP A) clause).
+  where test answers the question ``does the [clause] contain (SWAP
+  A)?'' That question can be asked with (occur-lst '(SWAP A) clause).
   Briefly, occur-lst takes the representation of a translated term,
   x, and a list of translated terms, y, and determines whether x
   occurs as a subterm of any term in y.  (By ``subterm'' here we mean
@@ -146128,8 +146298,8 @@ Subtopics
   So far we have used computed hints only to compute when a fixed set
   of keys and values are to be used as a hint.  But computed hints
   can, of course, compute the set of keys and values.  You might, for
-  example, write a hint that recognizes when a clause ``ought'' to be
-  provable by a :BDD hint and generate the appropriate hint.  You
+  example, write a hint that recognizes when a [clause] ``ought'' to
+  be provable by a :BDD hint and generate the appropriate hint.  You
   might build in a set of useful lemmas and check to see if the
   clause is provable :BY one of them.  You can keep all function
   symbols disabled and use computed hints to compute which ones you
@@ -146382,9 +146552,9 @@ Subtopics
   is actually changed, since (wrapper a) is already in the subgoal.
 
   So let's change the experiment a little.  Let's make the hint add the
-  hypothesis (wrapper p) where p is the first literal of the clause.
-  This is silly but it allows us to explore the behavior of computed
-  hints a little more.
+  hypothesis (wrapper p) where p is the first literal of the
+  [clause].  This is silly but it allows us to explore the behavior
+  of computed hints a little more.
 
     (thm (equal u v)
       :hints (`(:use (:instance wrapper-axiom (x ,(car clause))))))
@@ -146689,7 +146859,7 @@ Subtopics
 
   Suppose that when stage1 is called, fn is the function we want to
   expand, max is the maximum number of iterations of this expansion,
-  clause is the current goal clause, and flg is the value of the
+  clause is the current goal [clause], and flg is the value of the
   stable-under-simplificationp flag.  Then if clause is stable and we
   can find a call of fn in it, we ask whether max is exhausted.  If
   so, we print an ``error message'' to the comment window with [cw]
@@ -146809,11 +146979,11 @@ Subtopics
   None of our examples illustrated the 7 argument form of a computed
   hint, (fn ID CLAUSE WORLD STABLE-UNDER-SIMPLIFICATIONP HIST PSPV
   CTX).  When used, the variables HIST, PSPV, and CTX, are bound to
-  the clause history, the package of ``special variables'' governing
-  the clause, and the ``error message context.'' These variables are
-  commonly used throughout our source code but are, unfortunately,
-  undocumented.  Again, we expect a few experts will find them useful
-  in developing computed hints.
+  the [clause] history, the package of ``special variables''
+  governing the clause, and the ``error message context.'' These
+  variables are commonly used throughout our source code but are,
+  unfortunately, undocumented.  Again, we expect a few experts will
+  find them useful in developing computed hints.
 
   If you start using computed hints extensively, please contact the
   developers of ACL2 and let us know what you are doing with them and
@@ -150455,24 +150625,24 @@ General forms of queries
   calls the theorem prover.  To understand how the queries work, it
   is useful to view a proof attempt as generating ``initial'' calls
   of the rewriter, such as when rewriting a hypothesis or the
-  conclusion of a goal (technically, a literal of the goal clause):
-  that is, initial rewriter calls are those that are not under
-  another rewriter call.  Then data collection under each initial
-  call creates a tree of ``top-level'' calls --- those not made under
-  an attempt to relieve a hypothesis --- for which that initial call
-  is the root.  Thus each node of that tree corresponds to a rewriter
-  call, and each child of that node is a top-level call of the
-  rewriter that is immediately under that call, where the order of
-  calls is respected by the ordering of child nodes from left to
-  right.  For example, the top-level application a rewrite rule
-  corresponds to a node, and the call to rewrite the right-hand side
-  of the rule (with appropriate variable bindings) corresponds to a
-  child of that node.  Another example is when an attempt to rewrite
-  a function call leads to an attempt to rewrite an argument of that
-  call: the latter corresponds to a child node of the former.  Each
-  of the four query utilities looks for the first root node, and the
-  left-most branch under that node, that results in a rewriter result
-  that ``matches'' the input in the following sense.
+  conclusion of a goal (technically, a literal of the goal clause;
+  see [clause]): that is, initial rewriter calls are those that are
+  not under another rewriter call.  Then data collection under each
+  initial call creates a tree of ``top-level'' calls --- those not
+  made under an attempt to relieve a hypothesis --- for which that
+  initial call is the root.  Thus each node of that tree corresponds
+  to a rewriter call, and each child of that node is a top-level call
+  of the rewriter that is immediately under that call, where the
+  order of calls is respected by the ordering of child nodes from
+  left to right.  For example, the top-level application a rewrite
+  rule corresponds to a node, and the call to rewrite the right-hand
+  side of the rule (with appropriate variable bindings) corresponds
+  to a child of that node.  Another example is when an attempt to
+  rewrite a function call leads to an attempt to rewrite an argument
+  of that call: the latter corresponds to a child node of the former.
+  Each of the four query utilities looks for the first root node, and
+  the left-most branch under that node, that results in a rewriter
+  result that ``matches'' the input in the following sense.
 
   This notion of ``matches'' depends on the call, as follows.  First
   assume that the input is a term.  For cw-gstack-for-subterm and
@@ -153405,7 +153575,7 @@ Subtopics
   into that alist.  This step is performed by [wormhole-eval].  To
   make things more efficient, wormhole-eval is just a macro that
   expands into a let that binds the lambda formal to the current
-  status and whose body is the lambda body.  Guard clauses are
+  status and whose body is the lambda body.  [Guard] [clause]s are
   generated from the body, with one exception: the lambda formal is
   replaced by a new variable so that no prior assumptions are
   available about the value of the wormhole status.
