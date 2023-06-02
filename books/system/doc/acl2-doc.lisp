@@ -112,6 +112,7 @@
     (MAKE-FLAG "[books]/tools/flag.lisp")
     (MAKE-TERMINATION-THEOREM
      "[books]/kestrel/utilities/make-termination-theorem.lisp")
+    (XDOC::MARKUP "[books]/xdoc/topics.lisp")
     (MEMOIZED-PROVER-FNS "[books]/tools/memoize-prover-fns.lisp")
     (MUST-FAIL "[books]/std/testing/must-fail.lisp")
     (STR::NAT-TO-DEC-STRING "[books]/std/strings/decimal.lisp")
@@ -160,6 +161,7 @@
     (STD/UTIL "[books]/std/util/top.lisp")
     (STD::STRICT-LIST-RECOGNIZERS "[books]/std/util/deflist-base.lisp")
     (SUBSEQ-LIST "[books]/std/lists/subseq.lisp")
+    (XDOC::TERMINAL "[books]/xdoc/topics.lisp")
     (TRANS-EVAL-ERROR-TRIPLE "[books]/kestrel/utilities/trans-eval-error-triple.lisp")
     (TRANS-EVAL-STATE "[books]/kestrel/utilities/trans-eval-error-triple.lisp")
     (UNSOUND-READ "[books]/std/io/unsound-read.lisp")
@@ -2601,6 +2603,9 @@
  notion of a ``prefix argument'': a numeric value given first with the
  @('meta') key (or, probably the @('control') key), for example, @('meta-0
  control-t g') or @('control-3 control-t /').</p>
+
+ <p>Note: If you are not happy with the way text is displayed with ACL2-Doc,
+ see @(see xdoc::terminal).</p>
 
  <p>While ACL2-Doc is much like Emacs Info, it is a separate system that
  provides some additional functionality.  ACL2-Doc is text-based.  Any word
@@ -28242,8 +28247,11 @@ ld) and @(tsee include-book)"
  @(`(:raw (combined-manual-ref))`), for topics documented in the ACL2 community
  @(see books) or in the ACL2 system (where the latter are rearranged).</p>
 
- <p>Alternatively, consider using the ACL2-doc Emacs browser; see @(see
- acl2-doc).</p>
+ <p>If you are not happy with the way text is displayed using @(':doc'), see
+ @(see xdoc::terminal).</p>
+
+ <p>Alternatively, consider using the ACL2-Doc Emacs browser; see @(see
+ ACL2-Doc).</p>
 
  @({
   Examples:
@@ -28258,8 +28266,8 @@ ld) and @(tsee include-book)"
  package (that is, as though the current package were @('\"ACL2\"')).  So for
  example, a link to the present topic will be displayed as @('[doc]'), not as
  @('[acl2::doc]'), regardless of the current package or the package of the
- topic being displayed.  Such links can thus take you to topics in the acl2-doc
- Emacs browser (see @(see acl2-doc)).</p>
+ topic being displayed.  Such links can thus take you to topics in the ACL2-Doc
+ Emacs browser (see @(see ACL2-Doc)).</p>
 
  <p>Note that @(see community-book) @('xdoc/top') redefines @(':doc') (using
  @(see add-ld-keyword-alias!)) to invoke the similar macro @('xdoc'), which can
@@ -96675,8 +96683,9 @@ it."
 
  <li>Text within ``@('<stv> ... </stv>')'' is now replaced by the text
  ``@('{STV display}')''.  A general mechanism is in place for extending this
- behavior to other tags (see @('xdoc-tag-elide-alist') in @(see
- community-books) file 'books/xdoc/display.lisp').</li>
+ behavior to other tags (see @('xdoc-tag-elide-alist') [after Version 8.5,
+ @('xdoc-tag-alist')]) in @(see community-books) file
+ 'books/xdoc/display.lisp').</li>
 
  <li>In the @(see acl2-doc) browser, when the ``i'' (@('acl2-doc-index'))
  command is invoked without a prefix argument, the mode line shows the number
@@ -102810,6 +102819,16 @@ it."
  notable @('acl2-doc.el') &mdash; from that same directory, rather than from
  the @('emacs/') directory that is directly under the top level of the ACL2
  distribution.</p>
+
+ <p>@(csee Documentation) printed to the terminal or in the @(see ACL2-Doc)
+ Emacs browser can respect certain @(see xdoc::markup) that was formerly
+ ignored, but is no longer (by default): for example, text marked as underline
+ is now underlined, and text marked as having typewriter font now has a grey
+ background.  This closes GitHub Issue 1487.  Thanks to Grant Jurgensen for
+ helpful feedback on the original plan, which had been to use delimiting
+ underscores rather than Select Graphic Rendition (SGR) control sequences.  See
+ @(see xdoc::terminal) for details and for ways to customize behavior,
+ including avoidance of SGR.</p>
 
  <h3>Experimental Versions</h3>
 
