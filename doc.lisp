@@ -11979,10 +11979,11 @@ Subtopics
   A rule which uses a [47mbind-free[0m hypothesis has similarities to both a
   rule which uses a [47m[syntaxp][0m hypothesis and to a [47m:[0m[47m[meta][0m rule.
   [47mBind-free[0m is like [47m[syntaxp][0m, in that it logically always returns [47mt[0m
-  but may affect the application of a [47m:[0m[47m[rewrite][0m, [47m:[0m[47m[definition][0m, or
-  [47m:[0m[47m[linear][0m rule when it is called at the top-level of a hypothesis.
-  It is like a [47m:[0m[47m[meta][0m rule, in that it allows the user to perform
-  transformations of terms under programmatic control.
+  but may affect the application of a [47m:[0m[47m[rewrite][0m,
+  [47m:[0m[47m[rewrite-quoted-constant][0m, [47m:[0m[47m[definition][0m, or [47m:[0m[47m[linear][0m rule when
+  it is called at the top-level of a hypothesis.  It is like a
+  [47m:[0m[47m[meta][0m rule, in that it allows the user to perform transformations
+  of terms under programmatic control.
 
   Note that a [47mbind-free[0m hypothesis does not, in general, deal with the
   meaning or semantics or values of the terms, but rather with their
@@ -14852,19 +14853,21 @@ Subtopics
   question, you would usually [47m:eval[0m the rule and if break-rewrite
   reports that the rule failed then you are in a position to
   determine why, for example by carefully inspecting the
-  [47m:[0m[47m[type-alist][0m and perhaps the [linear-arithmetic] [47m:pot-list) of
+  [47m:[0m[47m[type-alist][0m and perhaps the [linear-arithmetic] [47m:pot-list[0m of
   governing assumptions or why some hypothesis of the rule could not
-  be established.</p> <p>It is often the case that when you are in
-  break-rewrite you wish to change the set of @(see monitor)ed @(see
-  rune)s.  This can be done by using @(':[0m[47m[monitor][0m and [47m:[0m[47m[unmonitor][0m
-  as noted above.  For example, you might want to [monitor] a certain
-  rule, say [47mhyp-reliever[0m, just when it is being used while attempting
-  to apply another rule, say [47mmain-lemma[0m.  Typically then you would
-  [monitor] [47mmain-lemma[0m at the ACL2 top-level, start the
-  proof-attempt, and then in the break-rewrite in which [47mmain-lemma[0m is
-  about to be tried, you would install a [monitor] on [47mhyp-reliever[0m.
-  If during the ensuing [47m:eval[0m [47mhyp-reliever[0m is broken you will know it
-  is being used under the attempt to apply [47mmain-lemma[0m.
+  be established.
+
+  It is often the case that when you are in break-rewrite you wish to
+  change the set of [monitor]ed [rune]s.  This can be done by using
+  [47m:[0m[47m[monitor][0m and [47m:[0m[47m[unmonitor][0m as noted above.  For example, you might
+  want to [monitor] a certain rule, say [47mhyp-reliever[0m, just when it is
+  being used while attempting to apply another rule, say [47mmain-lemma[0m.
+  Typically then you would [monitor] [47mmain-lemma[0m at the ACL2
+  top-level, start the proof-attempt, and then in the break-rewrite
+  in which [47mmain-lemma[0m is about to be tried, you would install a
+  [monitor] on [47mhyp-reliever[0m.  If during the ensuing [47m:eval[0m
+  [47mhyp-reliever[0m is broken you will know it is being used under the
+  attempt to apply [47mmain-lemma[0m.
 
   However, once [47mhyp-reliever[0m is being [monitor]ed it will be
   [monitor]ed even after [47mmain-lemma[0m has been tried.  That is, if you
@@ -30900,7 +30903,7 @@ INFORMAL INTRODUCTION
     603
     to
     603.
-    Logically, @('do$') returns ACL2_INVISIBLE::|The Live State Itself| in this
+    Logically, do$ returns ACL2_INVISIBLE::|The Live State Itself| in this
     situation.
 
 
@@ -34069,13 +34072,23 @@ Subtopics
   which avoids guard proof obligations like [47mhard?[0m but ensures errors
   like [47mhard![0m.
 
-  [47mEr[0m is a macro, and the above examples expand to calls of ACL2
-  functions, as shown below.  See [illegal], see [hard-error], and
-  see [error1].  The [47mhard?[0m/[47mhard?![0m forms have guards of (essentially)
-  [47mNIL[0m while the [47mhard[0m/[47mhard![0m forms have guards of (essentially) [47mT[0m.
-  [47m[Error1][0m, on the other hand, is in [47m:[0m[47m[program][0m mode; for variants of
-  [47m(er soft ...)[0m that generate [47m:[0m[47m[logic][0m mode code, see [er-soft-logic]
-  and [er-soft+].
+  [47mEr[0m is a macro, and the examples above expand to calls of ACL2
+  functions; see below.  Also see [illegal], [hard-error], and
+  [error1].  The [47mhard?[0m/[47mhard?![0m forms have expansions that call the
+  function, [47m[hard-error][0m, which has a [guard] of [47mT[0m, while the
+  [47mhard[0m/[47mhard![0m forms have expansions that call the function, [47m[illegal][0m,
+  which has a guard that is logically [47mNIL[0m.  Those generate code that
+  is in [47m:[0m[47m[logic][0m mode, in contrast to variants of [47m(er soft ...)[0m,
+  which generate calls of the [47m:[0m[47m[program][0m mode function, [47m[error1][0m.
+  For variants of [47m(er soft ...)[0m that generate [47m:[0m[47m[logic][0m mode code, see
+  [er-soft-logic] and [er-soft+].
+
+  The general forms of the macros are as follows.  Their
+  macroexpansions include code that avoids the printing of error
+  messages when error output is inhibited --- see
+  [set-inhibit-output-lst] --- but here we show only the essential
+  function calls.  Note that all arguments are evaluated even when
+  error output is inhibited.
 
     General Forms:
     (er hard  ctx fmt-string arg1 arg2 ... argk)
@@ -99261,6 +99274,12 @@ Changes to Existing Features
   false conclusion''.  That remark points to a new documentation
   topic, which provides explanation: see [clause].
 
+  [State] global [47mtrace-co[0m is now untouchable.
+
+  ACL2 now warns when the hypothesis of a [type-prescription] or
+  [forward-chaining] rule is a call of [47m[syntaxp][0m or [47m[bind-free][0m,
+  since these get no special treatment for such rules.
+
 
 New Features
 
@@ -99678,6 +99697,11 @@ Changes at the System Level
   Allow [47m[ld][0m output in [raw-mode] to go to other than the channel,
   [47m*standard-co*[0m.  Thanks to Vivek Ramanathan and Warren Hunt for an
   example illustrating the issue.
+
+  (For system hackers only) The feature [47m:acl2-loop-only[0m is now true
+  inside the ACL2 read-eval-print loop.  Therefore, the function [47mlp![0m
+  is no longer supported or necessary, since [47m(lp)[0m enters the loop
+  with feature [47m:acl2-loop-only[0m true, just as [47m(lp!)[0m did previously.
 
 
 EMACS Support
@@ -128497,9 +128521,9 @@ Extended Example
     #f{i}.{j}      => i + (/ j 10^k) where k is the length of {j}
     #f{i}.{j}e{n}  => (i + (/ j 10^k)) * 10^n where k is the length of {j}
 
-  We have the following similar semantics for the #('#fx') case, except
-  that {i} and {j} are now read in base 16.  Note that {n} is still
-  read in base 10.
+  We have the following similar semantics for the [47m#fx[0m case, except that
+  {i} and {j} are now read in base 16.  Note that {n} is still read
+  in base 10.
 
     #fx{i}         => i
     #fx{i}p{n}     => i * 2^n
@@ -133735,10 +133759,10 @@ Subtopics
   (REWRITE DEFINITION LINEAR META)
   "Attach a heuristic filter on a rule
 
-  A call of [47msyntaxp[0m in the hypothesis of a [47m:[0m[47m[rewrite][0m, [47m:[0m[47m[definition][0m,
-  or [47m:[0m[47m[linear][0m rule is treated specially, as described below.
-  Similar treatment is given to the evaluation of a [47m:[0m[47m[meta][0m rule's
-  hypothesis function call.
+  A call of [47msyntaxp[0m in the hypothesis of a [47m:[0m[47m[rewrite][0m,
+  [47m:[0m[47m[rewrite-quoted-constant][0m, [47m:[0m[47m[definition][0m, or [47m:[0m[47m[linear][0m rule is
+  treated specially, as described below.  Similar treatment is given
+  to the evaluation of a [47m:[0m[47m[meta][0m rule's hypothesis function call.
 
   For example, consider the [47m:[0m[47m[rewrite][0m rule created from the following
   formula.
@@ -150637,6 +150661,14 @@ General form of [47mwith-brr-data[0m calls
 
   There is probably little reason for most users to supply either
   keyword argument.  They are documented in the section after next.
+
+  [31;1mNotes[0m.
+
+    * The data collected by a call of [47mwith-brr-data[0m will persist until the
+      next call of [47mwith-brr-data[0m.
+    * Behavior is undefined for nested calls of [47mwith-brr-data[0m.  (If this
+      presents a problem then you may ask the ACL2 implementors to
+      consider specifying that behavior.)
 
 
 General forms of queries
