@@ -9195,9 +9195,10 @@ and @(tsee include-book)"
  rule which uses a @(tsee syntaxp) hypothesis and to a @(':')@(tsee meta) rule.
  @('Bind-free') is like @(tsee syntaxp), in that it logically always returns
  @('t') but may affect the application of a @(':')@(tsee rewrite), @(':')@(tsee
- definition), or @(':')@(tsee linear) rule when it is called at the top-level
- of a hypothesis.  It is like a @(':')@(tsee meta) rule, in that it allows the
- user to perform transformations of terms under programmatic control.</p>
+ rewrite-quoted-constant), @(':')@(tsee definition), or @(':')@(tsee linear)
+ rule when it is called at the top-level of a hypothesis.  It is like a
+ @(':')@(tsee meta) rule, in that it allows the user to perform transformations
+ of terms under programmatic control.</p>
 
  <p>Note that a @('bind-free') hypothesis does not, in general, deal with the
  meaning or semantics or values of the terms, but rather with their syntactic
@@ -12053,7 +12054,7 @@ with any questions about building the community books.</p>")
  usually @(':eval') the rule and if break-rewrite reports that the rule failed
  then you are in a position to determine why, for example by carefully
  inspecting the @(':')@(tsee type-alist) and perhaps the @(see
- linear-arithmetic) @(':pot-list) of governing assumptions or why some
+ linear-arithmetic) @(':pot-list') of governing assumptions or why some
  hypothesis of the rule could not be established.</p>
 
  <p>It is often the case that when you are in break-rewrite you wish to change
@@ -27609,7 +27610,7 @@ ld) and @(tsee include-book)"
  603
  to
  603.
- Logically, @('do$') returns ACL2_INVISIBLE::|The Live State Itself| in this
+ Logically, do$ returns ACL2_INVISIBLE::|The Live State Itself| in this
  situation.
 
 
@@ -30856,13 +30857,22 @@ ld) and @(tsee include-book)"
  even an additional option, @('hard?!'), which avoids guard proof obligations
  like @('hard?') but ensures errors like @('hard!').</p>
 
- <p>@('Er') is a macro, and the above examples expand to calls of ACL2
- functions, as shown below.  See @(see illegal), see @(see hard-error), and see
- @(see error1).  The @('hard?')/@('hard?!') forms have guards of (essentially)
- @('NIL') while the @('hard')/@('hard!') forms have guards of (essentially)
- @('T').  @(tsee Error1), on the other hand, is in @(':')@(tsee program)
- mode; for variants of @('(er soft ...)') that generate @(':')@(tsee logic)
- mode code, see @(see er-soft-logic) and @(see er-soft+).</p>
+ <p>@('Er') is a macro, and the examples above expand to calls of ACL2
+ functions; see below.  Also see @(see illegal), @(see hard-error), and @(see
+ error1).  The @('hard?')/@('hard?!') forms have expansions that call the
+ function, @(tsee hard-error), which has a @(see guard) of @('T'), while the
+ @('hard')/@('hard!') forms have expansions that call the function, @(tsee
+ illegal), which has a guard that is logically @('NIL').  Those generate code
+ that is in @(':')@(tsee logic) mode, in contrast to variants of @('(er soft
+ ...)'), which generate calls of the @(':')@(tsee program) mode function,
+ @(tsee error1).  For variants of @('(er soft ...)') that generate @(':')@(tsee
+ logic) mode code, see @(see er-soft-logic) and @(see er-soft+).</p>
+
+ <p>The general forms of the macros are as follows.  Their macroexpansions
+ include code that avoids the printing of error messages when error output is
+ inhibited &mdash; see @(see set-inhibit-output-lst) &mdash; but here we show
+ only the essential function calls.  Note that all arguments are evaluated even
+ when error output is inhibited.</p>
 
  @({
   General Forms:
@@ -102361,6 +102371,12 @@ it."
  conclusion&rdquo;.  That remark points to a new documentation topic, which
  provides explanation: see @(see clause).</p>
 
+ <p>@(csee State) global @('trace-co') is now untouchable.</p>
+
+ <p>ACL2 now warns when the hypothesis of a @(see type-prescription) or @(see
+ forward-chaining) rule is a call of @(tsee syntaxp) or @(tsee bind-free),
+ since these get no special treatment for such rules.</p>
+
  <h3>New Features</h3>
 
  <p>The new zero-ary attachable system function, @(tsee heavy-linear-p), allows
@@ -102797,6 +102813,11 @@ it."
  <p>Allow @(tsee ld) output in @(see raw-mode) to go to other than the channel,
  @('*standard-co*').  Thanks to Vivek Ramanathan and Warren Hunt for an example
  illustrating the issue.</p>
+
+ <p>(For system hackers only) The feature @(':acl2-loop-only') is now true
+ inside the ACL2 read-eval-print loop.  Therefore, the function @('lp!') is no
+ longer supported or necessary, since @('(lp)') enters the loop with feature
+ @(':acl2-loop-only') true, just as @('(lp!)') did previously.</p>
 
  <h3>EMACS Support</h3>
 
@@ -129960,7 +129981,7 @@ work on <tt>(q x)</tt>.</p>
  #f{i}.{j}e{n}  => (i + (/ j 10^k)) * 10^n where k is the length of {j}
  })
 
- <p>We have the following similar semantics for the #('#fx') case, except that
+ <p>We have the following similar semantics for the @('#fx') case, except that
  {i} and {j} are now read in base 16.  Note that {n} is still read in base
  10.</p>
 
@@ -134988,9 +135009,10 @@ work on <tt>(q x)</tt>.</p>
   :parents (rewrite definition linear meta)
   :short "Attach a heuristic filter on a rule"
   :long "<p>A call of @('syntaxp') in the hypothesis of a @(':')@(tsee
- rewrite), @(':')@(tsee definition), or @(':')@(tsee linear) rule is treated
- specially, as described below.  Similar treatment is given to the evaluation
- of a @(':')@(tsee meta) rule's hypothesis function call.</p>
+ rewrite), @(':')@(tsee rewrite-quoted-constant), @(':')@(tsee definition), or
+ @(':')@(tsee linear) rule is treated specially, as described below.  Similar
+ treatment is given to the evaluation of a @(':')@(tsee meta) rule's hypothesis
+ function call.</p>
 
  <p>For example, consider the @(':')@(tsee rewrite) rule created from the
  following formula.</p>
@@ -152259,6 +152281,19 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
 
  <p>There is probably little reason for most users to supply either keyword
  argument.  They are documented in the section after next.</p>
+
+ <p><b>Notes</b>.</p>
+
+ <ul>
+
+ <li>The data collected by a call of <tt>with-brr-data</tt> will persist until
+ the next call of @('with-brr-data').</li>
+
+ <li>Behavior is undefined for nested calls of @('with-brr-data').  (If this
+ presents a problem then you may ask the ACL2 implementors to consider
+ specifying that behavior.)</li>
+
+ </ul>
 
  <h3>General forms of queries</h3>
 
