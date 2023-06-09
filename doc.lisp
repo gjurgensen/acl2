@@ -99730,14 +99730,19 @@ EMACS Support
 
   [Documentation] printed to the terminal or in the [ACL2-Doc] Emacs
   browser can respect certain [xdoc::markup] that was formerly
-  ignored, but is no longer (by default): for example, text marked as
-  underline is now underlined, and text marked as having typewriter
-  font now has a grey background.  This closes GitHub Issue 1487.
-  Thanks to Grant Jurgensen for helpful feedback on the original
-  plan, which had been to use delimiting underscores rather than
-  Select Graphic Rendition (SGR) control sequences.  See
-  [xdoc::terminal] for details and for ways to customize behavior,
-  including avoidance of SGR.
+  ignored, but is no longer (by default), as follows.
+
+    * Fonts are largely respected.  For example, text marked as underline
+      is now underlined, and text marked as having typewriter font
+      now has a grey background.  This closes GitHub Issue 1487.
+      Thanks to Grant Jurgensen for helpful feedback on the original
+      plan, which had been to use delimiting underscores rather than
+      Select Graphic Rendition (SGR) control sequences.  See
+      [xdoc::terminal] for details and for ways to customize
+      behavior, including avoidance of SGR.
+    * Images now appear in [ACL2-Doc] (but not with [47m:[0m[47mdoc[0m at the terminal),
+      instead of [47m{IMAGE}[0m, on systems that can display graphics inside
+      Emacs.  Thanks to Warren Hunt for requesting this enhancement.
 
 
 Experimental Versions
