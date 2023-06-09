@@ -102843,13 +102843,23 @@ it."
 
  <p>@(csee Documentation) printed to the terminal or in the @(see ACL2-Doc)
  Emacs browser can respect certain @(see xdoc::markup) that was formerly
- ignored, but is no longer (by default): for example, text marked as underline
- is now underlined, and text marked as having typewriter font now has a grey
+ ignored, but is no longer (by default), as follows.</p>
+
+ <ul>
+
+ <li>Fonts are largely respected.  For example, text marked as underline is now
+ underlined, and text marked as having typewriter font now has a grey
  background.  This closes GitHub Issue 1487.  Thanks to Grant Jurgensen for
  helpful feedback on the original plan, which had been to use delimiting
  underscores rather than Select Graphic Rendition (SGR) control sequences.  See
  @(see xdoc::terminal) for details and for ways to customize behavior,
- including avoidance of SGR.</p>
+ including avoidance of SGR.</li>
+
+ <li>Images now appear in @(see ACL2-Doc) (but not with @(':')@('doc') at the
+ terminal), instead of @('{IMAGE}'), on systems that can display graphics
+ inside Emacs.  Thanks to Warren Hunt for requesting this enhancement.</li>
+
+ </ul>
 
  <h3>Experimental Versions</h3>
 
