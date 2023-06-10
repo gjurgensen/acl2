@@ -48654,9 +48654,11 @@ Subtopics
         * the [47m:[0m[47m[guard-theorem][0m [lemma-instance] (and related low-level utility,
           [47mguard-theorem[0m.
 
-  Each feature above has an argument (possibly optional) that control
+  Each feature above has an argument (possibly optional) that controls
   the level of simplification.  Each such argument can take any of
-  three values, as follows.
+  three values, as follows.  But [31;1mNOTE[0m: [47mT[0m and [47m:LIMITED[0m are the only
+  legal values for the ``AT'' (first) group, and [47m:LIMITED[0m and [47mNIL[0m are
+  the only legal values for the ``AFTER'' (second) group.
 
     * [47mT[0m:
       Full simplification, which is the default behavior for
@@ -99755,6 +99757,11 @@ EMACS Support
     * Images now appear in [ACL2-Doc] (but not with [47m:[0m[47mdoc[0m at the terminal),
       instead of [47m{IMAGE}[0m, on systems that can display graphics inside
       Emacs.  Thanks to Warren Hunt for requesting this enhancement.
+
+  The documentation for [ACL2-Doc] says of the search commands [47ms[0m and [47mS[0m,
+  ``go to that topic with the cursor put immediately after the found
+  text''.  But the cursor was at the end of the found text, not
+  immediately after it.  That has been fixed.
 
 
 Experimental Versions
@@ -153781,7 +153788,9 @@ Subtopics
   [47m:guard-hints[0m
   [47mValue[0m: hints (see [hints]), to be used during the [guard]
   verification proofs as opposed to the termination proofs of the
-  [47m[defun][0m.
+  [47m[defun][0m.  Note that these hints apply only to guard proofs, not to
+  the generation of guard proof obligations; for that, see
+  [guard-simplification].
 
   [47m:guard-simplify[0m
   [47mValue[0m: [47mt[0m by default, which supports simplification performed while

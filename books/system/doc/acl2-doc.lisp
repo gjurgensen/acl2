@@ -102874,6 +102874,11 @@ it."
 
  </ul>
 
+ <p>The documentation for @(see ACL2-Doc) says of the search commands @('s')
+ and @('S'), &ldquo;go to that topic with the cursor put immediately after the
+ found text&rdquo;.  But the cursor was at the end of the found text, not
+ immediately after it.  That has been fixed.</p>
+
  <h3>Experimental Versions</h3>
 
  <p>The note &ldquo;Note: No checkpoints to print.&rdquo; that might be printed
