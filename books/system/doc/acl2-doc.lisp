@@ -102763,6 +102763,10 @@ it."
  second argument of a call of @(tsee implies), and fixed an analogous bug for
  @(tsee return-last).</p>
 
+ <p>Fixed a bug in @(tsee intersection$) that prevented it from being called
+ with keyword argument @(':test 'equal').  Thanks to Anna Slobodova for
+ bringing this bug to our attention.</p>
+
  <h3>Changes at the System Level</h3>
 
  <p>The `@('make')' target, @('save-exec'), now builds @('custom-saved_acl2')
