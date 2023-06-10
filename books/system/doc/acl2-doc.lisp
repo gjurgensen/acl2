@@ -45597,9 +45597,11 @@ current fast alists."
 
  </ul>
 
- <p>Each feature above has an argument (possibly optional) that control the
+ <p>Each feature above has an argument (possibly optional) that controls the
  level of simplification.  Each such argument can take any of three values, as
- follows.</p>
+ follows.  But <b>NOTE</b>: @('T') and @(':LIMITED') are the only legal values
+ for the &ldquo;AT&rdquo; (first) group, and @(':LIMITED') and @('NIL') are the
+ only legal values for the &ldquo;AFTER'' (second) group.</p>
 
  <ul>
 
@@ -102823,6 +102825,13 @@ it."
  longer supported or necessary, since @('(lp)') enters the loop with feature
  @(':acl2-loop-only') true, just as @('(lp!)') did previously.</p>
 
+ <p>(CCL only) @(csee Stobj) array code now has a workaround for a CCL bug
+ found by Yahya Sohail, in the case of reading a stobj array of integers where
+ the element type includes at least one negative number and one non-fixnum.
+ This fix may slow down such stobj array reads a bit in CCL, in such cases; one
+ measurement showed about 37% more time for such a read.  Thanks to Yahya for
+ the bug report and to Warren Hunt for encouraging a workaround.</p>
+
  <h3>EMACS Support</h3>
 
  <p>A set of tools for assisting in the conversion of certain HTML to @(tsee
@@ -155636,7 +155645,9 @@ created from the original fast alist during @('form') must be manually freed."
 
  @('Value'): hints (see @(see hints)), to be used during the @(see guard)
  verification proofs as opposed to the termination proofs of the @(tsee
- defun).</p>
+ defun).  Note that these hints apply only to guard proofs, not to the
+ generation of guard proof obligations; for that, see @(see
+ guard-simplification).</p>
 
  <p>@(':guard-simplify')<br></br>
 
