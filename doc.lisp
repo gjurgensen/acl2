@@ -99652,6 +99652,10 @@ Bug Fixes
   of a call of [47m[implies][0m, and fixed an analogous bug for
   [47m[return-last][0m.
 
+  Fixed a bug in [47m[intersection$][0m that prevented it from being called
+  with keyword argument [47m:test 'equal[0m.  Thanks to Anna Slobodova for
+  bringing this bug to our attention.
+
 
 Changes at the System Level
 
