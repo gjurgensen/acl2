@@ -13359,18 +13359,19 @@ with any questions about building the community books.</p>")
   \"/usr/home/smith/\"
  })
 
- <p>The connected book directory (``cbd'') is a nonempty string that specifies
- a directory as an absolute pathname.  (See @(see pathname) for a discussion of
- file naming conventions.)  When utilities that take a filename argument, such
- as @(tsee include-book), are given a relative pathname, it is elaborated it
- into an absolute pathname, essentially by appending the connected book
- directory string to the left and @('\".lisp\"') to the right.  (This absolute
- pathname is actuallly canonical when elaborating book names.  For more details
- on book names, see @(see book-name) and also see @(see full-book-name).)
- Furthermore, @(tsee include-book) and @(tsee ld) temporarily set the connected
- book directory to the directory string of the resulting full pathname so that
- references to files in the same directory may omit the directory.  See @(see
- set-cbd) for how to set the connected book directory string.</p>
+ <p>The connected book directory (``cbd'') is a string ending with the @('/')
+ character that specifies a directory as an absolute pathname.  (See @(see
+ pathname) for a discussion of file naming conventions.)  When utilities that
+ take a filename argument, such as @(tsee include-book), are given a relative
+ pathname, it is elaborated it into an absolute pathname, essentially by
+ appending the connected book directory string to the left and @('\".lisp\"')
+ to the right.  (This absolute pathname is actuallly canonical when elaborating
+ book names.  For more details on book names, see @(see book-name) and also see
+ @(see full-book-name).)  Furthermore, @(tsee include-book) and @(tsee ld)
+ temporarily set the connected book directory to the directory string of the
+ resulting full pathname so that references to files in the same directory may
+ omit the directory.  See @(see set-cbd) for how to set the connected book
+ directory string.</p>
 
  <p>Note that the cbd is used for elaborating every @(see pathname) argument,
  not just a pathname that represents a book.  (Technical remark: Some

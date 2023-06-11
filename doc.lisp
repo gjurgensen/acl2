@@ -16261,20 +16261,20 @@ Subtopics
     ACL2 !>:cbd
     \"/usr/home/smith/\"
 
-  The connected book directory (``cbd'') is a nonempty string that
-  specifies a directory as an absolute pathname.  (See [pathname] for
-  a discussion of file naming conventions.)  When utilities that take
-  a filename argument, such as [47m[include-book][0m, are given a relative
-  pathname, it is elaborated it into an absolute pathname,
-  essentially by appending the connected book directory string to the
-  left and [47m\".lisp\"[0m to the right.  (This absolute pathname is
-  actuallly canonical when elaborating book names.  For more details
-  on book names, see [book-name] and also see [full-book-name].)
-  Furthermore, [47m[include-book][0m and [47m[ld][0m temporarily set the connected
-  book directory to the directory string of the resulting full
-  pathname so that references to files in the same directory may omit
-  the directory.  See [set-cbd] for how to set the connected book
-  directory string.
+  The connected book directory (``cbd'') is a string ending with the [47m/[0m
+  character that specifies a directory as an absolute pathname.  (See
+  [pathname] for a discussion of file naming conventions.)  When
+  utilities that take a filename argument, such as [47m[include-book][0m,
+  are given a relative pathname, it is elaborated it into an absolute
+  pathname, essentially by appending the connected book directory
+  string to the left and [47m\".lisp\"[0m to the right.  (This absolute
+  pathname is actuallly canonical when elaborating book names.  For
+  more details on book names, see [book-name] and also see
+  [full-book-name].)  Furthermore, [47m[include-book][0m and [47m[ld][0m
+  temporarily set the connected book directory to the directory
+  string of the resulting full pathname so that references to files
+  in the same directory may omit the directory.  See [set-cbd] for
+  how to set the connected book directory string.
 
   Note that the cbd is used for elaborating every [pathname] argument,
   not just a pathname that represents a book.  (Technical remark:
