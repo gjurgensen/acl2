@@ -36375,21 +36375,21 @@ Subtopics
   "Extend a relative pathname to an absolute pathname
 
   [47mExtend-pathname[0m is a [47m:[0m[47m[program][0m mode function that takes a directory
-  name and a filename (a string) and returns a corresponding pathname
-  for the given file that is relative to the specified directory.  If
-  the filename is already an absolute pathname then the return value
-  is that filename, unchanged.
+  name as specified below and a filename (a string), and returns a
+  corresponding pathname for the given file that is relative to the
+  specified directory.  If the filename is already an absolute
+  pathname then the return value is that filename, unchanged.
 
     General Form:
 
     (extend-pathname dir filename state)
 
-  where [47mdir[0m is either a non-empty string, representing a directory's
-  pathname, or a keyword, representing a project directory (see
+  where [47mdir[0m is either a string, representing an absolute pathname for a
+  directory, or a keyword, representing a project directory (see
   [project-dir-alist]); filename is a string representing a relative
   or absolute pathname; and [47mstate[0m is the ACL2 [state].
 
-  The following examples flesh out the behavior of [47mextend-pathname[0m.
+  The following examples illustrate the behavior of [47mextend-pathname[0m.
 
     Examples (comments added)
 
@@ -36403,7 +36403,14 @@ Subtopics
     ; name of non-existent file is still extended
     \"/home/bubba/temp/no-such-file\"
     ACL2 !>(extend-pathname \".\" \"no-such-file\" state)
-    ; assumes that the current working directory is \"/home/joe\"
+    ; THIS IS NOT SUPPORTED, because the first argument is a relative pathname,
+    ; not an absolute pathname; but in this case a reasonable answer happens to
+    ; be provided.  See the next example for how to do this properly.
+    ; Here we assume that the current working directory is \"/home/joe\"
+    \"/home/joe/no-such-file\"
+    ACL2 !>(extend-pathname (canonical-pathname \".\" t state) \"no-such-file\" state)
+    ; As above, but the first argument is first turned into an absolute pathname,
+    ; which makes the call a supported one.
     \"/home/joe/no-such-file\"
     ACL2 !>(extend-pathname (cbd) \"no-such-file\" state)
     ; assumes that the connected book directory (see :DOC cbd) is \"/data/santa\"

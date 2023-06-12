@@ -32906,10 +32906,10 @@ ld) and @(tsee include-book)"
   :parents (io acl2-built-ins)
   :short "Extend a relative pathname to an absolute pathname"
   :long "<p>@('Extend-pathname') is a @(':')@(tsee program) mode function that
- takes a directory name and a filename (a string) and returns a corresponding
- pathname for the given file that is relative to the specified directory.  If
- the filename is already an absolute pathname then the return value is that
- filename, unchanged.</p>
+ takes a directory name as specified below and a filename (a string), and
+ returns a corresponding pathname for the given file that is relative to the
+ specified directory.  If the filename is already an absolute pathname then the
+ return value is that filename, unchanged.</p>
 
  @({
  General Form:
@@ -32917,12 +32917,12 @@ ld) and @(tsee include-book)"
  (extend-pathname dir filename state)
  })
 
- <p>where @('dir') is either a non-empty string, representing a directory's
- pathname, or a keyword, representing a project directory (see @(see
+ <p>where @('dir') is either a string, representing an absolute pathname for a
+ directory, or a keyword, representing a project directory (see @(see
  project-dir-alist)); filename is a string representing a relative or absolute
  pathname; and @('state') is the ACL2 @(see state).</p>
 
- <p>The following examples flesh out the behavior of @('extend-pathname').</p>
+ <p>The following examples illustrate the behavior of @('extend-pathname').</p>
 
  @({
  Examples (comments added)
@@ -32937,7 +32937,14 @@ ld) and @(tsee include-book)"
  ; name of non-existent file is still extended
  \"/home/bubba/temp/no-such-file\"
  ACL2 !>(extend-pathname \".\" \"no-such-file\" state)
- ; assumes that the current working directory is \"/home/joe\"
+ ; THIS IS NOT SUPPORTED, because the first argument is a relative pathname,
+ ; not an absolute pathname; but in this case a reasonable answer happens to
+ ; be provided.  See the next example for how to do this properly.
+ ; Here we assume that the current working directory is \"/home/joe\"
+ \"/home/joe/no-such-file\"
+ ACL2 !>(extend-pathname (canonical-pathname \".\" t state) \"no-such-file\" state)
+ ; As above, but the first argument is first turned into an absolute pathname,
+ ; which makes the call a supported one.
  \"/home/joe/no-such-file\"
  ACL2 !>(extend-pathname (cbd) \"no-such-file\" state)
  ; assumes that the connected book directory (see :DOC cbd) is \"/data/santa\"
