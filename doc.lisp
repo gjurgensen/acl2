@@ -16261,20 +16261,20 @@ Subtopics
     ACL2 !>:cbd
     \"/usr/home/smith/\"
 
-  The connected book directory (``cbd'') is a nonempty string that
-  specifies a directory as an absolute pathname.  (See [pathname] for
-  a discussion of file naming conventions.)  When utilities that take
-  a filename argument, such as [47m[include-book][0m, are given a relative
-  pathname, it is elaborated it into an absolute pathname,
-  essentially by appending the connected book directory string to the
-  left and [47m\".lisp\"[0m to the right.  (This absolute pathname is
-  actuallly canonical when elaborating book names.  For more details
-  on book names, see [book-name] and also see [full-book-name].)
-  Furthermore, [47m[include-book][0m and [47m[ld][0m temporarily set the connected
-  book directory to the directory string of the resulting full
-  pathname so that references to files in the same directory may omit
-  the directory.  See [set-cbd] for how to set the connected book
-  directory string.
+  The connected book directory (``cbd'') is a string ending with the [47m/[0m
+  character that specifies a directory as an absolute pathname.  (See
+  [pathname] for a discussion of file naming conventions.)  When
+  utilities that take a filename argument, such as [47m[include-book][0m,
+  are given a relative pathname, it is elaborated it into an absolute
+  pathname, essentially by appending the connected book directory
+  string to the left and [47m\".lisp\"[0m to the right.  (This absolute
+  pathname is actuallly canonical when elaborating book names.  For
+  more details on book names, see [book-name] and also see
+  [full-book-name].)  Furthermore, [47m[include-book][0m and [47m[ld][0m
+  temporarily set the connected book directory to the directory
+  string of the resulting full pathname so that references to files
+  in the same directory may omit the directory.  See [set-cbd] for
+  how to set the connected book directory string.
 
   Note that the cbd is used for elaborating every [pathname] argument,
   not just a pathname that represents a book.  (Technical remark:
@@ -36375,21 +36375,21 @@ Subtopics
   "Extend a relative pathname to an absolute pathname
 
   [47mExtend-pathname[0m is a [47m:[0m[47m[program][0m mode function that takes a directory
-  name and a filename (a string) and returns a corresponding pathname
-  for the given file that is relative to the specified directory.  If
-  the filename is already an absolute pathname then the return value
-  is that filename, unchanged.
+  name as specified below and a filename (a string), and returns a
+  corresponding pathname for the given file that is relative to the
+  specified directory.  If the filename is already an absolute
+  pathname then the return value is that filename, unchanged.
 
     General Form:
 
     (extend-pathname dir filename state)
 
-  where [47mdir[0m is either a non-empty string, representing a directory's
-  pathname, or a keyword, representing a project directory (see
+  where [47mdir[0m is either a string, representing an absolute pathname for a
+  directory, or a keyword, representing a project directory (see
   [project-dir-alist]); filename is a string representing a relative
   or absolute pathname; and [47mstate[0m is the ACL2 [state].
 
-  The following examples flesh out the behavior of [47mextend-pathname[0m.
+  The following examples illustrate the behavior of [47mextend-pathname[0m.
 
     Examples (comments added)
 
@@ -36403,7 +36403,14 @@ Subtopics
     ; name of non-existent file is still extended
     \"/home/bubba/temp/no-such-file\"
     ACL2 !>(extend-pathname \".\" \"no-such-file\" state)
-    ; assumes that the current working directory is \"/home/joe\"
+    ; THIS IS NOT SUPPORTED, because the first argument is a relative pathname,
+    ; not an absolute pathname; but in this case a reasonable answer happens to
+    ; be provided.  See the next example for how to do this properly.
+    ; Here we assume that the current working directory is \"/home/joe\"
+    \"/home/joe/no-such-file\"
+    ACL2 !>(extend-pathname (canonical-pathname \".\" t state) \"no-such-file\" state)
+    ; As above, but the first argument is first turned into an absolute pathname,
+    ; which makes the call a supported one.
     \"/home/joe/no-such-file\"
     ACL2 !>(extend-pathname (cbd) \"no-such-file\" state)
     ; assumes that the connected book directory (see :DOC cbd) is \"/data/santa\"
@@ -48654,9 +48661,11 @@ Subtopics
         * the [47m:[0m[47m[guard-theorem][0m [lemma-instance] (and related low-level utility,
           [47mguard-theorem[0m.
 
-  Each feature above has an argument (possibly optional) that control
+  Each feature above has an argument (possibly optional) that controls
   the level of simplification.  Each such argument can take any of
-  three values, as follows.
+  three values, as follows.  But [31;1mNOTE[0m: [47mT[0m and [47m:LIMITED[0m are the only
+  legal values for the ``AT'' (first) group, and [47m:LIMITED[0m and [47mNIL[0m are
+  the only legal values for the ``AFTER'' (second) group.
 
     * [47mT[0m:
       Full simplification, which is the default behavior for
@@ -99707,6 +99716,18 @@ Changes at the System Level
   is no longer supported or necessary, since [47m(lp)[0m enters the loop
   with feature [47m:acl2-loop-only[0m true, just as [47m(lp!)[0m did previously.
 
+  (CCL only) [Stobj] array code now has a workaround for a {CCL bug |
+  https://github.com/Clozure/ccl/issues/446} found by Yahya Sohail,
+  in the case of reading a stobj array of integers where the element
+  type includes at least one negative number and one non-fixnum.
+  That bug has been around since at least as far back as 2017, and
+  was fixed on June 12, 2023.  For those using a CCL version with the
+  bug, this fix may slow down such stobj array reads a bit in the
+  case described above; one measurement showed about 37% more time
+  for such a read.  Thanks to Yahya for the bug report, to Warren
+  Hunt for encouraging a workaround, and to the CCL developers (in
+  particular Gary Palter) for fixing the CCL bug.
+
 
 EMACS Support
 
@@ -99747,6 +99768,11 @@ EMACS Support
     * Images now appear in [ACL2-Doc] (but not with [47m:[0m[47mdoc[0m at the terminal),
       instead of [47m{IMAGE}[0m, on systems that can display graphics inside
       Emacs.  Thanks to Warren Hunt for requesting this enhancement.
+
+  The documentation for [ACL2-Doc] says of the search commands [47ms[0m and [47mS[0m,
+  ``go to that topic with the cursor put immediately after the found
+  text''.  But the cursor was at the end of the found text, not
+  immediately after it.  That has been fixed.
 
 
 Experimental Versions
@@ -153773,7 +153799,9 @@ Subtopics
   [47m:guard-hints[0m
   [47mValue[0m: hints (see [hints]), to be used during the [guard]
   verification proofs as opposed to the termination proofs of the
-  [47m[defun][0m.
+  [47m[defun][0m.  Note that these hints apply only to guard proofs, not to
+  the generation of guard proof obligations; for that, see
+  [guard-simplification].
 
   [47m:guard-simplify[0m
   [47mValue[0m: [47mt[0m by default, which supports simplification performed while
