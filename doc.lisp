@@ -99716,13 +99716,17 @@ Changes at the System Level
   is no longer supported or necessary, since [47m(lp)[0m enters the loop
   with feature [47m:acl2-loop-only[0m true, just as [47m(lp!)[0m did previously.
 
-  (CCL only) [Stobj] array code now has a workaround for a CCL bug
-  found by Yahya Sohail, in the case of reading a stobj array of
-  integers where the element type includes at least one negative
-  number and one non-fixnum.  This fix may slow down such stobj array
-  reads a bit in CCL, in such cases; one measurement showed about 37%
-  more time for such a read.  Thanks to Yahya for the bug report and
-  to Warren Hunt for encouraging a workaround.
+  (CCL only) [Stobj] array code now has a workaround for a {CCL bug |
+  https://github.com/Clozure/ccl/issues/446} found by Yahya Sohail,
+  in the case of reading a stobj array of integers where the element
+  type includes at least one negative number and one non-fixnum.
+  That bug has been around since at least as far back as 2017, and
+  was fixed on June 12, 2023.  For those using a CCL version with the
+  bug, this fix may slow down such stobj array reads a bit in the
+  case described above; one measurement showed about 37% more time
+  for such a read.  Thanks to Yahya for the bug report, to Warren
+  Hunt for encouraging a workaround, and to the CCL developers (in
+  particular Gary Palter) for fixing the CCL bug.
 
 
 EMACS Support
