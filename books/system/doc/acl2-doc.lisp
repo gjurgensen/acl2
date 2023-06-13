@@ -13359,18 +13359,19 @@ with any questions about building the community books.</p>")
   \"/usr/home/smith/\"
  })
 
- <p>The connected book directory (``cbd'') is a nonempty string that specifies
- a directory as an absolute pathname.  (See @(see pathname) for a discussion of
- file naming conventions.)  When utilities that take a filename argument, such
- as @(tsee include-book), are given a relative pathname, it is elaborated it
- into an absolute pathname, essentially by appending the connected book
- directory string to the left and @('\".lisp\"') to the right.  (This absolute
- pathname is actuallly canonical when elaborating book names.  For more details
- on book names, see @(see book-name) and also see @(see full-book-name).)
- Furthermore, @(tsee include-book) and @(tsee ld) temporarily set the connected
- book directory to the directory string of the resulting full pathname so that
- references to files in the same directory may omit the directory.  See @(see
- set-cbd) for how to set the connected book directory string.</p>
+ <p>The connected book directory (``cbd'') is a string ending with the @('/')
+ character that specifies a directory as an absolute pathname.  (See @(see
+ pathname) for a discussion of file naming conventions.)  When utilities that
+ take a filename argument, such as @(tsee include-book), are given a relative
+ pathname, it is elaborated it into an absolute pathname, essentially by
+ appending the connected book directory string to the left and @('\".lisp\"')
+ to the right.  (This absolute pathname is actuallly canonical when elaborating
+ book names.  For more details on book names, see @(see book-name) and also see
+ @(see full-book-name).)  Furthermore, @(tsee include-book) and @(tsee ld)
+ temporarily set the connected book directory to the directory string of the
+ resulting full pathname so that references to files in the same directory may
+ omit the directory.  See @(see set-cbd) for how to set the connected book
+ directory string.</p>
 
  <p>Note that the cbd is used for elaborating every @(see pathname) argument,
  not just a pathname that represents a book.  (Technical remark: Some
@@ -32905,10 +32906,10 @@ ld) and @(tsee include-book)"
   :parents (io acl2-built-ins)
   :short "Extend a relative pathname to an absolute pathname"
   :long "<p>@('Extend-pathname') is a @(':')@(tsee program) mode function that
- takes a directory name and a filename (a string) and returns a corresponding
- pathname for the given file that is relative to the specified directory.  If
- the filename is already an absolute pathname then the return value is that
- filename, unchanged.</p>
+ takes a directory name as specified below and a filename (a string), and
+ returns a corresponding pathname for the given file that is relative to the
+ specified directory.  If the filename is already an absolute pathname then the
+ return value is that filename, unchanged.</p>
 
  @({
  General Form:
@@ -32916,12 +32917,12 @@ ld) and @(tsee include-book)"
  (extend-pathname dir filename state)
  })
 
- <p>where @('dir') is either a non-empty string, representing a directory's
- pathname, or a keyword, representing a project directory (see @(see
+ <p>where @('dir') is either a string, representing an absolute pathname for a
+ directory, or a keyword, representing a project directory (see @(see
  project-dir-alist)); filename is a string representing a relative or absolute
  pathname; and @('state') is the ACL2 @(see state).</p>
 
- <p>The following examples flesh out the behavior of @('extend-pathname').</p>
+ <p>The following examples illustrate the behavior of @('extend-pathname').</p>
 
  @({
  Examples (comments added)
@@ -32936,7 +32937,14 @@ ld) and @(tsee include-book)"
  ; name of non-existent file is still extended
  \"/home/bubba/temp/no-such-file\"
  ACL2 !>(extend-pathname \".\" \"no-such-file\" state)
- ; assumes that the current working directory is \"/home/joe\"
+ ; THIS IS NOT SUPPORTED, because the first argument is a relative pathname,
+ ; not an absolute pathname; but in this case a reasonable answer happens to
+ ; be provided.  See the next example for how to do this properly.
+ ; Here we assume that the current working directory is \"/home/joe\"
+ \"/home/joe/no-such-file\"
+ ACL2 !>(extend-pathname (canonical-pathname \".\" t state) \"no-such-file\" state)
+ ; As above, but the first argument is first turned into an absolute pathname,
+ ; which makes the call a supported one.
  \"/home/joe/no-such-file\"
  ACL2 !>(extend-pathname (cbd) \"no-such-file\" state)
  ; assumes that the connected book directory (see :DOC cbd) is \"/data/santa\"
@@ -45597,9 +45605,11 @@ current fast alists."
 
  </ul>
 
- <p>Each feature above has an argument (possibly optional) that control the
+ <p>Each feature above has an argument (possibly optional) that controls the
  level of simplification.  Each such argument can take any of three values, as
- follows.</p>
+ follows.  But <b>NOTE</b>: @('T') and @(':LIMITED') are the only legal values
+ for the &ldquo;AT&rdquo; (first) group, and @(':LIMITED') and @('NIL') are the
+ only legal values for the &ldquo;AFTER'' (second) group.</p>
 
  <ul>
 
@@ -102823,6 +102833,17 @@ it."
  longer supported or necessary, since @('(lp)') enters the loop with feature
  @(':acl2-loop-only') true, just as @('(lp!)') did previously.</p>
 
+ <p>(CCL only) @(csee Stobj) array code now has a workaround for a <a
+ href='https://github.com/Clozure/ccl/issues/446'>CCL bug</a> found by Yahya
+ Sohail, in the case of reading a stobj array of integers where the element
+ type includes at least one negative number and one non-fixnum.  That bug has
+ been around since at least as far back as 2017, and was fixed on June 12,
+ 2023.  For those using a CCL version with the bug, this fix may slow down such
+ stobj array reads a bit in the case described above; one measurement showed
+ about 37% more time for such a read.  Thanks to Yahya for the bug report, to
+ Warren Hunt for encouraging a workaround, and to the CCL developers (in
+ particular Gary Palter) for fixing the CCL bug.</p>
+
  <h3>EMACS Support</h3>
 
  <p>A set of tools for assisting in the conversion of certain HTML to @(tsee
@@ -102864,6 +102885,11 @@ it."
  inside Emacs.  Thanks to Warren Hunt for requesting this enhancement.</li>
 
  </ul>
+
+ <p>The documentation for @(see ACL2-Doc) says of the search commands @('s')
+ and @('S'), &ldquo;go to that topic with the cursor put immediately after the
+ found text&rdquo;.  But the cursor was at the end of the found text, not
+ immediately after it.  That has been fixed.</p>
 
  <h3>Experimental Versions</h3>
 
@@ -155636,7 +155662,9 @@ created from the original fast alist during @('form') must be manually freed."
 
  @('Value'): hints (see @(see hints)), to be used during the @(see guard)
  verification proofs as opposed to the termination proofs of the @(tsee
- defun).</p>
+ defun).  Note that these hints apply only to guard proofs, not to the
+ generation of guard proof obligations; for that, see @(see
+ guard-simplification).</p>
 
  <p>@(':guard-simplify')<br></br>
 
