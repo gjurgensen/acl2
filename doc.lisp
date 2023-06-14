@@ -99369,9 +99369,16 @@ New Features
   [47mLambda[0m objects in positions of [ilk] [47m:FN[0m are now subjected to a size
   limitation.  See [47m[explain-giant-lambda-object][0m.
 
-  The keyword [47m:off[0m for the utility [47m[with-output][0m (also [47m[with-output!][0m)
-  can take on a new value, [47m:all![0m, which is treated exactly the same
-  as using arguments [47m:off :all :gag-mode nil[0m.
+  The utilities [47m[with-output][0m and [47m[with-output!][0m have been enhanced in
+  the following two ways; see [with-output] for details.
+
+    * A new keyword, [47m:inhibit-er-hard[0m, can be supplied a non-[47mnil[0m value to
+      turn off hard errors when error output is inhibited.  Thanks to
+      Eric Smith for a conversation leading to this enhancement.
+    * The keyword [47m:off[0m for the utility [47m[with-output][0m (also [47m[with-output!][0m)
+      can take on a new value, [47m:all![0m, which is treated exactly the
+      same as using arguments [47m:off :all :gag-mode nil
+      :inhibit-er-hard t[0m.
 
   The new utility [47m[with-cbd][0m creates a scope for an indicated value of
   the connected book directory (see [cbd]).  Calls of [47mwith-cbd[0m are
@@ -99664,6 +99671,10 @@ Bug Fixes
   Fixed a bug in [47m[intersection$][0m that prevented it from being called
   with keyword argument [47m:test 'equal[0m.  Thanks to Anna Slobodova for
   bringing this bug to our attention.
+
+  Certain error messages from [47m[translate][0m and [47m[untranslate][0m are now
+  inhibited when they should be (where formerly they weren't).
+  Thanks to Eric Smith for bringing this problem to our attention.
 
 
 Changes at the System Level
@@ -152111,6 +152122,7 @@ Examples
     (with-output
      :off :all
      :gag-mode nil
+     :inhibit-er-hard t
      (thm (equal (app (app x y) z) (app x (app y z)))))
 
     ; Equivalent to the example just above.
@@ -152205,22 +152217,22 @@ On-off specs
 
   The set of ``associated valid symbols'' is defined as follows.  For
   [47m:off[0m or [47m:on[0m, these symbols are the [3moutput types[0m that can be
-  inhibited (see [set-inhibit-output-lst]), that is, members of the
-  list stored in the constant [47m*valid-output-names*[0m, the list
-  [47m(proof-tree error warning! warning observation prove event summary
-  proof-builder comment history)[0m.  Similarly, for [47m:summary-on[0m or
-  [47m:summary-off[0m, these are the [3msummary types[0m: the parts of the
-  [summary] that can be inhibited (see
-  [set-inhibited-summary-types]), that is, members of the list stored
-  in the constant [47m*summary-types*[0m, the list [47m(errors form header
-  hint-events redundant rules splitter-rules steps system-attachments
-  time value warnings)[0m.  An on-off spec consisting of associated
-  valid symbols, [47m(sym1 ... symk)[0m, indicates the set of symbols,
-  [47m{sym1,...,symk}[0m.  The other legal forms of on-off spec and their
-  meanings are as follows: [47m:all[0m represents the set of all associated
-  valid symbols, any other symbol [47msym[0m abbreviates [47m(sym)[0m, and
-  [47m(:other-than sym1 ... symk)[0m represents the set of associated valid
-  symbols that are not in the list [47m(sym1 ... symk)[0m.
+  inhibited --- that is, members of the list stored in the constant
+  [47m*valid-output-names*[0m, which is the list [47m(proof-tree error warning!
+  warning observation prove event summary proof-builder comment
+  history)[0m --- and they are treated as in [47m[set-inhibit-output-lst][0m.
+  Similarly, for [47m:summary-on[0m or [47m:summary-off[0m, these are the [3msummary
+  types[0m: the parts of the [summary] that can be inhibited as in
+  [47m[set-inhibited-summary-types][0m, that is, members of the list stored
+  in the constant [47m*summary-types*[0m, which is the list [47m(errors form
+  header hint-events redundant rules splitter-rules steps
+  system-attachments time value warnings)[0m.  An on-off spec consisting
+  of associated valid symbols, [47m(sym1 ... symk)[0m, indicates the set of
+  symbols, [47m{sym1,...,symk}[0m.  The other legal forms of on-off spec and
+  their meanings are as follows: [47m:all[0m represents the set of all
+  associated valid symbols, any other symbol [47msym[0m abbreviates [47m(sym)[0m,
+  and [47m(:other-than sym1 ... symk)[0m represents the set of associated
+  valid symbols that are not in the list [47m(sym1 ... symk)[0m.
 
   Note that these two notions of ``associated valid symbols'' --- the
   [3moutput types[0m controlled by keywords [47m:on[0m and [47m:off[0m, and the [3msummary
@@ -152313,6 +152325,21 @@ Keyword arguments
   calls of [47mwith-output[0m, as discussed in the next section.  Note that
   the handling of the [47m:stack[0m argument pays no attention to the
   [47m:summary-on[0m or [47m:summary-off[0m arguments.
+
+  [47m:inhibit-er-hard[0m
+
+  By default, ACL2 prints messages for hard errors --- errors whose
+  message starts with ``HARD ACL2 ERROR'' --- even when [47merror[0m output
+  is inhibited (whether by using the keyword, [47m:off[0m, or by calling
+  [47m[set-inhibit-output-lst][0m).  This behavior holds when [state] global
+  [47minhibit-er-hard[0m has its default value of [47mnil[0m; see
+  [set-inhibit-output-lst].  When keyword [47m:inhibit-er-hard[0m is
+  supplied an expression, the value [47mv[0m of that expression overrides
+  the global value of [47minhibit-er-hard[0m: thus when error output is
+  inhibited, hard error messages are printed if [47mv[0m is [47mnil[0m and they are
+  not printed if [47mv[0m is not [47mnil[0m.  Note that this behavior automatically
+  takes place when [47mwith-output[0m is supplied the arguments [47m:off :all![0m,
+  but not [47m:off :all[0m.
 
 
 More about the [47mstack[0m argument
