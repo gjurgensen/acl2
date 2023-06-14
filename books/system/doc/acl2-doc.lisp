@@ -66681,16 +66681,21 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
               :CHECK-EXPANSION t)
 
   General Form:
-  (make-event form :CHECK-EXPANSION chk :ON-BEHALF-OF obj :EXPANSION? form)
+  (make-event form
+              :CHECK-EXPANSION chk
+              :ON-BEHALF-OF obj
+              :EXPANSION? form
+              :SAVE-EVENT-DATA save)
  })
 
  <p>where @('chk') is @('nil') (the default), @('t'), or the intended
  ``expansion result'' from the evaluation of @('form') (as explained below);
- and if supplied, @('obj') is an arbitrary ACL2 object, used only in reporting
- errors in expansion, i.e., in the evaluation of form.  The @(':EXPANSION?')
- keyword is discussed in the final section, on Advanced Expansion Control. See
+ @('obj') is an arbitrary ACL2 object, used only in reporting errors in
+ expansion, i.e., in the evaluation of form; and @('save') is arbitrary but is
+ considered only as either @('nil') or non-@('nil').  The @(':EXPANSION?')
+ keyword is discussed in the final section, on Advanced Expansion Control.  See
  @(see make-event-details) for discussion of the @(':ON-BEHALF-OF')
- keyword.</p>
+ and :SAVE-EVENT-DATA keywords.</p>
 
  <p>We strongly recommend that you browse some @('.lisp') files in the
  community books directory @('books/make-event/').  You may even find it
@@ -67589,7 +67594,7 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
  some superior book and the appropriate @(':ttags') arguments have not been
  provided, that certification will fail.</p>
 
- <h3>Expansion errors and the @(':ON-BEHALF-OF') keyword</h3>
+ <h3>Expansion errors and the @(':ON-BEHALF-OF') keyword argument</h3>
 
  <p>Consider the case that expansion returns an @(see error-triple) @('(mv erp
  val state)'), where @('erp') is not @('nil').  Then @('make-event') may
@@ -67624,7 +67629,20 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
  </ul>
 
  <p>Note that errors generated during expansion are not affected by the cases
- above; those only control the concluding error message, if any.</p>")
+ above; those only control the concluding error message, if any.</p>
+
+ <h3>The @(':save-event-data') keyword argument</h3>
+
+ <p>See @(see get-event-data) for relevant background on data stored for each
+ event.  The association list stored in @('last-event-data') is normally
+ replaced every time an event concludes (at the summary phase), and that holds
+ for calls of @('make-event').  But there is the following exception: when
+ @('make-event') is called with a non-@('nil') value for keyword
+ @(':save-event-data'), then that association list persists from the expansion
+ phase.  This is how the @(tsee thm) macro is able to populate the
+ @('last-event-data') association list without having that list be smashed when
+ the surrounding @('make-event') (used for implementing @('thm'))
+ concludes.</p>")
 
 (defxdoc make-event-example-1
   :parents (make-event)
@@ -102387,6 +102405,11 @@ it."
  forward-chaining) rule is a call of @(tsee syntaxp) or @(tsee bind-free),
  since these get no special treatment for such rules.</p>
 
+ <p>The utility @(tsee get-event-data) now returns data from the proof done on
+ behalf of a @(tsee thm) event, rather than from the surrounding @(tsee
+ make-event) call used for implementing @('thm').  Thanks to Eric Smith for
+ requesting this change.</p>
+
  <h3>New Features</h3>
 
  <p>The new zero-ary attachable system function, @(tsee heavy-linear-p), allows
@@ -102514,6 +102537,12 @@ it."
  requesting a related utility (see @(see community-books)
  @('kestrel/utilities/brr-data-failures.lisp') and
  @('kestrel/utilities/brr-data-all.lisp')).  See @(see with-brr-data).</p>
+
+ <p>@(tsee Make-event) takes a new keyword, @('save-event-data').  When that
+ keyword is non-@('nil'), event-data from the expansion saved is preserved; see
+ the new section at the end of @(see make-event-details).  This new feature was
+ motivated by the desire to preserve a proof's event-data in calls of @(tsee
+ thm), as described in the &ldquo;Changes&rdquo; section above.</p>
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
