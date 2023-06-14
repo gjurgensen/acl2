@@ -102458,9 +102458,21 @@ it."
  <p>@('Lambda') objects in positions of @(see ilk) @(':FN') are now subjected
  to a size limitation.  See @(tsee explain-giant-lambda-object).</p>
 
- <p>The keyword @(':off') for the utility @(tsee with-output) (also @(tsee
+ <p>The utilities @(tsee with-output) and @(tsee with-output!) have been
+ enhanced in the following two ways; see @(see with-output) for details.</p>
+
+ <ul>
+
+ <li>A new keyword, @(':inhibit-er-hard'), can be supplied a non-@('nil') value
+ to turn off hard errors when error output is inhibited.  Thanks to Eric Smith
+ for a conversation leading to this enhancement.</li>
+
+ <li>The keyword @(':off') for the utility @(tsee with-output) (also @(tsee
  with-output!)) can take on a new value, @(':all!'), which is treated exactly
- the same as using arguments @(':off :all :gag-mode nil').</p>
+ the same as using arguments @(':off :all :gag-mode nil :inhibit-er-hard
+ t').</li>
+
+ </ul>
 
  <p>The new utility @(tsee with-cbd) creates a scope for an indicated value of
  the connected book directory (see @(see cbd)).  Calls of @('with-cbd') are
@@ -102776,6 +102788,10 @@ it."
  <p>Fixed a bug in @(tsee intersection$) that prevented it from being called
  with keyword argument @(':test 'equal').  Thanks to Anna Slobodova for
  bringing this bug to our attention.</p>
+
+ <p>Certain error messages from @(tsee translate) and @(tsee untranslate) are
+ now inhibited when they should be (where formerly they weren't).  Thanks to
+ Eric Smith for bringing this problem to our attention.</p>
 
  <h3>Changes at the System Level</h3>
 
@@ -153876,6 +153892,7 @@ for the execution of @('form')."
   (with-output
    :off :all
    :gag-mode nil
+   :inhibit-er-hard t
    (thm (equal (app (app x y) z) (app x (app y z)))))
 
   ; Equivalent to the example just above.
@@ -153978,19 +153995,19 @@ for the execution of @('form')."
 
  <p>The set of ``associated valid symbols'' is defined as follows.  For
  @(':off') or @(':on'), these symbols are the <i>output types</i> that can be
- inhibited (see @(see set-inhibit-output-lst)), that is, members of the list
- stored in the constant @('*valid-output-names*'), the list
- @(`*valid-output-names*`).  Similarly, for @(':summary-on') or
- @(':summary-off'), these are the <i>summary types</i>: the parts of the @(see
- summary) that can be inhibited (see @(see set-inhibited-summary-types)), that
- is, members of the list stored in the constant @('*summary-types*'), the list
- @(`*summary-types*`).  An on-off spec consisting of associated valid symbols,
- @('(sym1 ... symk)'), indicates the set of symbols, @('{sym1,...,symk}').  The
- other legal forms of on-off spec and their meanings are as follows: @(':all')
- represents the set of all associated valid symbols, any other symbol @('sym')
- abbreviates @('(sym)'), and @('(:other-than sym1 ... symk)') represents the
- set of associated valid symbols that are not in the list @('(sym1
- ... symk)').</p>
+ inhibited &mdash; that is, members of the list stored in the constant
+ @('*valid-output-names*'), which is the list @(`*valid-output-names*`) &mdash;
+ and they are treated as in @(tsee set-inhibit-output-lst).  Similarly, for
+ @(':summary-on') or @(':summary-off'), these are the <i>summary types</i>: the
+ parts of the @(see summary) that can be inhibited as in @(tsee
+ set-inhibited-summary-types), that is, members of the list stored in the
+ constant @('*summary-types*'), which is the list @(`*summary-types*`).  An
+ on-off spec consisting of associated valid symbols, @('(sym1 ... symk)'),
+ indicates the set of symbols, @('{sym1,...,symk}').  The other legal forms of
+ on-off spec and their meanings are as follows: @(':all') represents the set of
+ all associated valid symbols, any other symbol @('sym') abbreviates
+ @('(sym)'), and @('(:other-than sym1 ... symk)') represents the set of
+ associated valid symbols that are not in the list @('(sym1 ... symk)').</p>
 
  <p>Note that these two notions of ``associated valid symbols'' &mdash; the
  <i>output types</i> controlled by keywords @(':on') and @(':off'), and the
@@ -154082,6 +154099,21 @@ for the execution of @('form')."
  @('with-output'), as discussed in the next section.  Note that the handling of
  the @(':stack') argument pays no attention to the @(':summary-on') or
  @(':summary-off') arguments.</p>
+
+ <p>@(':inhibit-er-hard')</p>
+
+ <p>By default, ACL2 prints messages for hard errors &mdash; errors whose
+ message starts with &ldquo;HARD ACL2 ERROR&rdquo; &mdash; even when @('error')
+ output is inhibited (whether by using the keyword, @(':off'), or by calling
+ @(tsee set-inhibit-output-lst)).  This behavior holds when @(see state) global
+ @('inhibit-er-hard') has its default value of @('nil'); see @(see
+ set-inhibit-output-lst).  When keyword @(':inhibit-er-hard') is supplied an
+ expression, the value @('v') of that expression overrides the global value of
+ @('inhibit-er-hard'): thus when error output is inhibited, hard error messages
+ are printed if @('v') is @('nil') and they are not printed if @('v') is not
+ @('nil').  Note that this behavior automatically takes place when
+ @('with-output') is supplied the arguments @(':off :all!'), but not
+ @(':off :all').</p>
 
  <h3>More about the @('stack') argument</h3>
 
