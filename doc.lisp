@@ -70039,15 +70039,20 @@ Detailed Documentation
                 :CHECK-EXPANSION t)
 
     General Form:
-    (make-event form :CHECK-EXPANSION chk :ON-BEHALF-OF obj :EXPANSION? form)
+    (make-event form
+                :CHECK-EXPANSION chk
+                :ON-BEHALF-OF obj
+                :EXPANSION? form
+                :SAVE-EVENT-DATA save)
 
   where [47mchk[0m is [47mnil[0m (the default), [47mt[0m, or the intended ``expansion
-  result'' from the evaluation of [47mform[0m (as explained below); and if
-  supplied, [47mobj[0m is an arbitrary ACL2 object, used only in reporting
-  errors in expansion, i.e., in the evaluation of form.  The
-  [47m:EXPANSION?[0m keyword is discussed in the final section, on Advanced
-  Expansion Control. See [make-event-details] for discussion of the
-  [47m:ON-BEHALF-OF[0m keyword.
+  result'' from the evaluation of [47mform[0m (as explained below); [47mobj[0m is
+  an arbitrary ACL2 object, used only in reporting errors in
+  expansion, i.e., in the evaluation of form; and [47msave[0m is arbitrary
+  but is considered only as either [47mnil[0m or non-[47mnil[0m.  The [47m:EXPANSION?[0m
+  keyword is discussed in the final section, on Advanced Expansion
+  Control.  See [make-event-details] for discussion of the
+  [47m:ON-BEHALF-OF[0m and :SAVE-EVENT-DATA keywords.
 
   We strongly recommend that you browse some [47m.lisp[0m files in the
   community books directory [47mbooks/make-event/[0m.  You may even find it
@@ -70926,7 +70931,7 @@ Notes on ttags
   certification will fail.
 
 
-Expansion errors and the [47m:ON-BEHALF-OF[0m keyword
+Expansion errors and the [47m:ON-BEHALF-OF[0m keyword argument
 
   Consider the case that expansion returns an [error-triple] [47m(mv erp
   val state)[0m, where [47merp[0m is not [47mnil[0m.  Then [47mmake-event[0m may conclude
@@ -70953,7 +70958,21 @@ Expansion errors and the [47m:ON-BEHALF-OF[0m keyword
 
   Note that errors generated during expansion are not affected by the
   cases above; those only control the concluding error message, if
-  any.")
+  any.
+
+
+The [47m:save-event-data[0m keyword argument
+
+  See [get-event-data] for relevant background on data stored for each
+  event.  The association list stored in [47mlast-event-data[0m is normally
+  replaced every time an event concludes (at the summary phase), and
+  that holds for calls of [47mmake-event[0m.  But there is the following
+  exception: when [47mmake-event[0m is called with a non-[47mnil[0m value for
+  keyword [47m:save-event-data[0m, then that association list persists from
+  the expansion phase.  This is how the [47m[thm][0m macro is able to
+  populate the [47mlast-event-data[0m association list without having that
+  list be smashed when the surrounding [47mmake-event[0m (used for
+  implementing [47mthm[0m) concludes.")
  (MAKE-EVENT-EXAMPLE-1
   (MAKE-EVENT)
   "An example use of [47m[make-event][0m
@@ -99289,6 +99308,11 @@ Changes to Existing Features
   [forward-chaining] rule is a call of [47m[syntaxp][0m or [47m[bind-free][0m,
   since these get no special treatment for such rules.
 
+  The utility [47m[get-event-data][0m now returns data from the proof done on
+  behalf of a [47m[thm][0m event, rather than from the surrounding
+  [47m[make-event][0m call used for implementing [47mthm[0m.  Thanks to Eric Smith
+  for requesting this change.
+
 
 New Features
 
@@ -99421,6 +99445,13 @@ New Features
   2008 (!) and to Eric Smith for requesting a related utility (see
   [community-books] [47mkestrel/utilities/brr-data-failures.lisp[0m and
   [47mkestrel/utilities/brr-data-all.lisp[0m).  See [with-brr-data].
+
+  [47m[Make-event][0m takes a new keyword, [47msave-event-data[0m.  When that keyword
+  is non-[47mnil[0m, event-data from the expansion saved is preserved; see
+  the new section at the end of [make-event-details].  This new
+  feature was motivated by the desire to preserve a proof's
+  event-data in calls of [47m[thm][0m, as described in the ``Changes''
+  section above.
 
 
 Heuristic and Efficiency Improvements
