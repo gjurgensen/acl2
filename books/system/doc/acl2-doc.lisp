@@ -14219,6 +14219,7 @@ with any questions about building the community books.</p>")
                 :useless-runes          ; :write/:read/:read?/n/-n/nil
                                         ;   (-100 < n < 0 or 0 < n <= 100)
                                         ;   [default nil or from environment]
+                :write-event-data       ; [default nil]
                 )
  })
 
@@ -14227,11 +14228,12 @@ with any questions about building the community books.</p>")
  control whether the book is to be compiled.  The defaults for
  @('compile-flg'), @('skip-proofs-okp'), @('acl2x'), @('write-port'),
  @('pcert'), and @(':useless-runes') can be affected by environment variables.
- All of these arguments are described in detail below, except for @(':pcert')
- and @(':useless-runes'): see @(see provisional-certification) and @(see
- useless-runes), respectively, for the effects of these two arguments and their
- corresponding environment variables, as we ignore those effects in the present
- topic.</p>
+ All of these arguments are described in detail below, except for @(':pcert'),
+ @(':useless-runes'), and @(':write-event-data'): see @(see
+ provisional-certification), @(see useless-runes), and @(see
+ saving-event-data), respectively, for the effects of these three arguments and
+ (for the first two) their corresponding environment variables, as we ignore
+ those effects in the present topic.</p>
 
  <p>NOTE: If a given book includes some books (see @(see include-book)), then
  those included books need to be certified before the given book is certified.
@@ -42076,17 +42078,21 @@ current fast alists."
  somewhat over time.  For more details, see the ACL2 source code.</p>
 
  <p>Evaluation of the form @('(get-event-data key state)') returns the value of
- @('key') in an association list, namely, in the value of @(see state) global
- variable @('last-event-data') (see @(see programming-with-state)).  That alist
- contains certain information stored at the conclusion of the immediately
- preceding event, some of which corresponds to the event's @(see summary).  For
- each key the corresponding value, @('VAL'), is as follows.</p>
+ @('key') in an association list, which we call an <i>event-data alist</i>.
+ Such an alist is the value of @(see state) global variable
+ @('last-event-data').  (See @(see programming-with-state) for a discussion of
+ state global variables.)  An event-data alist contains certain information
+ stored at the conclusion of the immediately preceding event, some of which
+ corresponds to the event's @(see summary).  We anticipate continuing to
+ support at least the following keys, each with value @('VAL') as follows.</p>
 
  <ul>
 
  <li>@('ABORT-CAUSES'): @('VAL') is a list of reasons why the proof aborted.
  In particular, if the value @('INTERRUPT') is in the list, then the proof was
  interrupted (typically with Control-C).</li>
+
+ <li>@('EVENT'): the @(see event).</li>
 
  <li>@('FORM'): @('VAL') is the ``context'' for the event, printed in the
  summary, @(see warnings), and @(see errors).</li>
@@ -42114,7 +42120,7 @@ current fast alists."
  <li>@('TIME'): @('VAL') represents the corresponding field of the event
  summary, as the list @('(prove print proof-tree other)').</li>
 
- <li>@(' WARNINGS'): @('VAL') is as in the corresponding field of the event
+ <li>@('WARNINGS'): @('VAL') is as in the corresponding field of the event
  summary.</li>
 
  </ul>")
@@ -42196,8 +42202,9 @@ current fast alists."
 (defxdoc get-wormhole-status
   :parents (wormhole)
   :short "Make a wormhole's status visible outside the wormhole"
-  :long "<p>General Form:
- (get-wormhole-status name state)</p>
+  :long "@({General Form:
+ (get-wormhole-status name state)
+ })
 
  <p>@('Name') should be the name of a wormhole (see @(see wormhole)).  This
  function returns an @(see error-triple) of the form @('(mv nil s state)'),
@@ -102410,6 +102417,14 @@ it."
  make-event) call used for implementing @('thm').  Thanks to Eric Smith for
  requesting this change.</p>
 
+ <p>In the case that a proof is interrupted after @('(set-debugger-enable t)')
+ and then aborted, ACL2 formerly printed failures in a special way, in
+ particular showing the @(see pstack).  This is no longer the case: all @(see
+ event) failures are printed in the same way.</p>
+
+ <p>A new key, @('EVENT'), is available for @(tsee get-event-data).  Thanks to
+ Eric Smith for a discussion leading to this addition.</p>
+
  <h3>New Features</h3>
 
  <p>The new zero-ary attachable system function, @(tsee heavy-linear-p), allows
@@ -102543,6 +102558,10 @@ it."
  the new section at the end of @(see make-event-details).  This new feature was
  motivated by the desire to preserve a proof's event-data in calls of @(tsee
  thm), as described in the &ldquo;Changes&rdquo; section above.</p>
+
+ <p>New utilities allow one to explore what has changed when an event fails in
+ a book that formerly certified.  See @(see saving-event-data).  Thanks to Eric
+ Smith for requesting such a capability.</p>
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
@@ -102888,6 +102907,11 @@ it."
  about 37% more time for such a read.  Thanks to Yahya for the bug report, to
  Warren Hunt for encouraging a workaround, and to the CCL developers (in
  particular Gary Palter) for fixing the CCL bug.</p>
+
+ <p>The undocumented utility, @('thm-fn') &mdash; which is used in several
+ @(see community-books) &mdash; now has an additional formal (at the end),
+ @('event-form').  That argument can generally be passed as @('nil') for
+ appropriate behavior.</p>
 
  <h3>EMACS Support</h3>
 
@@ -124289,6 +124313,190 @@ work on <tt>(q x)</tt>.</p>
  <p>WARNING: It is a good idea to look at the log file noted in the `@('make')'
  output, to check that your customization file loaded as intended (presumably,
  without errors).</p>")
+
+(defxdoc saving-event-data
+  :parents (system-utilities output-controls)
+  :short "Save data stored for subsidiary @(see events)"
+  :long "<p>Warning: This is a low-level system utility that may change
+ somewhat over time.  For more details, see the ACL2 source code.</p>
+
+ @({
+ General Forms:
+ (saving-event-data form)
+
+ ; See Further information below for keyword options for these two:
+ (runes-diff book-name)
+ (old-and-new-event-data book-name)
+ })
+
+ <p>where @('form') is any form that evaluates to an @(see error-triple) and
+ @('book-name') is a file ending with @('\".lisp\"').  See below for typical
+ usage.</p>
+
+ <p>A common problem is that a book whose certification formerly succeeded now
+ has a certification failure.  In that case, the failure is often caused by a
+ proof failure; then one may wish for information on what has changed from the
+ previous, successful proof attempt and the new, failing proof attempt.  Here
+ is a procedure for obtaining such information.  After that we discuss some
+ variations on that procedure.</p>
+
+ <h3>Finding @(see rune)s that were used only previously, or only now</h3>
+
+ <p>Here we discuss a procedure for discovering, given a book @('BOOK.lisp'),
+ which @(see rune)s were used in a previous successful proof but not in the new
+ failed proof attempt, or vice-versa.</p>
+
+ <p>The procedure described here requires information to have been saved for a
+ previous certification of @('BOOK.lisp').  This can be accomplished by
+ providing @(tsee certify-book) the keyword argument @(':write-event-data t').
+ (See @(see build::custom-certify-book-commands) for discussion about how a
+ @('cert-flags') comment can make this happen when using the @('cert.pl')
+ utility.)  This causes @('certify-book') to write out the file
+ @('.sys/BOOK@event-data.lsp').  That file includes entries of the form
+ @('(name . alist)'), where @('alist') is an <i>event-data alist</i> &mdash;
+ see @(tsee get-event-data) &mdash; where each entry corresponds to one of the
+ following event types, possibly generated by a macro or @(tsee make-event)
+ call.</p>
+
+ <ul>
+ <li>defthm</li>
+ <li>defun</li>
+ <li>verify-guards</li>
+ <li>thm</li>
+ </ul>
+
+ <p>One @('(name . alist)') entry is written for each such event, in the order
+ in which the events were encountered during the proof pass of certification.
+ Normally @('name') is the name of the event, but it is @('nil') in the case of
+ a @(tsee thm) event.</p>
+
+ <p>Suppose that on your filesystem, you have a copy of @('BOOK.lisp') that was
+ certified using keyword argument @(':write-event-data t'), thus generating
+ file @('.sys/BOOK@event-data.lsp') as discussed above.  That copy might well
+ be somewhere below the @('books/') directory of an ACL2 distribution.  Also
+ suppose that you have a copy of @('BOOK.lisp') for which certification has
+ failed, possibly using a different ACL2 version than the first, and let
+ @('EV') be the event that caused the failure; assume that's because of a proof
+ failure.  Below are steps that allow you to see which rules (actually, @(see
+ rune)s) were used in the proof attempt for the first event but not the second,
+ or vice-versa.  That information might help you to repair the proof, for
+ example by enabling or disabling a rule whose @(see enable)d status has
+ changed after the successful certification, or by proving a rule that was in
+ an included book during the successful certification but has since been
+ deleted.  Again, we assume here that the previous, successful certification
+ was performed using keyword argument @(':write-event-data t') of
+ @('certify-book').</p>
+
+ <p><b>Step 1</b>.  Load the @(see portcullis) commands:</p>
+
+ @({
+ (ld \"BOOK.port\")
+ })
+
+ <p><b>Step 2</b>.  Execute the following command, which will presumably end
+ with a proof failure for event @('EV').</p>
+
+ @({
+ (saving-event-data (ld \"BOOK.lisp\"))
+ })
+
+ <p><b>Step 3</b>.  See which runes were used in the old proof and not the new,
+ and vice-versa, respectively:</p>
+
+ @({
+ (runes-diff \"BOOK.lisp\")
+ })
+
+ <p>An example is in @(see community-books) file
+ @('books/demos/event-data/test1.lisp'), which has comments that lead through a
+ variant of the steps above.  File @('test1-input.lsp') in that directory
+ actually carries out that process, resulting in output displayed in log file
+ @('test1-log.txt') in that directory.  Here is the output of a @('runes-diff')
+ call shown both in that log file and in a comment in file
+ @('test1-input.lsp').  It shows that a @(see type-prescription) rule, named
+ @('true-listp-append'), was used in the original proof but not the failed
+ proof (which made the @(tsee ld) call of Step 2 above made without first
+ performing Step 1, which would have introduced that type-prescription rule.
+ This output also shows that the new (failed) proof attempt used many runes not
+ used in the previous proof &mdash; not surprisingly, since without the rule
+ @('true-listp-reverse') the prover made a desperate attempt involving
+ destructor elimination and induction.</p>
+
+ @({
+  ((:OLD ((:TYPE-PRESCRIPTION TRUE-LISTP-REVERSE)))
+   (:NEW ((:DEFINITION ALISTP)
+          (:DEFINITION ATOM)
+          (:DEFINITION NOT)
+          (:DEFINITION TRUE-LISTP)
+          (:ELIM CAR-CDR-ELIM)
+          (:EXECUTABLE-COUNTERPART CONSP)
+          (:EXECUTABLE-COUNTERPART NOT)
+          (:EXECUTABLE-COUNTERPART REVERSE)
+          (:FAKE-RUNE-FOR-TYPE-SET NIL)
+          (:INDUCTION ALISTP))))
+ })
+
+ <p>A second, analogous set of three files is in that same directory; just
+ replace @('\"test1\"') by @('\"test2\"') in the filenames.</p>
+
+ <h3>Further information</h3>
+
+ <p>The @('runes-diff') utility is intended to serve as an example of a class
+ of such query utilities.  It is a macro that expands to a corresponding
+ function call.</p>
+
+ @({
+ ACL2 !>:trans1 (runes-diff \"BOOK.lisp\")
+  (RUNES-DIFF-FN \"BOOK.lisp\" NIL NIL NIL 'RUNES-DIFF
+                 STATE)
+ ACL2 !>
+ })
+
+ <p>@('Runes-diff-fn') is actually quite simple.</p>
+
+ @(def runes-diff-fn)
+
+ <p>It is simple because the real work is carried out using a more complex
+ function, @('old-and-new-event-data-fn').  That function returns a pair
+ @('(old . new)'), where @('old') and @('new') are event-data alists for the
+ failed event (called @('EV') above).  Then @('runes-diff-fn') only needs to
+ pick out the @('RULES') fields and form the set-differences.</p>
+
+ <p>The macro @('old-and-new-event-data') provides a convenient interface to
+ @('old-and-new-event-data-fn').</p>
+
+ @({
+ ACL2 !>:trans1 (old-and-new-event-data \"BOOK.lisp\")
+  (OLD-AND-NEW-EVENT-DATA-FN \"BOOK.lisp\"
+                             NIL NIL NIL 'OLD-AND-NEW-EVENT-DATA
+                             STATE)
+ ACL2 !>
+ })
+
+ <p>Both @('runes-diff') and @('old-and-new-event-data') have keyword arguments
+ that allow one to choose a specific name for a failed event &mdash; the most
+ recent event with that name, rather than @('EV') &mdash; and a directory for
+ the given filename, which may be a string or a keyword representing a project
+ directory (see @(see project-dir-alist)).  The @('\"test2\"') files mentioned
+ above have an example in which the name @('nil') is supplied to specify the
+ @(tsee thm) event most recently preceding the failed event (actually it's the
+ only one preceding the failed event).</p>
+
+ @({
+ General Forms:
+ (runes-diff book-string &key name dir)
+ (old-and-new-event-data book-string &key name dir)
+ })
+
+ <p>If you want to use these programmatically, call the corresponding
+ @('\"-FN\"') versions, where @('namep') is @('t') to represent the case that a
+ name is provided, else @('nil').</p>
+
+ @({
+ General Forms:
+ (runes-diff-fn book-string name namep dir ctx state)
+ (old-and-new-event-data book-string name namep dir ctx state)
+ })")
 
 (defxdoc sbcl-installation
 
@@ -159677,6 +159885,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer note9 note-1-9)
 (defpointer nvariablep system-utilities)
 (defpointer observation-cw observation)
+(defpointer old-and-new-event-data saving-event-data)
 (defpointer open-input-channel io)
 (defpointer open-input-channel-p io)
 (defpointer open-output-channel io)
@@ -159731,6 +159940,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer rewrite-cache set-rw-cache-state)
 (defpointer ruler-extenders rulers)
 (defpointer ruler rulers)
+(defpointer runes-diff saving-event-data)
 (defpointer rw-cache set-rw-cache-state)
 (defpointer rw-cache-state hints t)
 (defpointer saving-and-restoring save-exec)

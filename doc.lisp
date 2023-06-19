@@ -17062,6 +17062,7 @@ Subtopics
                   :useless-runes          ; :write/:read/:read?/n/-n/nil
                                           ;   (-100 < n < 0 or 0 < n <= 100)
                                           ;   [default nil or from environment]
+                  :write-event-data       ; [default nil]
                   )
 
   where [47mbook-name[0m is a book filename, [47mk[0m is used to indicate your
@@ -17069,11 +17070,12 @@ Subtopics
   control whether the book is to be compiled.  The defaults for
   [47mcompile-flg[0m, [47mskip-proofs-okp[0m, [47macl2x[0m, [47mwrite-port[0m, [47mpcert[0m, and
   [47m:useless-runes[0m can be affected by environment variables.  All of
-  these arguments are described in detail below, except for [47m:pcert[0m
-  and [47m:useless-runes[0m: see [provisional-certification] and
-  [useless-runes], respectively, for the effects of these two
-  arguments and their corresponding environment variables, as we
-  ignore those effects in the present topic.
+  these arguments are described in detail below, except for [47m:pcert[0m,
+  [47m:useless-runes[0m, and [47m:write-event-data[0m: see
+  [provisional-certification], [useless-runes], and
+  [saving-event-data], respectively, for the effects of these three
+  arguments and (for the first two) their corresponding environment
+  variables, as we ignore those effects in the present topic.
 
   NOTE: If a given book includes some books (see [include-book]), then
   those included books need to be certified before the given book is
@@ -45149,16 +45151,19 @@ Conclusion
   over time.  For more details, see the ACL2 source code.
 
   Evaluation of the form [47m(get-event-data key state)[0m returns the value
-  of [47mkey[0m in an association list, namely, in the value of [state]
-  global variable [47mlast-event-data[0m (see [programming-with-state]).
-  That alist contains certain information stored at the conclusion of
-  the immediately preceding event, some of which corresponds to the
-  event's [summary].  For each key the corresponding value, [47mVAL[0m, is
-  as follows.
+  of [47mkey[0m in an association list, which we call an [3mevent-data alist[0m.
+  Such an alist is the value of [state] global variable
+  [47mlast-event-data[0m.  (See [programming-with-state] for a discussion of
+  state global variables.)  An event-data alist contains certain
+  information stored at the conclusion of the immediately preceding
+  event, some of which corresponds to the event's [summary].  We
+  anticipate continuing to support at least the following keys, each
+  with value [47mVAL[0m as follows.
 
     * [47mABORT-CAUSES[0m: [47mVAL[0m is a list of reasons why the proof aborted.  In
       particular, if the value [47mINTERRUPT[0m is in the list, then the
       proof was interrupted (typically with Control-C).
+    * [47mEVENT[0m: the [event].
     * [47mFORM[0m: [47mVAL[0m is the ``context'' for the event, printed in the summary,
       [warnings], and [errors].
     * [47mHINT-EVENTS[0m: [47mVAL[0m is as in the corresponding field of the event
@@ -45176,7 +45181,7 @@ Conclusion
       from the attachment to [47mf[0m when ACL2 starts up.
     * [47mTIME[0m: [47mVAL[0m represents the corresponding field of the event summary, as
       the list [47m(prove print proof-tree other)[0m.
-    * [47m WARNINGS[0m: [47mVAL[0m is as in the corresponding field of the event summary.")
+    * [47mWARNINGS[0m: [47mVAL[0m is as in the corresponding field of the event summary.")
  (GET-GUARD-CHECKING
   (REDUNDANT-EVENTS)
   "Get the status most recently installed by [47m[set-guard-checking][0m
@@ -45263,7 +45268,8 @@ Conclusion
   (WORMHOLE)
   "Make a wormhole's status visible outside the wormhole
 
-  General Form: (get-wormhole-status name state)
+    General Form:
+     (get-wormhole-status name state)
 
   [47mName[0m should be the name of a wormhole (see [wormhole]).  This
   function returns an [error-triple] of the form [47m(mv nil s state)[0m,
@@ -99313,6 +99319,14 @@ Changes to Existing Features
   [47m[make-event][0m call used for implementing [47mthm[0m.  Thanks to Eric Smith
   for requesting this change.
 
+  In the case that a proof is interrupted after [47m(set-debugger-enable t)[0m
+  and then aborted, ACL2 formerly printed failures in a special way,
+  in particular showing the [pstack].  This is no longer the case:
+  all [event] failures are printed in the same way.
+
+  A new key, [47mEVENT[0m, is available for [47m[get-event-data][0m.  Thanks to Eric
+  Smith for a discussion leading to this addition.
+
 
 New Features
 
@@ -99452,6 +99466,10 @@ New Features
   feature was motivated by the desire to preserve a proof's
   event-data in calls of [47m[thm][0m, as described in the ``Changes''
   section above.
+
+  New utilities allow one to explore what has changed when an event
+  fails in a book that formerly certified.  See [saving-event-data].
+  Thanks to Eric Smith for requesting such a capability.
 
 
 Heuristic and Efficiency Improvements
@@ -99769,6 +99787,11 @@ Changes at the System Level
   for such a read.  Thanks to Yahya for the bug report, to Warren
   Hunt for encouraging a workaround, and to the CCL developers (in
   particular Gary Palter) for fixing the CCL bug.
+
+  The undocumented utility, [47mthm-fn[0m --- which is used in several
+  [community-books] --- now has an additional formal (at the end),
+  [47mevent-form[0m.  That argument can generally be passed as [47mnil[0m for
+  appropriate behavior.
 
 
 EMACS Support
@@ -101077,6 +101100,8 @@ Subtopics
   since the same effects could be achieved with the break condition
   on the rule itself.  Perhaps we should replace this concept with
   [47m:eval-and-break-if[0m?  Time will tell.")
+ (OLD-AND-NEW-EVENT-DATA (POINTERS)
+                         "See [saving-event-data].")
  (ON_THE_NAMING_OF_SUBGOALS
   (PAGES_WRITTEN_ESPECIALLY_FOR_THE_TOURS)
   "On the Naming of Subgoals
@@ -101668,6 +101693,9 @@ Subtopics
 
   [Psog]
       Show the most recently saved output with [gag-mode]
+
+  [Saving-event-data]
+      Save data stored for subsidiary [events]
 
   [Set-duplicate-keys-action!]
       Non-[47m[local][0m version of [47m[set-duplicate-keys-action][0m
@@ -105014,6 +105042,9 @@ Subtopics
   [Observation-cw]
       See [observation].
 
+  [Old-and-new-event-data]
+      See [saving-event-data].
+
   [Open-input-channel]
       See [io].
 
@@ -105175,6 +105206,9 @@ Subtopics
 
   [Ruler-extenders]
       See [rulers].
+
+  [Runes-diff]
+      See [saving-event-data].
 
   [Rw-cache]
       See [set-rw-cache-state].
@@ -122540,6 +122574,8 @@ Subtopics
 
   [Find-rules-of-rune]
       Find the rules named rune")
+ (RUNES-DIFF (POINTERS)
+             "See [saving-event-data].")
  (RUNNING_MODELS
   (PAGES_WRITTEN_ESPECIALLY_FOR_THE_TOURS)
   "Running Models
@@ -123057,6 +123093,189 @@ Subtopics
   intended (presumably, without errors).")
  (SAVING-AND-RESTORING (POINTERS)
                        "See [save-exec].")
+ (SAVING-EVENT-DATA
+  (SYSTEM-UTILITIES OUTPUT-CONTROLS)
+  "Save data stored for subsidiary [events]
+
+  Warning: This is a low-level system utility that may change somewhat
+  over time.  For more details, see the ACL2 source code.
+
+    General Forms:
+    (saving-event-data form)
+
+    ; See Further information below for keyword options for these two:
+    (runes-diff book-name)
+    (old-and-new-event-data book-name)
+
+  where [47mform[0m is any form that evaluates to an [error-triple] and
+  [47mbook-name[0m is a file ending with [47m\".lisp\"[0m.  See below for typical
+  usage.
+
+  A common problem is that a book whose certification formerly
+  succeeded now has a certification failure.  In that case, the
+  failure is often caused by a proof failure; then one may wish for
+  information on what has changed from the previous, successful proof
+  attempt and the new, failing proof attempt.  Here is a procedure
+  for obtaining such information.  After that we discuss some
+  variations on that procedure.
+
+
+Finding [rune]s that were used only previously, or only now
+
+  Here we discuss a procedure for discovering, given a book [47mBOOK.lisp[0m,
+  which [rune]s were used in a previous successful proof but not in
+  the new failed proof attempt, or vice-versa.
+
+  The procedure described here requires information to have been saved
+  for a previous certification of [47mBOOK.lisp[0m.  This can be
+  accomplished by providing [47m[certify-book][0m the keyword argument
+  [47m:write-event-data t[0m.  (See [build::custom-certify-book-commands]
+  for discussion about how a [47mcert-flags[0m comment can make this happen
+  when using the [47mcert.pl[0m utility.)  This causes [47mcertify-book[0m to write
+  out the file [47m.sys/BOOK@event-data.lsp[0m.  That file includes entries
+  of the form [47m(name . alist)[0m, where [47malist[0m is an [3mevent-data alist[0m ---
+  see [47m[get-event-data][0m --- where each entry corresponds to one of the
+  following event types, possibly generated by a macro or
+  [47m[make-event][0m call.
+
+    * defthm
+    * defun
+    * verify-guards
+    * thm
+
+  One [47m(name . alist)[0m entry is written for each such event, in the order
+  in which the events were encountered during the proof pass of
+  certification.  Normally [47mname[0m is the name of the event, but it is
+  [47mnil[0m in the case of a [47m[thm][0m event.
+
+  Suppose that on your filesystem, you have a copy of [47mBOOK.lisp[0m that
+  was certified using keyword argument [47m:write-event-data t[0m, thus
+  generating file [47m.sys/BOOK@event-data.lsp[0m as discussed above.  That
+  copy might well be somewhere below the [47mbooks/[0m directory of an ACL2
+  distribution.  Also suppose that you have a copy of [47mBOOK.lisp[0m for
+  which certification has failed, possibly using a different ACL2
+  version than the first, and let [47mEV[0m be the event that caused the
+  failure; assume that's because of a proof failure.  Below are steps
+  that allow you to see which rules (actually, [rune]s) were used in
+  the proof attempt for the first event but not the second, or
+  vice-versa.  That information might help you to repair the proof,
+  for example by enabling or disabling a rule whose [enable]d status
+  has changed after the successful certification, or by proving a
+  rule that was in an included book during the successful
+  certification but has since been deleted.  Again, we assume here
+  that the previous, successful certification was performed using
+  keyword argument [47m:write-event-data t[0m of [47mcertify-book[0m.
+
+  [31;1mStep 1[0m.  Load the [portcullis] commands:
+
+    (ld \"BOOK.port\")
+
+  [31;1mStep 2[0m.  Execute the following command, which will presumably end
+  with a proof failure for event [47mEV[0m.
+
+    (saving-event-data (ld \"BOOK.lisp\"))
+
+  [31;1mStep 3[0m.  See which runes were used in the old proof and not the new,
+  and vice-versa, respectively:
+
+    (runes-diff \"BOOK.lisp\")
+
+  An example is in [community-books] file
+  [47mbooks/demos/event-data/test1.lisp[0m, which has comments that lead
+  through a variant of the steps above.  File [47mtest1-input.lsp[0m in that
+  directory actually carries out that process, resulting in output
+  displayed in log file [47mtest1-log.txt[0m in that directory.  Here is the
+  output of a [47mrunes-diff[0m call shown both in that log file and in a
+  comment in file [47mtest1-input.lsp[0m.  It shows that a
+  [type-prescription] rule, named [47mtrue-listp-append[0m, was used in the
+  original proof but not the failed proof (which made the [47m[ld][0m call
+  of Step 2 above made without first performing Step 1, which would
+  have introduced that type-prescription rule.  This output also
+  shows that the new (failed) proof attempt used many runes not used
+  in the previous proof --- not surprisingly, since without the rule
+  [47mtrue-listp-reverse[0m the prover made a desperate attempt involving
+  destructor elimination and induction.
+
+    ((:OLD ((:TYPE-PRESCRIPTION TRUE-LISTP-REVERSE)))
+     (:NEW ((:DEFINITION ALISTP)
+            (:DEFINITION ATOM)
+            (:DEFINITION NOT)
+            (:DEFINITION TRUE-LISTP)
+            (:ELIM CAR-CDR-ELIM)
+            (:EXECUTABLE-COUNTERPART CONSP)
+            (:EXECUTABLE-COUNTERPART NOT)
+            (:EXECUTABLE-COUNTERPART REVERSE)
+            (:FAKE-RUNE-FOR-TYPE-SET NIL)
+            (:INDUCTION ALISTP))))
+
+  A second, analogous set of three files is in that same directory;
+  just replace [47m\"test1\"[0m by [47m\"test2\"[0m in the filenames.
+
+
+Further information
+
+  The [47mrunes-diff[0m utility is intended to serve as an example of a class
+  of such query utilities.  It is a macro that expands to a
+  corresponding function call.
+
+    ACL2 !>:trans1 (runes-diff \"BOOK.lisp\")
+     (RUNES-DIFF-FN \"BOOK.lisp\" NIL NIL NIL 'RUNES-DIFF
+                    STATE)
+    ACL2 !>
+
+  [47mRunes-diff-fn[0m is actually quite simple.
+
+  [31;1mFunction: [0m<runes-diff-fn>
+
+    (defun runes-diff-fn (book-string name namep dir ctx state)
+      (er-let*
+           ((old/new (old-and-new-event-data-fn
+                          book-string name namep dir ctx state)))
+           (let* ((old (car old/new))
+                  (new (cdr old/new))
+                  (old-runes (get-event-data-1 'rules old))
+                  (new-runes (get-event-data-1 'rules new))
+                  (old-diff (set-difference-equal old-runes new-runes))
+                  (new-diff (set-difference-equal new-runes old-runes)))
+             (value (list (list :old old-diff)
+                          (list :new new-diff))))))
+
+  It is simple because the real work is carried out using a more
+  complex function, [47mold-and-new-event-data-fn[0m.  That function returns
+  a pair [47m(old . new)[0m, where [47mold[0m and [47mnew[0m are event-data alists for the
+  failed event (called [47mEV[0m above).  Then [47mrunes-diff-fn[0m only needs to
+  pick out the [47mRULES[0m fields and form the set-differences.
+
+  The macro [47mold-and-new-event-data[0m provides a convenient interface to
+  [47mold-and-new-event-data-fn[0m.
+
+    ACL2 !>:trans1 (old-and-new-event-data \"BOOK.lisp\")
+     (OLD-AND-NEW-EVENT-DATA-FN \"BOOK.lisp\"
+                                NIL NIL NIL 'OLD-AND-NEW-EVENT-DATA
+                                STATE)
+    ACL2 !>
+
+  Both [47mrunes-diff[0m and [47mold-and-new-event-data[0m have keyword arguments
+  that allow one to choose a specific name for a failed event --- the
+  most recent event with that name, rather than [47mEV[0m --- and a
+  directory for the given filename, which may be a string or a
+  keyword representing a project directory (see [project-dir-alist]).
+  The [47m\"test2\"[0m files mentioned above have an example in which the name
+  [47mnil[0m is supplied to specify the [47m[thm][0m event most recently preceding
+  the failed event (actually it's the only one preceding the failed
+  event).
+
+    General Forms:
+    (runes-diff book-string &key name dir)
+    (old-and-new-event-data book-string &key name dir)
+
+  If you want to use these programmatically, call the corresponding
+  [47m\"-FN\"[0m versions, where [47mnamep[0m is [47mt[0m to represent the case that a name
+  is provided, else [47mnil[0m.
+
+    General Forms:
+    (runes-diff-fn book-string name namep dir ctx state)
+    (old-and-new-event-data book-string name namep dir ctx state)")
  (SBCL-INSTALLATION
   (BUILDING-ACL2)
   "Installing Steel Bank Common Lisp (SBCL)
@@ -135268,6 +135487,9 @@ Subtopics
 
   [Get-event-data]
       Obtain data stored after at the conclusion of an event
+
+  [Saving-event-data]
+      Save data stored for subsidiary [events]
 
   [Trans-eval]
       Evaluate a form
