@@ -124352,12 +124352,20 @@ work on <tt>(q x)</tt>.</p>
  which @(see rune)s were used in a previous successful proof but not in the new
  failed proof attempt, or vice-versa.</p>
 
- <p>The procedure described here requires information to have been saved for a
- previous certification of @('BOOK.lisp').  This can be accomplished by
- providing @(tsee certify-book) the keyword argument @(':write-event-data t').
- (See @(see build::custom-certify-book-commands) for discussion about how a
- @('cert-flags') comment can make this happen when using the @('cert.pl')
- utility.)  This causes @('certify-book') to write out the file
+ <p>The procedure described here requires certain &ldquo;event-data&rdquo;
+ information to have been written by a previous certification of
+ @('BOOK.lisp').  Such writing of event-data can be accomplished by providing
+ @(tsee certify-book) the keyword argument @(':write-event-data t').  Writing
+ of event-data by @('certify-book') can also be accomplished by setting
+ environment variable @('ACL2_WRITE_EVENT_DATA') to a non-empty value, though
+ that is overridden if @(tsee certify-book) keyword argument
+ @(':write-event-data') is explicitly supplied the value, @('nil').  See @(see
+ build::custom-certify-book-commands) for discussion about how a
+ @('cert-flags') comment can set @('certify-book') keyword values when using
+ the @('cert.pl') utility.</p>
+
+ <p>When @('certify-book') writes event-data under either condition above
+ (keyword argument or environment variable), it writes it to
  @('.sys/BOOK@event-data.lsp').  That file includes entries of the form
  @('(name . alist)'), where @('alist') is an <i>event-data alist</i> &mdash;
  see @(tsee get-event-data) &mdash; where each entry corresponds to one of the
@@ -124376,22 +124384,18 @@ work on <tt>(q x)</tt>.</p>
  Normally @('name') is the name of the event, but it is @('nil') in the case of
  a @(tsee thm) event.</p>
 
- <p>Suppose that on your filesystem, you have a copy of @('BOOK.lisp') that was
- certified using keyword argument @(':write-event-data t'), thus generating
- file @('.sys/BOOK@event-data.lsp') as discussed above.  That copy might well
- be somewhere below the @('books/') directory of an ACL2 distribution.  Also
- suppose that you have a copy of @('BOOK.lisp') for which certification has
- failed, possibly using a different ACL2 version than the first, and let
- @('EV') be the event that caused the failure; assume that's because of a proof
- failure.  Below are steps that allow you to see which rules (actually, @(see
- rune)s) were used in the proof attempt for the first event but not the second,
- or vice-versa.  That information might help you to repair the proof, for
- example by enabling or disabling a rule whose @(see enable)d status has
- changed after the successful certification, or by proving a rule that was in
- an included book during the successful certification but has since been
- deleted.  Again, we assume here that the previous, successful certification
- was performed using keyword argument @(':write-event-data t') of
- @('certify-book').</p>
+ <p>Suppose that you have file @('.sys/BOOK@event-data.lsp') as discussed
+ above, that is, from having previously certified @('BOOK.lisp') when writing
+ event-data.  Also suppose that you now have a copy of @('BOOK.lisp') (maybe
+ the same one, maybe not) for which certification has failed, possibly using a
+ different ACL2 version than the first, and let @('EV') be the event that
+ caused the failure; assume that's because of a proof failure.  Below are steps
+ that allow you to see which rules (actually, @(see rune)s) were used in the
+ proof attempt for the first event but not the second, or vice-versa.  That
+ information might help you to repair the proof, for example by enabling or
+ disabling a rule whose @(see enable)d status has changed after the successful
+ certification, or by proving a rule that was in an included book during the
+ successful certification but has since been deleted.</p>
 
  <p><b>Step 1</b>.  Load the @(see portcullis) commands:</p>
 
@@ -124400,7 +124404,7 @@ work on <tt>(q x)</tt>.</p>
  })
 
  <p><b>Step 2</b>.  Execute the following command, which will presumably end
- with a proof failure for event @('EV').</p>
+ with a failed proof for the event, @('EV').</p>
 
  @({
  (saving-event-data (ld \"BOOK.lisp\"))
