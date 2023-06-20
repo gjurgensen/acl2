@@ -102425,6 +102425,12 @@ it."
  <p>A new key, @('EVENT'), is available for @(tsee get-event-data).  Thanks to
  Eric Smith for a discussion leading to this addition.</p>
 
+ <p>Most ACL2 reader errors are now ACL2 hard errors rather than raw Lisp
+ errors (as they were formerly).  As a result, such errors can sometimes be
+ &ldquo;caught&rdquo; by suitable programming.  Thanks to Grant Jurgensen and
+ Eric Smith for requesting this change.  Note that input is still flushed in
+ these cases, perhaps more thoroughly than before.</p>
+
  <h3>New Features</h3>
 
  <p>The new zero-ary attachable system function, @(tsee heavy-linear-p), allows

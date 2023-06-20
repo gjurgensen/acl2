@@ -99327,6 +99327,13 @@ Changes to Existing Features
   A new key, [47mEVENT[0m, is available for [47m[get-event-data][0m.  Thanks to Eric
   Smith for a discussion leading to this addition.
 
+  Most ACL2 reader errors are now ACL2 hard errors rather than raw Lisp
+  errors (as they were formerly).  As a result, such errors can
+  sometimes be ``caught'' by suitable programming.  Thanks to Grant
+  Jurgensen and Eric Smith for requesting this change.  Note that
+  input is still flushed in these cases, perhaps more thoroughly than
+  before.
+
 
 New Features
 
