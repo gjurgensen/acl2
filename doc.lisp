@@ -129266,7 +129266,7 @@ Extended Example
   takes responsibility for trafficking in [state]; it is defined in
   the logic using the function [47m[read-ACL2-oracle][0m, which (again, in
   the logic) does modify state, by popping an entry from its
-  acl2-oracle field.  [getenv$].
+  acl2-oracle field.  See [getenv$].
 
   As suggested above, a call of [47m[getenv$][0m takes into account the most
   recent call of [47msetenv$[0m on the same environment variable.  It may
