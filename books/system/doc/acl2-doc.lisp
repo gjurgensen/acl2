@@ -130727,7 +130727,7 @@ work on <tt>(q x)</tt>.</p>
  takes nor returns the ACL2 @(see state).  The reason is that @(tsee getenv$)
  takes responsibility for trafficking in @(see state); it is defined in the
  logic using the function @(tsee read-acl2-oracle), which (again, in the logic)
- does modify state, by popping an entry from its acl2-oracle field.  @(see
+ does modify state, by popping an entry from its acl2-oracle field.  See @(see
  getenv$).</p>
 
  <p>As suggested above, a call of @(tsee getenv$) takes into account the most
