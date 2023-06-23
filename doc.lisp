@@ -77,7 +77,7 @@ Subtopics
   [defthm], [in-theory], [xargs], [state], etc., without an [47macl2::[0m
   prefix.
 
-  The constant [47m*acl2-exports*[0m lists [47m1574[0m symbols, including most
+  The constant [47m*acl2-exports*[0m lists [47m1582[0m symbols, including most
   documented ACL2 system constants, functions, and macros.  You will
   typically also want to import many symbols from Common Lisp; see
   [*common-lisp-symbols-from-main-lisp-package*].
@@ -149,7 +149,7 @@ Subtopics
        bounded-integer-alistp2
        boundp-global boundp-global1 break$
        break-on-error brr brr-evisc-tuple
-       brr@ build-state1 butlast
+       brr-near-missp brr@ build-state1 butlast
        caaaar caaadr caaar caadar caaddr
        caadr caar cadaar cadadr cadar caddar
        cadddr caddr cadr canonical-pathname
@@ -324,7 +324,8 @@ Subtopics
        get-enforce-redundancy get-event-data
        get-global get-guard-checking
        get-in-theory-redundant-okp
-       get-output-stream-string$ get-real-time
+       get-output-stream-string$
+       get-persistent-whs get-real-time
        get-register-invariant-risk
        get-serialize-character
        get-slow-alist-action
@@ -449,10 +450,11 @@ Subtopics
        not nqthm-to-acl2 nth nth-0-cons
        nth-0-read-run-time-type-prescription
        nth-add1 nth-aliases nth-update-nth
-       nthcdr null number-subtrees numerator
-       o-finp o-first-coeff o-first-expt o-infp
-       o-p o-rst o< o<= o> o>= observation
-       observation-cw oddp odds ok-if
+       nthcdr null number-subtrees
+       numerator o-finp o-first-coeff
+       o-first-expt o-infp o-p o-rst
+       o< o<= o> o>= observation observation-cw
+       oddp odds ok-if old-and-new-event-data
        oops open-channel-listp open-channel1
        open-channel1-forward-to-true-listp-and-consp
        open-channels-p open-channels-p-forward
@@ -565,9 +567,10 @@ Subtopics
        rewrite-lambda-objects-theory
        rewrite-quoted-constant
        rewrite-stack-limit
-       rfix round rw-cache satisfies
+       rfix round runes-diff rw-cache satisfies
        save-and-clear-memoization-settings
-       save-exec search second serialize-read
+       save-exec saving-event-data
+       search second serialize-read
        serialize-write set-absstobj-debug
        set-accumulated-persistence
        set-backchain-limit
@@ -626,6 +629,7 @@ Subtopics
        set-non-linear set-non-linearp
        set-override-hints set-override-hints!
        set-parallel-execution
+       set-persistent-whs-and-ephemeral-whs
        set-print-base set-print-base-radix
        set-print-case set-print-circle
        set-print-clause-ids set-print-escape
@@ -646,8 +650,9 @@ Subtopics
        set-skip-meta-termp-checks
        set-skip-meta-termp-checks!
        set-slow-alist-action
-       set-splitter-output set-standard-co
-       set-standard-oi set-state-ok
+       set-splitter-output
+       set-standard-co set-standard-oi
+       set-state-ok set-table-guard
        set-tau-auto-mode set-temp-touchable-fns
        set-temp-touchable-vars set-timer
        set-total-parallelism-work-limit
@@ -662,9 +667,9 @@ Subtopics
        set-well-founded-relation
        set-wormhole-data
        set-wormhole-entry-code
-       set-write-acl2x setenv$ seventh sgetprop
-       show-accumulated-persistence show-bdd
-       show-bodies show-brr-evisc-tuple
+       set-write-acl2x setenv$ seventh
+       sgetprop show-accumulated-persistence
+       show-bdd show-bodies
        show-custom-keyword-hint-expansion
        show-fc-criteria signed-byte
        signed-byte-p signum simplify
@@ -718,7 +723,9 @@ Subtopics
        symbol< symbol<-asymmetric
        symbol<-irreflexive symbol<-transitive
        symbol<-trichotomy symbolp
-       symbolp-intern-in-package-of-symbol synp
+       symbolp-intern-in-package-of-symbol
+       sync-ephemeral-whs-with-persistent-whs
+       synp
        syntactically-clean-lambda-objects-theory
        syntaxp sys-call sys-call* sys-call+
        sys-call-status t table table-alist
@@ -782,8 +789,8 @@ Subtopics
        waterfall-parallelism waterfall-printing
        weak-ld-history-entry-p
        well-formed-lambda-objectp
-       wet when$ when$+
-       with-brr-data with-cbd with-fast-alist
+       wet when$ when$+ with-brr-data with-cbd
+       with-current-package with-fast-alist
        with-global-stobj with-guard-checking
        with-guard-checking-error-triple
        with-guard-checking-event
@@ -1546,7 +1553,10 @@ Subtopics
   If you are at an ACL2 prompt (as opposed to a raw Lisp break), then
   you may type [47m:a![0m in place of [47m(a!)[0m; see [keyword-commands].
 
-  For a related feature that only pops up one level, see [p!].
+  For a related feature that only pops up one level of [47m[ld][0m, see [47m[p!][0m.
+  However, [47mp![0m behaves differently if you're typing to the interactive
+  break caused by [break-rewrite].  Instead of popping up one level,
+  [47mp![0m in break-rewrite prints a message and is otherwise a no-op.
 
   Logically speaking, [47m(a!) = nil[0m.  But imagine that it is defined in
   such a way that it causes a stack overflow or other resource
@@ -1635,6 +1645,9 @@ Subtopics
 
   [Release-notes]
       Pointers to what has changed
+
+  [Soundness]
+      Correctness property claimed for ACL2
 
   [Version]
       ACL2 Version Number")
@@ -14709,35 +14722,60 @@ Subtopics
   [set-debugger-enable]).")
  (BREAK-REWRITE
   (DEBUGGING)
-  "The read-eval-print loop entered to [monitor] rules
+  "A version of the ACL2 rewriter with interactive breaks
 
   ACL2 allows the user to [monitor] the application of [rewrite],
-  [definition], and [linear] rules.  When [monitor]ed rules are about
-  to be tried by the rewriter, an interactive break occurs and the
-  user is allowed to watch and, in a limited sense, control the
-  attempt to apply the rule.  This interactive loop, which is
-  technically just a call of the standard top-level ACL2
-  read-eval-print loop, [47m[ld][0m, on a ``[wormhole] [state]'' (see
-  [wormhole]), is called ``break-rewrite.'' While in break-rewrite,
-  certain keyword commands are available for accessing information
-  about the context in which the lemma is being tried.  These
-  keywords are called break-rewrite ``commands''; see [brr-commands].
+  [definition], and [linear] rules.  When the rewriter is about to
+  try to apply a [monitor]ed rule, it can trigger an interactive
+  break managed by a version of the rewriter called
+  ``break-rewrite''.  From within this read-eval-print loop you can
+  inspect the context, attempt to apply the rule, and see what
+  happens.  This interactive loop is technically just a call of the
+  standard ACL2 read-eval-print loop, [47m[ld][0m, on a ``[wormhole]
+  [state]'' (see [wormhole]).  While in break-rewrite, certain
+  keyword commands are available for accessing information about the
+  context in which the lemma is being tried.  These keywords are
+  called break-rewrite ``commands''; see [brr-commands].  Interactive
+  breaks occur only if the [47mbreak-rewrite[0m utility is turned on (see
+  [47m[brr][0m), a monitored rune is being considered by the rewriter, and
+  the break conditions specified in the monitor are satisfied (see
+  [47m[monitor][0m).
 
-  For a related proof debugging utility, see [with-brr-data].  Also see
-  [dmr] (Dynamically Monitor Rewrites), which allows you to watch
-  progress of the rewriter in real time.
+  The following utilities can also be helpful for proof [debugging].
+
+    * [47m[Dmr][0m (Dynamically Monitor Rewrites) allows you to watch progress of
+      the rewriter in real time.
+    * The [proof-builder] allows you to interactively construct a proof.
+    * [47m[with-brr-data][0m helps you to find the source of a term in prover
+      output.
 
   To abort from inside break-rewrite at any time, execute [47m:[0m[47m[a!][0m.
 
   Output from break-rewrite is abbreviated by default, but that can be
   changed.  See [set-brr-evisc-tuple].
 
+  When the break-rewrite facility is turned on (see [47m[brr][0m), the
+  rewriter performs more sluggishly than when break-rewrite is turned
+  off.  Therefore if you have done [47m(brr t)[0m to debug a rewriting
+  problem, we recommend that you do [47m(brr nil)[0m after the situation is
+  remedied and you resume normal proof development.
+
   For further information, see the related [47m:[0m[47m[doc][0m topics listed below.
+
+  [3mAdvice to Developers and Maintainers of ACL2[0m: If you intend to modify
+  break-rewrite, we strongly urge you to read the Essay on
+  Break-Rewrite in the source code file [47mrewrite.lisp[0m.  There we
+  explain the abstraction provided by break-rewrite, how it is
+  implemented as a state machine operating in a wormhole, and some
+  low-level tools for inspecting the state of break-rewrite.
+  Attempts to add new features without understanding virtually
+  everything about the implementation is most likely to create a
+  mess.
 
   It is possible to cause the ACL2 rewriter to [monitor] the attempted
   application of selected rules.  When such a rule is about to be
   tried, the rewriter evaluates its break condition and if the result
-  is non-[47mnil[0m, break-rewrite is entered.
+  is non-[47mnil[0m, an interactive read-eval-print loop is entered.
 
   Break-rewrite permits the user to inspect the current [state] by
   evaluating break-rewrite commands.  Type [47m:help[0m in break-rewrite to
@@ -14757,23 +14795,25 @@ Subtopics
   that break-rewrite operates on a copy of the [state] being used by
   rewrite and when break-rewrite exits the [wormhole] closes and the
   [state] ``produced'' by break-rewrite disappears.  For example, all
-  invocations of [47m[trace$][0m and [47m[untrace$][0m that are made during a break
-  at a [monitor]ed [rune] are undone when proceeding from that break.
-  Thus, break-rewrite lets you query the state of the rewriter and
-  even do experiments involving proofs, etc., but these experiments
-  have no effect on the ongoing proof attempt.
+  invocations of [47m[trace$][0m and [47m[untrace$][0m that are made during such a
+  break are undone when proceeding from that break (including when
+  proceeding via the [47m:eval[0m brr-command).  Thus, break-rewrite lets
+  you query the state of the rewriter and even do experiments
+  involving proofs, etc., but these experiments have no effect on the
+  ongoing proof attempt.
 
   There are however exceptions to this loss of state when exiting a
-  break.  One exception is that the effect of turning on iprinting in
-  a break (see [set-iprint]) will persist even after exiting the
-  break.  The other exceptions pertain to setting the
-  [47m[brr-evisc-tuple][0m or invoking [47m[monitor][0m or [47m[unmonitor][0m: if these
-  are done inside the break-rewrite loop at level 1 of interaction
-  (i.e., at the top level) then their effects will persist even after
-  exiting the break.
+  break.  One exception pertains to iprinting (see [set-iprint]).
+  When iprinting is enabled in a break, it nevertheless is again
+  disabled upon exiting the break.  However, the association of
+  values with iprint indices persists even after exiting the break;
+  that is, you can still obtain their values, and if you re-enable
+  ipritning then indices will be generated from where they left off
+  rather than returning to index 1.  The other exception pertains to
+  setting the [47m[brr-evisc-tuple][0m while inside break-rewrite: the
+  effects persist.  See [47m[set-brr-evisc-tuple][0m.
 
-  When you first enter break-rewrite a simple herald is printed such
-  as:
+  When you enter break-rewrite a simple herald is printed such as:
 
     (3 Breaking (:rewrite lemma12) on (delta a (+ 1 j)):
 
@@ -14826,24 +14866,31 @@ Subtopics
 
     :ok
 
-  exits break-rewrite without further interaction.  When break-rewrite
-  exits it prints ``[47m3)[0m'', closing the parenthesis that opened the
-  level [47m3[0m interaction.
+  exits break-rewrite without further interaction at the current depth.
+  When break-rewrite exits it prints ``[47m3)[0m'' (actually, of course, the
+  current depth!), closing the parenthesis that opened the current
+  depth, [47m3[0m, interaction.  However, between your typing the [47m:ok[0m
+  command and the exit from depth [47m3[0m you may well see deeper
+  break-rewrite breaks --- triggered by any of your monitored runes
+  --- as the rewriter tries to apply the lemma that prompted the
+  current depth [47m3[0m break.
 
     :go
 
-  exits break-rewrite without further interaction, but prints out the
-  result of the application attempt, i.e., whether the application
-  succeeded, if so, what the [47m:target[0m term was rewritten to, and if
-  not why the rule was not applicable.
+  exits break-rewrite without further interaction at the current depth,
+  but as it exits it prints out the result of the application
+  attempt, i.e., whether the application succeeded, if so, what the
+  [47m:target[0m term was rewritten to, and if not why the rule was not
+  applicable.
 
     :eval
 
   causes break-rewrite to attempt to apply the rule but interaction at
-  this level of break-rewrite resumes when the attempt is complete.
+  this depth of break-rewrite resumes when the attempt is complete.
   When control returns to this level of break-rewrite a message
   indicating the result of the application attempt (just as in [47m:go[0m)
-  is printed, followed by the [prompt] for additional user input.
+  is printed, followed by the [prompt] for additional user input for
+  the current depth [47m3[0m.
 
   Generally speaking, [47m:ok[0m and [47m:go[0m are used when the break in question
   is routine or uninteresting and [47m:eval[0m is used when the break is one
@@ -14865,66 +14912,80 @@ Subtopics
   Typically then you would [monitor] [47mmain-lemma[0m at the ACL2
   top-level, start the proof-attempt, and then in the break-rewrite
   in which [47mmain-lemma[0m is about to be tried, you would install a
-  [monitor] on [47mhyp-reliever[0m.  If during the ensuing [47m:eval[0m
-  [47mhyp-reliever[0m is broken you will know it is being used under the
-  attempt to apply [47mmain-lemma[0m.
+  [monitor] on [47mhyp-reliever[0m.  If you then [47m:eval[0m and get a break on
+  [47mhyp-reliever[0m you will know it is being used under the attempt to
+  apply [47mmain-lemma[0m.
 
-  However, once [47mhyp-reliever[0m is being [monitor]ed it will be
-  [monitor]ed even after [47mmain-lemma[0m has been tried.  That is, if you
-  let the proof attempt proceed then you may see many other breaks on
-  [47mhyp-reliever[0m, breaks that are not ``under'' the attempt to apply
-  [47mmain-lemma[0m.  One way to prevent this is to [47m:eval[0m the application of
-  [47mmain-lemma[0m and then [47m:[0m[47m[unmonitor][0m [47mhyp-reliever[0m before exiting.  But
-  this case arises so often that ACL2 supports several additional
-  ``flavors'' of proceed commands.
+  However, when the rewriter leaves this attempt to apply [47mmain-lemma[0m,
+  [47mhyp-reliever[0m will no longer be monitored.  That is, the list of
+  monitored runes is maintained as a local variable of break-rewrite.
+  See [47m[monitored-runes][0m.
 
   [47m:Ok![0m, [47m:go![0m, and [47m:eval![0m are just like their counterparts ([47m:ok[0m, [47m:go[0m,
-  and [47m:eval[0m, respectively), except that while processing the rule
-  that is currently broken no [rune]s are [monitor]ed.  When
-  consideration of the current rule is complete, the set of
-  [monitor]ed [rune]s is restored to its original setting.
+  and [47m:eval[0m, respectively), except that before proceeding they
+  unmonitor all runes.  Of course, this is only done in the scope of
+  the interactive break in which these commands were used.  When
+  control returns to the top-level of the ACL2 loop the monitored
+  runes will have reverted to its original value there.  These
+  commands allow you to proceed from the current depth without
+  getting any deeper breaks.
 
   [47m:Ok$[0m, [47m:go$[0m, and [47m:eval$[0m are similar but take an additional argument
-  which must be a list of [rune]s.  An example usage of [47m:eval$[0m is
+  which must be a list of runic designators (or a single designator).
+  See [rune].  Two examples the use of [47m:eval$[0m are
 
-    3 ACL2 !>:eval$ ((:rewrite hyp-reliever))
+    3 ACL2 !>:eval$ hyp-reliever
 
-  These three commands temporarily install unconditional breaks on the
-  [rune]s listed, proceed with the consideration of the currently
-  broken rule, and then restore the set of [monitor]ed rules to its
-  original setting.
+  and
+
+    3 ACL2 !>:eval$ (hyp-reliever (:definition foo))
+
+  The second command above is exactly equivalent to
+
+    3 ACL2 !>:monitor hyp-reliever t
+    3 ACL2 !>:monitor (:definition foo) t
+    3 ACL2 !>:eval
+
+  Analogous remarks apply to [47m:go$[0m and [47m:ok$[0m.  If you want to specify
+  more sophisticated break criteria (rather than just [47m:condition t[0m)
+  you must use the [47m:monitor[0m command explicitly before proceeding.
 
   Thus, there are nine ways to proceed from the initial entry into
   break-rewrite although we often speak as though there are two, [47m:ok[0m
   and [47m:eval[0m, and leave the others implicit.  We group [47m:go[0m with [47m:ok[0m
   because in all their flavors they exit break-rewrite without
-  further interaction (at the current level).  All the flavors of
+  further interaction (at the current depth).  All the flavors of
   [47m:eval[0m require further interaction after the rule has been tried.
 
+  You are not permitted to ``re-[47m:eval[0m'' a rule.  That is, after issuing
+  the [47m:eval[0m command in a given break, you cannot issue it again in
+  that break.  The rule has been evaluated, the results are available
+  to you, and that's that!  All you can do, aside from inspecting the
+  context, is allow rewrite to continue, by issuing an [47m:ok[0m or [47m:go[0m, or
+  abort.
+
   To abort a proof attempt and return to the top-level of ACL2 you may
-  at any time type [47m(a!)[0m followed by a carriage return.  If you are
-  not in a raw Lisp break, you may type [47m:a![0m instead.  The utility [47mp![0m
-  is completely analogous to [47ma![0m except that it pops up only one [47m[ld][0m
-  level.  If you have just entered the break-rewrite loop, this will
-  pop you out of that loop, back to the proof.  See [a!] and see
-  [p!].
+  at any time type [47m(a!)[0m followed by a carriage return or,
+  equivalently (if you are not in a raw Lisp break) use the keyword
+  command [47m:a![0m.  See [a!].
 
   We now address ourselves to the post-[47m:eval[0m interaction with
-  break-rewrite.  As noted, that interaction begins with
+  break-rewrite.  As noted, post-[47m:eval[0m interaction begins with
   break-rewrite's report on the results of applying the rule: whether
   it worked and either what it produced or why it failed.  This
   information is also printed by certain keyword commands available
   after [47m:eval[0m, namely [47m:wonp[0m, [47m:rewritten-rhs[0m or (for [linear] rules)
   [47m:poly-list[0m, and [47m:failure-reason[0m.  In addition, by using [47m[brr@][0m you
   can obtain this information in the form of ACL2 data objects.  This
-  allows the development of more sophisticated ``break conditions'';
-  see [monitor] for examples.  In this connection we point out the
-  macro form [47m(ok-if term)[0m.  See [ok-if].  This command exits
-  break-rewrite if [47mterm[0m evaluates to non-[47mnil[0m and otherwise does not
-  exit.  Thus it is possible to define macros that provide other
-  kinds of exits from break-rewrite.  The only way to exit
-  break-rewrite after [47m:eval[0m is [47m:ok[0m (or, equivalently, the use of
-  [47m[ok-if][0m).
+  allows the development of more sophisticated ``break conditions''
+  that test the context of of the pending break and that return a
+  list of commands to execute if a break occurs; see [monitor] for
+  examples.  In this connection we point out the macro form [47m(ok-if
+  term)[0m.  See [ok-if].  This command exits break-rewrite if [47mterm[0m
+  evaluates to non-[47mnil[0m and otherwise does not exit.  Thus it is
+  possible to define macros that provide other kinds of exits from
+  break-rewrite.  The only way to exit break-rewrite after [47m:eval[0m is
+  [47m:ok[0m or [47m:go[0m or the use of [47m[ok-if][0m.
 
   Note that when inside break-rewrite, all [history] commands, such as
   [47m:[0m[47m[pe][0m, show the [enable]d status of rules with respect to the
@@ -14939,43 +15000,72 @@ Subtopics
   break-rewrite with respect to the current enabled state of the
   prover.
 
+  We have not discussed ``near-miss'' breaks.  These are caused when a
+  monitored rune specifies one of the near-miss break criteria and
+  the rune's pattern fails to match the target but ``almost'' matches
+  according to the criteria.  See [47m[monitor][0m for a discussion of
+  near-miss break criteria.  But for example, if [47mmain-lemma[0m rewrites
+  the term [47m(f (g (h x) y) x)[0m and you've installed a monitor on it
+  like this:
+
+    :monitor main-lemma (:abstraction (f (g u v) w))
+
+  then if the rewriter encountered the target term [47m(F (G (MUMBLE A) B)
+  C)[0m it would cause a near-miss break because the pattern of
+  [47mmain-lemma[0m does not match the target but the specified abstraction
+  of the pattern does match the target.
+
+  You interact with a near-miss break just like the breaks described
+  above, except some commands (e.g., [47m:eval[0m) are unavailable because
+  the rule did not match and thus there is no way to proceed except
+  to exit the break and try the next lemma.
+
   The rest of this [documentation] discusses a few implementation
   details of break-rewrite and may not be interesting to the typical
   user.
 
-  There is no ACL2 function named break-rewrite.  It is an illusion
-  created by appropriate calls to two functions named [47mbrkpt1[0m and
-  [47mbrkpt2[0m.  As previously noted, break-rewrite is [47m[ld][0m operating on a
+  There is no ACL2 function named break-rewrite --- which is why we
+  don't write it in typewriter font in this documentation.
+  Break-rewrite is an illusion created by appropriate calls to three
+  ``break point handlers'' named [47mnear-miss-brkpt1[0m, [47mbrkpt1[0m and [47mbrkpt2[0m.
+  As previously noted, break-rewrite is [47m[ld][0m operating on a
   [wormhole] [state].  One might therefore wonder how break-rewrite
   can apply a rule and then communicate the results back to the
   rewriter running in the external [state].  The answer is that it
   cannot.  Nothing can be communicated through a [wormhole].  In
-  fact, [47mbrkpt1[0m and [47mbrkpt2[0m are each calls of [47m[ld][0m running on
-  [wormhole] [state]s.  [47mBrkpt1[0m implements the pre-[47m:eval[0m break-rewrite
-  and [47mbrkpt2[0m implements the post-[47m:eval[0m break-rewrite.  The rewriter
-  actually calls [47mbrkpt1[0m before attempting to apply a rule and calls
-  [47mbrkpt2[0m afterwards.  In both cases, the rewriter passes into the
-  [wormhole] the relevant information about the current context.
-  Logically [47mbrkpt1[0m and [47mbrkpt2[0m are no-ops and [47m[rewrite][0m ignores the
-  [47mnil[0m they return.  But while control is in them, the execution of
-  [47m[rewrite][0m is suspended and cannot proceed until the break-rewrite
-  interactions complete.
+  fact, the break point handlers are each calls of [47m[ld][0m running on
+  [wormhole] [state]s.  They maintain a state machine inside the
+  wormhole.  For example, [47mbrkpt1[0m is called by rewrite after a
+  successful match, if the monitored [47m:condition[0m is true, an
+  interactive break occurs.  Upon an [47m:ok[0m or [47m:eval[0m, the wormhole's
+  status information is updated, the wormhole is exited (losing any
+  state changes made inside the wormhole), rewrite continues to do
+  whatever rewrite does for that lemma, and then [47mbrkpt2[0m is called.
+  [47mBrkpt2[0m then uses the state information in the wormhole to decide
+  whether to interact or not.
 
-  This design causes a certain anomaly that might be troubling.
-  Suppose that inside break-rewrite before [47m:evaling[0m a rule (i.e., in
-  the [47mbrkpt1[0m [wormhole] [state]) you define some function, [47mfoo[0m.
-  Suppose then you [47m:eval[0m the rule and eventually control returns to
-  break-rewrite (i.e., to [47mbrkpt2[0m on a [wormhole] [state] with the
-  results of the application in it).  You will discover that [47mfoo[0m is
-  no longer defined!  That is because the [wormhole] [state] created
-  during your [47mpre-:eval[0m interaction is lost when we exit the
-  [wormhole] to resume the proof attempt.  The post-[47m:eval[0m [wormhole]
-  [state] is in fact identical to the initial pre-[47m:eval[0m [state]
-  (except for the results of the application) because [47m[rewrite][0m did
-  not change the external [state] and both [wormhole] [state]s are
-  copies of it.  A similar issue occurs with the use of [trace]
-  utilities: all effects of calling [47m[trace$][0m and [47m[untrace$][0m are
-  erased when you proceed from a break in the break-rewrite loop.
+  This helps explain why the rewriter behaves more sluggishly when [47m(brr
+  t)[0m has been done: it is entering and exiting wormholes to figure
+  out whether to trigger an interactive break.  When you are through
+  with break-rewrite, we recommend [47m(brr nil)[0m.
+
+  This design causes certain anomalies that might be troubling.
+
+  Suppose you are inside a depth [47m3[0m break before [47m:evaling[0m a rule (i.e.,
+  you're in the [47mbrkpt1[0m [wormhole] [state]) you define some function,
+  [47mfoo[0m.  Suppose then you [47m:eval[0m the rule and eventually control
+  returns to the depth [47m3[0m break (i.e., now you're in the [47mbrkpt2[0m
+  [wormhole] [state] with the results of the application in it).  You
+  will discover that [47mfoo[0m is no longer defined!  That is because the
+  [wormhole] [state] created during your pre-[47m:eval[0m interaction is
+  lost when we exit the [wormhole] to resume the proof attempt.  The
+  post-[47m:eval[0m [wormhole] [state] is in fact identical to the initial
+  pre-[47m:eval[0m [state] (except for the results of the application)
+  because [47m[rewrite][0m did not change the external [state] and both
+  [wormhole] [state]s are copies of it.  A similar issue occurs with
+  the use of [trace] utilities: all effects of calling [47m[trace$][0m and
+  [47m[untrace$][0m are erased when you proceed from a break in the
+  break-rewrite loop.
 
   See the subtopics listed below to learn more about [47mbreak-rewrite[0m.
 
@@ -14991,6 +15081,9 @@ Subtopics
   [Brr-commands]
       [Break-Rewrite] Commands
 
+  [Brr-near-missp]
+      attachable function for determining ``near misses''
+
   [Brr@]
       To access context sensitive information within [47m[break-rewrite][0m
 
@@ -15001,7 +15094,7 @@ Subtopics
       Dynamically monitor rewrites and other prover activity
 
   [Monitor]
-      To monitor the attempted application of a rule name
+      To monitor attempted applications of certain rules by the rewriter
 
   [Monitor!]
       A quiet combination of [47m[monitor][0m and [47m[brr][0m
@@ -15280,32 +15373,23 @@ Subtopics
   system is operating in [47mbrr[0m mode and you break into raw Lisp (as by
   causing a console interrupt or happening upon a signaled Lisp
   error; see [breaks]), you can return to the ACL2 top-level, outside
-  any [47mbrr[0m environment, by executing [47m([0m[47m[abort!][0m[47m)[0m.  Otherwise, the
-  normal way to quit from such a break (for example [47m:q[0m in GCL, [47m:reset[0m
-  in Allegro CL, and [47mq[0m in CMU CL) will return to the innermost ACL2
-  read-eval-print loop, which may or may not be the top-level of your
-  ACL2 session!  In particular, if the break happens to occur while
-  ACL2 is within the [47mbrr[0m environment (in which it is preparing to
-  read [47m[brr-commands][0m), the abort will merely return to that [47mbrr[0m
-  environment.  Upon exiting that environment, normal theorem proving
-  is continued (and the [47mbrr[0m environment may be entered again in
-  response to subsequent monitored rule applications).  Before
-  returning to the [47mbrr[0m environment, ACL2 ``cleans up'' from the
-  interrupted [47mbrr[0m processing.  However, it is not possible (given the
-  current implementation) to clean up perfectly.  This may have two
-  side-effects.  First, the system may occasionally print the
-  self-explanatory ``Cryptic BRR Message 1'' (or 2), informing you
-  that the system has attempted to recover from an aborted [47mbrr[0m
-  environment.  Second, it is possible that subsequent [47mbrr[0m behavior
-  in that proof will be erroneous because the cleanup was done
-  incorrectly.  The moral is that you should not trust what you learn
-  from [47mbrr[0m if you have interrupted and aborted [47mbrr[0m processing during
-  the proof.  Such ``clean up'' may also occur when you call the
-  prover from within the [47mbrr[0m environment (for example using [47m[defthm][0m
-  or [47m[thm][0m, or even [47m[defun][0m or any other [event] that invoke the
-  prover), unless you invoke [47m:brr nil[0m before making that call.  These
-  issues do not affect the behavior or soundness of the theorem
-  prover.
+  any break-rewrite environment, by executing [47m([0m[47m[abort!][0m[47m)[0m.  Otherwise,
+  the normal way to quit from such a raw Lisp break (for example [47m:q[0m
+  in GCL, [47m:reset[0m in Allegro CL, and [47mq[0m in CMU CL) will return to the
+  innermost ACL2 read-eval-print loop, which may or may not be the
+  top-level of your ACL2 session!  In particular, if the interrupt or
+  error break happens to occur while ACL2 is within a break-rewrite
+  break (in which it is preparing to read [47m[brr-commands][0m), the abort
+  will merely return to break-rewrite break.  Upon exiting that
+  environment, normal theorem proving is continued (and the
+  break-rewrite breaks may be entered again in response to subsequent
+  monitored rule applications).  In addition, if while in a
+  break-rewrite break, say at depth [47md[0m, you invoke the theorem prover
+  recursively as by typing a [47m[thm][0m or [47m[defthm][0m or [47m[defun][0m command to
+  break-rewrite, recursive breaks may occur with depths starting at
+  [47md+1[0m.  This can get confusing because it may appear that the ongoing
+  (sub-)proofs are part of the original proof when in fact the system
+  is just carrying out your commands.
 
 
 Subtopics
@@ -15314,44 +15398,58 @@ Subtopics
       Determines partial suppression of output from [brr-commands]
 
   [Set-brr-evisc-tuple]
-      Set the [47m[brr-evisc-tuple][0m
-
-  [Show-brr-evisc-tuple]
-      Display the [47m[brr-evisc-tuple][0m")
+      Set the [47m[brr-evisc-tuple][0m")
  (BRR-COMMANDS
   (BREAK-REWRITE)
   "[Break-Rewrite] Commands
 
-  Many commands display terms that are abbreviated (``eviscerated'') by
-  default.  These have corresponding commands with a ``+'' suffix
-  that avoid such abbreviation, as shown below; also see
-  [brr-evisc-tuple].  For example, the notation ``[47m:ancestors[+][0m''
-  below indicates that the [47m:ancestors[0m command may abbreviate terms
-  but the [47m:ancestors+[0m command does not.
+  Below is a list of commonly used [break-rewrite] keyword commands.
+  These are only defined within the breaks caused by [47m[monitor][0ms on
+  runes in the process of being considered by the ACL2 rewriter.
+  These breaks interact with you from within a [47m[wormhole][0m and are
+  handled by [47m[ld][0m (the same function that manages ACL2's top-level
+  interactive read-eval-print loop).  So within certain limitations
+  imposed by wormholes, you can evaluate any command you would at the
+  top-level of ACL2 in addition to the special commands below.
+
+  Many break commands display terms, e.g., the target being rewritten,
+  and ``large'' terms are ``eviscerated'' (i.e., abbreviated) before
+  printing.  These commands have corresponding commands suffixed with
+  a ``+'' that avoid evisceration so that the terms in question are
+  printed in full.  See [brr-evisc-tuple].  The notation
+  ``[47m:ancestors[+][0m'' below indicates that the [47m:ancestors[0m command may
+  print abbreviate terms but the [47m:ancestors+[0m command does not.
 
     :a!                abort to ACL2 top-level
     :ancestors[+]      negations of backchaining hypotheses being pursued
     :btm[+]            bottom-most frame in :path
-    :eval              try rule and re-enter break afterwards
-    :eval!             :eval but no recursive breaks
-    :eval$ runes       :eval with runes monitored during recursion
+    :eval              try the rule (i.e., recursively try to relieve
+                         the hypotheses and other conditions, possibly
+                         producing other breaks) and return to this
+                         break afterwards so you can query results
+    :eval!             :eval but remove all monitors first (see below)
+    :eval$ runes       :eval but first add monitors for runes (see below)
     :failure-reason[+] reason rule failed (after :eval)
     :final-ttree[+]    ttree after :eval (see :DOC ttree)
     :frame[+] i        ith frame in :path
-    :go                exit break, printing result
-    :go!               :go but no recursive breaks
-    :go$ runes         :go with runes monitored during recursion
+    :go                :eval but don't return to this break, just
+                         print the result of the try
+    :go!               :go but first remove all monitors (see below)
+    :go$ runes         :go but first add monitors for runes (see below)
     :help              this message
     :hyp i             ith hypothesis of the rule
     :hyps              hypotheses of the rule
     :initial-ttree[+]  ttree before :eval (see :DOC ttree)
-    :lhs               left-hand side of rule's conclusion (or, in the case
+    :lhs[+]            left-hand side of rule's conclusion (or, in the case
                          of :rewrite-quoted-constant rules of form [2], the
-                         right-hand side!)
-    :ok                exit break
-    :ok!               :ok but no recursive breaks
-    :ok$ runes         :ok with runes monitored during recursion
-    :p!                pop one level (exits a top-level break-rewrite loop)
+                         right-hand side!); this is the pattern that the
+                         target must match for this :rewrite rule to fire
+    :max-term[+]       maximal term of a :linear lemma; this is the pattern
+                         that the target must match for this :linear rule to
+                         fire
+    :ok                like :go, but don't print the result of the try
+    :ok!               :ok but first remove all monitors (see below)
+    :ok$ runes         :ok but first add monitors for runes (see below)
     :path[+]           rewriter's path from top clause to :target
     :poly-list[+]      list of polynomials (after :eval) of a linear rule,
                          where the leading term of each is enclosed in an
@@ -15369,27 +15467,66 @@ Subtopics
     :unify-subst[+]    substitution making :lhs equal :target
     :wonp              indicates whether application succeeded (after :eval)
 
-  See the discussion of form [2] [47m:[0m[47m[rewrite-quoted-constant][0m rules for
-  an explanation of the swapped meanings of ``[47m:lhs[0m'' and ``[47m:rhs[0m.''
+  The form [47m([0m)[47m[brr@][0m[47m :cmd)[0m, when evaluated within a break, will return
+  the value that is only printed by certain of the keyword commands
+  above.  This is particularly useful when programming break
+  conditions.  See [47m[monitor][0m.
 
-  [Break-rewrite] is just a call of the standard ACL2 read-eval-print
-  loop, [47m[ld][0m, on a ``[wormhole]'' [state].  Thus, you may execute
-  most commands you might normally execute at the top-level of ACL2.
-  However, all [state] changes you cause from within [break-rewrite]
-  are lost when you exit or [47m:eval[0m the rule.  You cannot modify
-  [stobj]s from within the break.  See [break-rewrite] for more
-  details and see [ld] for general information about the standard
-  ACL2 read-eval-print loop.  Also see [brr@] for a utility that can
-  return a value for many of the keywords above, instead of merely
-  printing to the screen.
+  Since you're actually in a general read-eval-print loop when
+  interacting with [break-rewrite] you may type the usual ACL2
+  commands like [47m:[0m[47m[pbt][0m or [47m:[0m[47m[pe][0m or even [47m[defun][0m and [47m[defthm][0m.  You
+  cannot modify [stobj]s or files from within the break.  However,
+  all [state] changes you cause from within [break-rewrite] are lost
+  when you exit or [47m:eval[0m the rule.
 
   Note that if you are breaking on a [monitor]ed [linear] rule, several
   of the commands listed above do not apply: [47m:lhs[0m, [47m:rhs[0m,
-  [47m:initial-ttree[0m, and [47m:final-ttree[0m.  Moreover, [47m:rewritten-rhs[0m also
-  does not apply, but instead, [47m:poly-list[0m shows the result of
-  applying the linear lemma as a list of polynomials, implicitly
-  conjoined.  The leading term of each polynomial is enclosed in an
-  extra set of parentheses.")
+  [47m:initial-ttree[0m, and [47m:final-ttree[0m.  The pattern used to fire a
+  linear rule is found with the command [47m:max-term[0m.  In addition,
+  [47m:rewritten-rhs[0m also does not apply to linear rules, but instead,
+  [47m:poly-list[0m shows the result of applying the linear lemma as a list
+  of polynomials, implicitly conjoined.  The leading term of each
+  polynomial is enclosed in an extra set of parentheses.
+
+  See the discussion of form [2] [47m:[0m[47m[rewrite-quoted-constant][0m rules for
+  an explanation of the swapped meanings of ``[47m:lhs[0m'' and ``[47m:rhs[0m.''
+
+  The commands [47m:eval$[0m, [47m:go$[0m, and [47m:ok$[0m take an argument, called runes,
+  which may be a list of runes and/or runic designators (see [rune])
+  or a single rune or runic designator.  For each rune in runes,
+  these commands execute [47m:[0m[47m[monitor][0m rune [47mt[0m, and then execute [47m:eval[0m,
+  [47m:go[0m or [47m:ok[0m as appropriate.
+
+  This is useful if you want to monitor the use of a ``secondary'' rune
+  only during the attempt to apply a ``primary'' rune: install the
+  monitor on the secondary rune inside the break caused by the
+  primary rune.  In the case of [47m:eval$[0m, when the attempt to apply the
+  primary rune is finished you will be back in the interactive break
+  and can inspect the results.  You will notice that the secondary
+  rune is still on the list of [47m[monitored-runes][0m.  However, when you
+  exit that break [47mmonitored-runes[0m will be restored to its earlier
+  value.  In the case of [47mgo$[0m and [47mok$[0m, no interactive break occurs
+  after the primary rune has been applied.
+
+  Similar remarks apply to [47m:eval![0m, [47m:go![0m, and [47m:ok![0m except they first
+  [47m:[0m[47m[unmonitor][0m [47m:all[0m, before proceeding with the appropriate [47m:eval[0m,
+  [47m:go[0m, or [47m:ok[0m.  These commands are useful if you want no breaks to
+  occur while attempting to apply the rune that caused the current
+  break.
+
+  Recall (from the discussion of [47m[monitor][0ms) that break conditions
+  terms installed as part of break criteria do not just determine
+  whether a break occurs but can compute the initial break commands
+  fed to the interactive loop.  Thus, for example, you can install a
+  monitor that causes the rewriter to not only break when a certain
+  rune is used, but then automatically print information, proceed
+  from the break, inspect the result, and then either exit the break
+  or prompt for user input.  See the discussion in [47m[monitor][0m.
+
+  Note: If you use commands that change the monitored runes during a
+  break, e.g., [47m[monitor][0m, [47m[unmonitor][0m, or [47m:eval![0m, [47m:eval$[0m, etc., then
+  abort during the recursion, the list of monitored runes will not
+  necessarily be restored to its original top-level setting.")
  (BRR-EVISC-TUPLE
   (BRR EVISC-TUPLE)
   "Determines partial suppression of output from [brr-commands]
@@ -15398,12 +15535,12 @@ Subtopics
   eliding of subexpressions during printing.  Also see
   [break-rewrite] for background on the break-rewrite loop.
 
-  One of the settable evisc-tuples (see [set-evisc-tuple]) can control
-  output from [brr-commands]: the [47mbrr-evisc-tuple[0m.  Unlike most other
-  evisc-tuples, if you set the [47mbrr-evisc-tuple[0m inside the
-  break-rewrite loop at level 1 of interaction (i.e., at the top
-  level; see [break-rewrite]), then its effect will persist even
-  after you exit the break.
+    General Form:
+    (brr-evisc-tuple state)
+
+  The value of this function is used as the evisceration tuple by
+  [brr-commands].  The value can be changed with
+  [47m[set-brr-evisc-tuple][0m or the more general [47m[set-evisc-tuple][0m.
 
   A special value, [47m:default[0m, is legal for this evisc-tuple, and is its
   initial value.  In that case the actual evisc-tuple used during
@@ -15412,22 +15549,84 @@ Subtopics
   See [set-evisc-tuple], in particular, the discussion of the [47m:term[0m
   site for setting evisc-tuples.
 
-  You can see the effective value of the [47mbrr-evisc-tuple[0m by evaluating
-  the form, [47m(show-brr-evisc-tuple)[0m.  Note that this value is only
-  printed by such evaluation as a side-effect, not returned.
-  (Technical note: This is because the [47mbrr-evisc-tuple[0m is maintained
-  entirely within the break-rewrite [wormhole].  That implementation
-  enables the persistence of this evisc-tuple within and without the
-  break-rewrite loop.)
+  Think of [47mbrr-evisc-tuple[0m as a true global variable, not a locally
+  bound variable of break-rewrite.  In particular, if you set the
+  [47mbrr-evisc-tuple[0m inside a break-rewrite interactive break and
+  eventually exit that break --- either to enter a deeper break or
+  return to a shallower break or to the ACL2 top-level --- the
+  [47mbrr-evisc-tuple[0m will retain its chronologically most recent
+  setting.
+
+  The [47mbrr-evisc-tuple[0m is used when [break-rewrite] prints its banner
+  opening or closing a break on some monitored rune and when certain
+  [brr-commands] print their results.
+
+  When you're in a break-rewrite break, you're actually dealing with
+  the read-eval-print loop managed by [47m[ld][0m.  It prints its results
+  using the [47m[ld-evisc-tuple][0m, while [47m[brr-commands][0m use
+  [47mbrr-evisc-tuple[0m.  This can cause some confusion.
+
+  For example, suppose you have set the [47mbrr-evisc-tuple[0m to [47m(evisc-tuple
+  2 3 nil nil)[0m so break-rewrite banners and brr-commands only print
+  to depth 2 and length 3.  Suppose the target term is [47m(F (G (H 1)) 2
+  3 4 5 6 7)[0m.  Then the following interaction with break-rewrite
+  could occur:
+
+    3 ACL2 >:target
+    (F (G #) 2 ...)
+    3 ACL2 >(make-list 10)
+    (NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL)
+
+  You might ask ``Given that the [47mbrr-evisc-tuple[0m limits the print
+  length to [47m3[0m, which I see when I print [47m:target[0m, how come the
+  [47mmake-list[0m showed all 10 elements?'' The answer is that the
+  [47mbrr-command[0m [47m:target[0m actually printed the target with the
+  [47mbrr-evisc-tuple[0m and returned [47m(value :invisible)[0m which [47mld[0m's
+  read-eval-print loop doesn't print.  But the [47mmake-list[0m returned a
+  list of length ten and the read-eval-print loop printed it using
+  the [47m[ld-evisc-tuple][0m.
+
+  Another issue relating [47mbrr-evisc-tuple[0m and [47mld-evisc-tuple[0m is that
+  while [47mbrr-evisc-tuple[0m is a true global, retaining its
+  chronologically most recently set value at all depths of
+  break-rewrite, [47mld-evisc-tuple[0m is locally bound by break-rewrite
+  (actually, by the [47mld[0m in [47mwormhole[0m) and so sees its value restored as
+  break-rewrite ascends back toward the top-level of ACL2.
 
 
 Subtopics
 
   [Set-brr-evisc-tuple]
-      Set the [47m[brr-evisc-tuple][0m
+      Set the [47m[brr-evisc-tuple][0m")
+ (BRR-NEAR-MISSP
+  (BREAK-REWRITE)
+  "attachable function for determining ``near misses''
 
-  [Show-brr-evisc-tuple]
-      Display the [47m[brr-evisc-tuple][0m")
+  This is a system function that determine whether a failed match of a
+  monitored rule constitutes a near miss.
+
+  [31;1mNote:[0mOur intention is to make this function attachable (see
+  [defattach]).
+
+    General Form:
+    (brr-near-missp msgp lemma target rcnst criteria-alist)
+
+  where msgp is [47mt[0m or [47mnil[0m, [47mlemma[0m is the ACL2 record representing a
+  [47m[monitor][0med [47m:rewrite[0m rule or [47m:linear[0m rule, [47mtarget[0m is a term to
+  which the rewriter tried to apply the rule but failed to match the
+  pattern in the lemma, [47mrcnst[0m is the rewrite constant at the time of
+  the attempt, and [47mcriteria-alist[0m is a symbol-alist associated with
+  the rule in [47m[monitored-runes][0m.
+
+  The function determines whether the pattern of the lemma ``almost''
+  matches the target, i.e., whether a ``near miss'' has occurred.
+  The function is only called if the exact match failed.  The
+  built-in version of this function checks the criteria described in
+  [47m[monitor][0m.  If a near miss has occurred, the result is either [47mt[0m or
+  a message (see [47m[msg][0m) object describing the near miss.  If a near
+  miss did not occur, the result is [47mnil[0m.  See the source code for
+  [47mbuilt-in-brr-near-missp[0m for details of how the built-in version of
+  this function operates.")
  (BRR@
   (BREAK-REWRITE)
   "To access context sensitive information within [47m[break-rewrite][0m
@@ -18669,6 +18868,8 @@ Subtopics
   for [47m(coerce '(#\\a #\\b #\\c) 'string)[0m, where even more pedantically,
   [47m'(#\\a #\\b #\\c)[0m is an abbreviation for [47m(cons '#\\a (cons '#\\b (cons
   '#\\c 'nil)))[0m.")
+ (COHERENCE (POINTERS)
+            "See [wormhole-status].")
  (COLLECT$ (POINTERS) "See [loop$].")
  (COLLECT$+ (POINTERS) "See [loop$].")
  (COMMA (POINTERS) "See [backquote].")
@@ -22663,7 +22864,7 @@ Subtopics
       To get statistics on which [rune]s are being tried
 
   [Break-rewrite]
-      The read-eval-print loop entered to [monitor] rules
+      A version of the ACL2 rewriter with interactive breaks
 
   [Cw-gstack]
       Debug a rewriting loop or stack overflow
@@ -33195,6 +33396,8 @@ Subtopics
   equations --- axioms that in most cases are built into our code and
   hence do not have any explicit representation among the rules and
   formulas in the system.")
+ (EPHEMERAL-WHS (POINTERS)
+                "See [wormhole-status].")
  (EQ
   (EQUAL EQUALITY-VARIANTS ACL2-BUILT-INS)
   "Equality of symbols
@@ -36131,6 +36334,17 @@ Subtopics
  (EXPLAIN-GIANT-LAMBDA-OBJECT
   (APPLY$)
   "print data related to a large lambda object
+
+  Translate will signal an error if it encounters an ``excessively
+  large'' [47m[lambda][0m object.  These objects are so large they are
+  difficult to comprehend when printed.  So the error message directs
+  you to this documentation topic.  To see the [47mlambda[0m object that
+  caused the error, execute
+
+    (explain-giant-lambda-object)
+
+  The rest of this documentation topic explains why we detect these
+  objects and what you can do about them.
 
   When a [47m[lambda][0m object is translated we [47m[hons-copy][0m it so that it is
   uniquely represented.  This speeds up the performance of the
@@ -45244,6 +45458,39 @@ Conclusion
   see [get-cpu-time] and [get-real-time].")
  (GET-OUTPUT-STREAM-STRING$ (POINTERS)
                             "See [io].")
+ (GET-PERSISTENT-WHS
+  (WORMHOLE)
+  "Make a wormhole's status visible outside the wormhole
+
+    General Form:
+    (get-persistent-whs name state)
+
+  [47mName[0m should be the name of a wormhole (see [wormhole]).  This
+  function returns an [error-triple] of the form [47m(mv nil s state)[0m,
+  where [47ms[0m is the persistent-whs of the named wormhole (i.e., the
+  status of of wormhole stored outside of the ACL2 state).  The
+  status is obtained by reading the oracle in the ACL2 [47m[state][0m with
+  [47m[read-ACL2-oracle][0m.
+
+  Recall that the status of a wormhole is some ACL2 object largely
+  determined by the author of the wormhole.  It is always treated as
+  a pair whose [47mcar[0m is the ``entry code'' ([47m:enter[0m or [47m:skip[0m) or, more
+  precisely, is either [47m:skip[0m or not [47m:skip[0m, the latter case being
+  treated like [47m:enter[0m.  But the [47mcdr[0m of the status can be whatever the
+  author of the wormhole chooses to hold the data of the wormhole.
+  When a wormhole is entered its persistent status, aka its
+  persistent-whs, is used to configure the state of the
+  read-eval-print loop the user sees inside the wormhole.  In
+  particular, upon entry the persistent-whs is moved to the value of
+  the state global variable [47m'wormhole-status[0m and is thus accessible
+  via [47m(f-get-global 'wormhole-status state)[0m.  We call this copy of
+  the status the ephemeral-whs because when the wormhole is exited
+  the ephemeral-whs is moved to the [47mpersistent-whs[0m and the state
+  global [47m'wormhole-status[0m is restored to whatever value it had when
+  the wormhole was entered.
+
+  See [47m[wormhole-status][0m for a discussion of these two senses of the
+  status of a wormhole.  See also [wormhole-programming-tips].")
  (GET-REAL-TIME
   (PROGRAMMING-WITH-STATE ACL2-BUILT-INS READ-RUN-TIME)
   "Read elapsed real time
@@ -45269,18 +45516,20 @@ Conclusion
   "Make a wormhole's status visible outside the wormhole
 
     General Form:
-     (get-wormhole-status name state)
+    (get-wormhole-status name state)
 
-  [47mName[0m should be the name of a wormhole (see [wormhole]).  This
-  function returns an [error-triple] of the form [47m(mv nil s state)[0m,
-  where [47ms[0m is the status of the named wormhole.  The status is
-  obtained by reading the oracle in the ACL2 [47m[state][0m.
+  Warning: This function is deprecated and will likely be eliminated
+  after ACL2 Version 8.6.
 
-  This function makes the status of a wormhole visible outside the
-  wormhole.  But since this function takes [47m[state][0m and modifies it,
-  the function may only be used in contexts in which you may change
-  [47m[state][0m.  Otherwise, the wormhole status may stay in the wormhole.
-  See [47m[wormhole-eval][0m and [47m[wormhole][0m.")
+  This function has been renamed to be [47m[get-persistent-whs][0m, i.e.,
+  ``persistent wormhole status''.  While the old name is still
+  defined, we recommend that you use the new name because it
+  clarifies which status object is being fetched: the persistent one
+  (i.e., the one that must be logically read from the ACL2 oracle and
+  which survives the exit from a wormhole to the next entrance to
+  that wormhole) and not the ephemeral one sometimes found in [47m(@
+  wormhole-status)[0m.  If these concepts are new to you we recommend
+  you read about [47m[wormhole-status][0m.")
  (GETENV$
   (PROGRAMMING-WITH-STATE ACL2-BUILT-INS)
   "Read an environment variable
@@ -46157,8 +46406,8 @@ Subtopics
   corresponding call [47m(guard-theorem x simplify guard-debug (w state)
   state)[0m returns a translated term.")
  (GUARANTEES-OF-THE-TOP-LEVEL-LOOP
-  (LD)
-  "ACL2 interactive top-level read-eval-print loop
+  (SOUNDNESS LD)
+  "Guarantees provided by top-level evaluation
 
   We often refer to the ``top-level loop,'' or just ``the loop'' when
   the context is understood.  The loop is the interactive
@@ -46173,6 +46422,17 @@ Subtopics
 
   But here we are concerned with what it means, logically, when a term
   [3mtm[0m evaluates without error to a value [3mv[0m in the loop.
+
+  We do not formalize macroexpansion here, but rather, we deal with
+  so-called ``translated'' [term]s, where macros and constants have
+  been expanded away.  We also do not discuss here how ACL2 evaluates
+  expressions; see [evaluation] for such discussion.  (Those
+  interested in implementation issues may also read the long comment
+  in ACL2 source file [47minterface-raw.lisp[0m that is labeled ``Essay on
+  Evaluation in ACL2''.)
+
+  See [soundness] for a more general discussion of soundness-related
+  issues (including, for example, interrupts and trust tags).
 
 
 A Strawman Proposal on the Meaning of Top-Level Evaluation
@@ -46468,13 +46728,18 @@ The Prover's Theory
   (see also [47m[mutual-recursion][0m).  [47m[Defstobj][0m and [47m[defabsstobj][0m add
   recognizers, constructors, and accessors for single-threaded
   objects (aka ``[stobj]s'') but logically just use [47mdefun[0m to add new
-  functions and then syntactically restrict their use.  Finally, we
-  provide a means of adding an arbitrary formula as an axiom,
-  [47m[defaxiom][0m, but [3mstrongly discourage its use[0m.  There are many other
-  events that add axioms, e.g., [47m[defun-nx][0m and [47m[defun-sk][0m but these
-  are defined as macros that expand into the primitives just listed.
-  In addition, there is a facility for including files of previously
-  admitted events, [47m[include-book][0m.
+  functions and then syntactically restrict their use in code.
+  Finally, we provide a means of adding an arbitrary formula as an
+  axiom, [47m[defaxiom][0m, but [3mstrongly discourage its use[0m.  There are many
+  other events that add axioms, e.g., [47m[defun-nx][0m and [47m[defun-sk][0m but
+  these are defined as macros that expand into the primitives just
+  listed.  In addition, there is a facility for including files of
+  previously admitted events, [47m[include-book][0m.
+
+  Note that an event of the form [47m(skip-proofs EV)[0m does not introduce
+  any axioms other that those added by the event, [47mEV[0m.  However, this
+  [47m[skip-proofs][0m event does assume that all proof obligations
+  introduced by [47mEV[0m are indeed provable in the prover's theory.
 
   Given a user's session, we call the above described theory the
   [3mprover's theory[0m.
@@ -46528,12 +46793,16 @@ The Evaluation Theory
     *
         For every [47m(defattach f g)[0m event in the prover's theory the axiom
         (i.e., constraints) on [47mf[0m is replaced by the axiom [47m(equal (f
-        ...) (g ...))[0m in the evaluation theory.
+        ...) (g ...))[0m in the evaluation theory.  (Of course this
+        replacement also takes place when using the more general form
+        for [47m[defattach][0m, [47m(defattach ... (f g ...) ...)[0m.)
 
   Given the restrictions enforced by [47mdefun[0m, [47mdefstobj[0m, [47mdefwarrant[0m,
   [47mapply$[0m, [47mencapsulate[0m, and [47mdefattach[0m, the evaluation theory is
   consistent if the prover's theory is consistent and free of
-  [47mdefaxiom[0m events.
+  [47mdefaxiom[0m events.  (Those interested in reading a proof of this
+  claim are welcome to read the ``Essay on Defattach'' in ACL2 source
+  file [47mother-events.lisp[0m.)
 
   Furthermore, the top-level evaluation
 
@@ -46553,8 +46822,8 @@ The Evaluation Theory
   The ACL2 prover cannot generally prove these theorems, since it
   operates in the prover's theory.  However, as noted, there are
   often ways to encode the conjectures into ACL2 formulas that are
-  provable though the ACL2 system does not provide tools for doing
-  so.
+  provable --- in particular, by adding suitable warrant hypotheses
+  --- though the ACL2 system does not provide tools for doing so.
 
 
 Some Examples of Top-Level Evaluations
@@ -46649,7 +46918,7 @@ Some Examples of Top-Level Evaluations
   prover's theory) succeeds.  While all warrants are assumed true in
   the evaluation theory, they must be made explicit as hypotheses for
   proofs in the prover's theory.  This is the mechanism whereby ACL2
-  can avoid the ``local problem'' illustrated [31;1mLesson 12[0m of
+  can avoid the ``local problem'' illustrated in [31;1mLesson 12[0m of
   [introduction-to-apply$] and discussed more thoroughly in
   {``Limited Second-Order Functionality in a First-Order Setting'' |
   http://www.cs.utexas.edu/users/kaufmann/papers/apply/index.html} by
@@ -59973,7 +60242,7 @@ Subtopics
       The default [prompt] printed by [47m[ld][0m
 
   [Guarantees-of-the-top-level-loop]
-      ACL2 interactive top-level read-eval-print loop
+      Guarantees provided by top-level evaluation
 
   [I-am-here]
       A convenient marker for use with [47m[rebuild][0m or [47m[ld][0m
@@ -74710,103 +74979,277 @@ Subtopics
   {IMAGE} (see [A_Typical_State])")
  (MONITOR
   (BREAK-REWRITE)
-  "To monitor the attempted application of a rule name
+  "To monitor attempted applications of certain rules by the rewriter
+
+  This function stores information about which runes should be
+  monitored during rewriting and what criteria are used to invoke an
+  interactive break when those runes are tried by the rewriter during
+  a subsequent proof attempt.
+
+
+Outline
+
+    * Protocol for Using Monitors
+    * Example and General Forms
+    * Background on Rewriting
+    * Criteria for Breaks
+    * Example Break Conditions
+    * What If No Break Occurs?
+
+
+Protocol for Using Monitors
+
+  When a proof fails and you expected it to succeed by applying rules
+  you've proved, it can be helpful to see what happens when (if) the
+  rewriter attempts to use your rules.  The [break-rewrite] utility
+  allows you to monitor each attempt by the rewriter to use specific
+  rules ([rune]s).  The basic protocol is that you turn on the
+  break-rewrite utility with [47m[brr][0m and then you use this facility,
+  [47mmonitor[0m, to specify the rules you want to monitor and the criteria
+  for entering an interactive break.  (The variant [47m[monitor!][0m is like
+  [47mmonitor[0m but also makes sure the break rewrite utility is turned
+  on.)  Then you attempt the failed proof again.  When a monitored
+  rule is tried and the criteria for that rule are satisfied, the
+  rewriter triggers an interactive break allowing you to query the
+  environment and watch what happens.  The break is a read-eval-print
+  loop (in fact it is managed by [47mld[0m, the same function that provides
+  ACL2's top-level interactive loop).  However, it is inside a
+  [47m[wormhole][0m, allowing you to see what happening in rewrite.  But any
+  changes you make while in this break disappear when the break exits
+  and the wormhole evaporates.  See [brr-commands] for a list of the
+  commands that specifically give you access to parts of the
+  rewriter's state.  Such breaks do not allow you to change the
+  course of the rewriter or otherwise guide the proof attempt!
+  Breaks [31;1mdo[0m allow you to abort a proof attempt, which you typically
+  do when you've understood why your rule failed to apply.  If you're
+  seeking an interactive proof checker see [47m[proof-builder][0m.  To learn
+  about the interactive breaks triggered when monitored runes are
+  tried, see [break-rewrite].
+
+  The current topic deals with how to install a monitor on a rule.
+
+
+Example and General Forms
 
     Examples:
     (monitor '(:rewrite assoc-of-app) 't)
-    :monitor (:rewrite assoc-of-app) t
     (monitor '(:r assoc-of-app) t)
-    :monitor (:r assoc-of-app) t
-    :monitor assoc-of-app t
-    :monitor (:definition app) (equal (brr@ :target) '(app c d))
-    :monitor (:linear rule3) t
+    (monitor 'assoc-of-app t)
+    (monitor '(rewrite assoc-of-app) '(:condition t :depth 2))
 
-  In the examples above, the first four forms are equivalent; see
-  [keyword-commands] and see [rune].  Those are equivalent to the
-  fifth form if the event [47massoc-of-app[0m corresponds to a [rewrite]
-  rule, or more precisely, to a single [rune], [47m(:rewrite
-  assoc-of-app)[0m.
+    Keyword Command Examples:
+    :monitor assoc-of-app t
+    :monitor lemma42 (:condition (equal (brr@ :target) '(F A (G A (H B))))
+                      :depth 2
+                      :abstraction (F x (G x y))
+                      :lambda t))
 
     General Forms:
-    (monitor x condition)
-    :monitor y z ; same as (monitor 'y 'z)
-    (monitor x condition t) ; same as above, but avoiding output
+    (monitor x criteria)
+    (monitor x criteria t) ; a quiet version
+    (monitor! x criteria)  ; like quiet monitor but turns on brr first
 
-  where we focus below on the first form, in which the arguments are
-  evaluated.  The second form quotes its arguments; see
-  [keyword-commands].  The third form is a quiet version of the first
-  that avoids the need to invoke [47m[brr][0m explicitly, as discussed
-  below.
+  where (the value of) [47mx[0m is a [rune] or more generally a runic
+  designator (see [theories]) designating one or more runes of
+  classes [47m:[0m[47m[rewrite][0m, [47m:[0m[47m[definition][0m, [47m:[0m[47m[rewrite-quoted-constant][0m, or
+  [47m:[0m[47m[linear][0m and (the value of) [47mcriteria[0m is a ``keyword value list''
+  --- a list of alternating keywords and values.  If no [47m:condition[0m
+  key is supplied, [47m:condition t[0m is used.  If [47mcriteria[0m is some term,
+  [47my[0m, it is treated as the keyword value list [47m(:condition y)[0m.  The
+  following keywords and values are supported but the details are
+  discussed below.
 
-  Above, [47mx[0m (or more precisely, the result of evaluating [47mx[0m) is a runic
-  designator (see [theories]) other than a theory name (see
-  [theories]) and (the value of) [47mcondition[0m is a term, called the
-  ``break condition.'' If [47mx[0m is not a symbol then it must designate a
-  [rune] corresponding to a rule of class [47m:[0m[47m[rewrite][0m, [47m:[0m[47m[definition][0m,
-  or [47m:[0m[47m[linear][0m.  If [47mx[0m is a symbol then it represents all such runes
-  that it designates, and there must be at least one such.  (Thus, [47mx[0m
-  cannot name an event that generates only rules of classes other
-  than those three.)
+    * [47m:depth[0m --- value must be a natural number
+    * [47m:abstraction[0m --- value must be a term and it is most often an
+      abstraction of the pattern that triggers [47mx[0m obtained by
+      replacing some subterms of that pattern by new variables
+    * [47m:lambda[0m --- value must be [47mt[0m or [47mnil[0m
+    * [47m:condition[0m --- value must be a term, called the ``break condition''
+      which contains at most one free variable and that variable must
+      be [47m[state][0m.
 
-  [47mMonitor[0m does not affect proof attempts until the [break-rewrite]
-  utility is turned on with [47m[brr][0m (for example, using [47m:brr t[0m) or in
-  the scope of [with-brr-data].  For a shortcut that turns on
-  break-rewrite automatically while avoiding output, see [monitor!].
+  The keys [47m:depth[0m, [47m:abstraction[0m, and [47m:lambda[0m are only relevant when the
+  ``pattern'' that may trigger the rule named by [47mx[0m [31;1mdoes not match[0m the
+  target.  They specify criteria under which a failed match is to be
+  considered a ``near miss.'' Details are given below.  However,
+  other keywords are allowed with no constraints on their values.
+  The purpose of this allowance is so that the user who wants to
+  attach his or her own function to ACL2's [47m[brr-near-missp][0m predicate
+  can pass information to that function.
 
-  When a [rune] is [monitor]ed any attempt to apply it may result in an
-  interactive break in an ACL2 ``[wormhole] [state].'' There you will
-  get a chance to see how the application proceeds.  Whether an
-  interactive break occurs depends on the value of the break
-  condition expression associated with the [monitor]ed [rune].  See
-  [break-rewrite] for a description of the interactive loop entered,
-  and in particular, for discussion of what happens if you monitor or
-  unmonitor a rune while inside a break (in short: the effect
-  disappears when existing the break, unless it is a top-level
-  break).  Also see [set-brr-evisc-tuple] for how to see output in
-  full.
+  The [47m:condition[0m key is only relevant when the pattern of the monitored
+  rune [31;1mmatches[0m the target to which the rewriter tried to apply it.
 
-  NOTE: Some [47m:rewrite[0m rules are considered ``simple abbreviations'';
-  see [simple].  These can be be monitored, but only at certain times
-  during the proof.  Monitoring is carried out by code inside the
-  rewriter but abbreviation rules may be applied by a special purpose
-  simplifier inside the so-called [3mpreprocess[0m phase of a proof.  If
-  you desire to monitor an abbreviation rule, a warning will be
-  printed suggesting that you may want to supply the hint [47m:DO-NOT
-  '(PREPROCESS)[0m; see [hints].  Without such a hint, an abbreviation
-  rule can be applied during the preprocess phase of a proof, and no
-  such application will cause an interactive break.
+  When successful, [47mmonitor[0m arranges for the rewriter to trigger an
+  interactive break when any rule named by [47mx[0m and of the above classes
+  is tried, provided the [break-rewrite] utility has been turned on
+  --- using [47m:[0m[47m[brr][0m[47m t[0m, [47m:[0m[47m[monitor!][0m, or [with-brr-data] --- and the
+  circumstances of the attempt to apply the rule satisfy the [47mcriteria[0m
+  as checked by the function [47m[brr-near-missp][0m.  [47mMonitor[0m prints to the
+  comment window a list of all the currently-monitored runes and
+  their criteria and returns the error-triple [47m(value :invisible)[0m.
+  The so-called ``quiet'' versions above do no printing.
 
-  To remove a [rune] from the list of [monitor]ed [rune]s, use
-  [47munmonitor[0m.  To see which [rune]s are [monitor]ed and what their
-  break conditions are, evaluate [47m(monitored-runes)[0m.
+  Some [47m:rewrite[0m rules are considered ``simple abbreviations''; see
+  [simple].  These can be be monitored, but are only tried at certain
+  times during the proof.  Monitoring is carried out by code inside
+  the rewriter but abbreviation rules may be applied by a special
+  purpose simplifier inside the so-called [3mpreprocess[0m phase of a
+  proof.  If you desire to monitor an abbreviation rule, a warning
+  will be printed suggesting that you may want to supply the hint
+  [47m:DO-NOT '(PREPROCESS)[0m; see [hints].  Without such a hint, an
+  abbreviation rule can be applied during the preprocess phase of a
+  proof, and no such application will cause an interactive break.
+
+  To remove a rune from the list of monitored runes, use [47m[unmonitor][0m.
+  To see which runes are monitored and what their break criteria are,
+  evaluate [47m([0m[47m[monitored-runes][0m[47m)[0m.
 
   [47mMonitor[0m, [47munmonitor[0m and [47mmonitored-runes[0m are macros that expand into
   expressions involving [47mstate[0m.  While these macros appear to return
-  the list of [monitor]ed [rune]s this is an illusion.  They all
-  print [monitor]ed [rune] information to the comment window and then
-  return [error-triple]s instructing [47mld[0m to print nothing.  It is
-  impossible to return the list of [monitor]ed [rune]s because it
-  exists only in the [wormhole] [state] with which you interact when
-  a break occurs.  This allows you to change the [monitor]ed [rune]s
-  and their conditions during the course of a proof attempt without
-  changing the [state] in which the proof is being constructed.
+  the list of [monitor]ed runes this is an illusion.  They all print
+  [monitor]ed rune information to the comment window and then return
+  [error-triple]s instructing [47mld[0m to print nothing.  It is impossible
+  to return the list of [monitor]ed runes because it exists only in
+  the [wormhole] [state] with which you interact when a break occurs.
+  This allows you to change the [monitor]ed runes and their
+  conditions during the course of a proof attempt without changing
+  the [state] in which the proof is being constructed.
 
-  Unconditional break points are obtained by using the break condition
-  [47mt[0m.  We now discuss conditional break points.  The break condition,
-  [47mcondition[0m, must be a term that contains no free variables other
-  than [47mstate[0m and that returns a single non-[47mstate[0m result.  In fact,
-  the result should be [47mnil[0m, [47mt[0m, or a true list of commands to be fed
-  to the resulting interactive break.  Whenever the system attempts
-  to use the associated rule, the break condition (that is,
-  [47mcondition[0m) is evaluated in the [wormhole] interaction [state].  A
-  break occurs only if the result of evaluating [47mcondition[0m is non-[47mnil[0m.
-  If the result is a true list, that list is appended to the front of
-  [47mstandard-oi[0m and hence is taken as the initial user commands issued
-  to the interactive break.
+  Note: This list of monitored runes is maintained as a locally bound
+  variable by break-rewrite.  For example, suppose that at the
+  top-level of ACL2 the list of monitored runes and their criteria is
+  [47mx[0m.  Suppose you then start a proof attempt, a break-rewrite break
+  occurs and in that break you use [47mmonitor[0m or [47munmonitor[0m to change the
+  list of monitored runes to [47my[0m.  Now suppose that you release or
+  abort from the break and ACL2 returns to the top-level.  You might
+  think the list of monitored runes is [47my[0m but in fact it is [47mx[0m.  The
+  list is locally bound to value in the caller's environment each
+  time break-rewrite is entered and thus restored to the value in the
+  caller's environment when break-rewrite returns.
+
+
+Background on Rewriting
+
+  Before we explain the criteria for triggering breaks we establish
+  some basic terminology about the rewriter.  We start with how it
+  applies [47m:rewrite[0m rules.  The rewriter walks through a term
+  (typically left-to-right, innermost first) maintaining a list of
+  known assumptions represented as a [type-alist].  It rewrites each
+  subterm under those assumptions.  The subterm the rewriter is
+  currently considering is called the ``target''.  Each [47m:rewrite[0m rule
+  is derived from some theorem essentially of the form [47m(implies (and
+  hyp1 ... hypn) (equiv lhs rhs))[0m, where the [47mhypi[0m, [47mlhs[0m, and [47mrhs[0m are
+  terms and [47mequiv[0m is known [equivalence] relation.  The [47mlhs[0m is always
+  a function application and the rule derived from the theorem is
+  stored in the ACL2 logical [world] under the topmost function
+  symbol of the [47mlhs[0m.
+
+  Each time the rewriter steps to a new target it retrieves all the
+  rules stored under the topmost function symbol of the target and
+  tries each rule in turn (provided the rule is enabled and its [47mequiv[0m
+  is a [congruence] relation in the current context).  To try a
+  [47m:rewrite[0m rule the rewriter first attempts to match the [47mlhs[0m to the
+  target.  By ``match'' we mean the rewriter tries to find a
+  substitution for the variables of [47mlhs[0m (consistent with the
+  [47m[restrict][0m hints governing the target) such that applying the
+  substitution to the [47mlhs[0m produces the target.  If the [47mlhs[0m matches
+  the target, the rewriter then attempts to establish the [47mhypi[0m by
+  rewriting each of them in turn, instantiating each [47mhypi[0m with the
+  substitution.  If the instance of each [47mhypi[0m rewrites to true, we
+  know --- by the theorem justifying this rule --- that that the
+  instance of [47mlhs[0m is equivalent to the corresponding instance of [47mrhs[0m,
+  but the instance of [47mlhs[0m is the target.  So the rewriter is
+  logically justified in replacing the occurrence of the target by
+  the instance of [47mrhs[0m and recursively rewrites that.  Heuristic
+  considerations may prevent such a replacement, e.g., the
+  instantiated [47mrhs[0m is considered ``too complicated,'' a loop might be
+  detected, etc.
+
+  We can generalize and summarize this description just by saying that
+  each rule has a pattern, some hypotheses, and a result.  We say the
+  rule is ``about'' the topmost function symbol in the pattern.  If
+  the pattern matches the target, the hypotheses are true, and
+  heuristic considerations allow, we use the result.  [47m:Definition[0m and
+  [47m:rewrite-quoted-constant[0m rules fit easily within this scheme.  But
+  [47m:linear[0m rules are a little different.  The conclusion of a [47m:linear[0m
+  rule an arithmetic inequality relating subterms, the pattern is one
+  of those subterms, and the result is the entire inequality
+  conclusion.  If the hypotheses are all rewritten to true, the
+  result is instantiated and added to the context, telling the
+  rewriter possibly useful information about the target.
+
+
+Criteria for Breaks
+
+  If matching fails it is sometimes useful to see why.  How did the
+  pattern and the target differ?  But since a rule about a given
+  function symbol is tried every time the target has that same
+  topmost function symbol, most rules fail to match much more often
+  than they match.  Triggering a break on every failed match is
+  counterproductive.  Instead, we introduce the notion of a ``near
+  miss'' and allow you to set criteria that trigger breaks when a
+  failed match is a near miss. There are three built-in near miss
+  criteria, [47m:depth[0m, [47m:abstraction[0m, and [47m:lambda[0m.  We expect any given
+  monitored command will probably specify only one of these three
+  criteria, depending on the pattern in the rule and your judgement
+  of what might be going wrong, but there is nothing preventing you
+  from specifying multiple criteria.  If any one of them is satisfied
+  by a failed match a break will occur.
+
+    * [47m:depth n[0m causes a break if the pattern of the rune fails to match the
+      target but the pattern does match down to depth [47mn[0m.  For
+      example, the pattern [47m(F X (G X (H Y (I Z))))[0m fails to match the
+      target [47m(F A (G B C))[0m, but it does match to depth 2.  To check
+      this criterion the break utility abstracts the pattern by
+      copying it and replacing every subterm at [47mn[0m by a new variable
+      symbol.  The depth [47mn[0m abstractions of [47m(F X (G (H Y (I Z))))[0m for
+      [47mn[0m=1, 2, and 3 are shown below.
+        * [47mn[0m = 1: [47m(F GENSYM0 GENSYM1)[0m
+        * [47mn[0m = 2: [47m(F X (G GENSYM0 GENSYM1))[0m
+        * [47mn[0m = 3: [47m(F X (G X (H GENSYM0 GENSYM1)))[0m
+
+    * [47m:abstraction apat[0m causes a break if the pattern of the rune fails to
+      match the target but the translation of [47mapat[0m does match the
+      target.  This is useful when you want more control over the
+      abstraction of the pattern than [47m:depth[0m gives you.  For example,
+      the depth 2 abstraction of [47m(F X (G X (H Y (I Z))))[0m is [47m(F X (G
+      GENSYM0 GENSYM1))[0m but you may be interested only in breaks when
+      [47m(F X (G X GENSYM1))[0m matches the target, i.e., where the first
+      arguments of [47mF[0m and [47mG[0m are the same.  If so you could specify the
+      criterion [47m:abstraction (F X (G X Y))[0m or, equivalently,
+      [47m:abstraction (F X (G X GENSYM1))[0m.
+
+    * [47m:lambda t[0m causes a break if the pattern of the rune fails to match
+      the target but does match everywhere except on quoted [47m[lambda][0m
+      constants.  This is checked by replacing each quoted [47mlambda[0m
+      object in the pattern by a new variable.  This is particularly
+      useful when your rule contains a [47mlambda$[0m expression, which
+      translates to a quoted [47mlambda[0m constant, but the occurrence of
+      that constant in the target has been rewritten (see
+      [rewrite-lambda-object]).  See also the discussion of ``Normal
+      Forms in Loop$ Bodies'' in
+      [stating-and-proving-lemmas-about-loop$s].
+
+  On the other hand, suppose the pattern of the rune matches the
+  target.  Then the break condition term, i.e., the [47m:condition[0m
+  criterion, is evaluated.  The only variable allowed in the break
+  condition term is [47mstate[0m, which in the context of the break-rewrite
+  utility is a [47m[wormhole][0m state.  Suppose the break condition term
+  evaluates to [47mans[0m.  If [47mans[0m is [47mnil[0m, no break occurs.  If [47mans[0m is [47mt[0m, an
+  interactive break occurs and the user is prompted for commands.
+  Otherwise, [47mans[0m is expected to be a true list of commands to be fed
+  to the break, i.e., to be appended to [47mstandard-oi[0m.  Those commands
+  are then executed just as though the user typed them.  If they exit
+  the break, the user is not prompted for further commands.  If they
+  don't exit the break, the user is prompted for more commands.
+
+
+Example Break Conditions
 
   In order to develop effective break conditions it must be possible to
   access context sensitive information, i.e., information about the
-  context in which the [monitor]ed [rune] is being tried.  The [47m[brr@][0m
+  context in which the [monitor]ed rune is being tried.  The [47m[brr@][0m
   macro may be used in break conditions to access such information as
   the term being rewritten and the current governing assumptions.
   This information is not stored in the proof [state] but is
@@ -74820,22 +75263,21 @@ Subtopics
   For example,
 
     ACL2 !>:monitor (:rewrite assoc-of-app)
-                    (equal (brr@ :target) '(app a (app b c)))
+                    (equal (brr@ :target) '(app (app a b) c))
 
   will monitor [47m(:rewrite assoc-of-app)[0m but will cause an interactive
-  break only when the target term, the term being rewritten, is [47m(app
-  a (app b c))[0m.
+  break only when the target term is literally [47m(APP (APP A B) C)[0m.
 
   Because break conditions are evaluated in the interaction
-  environment, the user developing a break condition for a given
-  [rune] can test candidate break conditions before installing them.
-  For example, suppose an unconditional break has been installed on a
-  [rune], that an interactive break has occurred and that the user
-  has determined both that this particular application is
-  uninteresting and that many more such applications will likely
-  occur.  An appropriate response would be to develop an expression
-  that recognizes such applications and returns [47mnil[0m.  Of course, the
-  hard task is figuring out what makes the current application
+  environment, the user developing a break condition for a given rune
+  can test candidate break conditions before installing them.  For
+  example, suppose an unconditional break has been installed on a
+  rune, that an interactive break has occurred and that the user has
+  determined both that this particular application is uninteresting
+  and that many more such applications will likely occur.  An
+  appropriate response would be to develop an expression that
+  recognizes such applications and returns [47mnil[0m.  Of course, the hard
+  task is figuring out what makes the current application
   uninteresting.  But once a candidate expression is developed, the
   user can evaluate it in the current context simply to confirm that
   it returns [47mnil[0m.
@@ -74845,17 +75287,16 @@ Subtopics
 
     ACL2 !>:monitor (:rewrite assoc-of-app) '(:go)
 
-  will cause [47m(:rewrite assoc-of-app)[0m to be [monitor]ed and will make
-  the break condition be [47m'(:go)[0m.  This break condition always
-  evaluates the non-[47mnil[0m true list [47m(:go)[0m.  Thus, an interactive break
-  will occur every time [47m(:rewrite assoc-of-app)[0m is tried.  The break
-  is fed the command [47m:go[0m.  Now the command [47m:go[0m causes [47mbreak-rewrite[0m
-  to (a) evaluate the attempt to apply the lemma, (b) print the
-  result of that attempt, and (c) exit from the interactive break and
-  let the proof attempt continue.  Thus, in effect, the above
-  [47m:monitor[0m merely ``traces'' the attempted applications of the [rune]
-  but never causes an interactive break requiring input from the
-  user.
+  will cause [47m(:rewrite assoc-of-app)[0m to be monitored and will make the
+  break condition be [47m'(:go)[0m.  This break condition always evaluates
+  to the non-[47mnil[0m true list [47m(:go)[0m.  Thus, an interactive break will
+  occur every time [47m(:rewrite assoc-of-app)[0m is tried.  The break is
+  fed the command [47m:go[0m.  Now the command [47m:go[0m causes [47mbreak-rewrite[0m to
+  (a) evaluate the attempt to apply the lemma, (b) print the result
+  of that attempt, and (c) exit from the interactive break and let
+  the proof attempt continue.  Thus, in effect, the above [47m:monitor[0m
+  merely ``traces'' the attempted applications of the rune but never
+  causes an interactive break requiring input from the user.
 
   It is possible to use this feature to cause a conditional break where
   the effective break condition is tested [31;1mafter[0m the lemma has been
@@ -74863,7 +75304,7 @@ Subtopics
 
     ACL2 !>:monitor (:rewrite lemma12)
                     '(:unify-subst
-                      :eval$ nil
+                      :eval!
                       :ok-if (or (not (brr@ :wonp))
                                  (not (equal (brr@ :rewritten-rhs) '(foo a))))
                       :rewritten-rhs)
@@ -74871,30 +75312,30 @@ Subtopics
   causes the following behavior when [47m(:rewrite lemma12)[0m is tried.  A
   break always occurs, but it is fed the commands above.  The first,
   [47m:unify-subst[0m, causes [47mbreak-rewrite[0m to print out the unifying
-  substitution.  Then in response to [47m:eval$[0m [47mnil[0m the lemma is tried
-  but with all [rune]s temporarily [unmonitor]ed.  Thus no breaks
-  will occur during the rewriting of the hypotheses of the lemma.
-  When the attempt has been made, control returns to [47mbreak-rewrite[0m
-  (which will print the results of the attempt, i.e., whether the
-  lemma was applied, if so what the result is, if not why it failed).
-  The next command, the [47m:ok-if[0m with its following expression, is a
-  conditional exit command.  It means exit [47mbreak-rewrite[0m if either
-  the attempt was unsuccessful, [47m(not (brr@ :wonp))[0m, or if the result
-  of the rewrite is any term other than [47m(foo a)[0m.  If this condition
-  is met, the break is exited and the remaining break commands are
+  substitution.  Then in response to [47m:eval![0m the lemma is tried but
+  with all runes temporarily [unmonitor]ed.  Thus no breaks will
+  occur during the rewriting of the hypotheses of the lemma.  When
+  the attempt has been made, control returns to [47mbreak-rewrite[0m (which
+  will print the results of the attempt, i.e., whether the lemma was
+  applied, if so what the result is, if not why it failed).  The next
+  command, the [47m:ok-if[0m with its following expression, is a conditional
+  exit command.  It means exit [47mbreak-rewrite[0m if either the attempt
+  was unsuccessful, [47m(not (brr@ :wonp))[0m, or if the result of the
+  rewrite is any term other than [47m(foo a)[0m.  If this condition is met,
+  the break is exited and the remaining break commands are
   irrelevant.  If this condition is not met then the next command,
   [47m:rewritten-rhs[0m, prints the result of the application (which in this
   contrived example is known to be [47m(foo a)[0m).  Finally, the list of
   supplied commands is exhausted but [47mbreak-rewrite[0m expects more
   input.  Therefore, it begins prompting the user for input.  The end
-  result, then, of the above [47m:monitor[0m command is that the [rune] in
-  question is elaborately traced and interactive breaks occur
-  whenever it rewrites its target to [47m(foo a)[0m.
+  result of the above [47m:monitor[0m command is that the rune in question
+  is elaborately traced and interactive breaks occur whenever it
+  rewrites its target to [47m(foo a)[0m.
 
   We recognize that the above break condition is fairly arcane.  We
   suspect that with experience we will develop some useful idioms.
   For example, it is straightforward now to define macros that
-  monitor [rune]s in the ways suggested by the following names:
+  monitor runes in the ways suggested by the following names:
   [47mtrace-rune[0m, [47mbreak-if-target-is[0m, and [47mbreak-if-result-is[0m.  For
   example, the last could be defined as
 
@@ -74908,7 +75349,49 @@ Subtopics
   Since we don't have any experience with this kind of control on
   lemmas we thought it best to provide a general (if arcane)
   mechanism and hope that the ACL2 community will develop the special
-  cases that we find most convenient.")
+  cases that we find most convenient.
+
+  Note: The combination of a non-trivial [47m:condition[0m and some near-miss
+  criteria can result in confusing behavior.  To get a near-miss
+  break a target has to fail to match the rule's pattern but succeed
+  in matching the near-miss criteria.  So the near-miss criteria is
+  irrelevant if the target matches the rule. But to get a break the
+  target must match the rule in such a way that the [47m:condition[0m is
+  satisfied.  Failure to get any breaks when you have a non-trivial
+  [47m:condition[0m and a very general near-miss criteria may mean targets
+  matching the near-miss criteria also matched the rule's pattern but
+  failed to satisfy your [47m:condition[0m.  Our personal preference when
+  monitoring for near-misses is to use the default [47m:condition[0m of [47mt[0m,
+  at least until we see what kind of matches are arising.
+
+
+What If No Break Occurs?
+
+  Suppose [47mrune[0m is a rune that names a rule about some function symbol
+  [47mfn[0m.  What does it mean if you've installed a monitor on [47mrune[0m with
+  [47m(:condition t :depth 1)[0m and [31;1mno break ever occurs[0m?  Then one of the
+  following is probably true.
+
+    * the break-rewrite utility is not turned on --- you should evaluate
+      [47m(brr t)[0m,
+    * [47mrune[0m is disabled in the theory used for subgoals mentioning [47mfn[0m ---
+      you should enable it either with a global [47m[in-theory][0m command
+      or a subgoal-specific [47m:in-theory[0m hint (see [hints]),
+    * [47mrune[0m names an abbreviation rule as discussed above --- you should add
+      the hint [47m:DO-NOT '(PREPROCESS)[0m (see [hints]),
+    * the [47m:[0m[47m[hints][0m supplied includes a [47m:hands-off[0m list that includes [47mfn[0m ---
+      perhaps you should disable other rules about [47mfn[0m (since that is
+      presumably why you put [47mfn[0m on the [47m:hands-off[0m list in the first
+      place) and remove [47mfn[0m from the [47m:hands-off[0m list,
+    * the only terms that the rewriter ever encountered with the topmost
+      function [47mfn[0m were within a [47mHIDE[0m,
+    * no target with the topmost function symbol [47mfn[0m was ever seen by
+      rewrite --- perhaps [47mfn[0m was involved in the conjecture or
+      introduced into the proof attempt but was eliminated by another
+      rewrite.
+
+  The rewriter is complicated.  There may be other ways this could
+  happen!")
  (MONITOR!
   (BREAK-REWRITE)
   "A quiet combination of [47m[monitor][0m and [47m[brr][0m
@@ -74924,11 +75407,27 @@ Subtopics
   "Print the [monitor]ed [rune]s and their break conditions
 
     Example and General Form:
+    (monitored-runes)
     :monitored-runes
 
   This macro prints a list, each element of which is of the form [47m(rune
   condition)[0m, showing each [monitor]ed [rune] and its current break
-  condition.")
+  condition.
+
+  The list is printed to the comment window and [3mnot[0m returned as the
+  value [47m(monitored-runes)[0m.  The actual list is maintained in a
+  wormhole managed by [break-rewrite].
+
+  Technically, the list of monitored runes is a locally bound variable
+  of break-rewrite.  The initial value of the variable is determined
+  by its value in the containing scope of a call of break-rewrite.
+  The value may be changed during interactions within the break, but
+  it reverts to its old value upon return from break-rewrite.  Thus
+  if you monitor some runes, start a proof, adjust the monitored
+  runes from within break-rewrite breaks in the proof attempt, and
+  eventually return to the top-level, the value shown by
+  [47m:monitored-runes[0m will be the same as it was when you started the
+  proof.")
  (MSG
   (IO ACL2-BUILT-INS)
   "Construct a ``message'' suitable for the [47m~@[0m directive of [47m[fmt][0m
@@ -87823,11 +88322,11 @@ Subtopics
     '(lambda (whs) whs)
 
   Second, change the [47mform[0m argument so that instead of talking about the
-  state-global variable [47mwormhole-output[0m it talks about the
-  state-global variable [47mwormhole-status[0m.  Look for [47m(@
-  wormhole-output)[0m, [47m(assign wormhole-output ...)[0m, [47m(f-get-global
-  'wormhole-output ...)[0m and [47m(f-put-global 'wormhole-output ...)[0m in
-  [47mform[0m and replace them with expressions involving [47mwormhole-status[0m.
+  state global variable [47mwormhole-output[0m it talks about the state
+  global variable [47mwormhole-status[0m.  Look for [47m(@ wormhole-output)[0m,
+  [47m(assign wormhole-output ...)[0m, [47m(f-get-global 'wormhole-output ...)[0m
+  and [47m(f-put-global 'wormhole-output ...)[0m in [47mform[0m and replace them
+  with expressions involving [47mwormhole-status[0m.
 
   However, remember that the old data stored in [47mwormhole-output[0m is now
   in the [47mwormhole-data[0m component of the [47mwormhole-status[0m.  Thus, for
@@ -89683,7 +90182,7 @@ Subtopics
   [31;1mBUG FIXES[0m
 
   Fixed a class of soundness bugs involving each of the following
-  functions: [47m[getenv$][0m, [47m[get-wormhole-status][0m, [47m[cpu-core-count][0m,
+  functions: [47m[getenv$][0m, [47mget-wormhole-status[0m, [47m[cpu-core-count][0m,
   [47m[wormhole-p][0m, [47m[random$][0m, [47mfile-write-date$[0m, and [47mserialize-read-fn[0m,
   and (for the HONS version of ACL2) [47m[clear-memoize-table][0m and
   [47m[clear-memoize-tables][0m as well as (possible soundness bug)
@@ -99334,6 +99833,31 @@ Changes to Existing Features
   input is still flushed in these cases, perhaps more thoroughly than
   before.
 
+  [47m[Break-rewrite][0m, [47m[brr-commands][0m, [47m[monitor][0m, and [47m[unmonitor][0m have been
+  radically changed but in a largely backwards compatible way.  It is
+  now possible to cause interactive breaks when a monitored rule is
+  tried but fails to match the target.  See [47m[monitor][0m, in particular,
+  see the ``near-miss'' break criteria in [47m[monitor][0m for a discussion.
+  Changes to [47m[break-rewrite][0m largely just correct anomalous behavior.
+  One significant behavioral change is that the list of monitored
+  runes is locally bound by [47mbreak-rewrite[0m, so that while it can be
+  changed in inferior breaks, when control returns to superior levels
+  (and to the top-level) the list of monitored runes is unchanged.
+  Related changes are discussed in the following three items.  Note
+  that for this work, including the three items just below: Release
+  was approved by DARPA with ``DISTRIBUTION STATEMENT A. Approved for
+  public release. Distribution is unlimited.''
+
+    * The [47m[brr][0m-command [47m:[0m[47m[p!][0m (see [brr-commands]) has been redefined so
+      that in [break-rewrite] it is a no-op.  (Actually, it did not
+      always work as advertised in [break-rewrite]!  Its behavior
+      outside of break-rewrite is unchanged.)  A comment in the
+      source code definition of [47mp![0m explains why.
+    * The function [47mget-wormhole-status[0m is deprecated, and its new name is
+      [47m[get-persistent-whs][0m.
+    * The macro [47mshow-brr-evisc-tuple[0m has been eliminated, but
+      [47m[brr-evisc-tuple][0m is available instead.
+
 
 New Features
 
@@ -99754,10 +100278,9 @@ Changes at the System Level
   enhancement.
 
   Significant new [documentation] topics, together with subtopics and
-  books supporting those topics, include the following.  Note that
-  for all but the their release was approved by DARPA with
-  ``DISTRIBUTION STATEMENT A. Approved for public release.
-  Distribution is unlimited.''
+  books supporting those topics, include the following.  Release was
+  approved by DARPA with ``DISTRIBUTION STATEMENT A. Approved for
+  public release. Distribution is unlimited.''
 
     * [Start-here] provides a guide for those getting started with ACL2.
     * [Recursion-and-induction] has been extensively modified from past,
@@ -99769,10 +100292,13 @@ Changes at the System Level
       documentation.
     * [Loop$-primer] provides an extensive primer on the the ACL2 [47m[loop$][0m
       feature.
-    * [Type-reasoning] gives a basic introduction to what is sometimes
-      called ``type-set reasoning''.  This new topic is now
+    * [Type-reasoning] gives a basic introduction to what has sometimes
+      been called ``type-set reasoning'' but is now generally
+      referred to as ``type reasoning''.  This new topic is now
       referenced in many other built-in documentation topics.  Thanks
       to Warren Hunt for communication leading to this new topic.
+    * [Soundness] discusses what we can conclude when we use ACL2 to prove
+      a formula or to compute the value of an expression.
 
   Allow [47m[ld][0m output in [raw-mode] to go to other than the channel,
   [47m*standard-co*[0m.  Thanks to Vivek Ramanathan and Warren Hunt for an
@@ -101072,6 +101598,13 @@ Subtopics
   (BREAK-REWRITE)
   "Conditional exit from [47mbreak-rewrite[0m
 
+  Recall that one way to exit from a [break-rewrite] interactive break
+  is to type the command [47m:ok[0m.  See [brr-commands].  The [47m:ok[0m command
+  exits silently, without printing the result of attempting to apply
+  the rule that caused the break.  The [47m:ok-if[0m command takes a term as
+  an argument and is like [47m:ok[0m but exits only if the term evaluates to
+  non-[47mnil[0m.
+
     Example Form:
     :ok-if (null (brr@ :wonp))
 
@@ -102130,7 +102663,13 @@ Subtopics
   loop.  For more information, see [ld-error-action].
 
   If you are at an ACL2 prompt (as opposed to a raw Lisp break), then
-  you may type [47m:p![0m in place of [47m(p!)[0m; see [keyword-commands].")
+  you may type [47m:p![0m in place of [47m(p!)[0m; see [keyword-commands].
+
+  If you are actually in a break caused by [break-rewrite], [47m:p![0m and
+  [47m(p!)[0m just print a message and otherwise are no-ops.  (A comment in
+  the source code definition of [47mp![0m explains why break-rewrite cannot
+  support ``popping up one level'' in the sense that you would
+  probably expect.)")
  (PACKAGE (POINTERS) "See [packages].")
  (PACKAGE-REINCARNATION-IMPORT-RESTRICTIONS
   (PACKAGES)
@@ -103547,10 +104086,6 @@ Applications
   see [community-books] and [47mbooks/demos/partial-encapsulate.lisp[0m and
   [47mbooks/demos/include-raw-examples/mem-access-sound/mem.lisp[0m.
 
-  For an example of such an application, including explanatory
-  comments, see [community-book]
-  [47mbooks/demos/partial-encapsulate.lisp[0m.
-
   Partial-encapsulates are, in essence, also used in the implementation
   of dependent clause-processors, where the list of supporters might
   well be non-[47mnil[0m.  See [define-trusted-clause-processor].
@@ -104085,6 +104620,8 @@ Implementation
 
   The theorem prover's proof is printed in real time.  At the time it
   prints ``Perhaps'' it does not know the proof will succeed.")
+ (PERSISTENT-WHS (POINTERS)
+                 "See [wormhole-status].")
  (PF
   (HISTORY)
   "Print the formula corresponding to the given name
@@ -104509,6 +105046,9 @@ Subtopics
   [Close-output-channel]
       See [io].
 
+  [Coherence]
+      See [wormhole-status].
+
   [Collect$]
       See [loop$].
 
@@ -104598,6 +105138,9 @@ Subtopics
 
   [Enabled-runep]
       See [system-utilities].
+
+  [Ephemeral-whs]
+      See [wormhole-status].
 
   [Er-cmp]
       See [context-message-pair].
@@ -105079,6 +105622,9 @@ Subtopics
   [Peek-char$]
       See [io].
 
+  [Persistent-whs]
+      See [wormhole-status].
+
   [Plist-worldp]
       See [system-utilities].
 
@@ -105442,6 +105988,9 @@ Subtopics
   [Too-many-ifs]
       See [efficiency].
 
+  [Top-level-loop]
+      See [guarantees-of-the-top-level-loop].
+
   [Trans-eval-default-warning]
       See [user-stobjs-modified-warnings].
 
@@ -105534,6 +106083,9 @@ Subtopics
 
   [With-prover-step-limit!]
       See [with-prover-step-limit].
+
+  [Wormhole-coherence]
+      See [wormhole-status].
 
   [Write-byte$]
       See [io].")
@@ -123915,9 +124467,26 @@ Subtopics
   (BRR BRR-EVISC-TUPLE SET-EVISC-TUPLE)
   "Set the [47m[brr-evisc-tuple][0m
 
-  The call [47m(set-brr-evisc-tuple e state)[0m is simply a convenient way to
-  set the [brr-evisc-tuple] to [47me[0m directly, that is, without using the
-  more general mechanism, [47m[set-evisc-tuple][0m.  See [brr-evisc-tuple].")
+    General Form:
+    (set-brr-evisc-tuple ev state)
+
+  where [47mev[0m is either the keyword [47m:default[0m or a legal [47m[evisc-tuple][0m.
+  This function sets the evisceration tuple used by [brr-commands].
+  The current value can be retrieved with [47m[brr-evisc-tuple][0m.  The
+  initial value is [47m:default[0m which means the [47m:term[0m evisceration tuple
+  is used.  To see how the [47mbrr-evisc-tuple[0m is used see
+  [47m[brr-evisc-tuple][0m.
+
+  Think of [47mbrr-evisc-tuple[0m as a true global variable, not a locally
+  bound variable of break-rewrite.  In particular, if you set the
+  [47mbrr-evisc-tuple[0m inside a break-rewrite interactive break and
+  eventually exit that break --- either to enter a deeper break or
+  return to a shallower break or to the ACL2 top-level --- the
+  [47mbrr-evisc-tuple[0m will retain its chronologically most recent
+  setting.
+
+  The general command for setting any of the system evisc-tuples is
+  [47m[set-evisc-tuple][0m.")
  (SET-CASE-SPLIT-LIMITATIONS
   (MISCELLANEOUS)
   "Set the [case-split-limitations]
@@ -124912,10 +125481,7 @@ Subtopics
     * [47m:BRR[0m --- used for output from [brr-commands] issued in the
       [break-rewrite] loop.  When the value is [47m:DEFAULT[0m then the
       [3meffective value[0m of this evisc-tuple is the [47m:TERM[0m evisc-tuple
-      with [47mflg = t[0m (see above).  Also see [brr-evisc-tuple].  No
-      accessor is available to return this evisc-tuple, but its
-      effective value is displayed by evaluating
-      [47m(show-brr-evisc-tuple)[0m.
+      with [47mflg = t[0m (see above).  Also see [brr-evisc-tuple].
     * [47m:GAG-MODE[0m --- used for printing induction schemes (and perhaps, in
       the future, for other printing) when [gag-mode] is on.  If
       gag-mode is off, the value used for this [evisc-tuple] is
@@ -125940,7 +126506,9 @@ Example
   session that used the [break-rewrite] utility, but familiarity with
   that utility is not necessary in order to understand this example.
   What it shows is that the form [47m(set-iprint t)[0m allows you to
-  recover, using [without-evisc], output that had been hidden.
+  recover, using [without-evisc], output that had been hidden.  (See
+  [break-rewrite] for more about the interaction of [47mbreak-rewrite[0m
+  with iprinting.)
 
     ACL2 !>(thm (p y))
 
@@ -126148,7 +126716,10 @@ Example
       supplied, then [47mt[0m is converted to [47m:reset-enable[0m.
 
       [47mnil[0m --- Disable iprinting.  If either keyword [47m:share[0m or [47m:hard-bound[0m
-      is supplied, then [47mnil[0m is converted to [47m:reset[0m.
+      is supplied, then [47mnil[0m is converted to [47m:reset[0m.  Otherwise, if
+      the next call of [47mset-iprint[0m is with a first argument of [47mt[0m, then
+      iprint indices will start at the next available value rather
+      than going back to 1.
 
       [47m:reset[0m --- Reset iprinting to its initial disabled state, so that
       when enabled, the first index [47mi[0m for which `[47m#@i#[0m is printed will
@@ -126630,6 +127201,29 @@ Example
   including their calls made directly in the ACL2 top-level loop.
   Thus, uses of parallelism primitives do not in themselves cause
   errors.")
+ (SET-PERSISTENT-WHS-AND-EPHEMERAL-WHS
+  (WORMHOLE)
+  "maintaining wormhole coherence
+
+    General Form:
+    (set-persistent-whs-and-ephemeral-whs name new-status state)
+
+  where [47mname[0m is the name of a [47m[wormhole][0m other than one of the built-in
+  ACL2 system wormholes, and [47mnew-status[0m is the desired status of the
+  wormhole.  ACL2 insists that [47mname[0m be supplied as a [quote]d
+  constant.  The constant [47m*protected-system-wormhole-names*[0m lists the
+  names of the built-in wormholes and includes [47mbrr[0m (the
+  [break-rewrite] wormhole name), [47maccumulated-persistence[0m, and
+  [47mfc-wormhole[0m (the name of the wormhole managing
+  [forward-chaining-reports]), among others.
+
+  [47mSet-persistent-whs-and-ephemeral-whs[0m moves [47mnew-status[0m into the
+  wormhole's persistent-whs (the status stored outside of the ACL2
+  state) and then executes [47m[sync-ephemeral-whs-with-persistent-whs][0m
+  to re-establish coherence.  It returns a modified [47mstate[0m.
+
+  See [wormhole-programming-tips] for some tips for using this
+  function.")
  (SET-PRINT-BASE
   (IO ACL2-BUILT-INS)
   "Control radix in which numbers are printed
@@ -128448,11 +129042,10 @@ Extended Example
 
   See [wormhole].  [47mWhs[0m should be a well-formed wormhole status; [47mdata[0m is
   arbitrary.  This function returns a new status with the same entry
-  code as [47mwhs[0m but with the new [47mdata[0m.  It avoids unnecessary consing
-  if the data for [47mwhs[0m is already set to [47mdata[0m.  This function does not
-  affect state or a wormhole's hidden status.  It just returns a
-  (possibly) new status object suitable as the value of the [47mlambda[0m
-  expressions in [47m[wormhole-eval][0m and [47m[wormhole][0m.")
+  code as [47mwhs[0m but with the new [47mdata[0m.  This function does not affect
+  state or a wormhole's persistent-whs or ephemeral-whs.  It just
+  returns a (possibly) new status object suitable as the value of the
+  [47mlambda[0m expressions in [47m[wormhole-eval][0m and [47m[wormhole][0m.")
  (SET-WORMHOLE-ENTRY-CODE
   (WORMHOLE)
   "Sets the wormhole entry code in a wormhole status object
@@ -128461,12 +129054,11 @@ Extended Example
 
   See [wormhole].  [47mWhs[0m should be a well-formed wormhole status and [47mcode[0m
   should be [47m:ENTER[0m or [47m:SKIP[0m.  This function returns a new status with
-  the specified entry code but the same data as [47mwhs[0m.  It avoids
-  unnecessary consing if the entry code for [47mwhs[0m is already set to
-  [47mcode[0m.  This function does not affect state or a wormhole's hidden
-  status.  It just returns a (possibly) new status object suitable as
-  the value of the [47mlambda[0m expressions in [47m[wormhole-eval][0m and
-  [47m[wormhole][0m.")
+  the specified entry code but the same data as [47mwhs[0m.  This function
+  does not affect state or a wormhole's persistent-whs or
+  ephemeral-whs.  It just returns a (possibly) new status object
+  suitable as the value of the [47mlambda[0m expressions in [47m[wormhole-eval][0m
+  and [47m[wormhole][0m.")
  (SET-WRITE-ACL2X
   (BOOKS-REFERENCE)
   "Cause [47m[certify-book][0m to write out a [47m.acl2x[0m file
@@ -128674,7 +129266,7 @@ Extended Example
   takes responsibility for trafficking in [state]; it is defined in
   the logic using the function [47m[read-ACL2-oracle][0m, which (again, in
   the logic) does modify state, by popping an entry from its
-  acl2-oracle field.  [getenv$].
+  acl2-oracle field.  See [getenv$].
 
   As suggested above, a call of [47m[getenv$][0m takes into account the most
   recent call of [47msetenv$[0m on the same environment variable.  It may
@@ -128987,14 +129579,6 @@ Extended Example
     General Forms:
     (show-bodies function-symbol)
     :show-bodies function-symbol")
- (SHOW-BRR-EVISC-TUPLE
-  (BRR BRR-EVISC-TUPLE)
-  "Display the [47m[brr-evisc-tuple][0m
-
-  Evaluation of the form [47m(show-brr-evisc-tuple)[0m displays the effective
-  value of the [47mbrr-evisc-tuple[0m.  Note that this value is only printed
-  by such evaluation as a side-effect, not returned.  See also
-  [brr-evisc-tuple].")
  (SHOW-CUSTOM-KEYWORD-HINT-EXPANSION
   (CUSTOM-KEYWORD-HINTS)
   "Print out custom keyword hints when they are expanded
@@ -129714,6 +130298,112 @@ Extended Example
     (defthm leaf-p-iff-member-fringe
       (iff (leaf-p atm x)
            (member-equal atm (fringe x))))")
+ (SOUNDNESS
+  (ABOUT-ACL2)
+  "Correctness property claimed for ACL2
+
+  What can we conclude when we use ACL2 to prove a formula or to
+  compute the value of an expression?  This topic provides a
+  high-level sketch of an answer.
+
+  Any notion of correctness of ACL2 necessarily depends on the logic
+  that it is intended to implement.  At its core, the ACL2 logic is
+  just classical first-order logic.  The first-order theory for a
+  given ACL2 session, which we may call the ``prover's theory'', is
+  the result of extending its set of built-in axioms according to
+  [events] that have been executed in the session.
+
+    * The built-in axioms describe properties of the ACL2 data types, such
+      as the following.
+
+          ACL2 !>:pe car-cons
+                 -8139  (DEFAXIOM CAR-CONS
+                          (EQUAL (CAR (CONS X Y)) X))
+          ACL2 !>
+
+    * A key extension principle is the Principle of Definition, which, for
+      a definition [47m(defun <fn> <args> <body>)[0m, introduces an axiom
+      equating [47m<body>[0m with application of [47m<fn>[0m to [47m<args>[0m.  This
+      principle permits recursion, and even [mutual-recursion],
+      provided a suitable [3mmeasure conjecture[0m is provable.
+    * Other [events] come with extension principles too, including
+      [47m[encapsulate][0m, [47m[defchoose][0m, [47m[defpkg][0m, and [47m[include-book][0m.  Note
+      that from a logical perspective, [47m[defstobj][0m and [47m[defabsstobj][0m
+      just provide definitional extensions.
+    * Each ACL2 theory is [3mclosed under induction[0m: that is, every instance
+      of induction (in the language of the theory) below the ordinal
+      [47mepsilon-0[0m (see [ordinals]) is also in the theory.  In practical
+      terms, this is what allows ACL2 to prove theorems by induction.
+
+  For more about the ACL2 logic see the following publications by Matt
+  Kaufmann and J Moore.
+
+    * {``A Precise Description of the ACL2 Logic'' |
+      http://www.cs.utexas.edu/users/moore/publications/km97a.pdf}
+      (April, 1998).
+    * {``Structured Theory Development for a Mechanized Logic'' |
+      https://www.cs.utexas.edu/users/moore/publications/encap-story.pdf},
+      [3mJournal of Automated Reasoning[0m 26, no. 2 (2001) 161-203.
+
+  The following soundness property is key for a given ACL2 session.
+
+    * The theorem prover proves only formulas that are theorems in the
+      corresponding prover's theory in that session.
+
+  Note that the theorem prover uses evaluation during proofs.  The
+  soundness property thus encompasses the following: when such
+  evaluation of a term [47mtm[0m produces a value [47mv[0m, then [47m(equal tm 'v)[0m is
+  provable from the context of that evaluation.  Evaluation in the
+  top-level loop has such a property as well, but because of
+  attachments (see [defattach]) and [47m[apply$][0m, provability is with
+  respect to a larger ``evaluation theory''; see
+  [guarantees-of-the-top-level-loop].
+
+  Here is a list of general restrictions on the soundness guarantee.
+
+    * The prover's theory of a session includes all axioms introduced by
+      hidden [defpkg] events.  See [hidden-death-package].
+    * There is no soundness guarantee for a session in which there is raw
+      Lisp evaluation with side effects.  (ACL2 normally avoids
+      putting the user into raw Lisp, but this can happen with an
+      interrupt, the use of [47m[break$][0m, or explicitly leaving the
+      top-level loop with [47m:q[0m.)  ``Side effects'' should be
+      interpreted as generously as possible: this certainly includes
+      redefining a function or assigning to a variable, but not
+      merely evaluating an arithmetic expression, for example.
+    * There is no soundness guarantee for a session in which any trust tag
+      has been installed (see [defttag]).  The absence of trust tags
+      is guaranteed by the absence of ``[47mTTAG NOTE[0m'' being printed to
+      standard output (that is, to [47m[*standard-co*][0m).
+    * Technically, the soundness guarantee only applies to the case that a
+      set of books is certified from scratch, including
+      [community-books].  In practice this is generally not
+      necessary.
+
+  This topic has discussed the soundness guarantee from the user
+  perspective.  Those interested in exploring deeper theoretical and
+  implementation issues are welcome to read the extensive relevant
+  comments in the ACL2 source code, including the comments labeled as
+  follows (listed in order of appearance as of this writing, not to
+  indicate the order in which to read them).
+
+    * Essay on Admitting a Model for Apply$ and the Functions that Use It
+    * Essay on Hidden Packages
+    * Essay on Soundness Threats
+    * Essay on a Total Order of the ACL2 Universe
+    * Essay on Illegal-states
+    * Essay on Evaluation in ACL2
+    * Essay on the Logical Basis for Linear Arithmetic
+    * Essay on the Correctness of Abstract Stobjs
+    * Essay on Memoization with Partial Functions (Memoize-partial)
+    * Essay on Correctness of Evaluation with Stobjs
+    * Essay on Correctness of Meta Reasoning
+
+
+Subtopics
+
+  [Guarantees-of-the-top-level-loop]
+      Guarantees provided by top-level evaluation")
  (SPEC-MV-LET
   (PARALLEL-PROGRAMMING ACL2-BUILT-INS)
   "Modification of [47m[mv-let][0m supporting speculative and parallel
@@ -133981,6 +134671,40 @@ Subtopics
 
   [Symbolp]
       Recognizer for symbols")
+ (SYNC-EPHEMERAL-WHS-WITH-PERSISTENT-WHS
+  (WORMHOLE)
+  "establishing wormhole coherence
+
+    General Form:
+    (sync-ephemeral-whs-with-persistent-whs name state)
+
+  where [47mname[0m is the quoted name of a [47m[wormhole][0m other than one of the
+  built-in ACL2 system wormholes.  It is forbidden to invoke
+  [47msync-ephemeral-whs-with-persistent-whs[0m on the names listed in the
+  constant [47m*protected-system-wormhole-names*[0m which includes [47mbrr[0m (the
+  [break-rewrite] wormhole name), [47maccumulated-persistence[0m, and
+  [47mfc-wormhole[0m (the name of the wormhole managing
+  [forward-chaining-reports]), among others.
+
+  If executed on the live state and while in the named wormhole, this
+  function moves the wormhole's status from the persistent-whs
+  (located in that part of the memory outside of ACL2's state) to the
+  ephemeral-whs (the value of the state global variable
+  [47mwormhole-status[0m).  Subsequently, [47mname[0m's persistent-whs is equal to
+  its ephemeral-whs: the [47mname[0m wormhole is coherent.  If executed on a
+  state other than the live one or while outside of the named
+  wormhole, this function is a no-op.  Of course, the next time the
+  [47mname[0m wormhole is entered it will be in a coherent state since entry
+  to a wormhole initializes the [47mwormhole-status[0m to the
+  persistent-whs.  [47msync-ephemeral-whs-with-persistent-whs[0m returns the
+  new state.
+
+  Logically speaking, this function uses [47m[read-ACL2-oracle][0m to obtain
+  the wormhole's hidden status.  So the output state is almost
+  certainly different than the input state.
+
+  See [wormhole-programming-tips] for some tips for using this
+  function.")
  (SYNTACTICALLY-CLEAN-LAMBDA-OBJECTS-THEORY
   (THEORIES THEORY-FUNCTIONS REWRITE)
   "how to specify syntactic cleaning of lambda objects
@@ -141052,6 +141776,8 @@ Subtopics
     Error:  The value 3 is not of the expected type LIST.
     While executing: CAR
     ***********************************************")
+ (TOP-LEVEL-LOOP (POINTERS)
+                 "See [guarantees-of-the-top-level-loop].")
  (TRACE
   (DEBUGGING)
   "Tracing functions in ACL2
@@ -145246,10 +145972,10 @@ Subtopics
 
   Subtle point: Because you may want to unmonitor a ``[rune]'' that is
   no longer a [rune] in the current ACL2 [world], we don't actually
-  check this about [rune].  Instead, we simply check that [rune] is a
-  [47mconsp[0m beginning with a [47mkeywordp[0m.  That way, you'll know you've made
-  a mistake if you try to [47m:unmonitor binary-append[0m instead of
-  [47m:unmonitor (:definition binary-append)[0m, for example.")
+  check this about [47mrune[0m.  We simply check that [47mrune[0m is currently
+  monitored and remove it.  If [47mrune[0m corresponds to no entry on the
+  list of monitored runes we cause an error since it may indicate a
+  mispelling.")
  (UNQUOTE
   'ACL2-BUILT-INS
   "Obtain the object being quoted
@@ -150881,6 +151607,8 @@ Connections with break-rewrite
       [47m(clear-brr-data-lst)[0m.  Otherwise the brr-data from later proof
       attempts will be combined, probably in unexpected ways, with
       brr-data from earlier proof attempts.
+    * [47mWith-brr-data[0m and its queries pay no attention to ``near-miss''
+      breaks (see [break-rewrite] for discussion of these breaks).
 
   The first item above is worth emphasizing.  Consider the following
   example.
@@ -153384,8 +154112,8 @@ Subtopics
   some information from the wormhole call itself is transferred into
   the new state; this allows the wormhole to be sensitive to context.
   These two changes to the current state are reflected in the
-  settings [47m(@ wormhole-status)[0m and [47m(@ wormhole-input)[0m discussed in
-  detail below.
+  settings [47m(@ wormhole-status)[0m and [47m(@ wormhole-input)[0m when in the
+  wormhole.  This is discussed in detail below.
 
   Note that [47mwormhole[0m may be called from environments in which [47m[state][0m
   is not bound.  It is still applicative because it always returns
@@ -153393,13 +154121,14 @@ Subtopics
 
   There are some restrictions about what can be done inside a wormhole.
   As you may imagine, we really do not ``copy the current state'' but
-  rather just keep track of how we modified it and undo those
-  modifications upon exit.  In particular, when exiting a wormhole,
-  values of state globals (see [programming-with-state]) are restored
-  to their values at the time the wormhole was entered.  Note that
-  information about traced functions is stored in state globals (see
-  [trace$]); accordingly, all tracing and untracing done inside a
-  wormhole is undone upon exit from the wormhole.
+  rather just keep track of how it is modified while in the wormhole
+  and we undo those modifications upon exit.  In particular, when
+  exiting a wormhole, values of state globals (see
+  [programming-with-state]) are restored to their values at the time
+  the wormhole was entered.  Note that information about traced
+  functions is stored in state globals (see [trace$]); accordingly,
+  all tracing and untracing done inside a wormhole is undone upon
+  exit from the wormhole.
 
   An error is signaled if you try to modify state in an unsupported
   way.  For this same reason, wormholes do not allow updating of any
@@ -153415,47 +154144,58 @@ Subtopics
   to update the data as rules are tried.  When you request a display
   of the data, [47m[show-accumulated-persistence][0m enters the wormhole and
   prints the data.  But the data is never available outside that
-  wormhole.  The ACL2 system uses a second wormhole to implement the
-  [47m[brr][0m facility, allowing the user to interact with the rewriter as
-  rules are applied.
+  wormhole.  The ACL2 system uses a second wormhole, named [47m[brr][0m, to
+  implement the [break-rewrite] facility, allowing the user to
+  interact with the rewriter as rules are applied.
 
   We now specify the arguments and behavior of [47mwormhole[0m.
 
   The [47mname[0m argument must be a quoted constant and is typically a
   symbol.  It will be the ``name'' of the wormhole.  A wormhole of
-  that name will be created the first time either [47mwormhole[0m or
-  [47m[wormhole-eval][0m is called.
+  that name will be created the first time [47mwormhole[0m, [47m[wormhole-eval][0m,
+  or [47m[set-persistent-whs-and-ephemeral-whs][0m is called.  However, it
+  is forbidden to invoke these functions on any name listed in
+  [47m*protected-system-wormhole-names*[0m, which includes [47mbrr[0m (the
+  [break-rewrite] wormhole name), [47maccumulated-persistence[0m, and
+  [47mfc-wormhole[0m (the name of the wormhole managing
+  [forward-chaining-reports]), among others.
 
   Every wormhole name has a ``status.'' The status of a wormhole is
-  stored outside of ACL2; it is inaccessible to the ACL2 user except
-  when in the named wormhole.  But the status of a wormhole may be
-  set by the user from within the wormhole.
+  stored outside of ACL2 at a location known to hold the ``persistent
+  wormhole status'' or ``persistent-whs'' of that wormhole.  Before
+  [47mwormhole[0m enters its read-eval-print loop the persistent-whs is
+  assigned to the state global variable [47mwormhole-status[0m and so while
+  inside the wormhole the status is available as [47m(@ wormhole-status)[0m.
+  [47mWormhole-status[0m is untouchable: you cannot change it directly as
+  with [47m(assign wormhole-status ...)[0m.  But the persistent-whs can be
+  changed, e.g., with [47mwormhole[0m, [47mwormhole-eval[0m, or
+  [47mset-persistent-whs-and-ephemeral-whs[0m.  See [47m[wormhole-status][0m for a
+  discussion of the ramifications of there being two places a
+  wormhole's status might be found and of the importance of the
+  notion of ``wormhole coherence.''
 
-  Upon the first call of [47mwormhole[0m or [47mwormhole-eval[0m on a name, the
-  status of that name is [47mnil[0m.  But in general you should arrange for
-  the status to be a cons.  The status is set by the quoted [47mlambda[0m
-  every time [47mwormhole[0m is called; but it may also be set in the [47mform[0m
-  argument (the first form evaluated in the interactive loop) by
-  assigning to the state global variable [47mwormhole-status[0m, as with
+  Upon the first call on name of [47mwormhole[0m (or the other wormhole
+  creator functions mentioned above) the status of that name is [47mnil[0m.
+  But in general you should arrange for the status to be a cons.  The
+  status is set by the quoted [47mlambda[0m every time [47mwormhole[0m is called;
+  but it may also be by set in the [47mform[0m argument of [47mwormhole[0m using
+  [47mset-persistent-whs-and-ephemeral-whs[0m or
+  [47m[sync-ephemeral-whs-with-persistent-whs][0m.
 
-    (assign wormhole-status ...)
+  The [47mcar[0m of the status should be either [47m:ENTER[0m or [47m:SKIP[0m and is called
+  the wormhole's ``entry code.'' The entry code of [47mnil[0m or, indeed, of
+  any value other than [47m:SKIP[0m is treated as thought it were [47m:ENTER[0m.
+  The [47mcdr[0m of the status is arbitrary data maintained by the author of
+  the wormhole.
 
-  or even by the user interacting with the loop if you do not exit the
-  loop with the first form.  The [47mcar[0m of the cons should be either
-  [47m:ENTER[0m or [47m:SKIP[0m and is called the wormhole's ``entry code.'' The
-  entry code of [47mnil[0m or an unexpectedly shaped status is [47m:ENTER[0m.  The
-  [47mcdr[0m of the cons is arbitrary data maintained by you.
-
-  When [47mwormhole[0m is invoked, the status of the specified name is
-  incorporated into the manufactured wormhole state.  In particular,
-  inside the wormhole, the status is the value of the state global
-  variable [47mwormhole-status[0m.  That is, inside the wormhole, the status
-  may be accessed by [47m(@ wormhole-status)[0m and set by [47m(assign
-  wormhole-status ...)[0m, [47mf-get-global[0m and [47mf-put-global[0m.  When [47mld[0m exits
-  --- typically because the form [47m:q[0m was read by [47mld[0m --- the
-  then-current value of wormhole-status is hidden away so that it can
-  be restored when this wormhole is entered again.  The rest of the
-  wormhole state is lost.
+  When the wormhole is exited --- typically because the form [47m:q[0m was
+  read by [47mld[0m --- the then-current ephemeral-whs (i.e., (@
+  wormhole-status)) is moved to the persistent-whs so that it can be
+  restored when this wormhole is entered again.  (Note: The
+  break-rewrite wormhole, [47mbrr[0m, is handled differently.  When it is
+  exited back to the top-level, the persistent-whs is set to the what
+  it was when ACL2 was last at the top-level.)  The rest of the
+  wormhole state is lost upon exit.
 
   This allows a sequence of entries and exits to a wormhole to maintain
   some history in the status and this information can be manipulated
@@ -153467,15 +154207,14 @@ Subtopics
   The third argument, [47minput[0m, may be any term.  The value of the term is
   passed into the manufactured wormhole state, allowing you to pass
   in information about the calling context.  Inside the wormhole, the
-  [47minput[0m is available via [47m(@ wormhole-input)[0m.  It could be reassigned
-  via [47m(assign wormhole-input ...)[0m, but there is no reason to do that.
+  [47minput[0m is available via [47m(@ wormhole-input)[0m and may be assigned with
+  [47m[assign][0m.
 
   The fourth argument, [47mform[0m, may be any term; when [47m[ld][0m is called on
   the manufactured wormhole state, the first form evaluated by [47mld[0m
   will be the value of [47mform[0m.  Note that [47mform[0m will be translated by
   [47mld[0m.  Errors, including guard violations, in the translation or
-  execution of that first form will leave you in the interactive loop
-  of the wormhole state.
+  execution of that first form will exit the wormhole.
 
   When used properly, the first form allows you to greet your user
   before reading the first interactive command or simply to do
@@ -153488,20 +154227,19 @@ Subtopics
   this or, at least, to decide whether to incur that expense.
 
   Before the wormhole state is manufactured and entered, the
-  [47mentry-lambda[0m is applied to the current wormhole status with
-  [47m[wormhole-eval][0m.  That [47mlambda[0m application must produce a new
-  wormhole status, which is stored as the wormhole's status.  The
-  entry code for the new status determines whether [47mwormhole[0m actually
-  manufactures a wormhole state and calls [47mld[0m.
+  [47mentry-lambda[0m is applied to the persistent-whs with [47m[wormhole-eval][0m.
+  That [47mlambda[0m application must produce a new wormhole status, which
+  is stored as the wormhole's new persistent-whs.  The entry code for
+  the new status determines whether [47mwormhole[0m actually manufactures a
+  wormhole state and calls [47mld[0m.
 
-  If the entry code for that new status is [47m:ENTER[0m the wormhole state is
-  manufactured and entered; otherwise, the new status is simply saved
-  as the most recent status but the wormhole state is not
-  manufactured or entered.  Note therefore that the [47mentry-lambda[0m may
-  be used to perform two functions: (a) to determine if it is really
-  necessary to manufacture a state and (b) to update the data in the
-  wormhole status as a function of the old status without invoking
-  [47mld[0m.
+  If the entry code for that new status is [47m:SKIP[0m the wormhole state is
+  not manufactured; the new persistent-whs is merely saved and
+  [47mwormhole[0m returns nil.  Otherwise, a new state is manufactured and
+  entered.  Note therefore that the [47mentry-lambda[0m may be used to
+  perform two functions: (a) to determine if it is really necessary
+  to manufacture a state and (b) to update the data in the wormhole
+  status as a function of the old status without invoking [47mld[0m.
 
   The [47mentry-lambda[0m must be a quoted lambda expression of at most one
   argument.  Thus, the argument must be either
@@ -153530,17 +154268,8 @@ Subtopics
   and [47m[make-wormhole-status][0m may be useful in manipulating entry
   codes and data in the [47mentry-lambda[0m.
 
-  Note that you access and manipulate the wormhole's status in two
-  different ways depending on whether you're ``outside'' of the
-  wormhole applying the quoted [47mlambda[0m or ``inside'' the
-  read-eval-print loop of the wormhole.
-
-  OUTSIDE ([47mwormhole-eval[0m): access via the value of the [47mlambda[0m formal
-  and set by returning the new status as the value of the [47mlambda[0m
-  body.
-
-  INSIDE ([47mld[0m phase of [47mwormhole[0m): access via [47m(@ wormhole-status)[0m, and
-  set via [47m(assign wormhole-status ...)[0m.
+  See [47m[wormhole-programming-tips][0m for some advice about using
+  wormholes, maintaining (or not maintaining) coherence, etc.
 
   Pragmatic Advice on Designing a Wormhole: Suppose you are using
   wormholes to implement some extra-logical utility.  You must
@@ -153560,28 +154289,47 @@ Subtopics
   [wormhole-implementation].
 
   Here are some sample situations handled by [47mwormhole-eval[0m and
-  [47mwormhole[0m.  Let the wormhole in question be named [47mDEMO[0m.  Initially
-  its status is [47mNIL[0m.  The functions below all maintain the convention
-  that the status is either [47mnil[0m or of the form [47m(:key . lst)[0m, where
-  [47m:key[0m is either [47m:SKIP[0m or [47m:ENTER[0m and [47mlst[0m is a true-list of arbitrary
-  objects.  But since there is no way to prevent the user from
-  entering the [47mDEMO[0m wormhole interactively and doing something to the
-  status, this convention cannot be enforced.  Thus, the functions
-  below do what we say they do, e.g., remember all the values of [47mx[0m
-  ever seen, only if they're the only functions messing with the [47mDEMO[0m
-  status.  On the other hand, the guards of all the functions below
-  can be verified.  We have explicitly declared that the guards on
-  the functions below are to be verified, to confirm that they can
-  be.  Guard verification is optional but wormholes (and
-  [47mwormhole-eval[0m in particular) are more efficient when guards have
-  been verified.  All of the functions defined below return [47mnil[0m.
+  [47mwormhole[0m.  The wormhole in question will be named [47mdemo[0m and it is
+  created in the answer to the first question below.  The functions
+  below all maintain the convention that the status is either [47mnil[0m or
+  of the form [47m(:key . lst)[0m, where [47m:key[0m is either [47m:skip[0m or [47m:enter[0m and
+  [47mlst[0m is a true-list of arbitrary objects.  But since there is no way
+  to prevent the user from entering the [47mdemo[0m wormhole interactively
+  and doing something to the status, this convention cannot be
+  enforced.  Thus, the functions below do what we say they do, e.g.,
+  remember all the values of [47mx[0m ever seen, only if they're the only
+  functions messing with the [47mDEMO[0m status.  On the other hand, the
+  guards of all the functions below can be verified.  We have
+  explicitly declared that the guards on the functions below are to
+  be verified, to confirm that they can be.  Guard verification is
+  optional but wormholes (and [47mwormhole-eval[0m in particular) are more
+  efficient when guards have been verified.  All of the functions
+  defined below return [47mnil[0m.
 
   The examples below build on each other.  If you really want to
   understand wormholes we recommend that you evaluate each of the
   forms below, in the order they are discussed.
 
-  [31;1mQ.[0m How do I create a wormhole that prints its status to the comment
-  window?
+  [31;1mQ.[0m How do I initialize the status of the [47mdemo[0m wormhole?
+
+  Actually, it is often unnecessary to explicitly initialize the status
+  of a new wormhole because it is [47mnil[0m by default, the
+  [47m[wormhole-entry-code][0m of [47mnil[0m is [47m:enter[0m and the [47m[wormhole-data][0m of
+  [47mnil[0m is [47mnil[0m, which often is enough.  But if the data field of your
+  wormhole needs more structure for whatever you're planning to do
+  with it to make sense, you can initialize it by executing a form
+  like this, where the [47mnil[0m below is the contents of the initial data
+  field.
+
+    ACL2 !>(wormhole-eval 'demo
+                          '(lambda (whs) (make-wormhole-status whs :enter nil))
+                          nil)
+    NIL
+    ACL2 !>(get-persistent-whs 'demo state)
+     (:ENTER)
+
+  [31;1mQ.[0m How do I define a function that prints the (persistent) status of
+  the [47mdemo[0m wormhole to the comment window?
 
     (defun demo-status ()
       (declare (xargs :verify-guards t))
@@ -153591,24 +154339,25 @@ Subtopics
                                 whs))
                      nil))
 
-  Note above that after printing the status to the comment window we
-  return the new (unchanged) status [47mwhs[0m.  Had we just written the
-  call of [47mcw[0m, which returns [47mnil[0m, the function would print the status
-  and then set it to [47mnil[0m!
+  Note the [47mprog2$[0m above.  After printing the status to the comment
+  window we return the unchanged status [47mwhs[0m.  Had we just written the
+  [47mcw[0m term, which returns [47mnil[0m, without then returning [47mwhs[0m, the
+  function would print the status and then set it to [47mnil[0m!
 
-  [31;1mQ.[0m How do I use a wormhole to collect every symbol, [47mx[0m, passed to the
-  function?
+  [31;1mQ.[0m How can I define a function, [47mdemo-collect[0m, that does not take or
+  return [47m[state][0m but that can collect every symbol passed to it (but
+  not collect non-symbols)?
 
     (defun demo-collect (x)
-      (declare (xargs :verify-guards t))
-      (wormhole-eval 'demo
-                     '(lambda (whs)
-                        (make-wormhole-status whs
-                                              (wormhole-entry-code whs)
-                                              (if (symbolp x)
-                                                  (cons x (wormhole-data whs))
-                                                  (wormhole-data whs))))
-                     nil))
+       (declare (xargs :verify-guards t))
+       (wormhole-eval 'demo
+                      '(lambda (whs)
+                         (make-wormhole-status whs
+                                               (wormhole-entry-code whs)
+                                               (if (symbolp x)
+                                                   (cons x (wormhole-data whs))
+                                                   (wormhole-data whs))))
+                      nil))
 
   We could have also defined this function this way:
 
@@ -153624,11 +154373,53 @@ Subtopics
 
   Both versions always return [47mnil[0m and both versions collect into the
   wormhole data field just the symbols [47mx[0m upon which [47mdemo-collect[0m is
-  called.
+  called.  Note that the [47mlambda[0m expressions used in both definitions
+  mention [47mx[0m as a free variable.
 
-  [31;1mQ.[0m How do I use [47mdemo-collect[0m?  Below is a function that maps over a
-  list and computes its length.  But it has been annotated with a
-  call to [47mdemo-collect[0m on every element.
+  [31;1mQ.[0m How do I use [47mdemo-collect[0m?  Below we show an interactive session
+  log with [47mdemo-collect[0m and [47mdemo-status[0m.  Notice that [47mstate[0m is
+  nowhere involved but that the functions always return [47mnil[0m.  The
+  computation, collection, and printing are done inside the wormhole.
+
+    ACL2 !>(demo-status)
+    DEMO status:
+    (:ENTER)
+    NIL
+    ACL2 !>(demo-collect 'a)
+    NIL
+    ACL2 !>(demo-status)
+    DEMO status:
+    (:ENTER A)
+    NIL
+    ACL2 !>(demo-collect 'b)
+    NIL
+    ACL2 !>(demo-collect 'c)
+    NIL
+    ACL2 !>(demo-status)
+    DEMO status:
+    (:ENTER C B A)
+    NIL
+
+  [31;1mQ.[0m How do I reset the data to [47mnil[0m?
+
+  The answer is the same as the answer to the first question, use
+  [47mwormhole-eval[0m as we did there.  But we'll repeat it as a session
+  log because in the next question we want the data field to start
+  off at [47mnil[0m again.
+
+    ACL2 !>(wormhole-eval 'demo
+                          '(lambda (whs) (make-wormhole-status whs :enter nil))
+                          nil)
+    NIL
+    ACL2 !>(demo-status)
+    DEMO status:
+    (:ENTER)
+    NIL
+
+  [31;1mQ.[0m How can I use [47mdemo-collect[0m in a function?  Below is a function
+  that maps over a list and computes its length.  But it has been
+  annotated with a call to [47mdemo-collect[0m on every element.  We
+  illustrate a call below.
 
     (defun my-len (lst)
       (if (endp lst)
@@ -153637,26 +154428,31 @@ Subtopics
              (prog2$ (demo-collect (car lst))
                      (my-len (cdr lst))))))
 
-  Thus, for example:
+  Thus, for example, if we call [47mmy-len[0m on a list of length [47m5[0m it returns
+  [47m5[0m but accumulates the symbols into the [47mdemo[0m wormhole, without
+  [47mstate[0m.  From a logical perspective [47mmy-len[0m is just [47mlen[0m and that can
+  be proved trivially.
 
-    ACL2 !>(my-len '(4 temp car \"Hi\" rfix))
+    ACL2 !>(my-len '(4 temp car \"Hi\" fix))
     5
     ACL2 !>(demo-status)
     DEMO status:
-    (:ENTER RFIX CAR TEMP)
+    (:ENTER FIX CAR TEMP)
     NIL
-    ACL2 !>
+    ACL2 !>(thm (equal (my-len x) (len x)))
+    ...
+    Proof succeeded.
 
-  [31;1mQ.[0m How do I set the entry code to [47m:ENTER[0m or [47m:SKIP[0m according to
+  [31;1mQ.[0m How do I set the entry code to [47m:enter[0m or [47m:skip[0m according to
   whether [47mname[0m is a [47mmember-equal[0m of the list of things seen so far?
   Note that we cannot check this condition outside the wormhole,
   because it depends on the list of things collected so far.  We make
   the decision inside the [47mlambda[0m-expression.  Note that we explicitly
   check that the guard of [47mmember-equal[0m is satisfied by the current
-  wormhole status, since we cannot rely on the invariant that no
-  other function interferes with the status of the [47mDEMO[0m wormhole.  In
-  the case that the status is ``unexpected'' we act like the status
-  is [47mnil[0m and set it to [47m(:SKIP . NIL)[0m.
+  wormhole data, since we cannot rely on the invariant that no other
+  function interferes with the status of the [47mdemo[0m wormhole.  In the
+  case that the data is not a true-list we act like the data is [47mnil[0m
+  and set the status to [47m(:skip . nil)[0m.
 
     (defun demo-set-entry-code (name)
       (declare (xargs :verify-guards t))
@@ -153666,9 +154462,9 @@ Subtopics
                             (set-wormhole-entry-code
                              whs
                              (if (member-equal name (wormhole-data whs))
-                                 :ENTER
-                                 :SKIP))
-                            '(:SKIP . NIL)))
+                                 :enter
+                                 :skip))
+                            '(:skip . nil)))
                      nil))
 
   Thus
@@ -153677,23 +154473,26 @@ Subtopics
     NIL
     ACL2 !>(demo-status)
     DEMO status:
-    (:SKIP RFIX CAR TEMP)
+    (:SKIP FIX CAR TEMP)
     NIL
-    ACL2 !>(demo-set-entry-code 'rfix)
+    ACL2 !>(demo-set-entry-code 'fix)
     NIL
     ACL2 !>(demo-status)
     DEMO status:
-    (:ENTER RFIX CAR TEMP)
+    (:ENTER FIX CAR TEMP)
     NIL
     ACL2 !>
 
+  We won't be using [47mdemo-set-entry-code[0m again in these questions and
+  answers, so don't spend time learning more about it!
+
   [31;1mQ.[0m Suppose I want to collect every symbol and then, if the symbol has
-  an [47mABSOLUTE-EVENT-NUMBER[0m property in the ACL2 logical world, print
+  an [47mabsolute-event-number[0m property in the ACL2 logical world, print
   the defining event with [47m:pe[0m and then enter an interactive loop; but
-  if the symbol does not have an [47mABSOLUTE-EVENT-NUMBER[0m, don't print
+  if the symbol does not have an [47mabsolute-event-number[0m, don't print
   anything and don't enter an interactive loop.
 
-  Here it is not important to know what [47mABSOLUTE-EVENT-NUMBER[0m is; this
+  Here it is not important to know what [47mabsolute-event-number[0m is; this
   example just shows that we can use a wormhole to access the ACL2
   logical world, even in a function that does not take the state as
   an argument.
@@ -153703,29 +154502,30 @@ Subtopics
   loop.  But for efficiency we do as much as we can inside the entry
   [47mlambda[0m, where we can check whether [47mx[0m is symbol and collect it into
   the data field of the wormhole status.  Note that if we collect [47mx[0m,
-  we also set the entry code to [47m:ENTER[0m.  If we don't collect [47mx[0m, we
-  set the entry code to [47m:SKIP[0m.
+  we also set the entry code to [47m:enter[0m.  If we don't collect [47mx[0m, we
+  set the entry code to [47m:skip[0m.
 
-    (defun collect-symbols-and-print-events (x)
+    (defun demo-collect-symbols-and-print-events (x)
       (declare (xargs :guard t))
       (wormhole 'demo
                 '(lambda (whs)
                    (if (symbolp x)
                        (make-wormhole-status whs
-                                             :ENTER
+                                             :enter
                                              (cons x (wormhole-data whs)))
-                       (set-wormhole-entry-code whs :SKIP)))
+                       (set-wormhole-entry-code whs :skip)))
 
     ; The wormhole will not get past here is unless the entry code is
-    ; :ENTER.  If we get past here, we manufacture a state, put
-    ; x into [47m(@ wormhole-input)[0m and call ld in such a way that the
+    ; :enter.  If we get past here, wormhole will manufacture a state, put
+    ; x into (@ wormhole-input) and call ld in such a way that the
     ; first form executed is the quoted if-expression below.
 
                 x
                 '(if (getpropc (@ wormhole-input) 'absolute-event-number)
                      (er-progn
                       (mv-let (col state)
-                              (fmt \"~%Entering a wormhole on the event name ~x0~%\"
+                              (fmt \"~%Entering a wormhole on the event name ~x0~%~
+                                     Exit with :q~%~%\"
                                    (list (cons #\\0 (@ wormhole-input)))
                                    *standard-co* state nil)
                               (declare (ignore col))
@@ -153737,29 +154537,33 @@ Subtopics
                 :ld-verbose nil
                 :ld-prompt nil))
 
-  The ``first form'' (the [47mif[0m) asks whether the [47mwormhole-input[0m (i.e., [47mx[0m)
-  has an [47mABSOLUTE-EVENT-NUMBER[0m property.  If so, it enters an
-  [47m[er-progn][0m to perform a sequence of commands, each of which returns
-  an ACL2 error triple (see [programming-with-state]).  The first
-  form uses [47m[fmt][0m to print a greeting.  Since [47mfmt[0m returns [47m(mv col
-  state)[0m and we must return an error triple, we embed the [47mfmt[0m term in
-  an [47m(mv-let (col state) ... (value nil))[0m.  The macro [47mvalue[0m takes an
-  object and returns a ``normal return'' error triple.  The second
-  form in the [47mer-progn[0m uses the ACL2 history macro [47mpe[0m (see [pe]) to
-  print the defining event for a name.  The third form sets the
-  prompt of this read-eval-print loop to the standard function for
-  printing the wormhole prompt.  We silenced the printing of the
-  prompt when we called [47mld[0m, thanks to the [47m:ld-prompt nil[0m keyword
-  option.  More on this below.  The fourth form returns the error
-  triple value [47m:invisible[0m as the value of the first form.  This
-  prevents [47mld[0m from printing the value of the first form.  Since we
-  have not exited [47mld[0m, that function just continues by reading the
-  next form from the comment window.  The user perceives this as
-  entering a read-eval-print loop.  We continue in the loop until the
-  user types [47m:q[0m.
+  The ``first form'' --- so called because it is the first form
+  executed by the wormhole's read-eval-print loop --- is the quoted
+  [47mif[0m-expression in the fourth argument of [47mwormhole[0m.  It asks whether
+  the [47mwormhole-input[0m (i.e., [47mx[0m) has an [47mabsolute-event-number[0m property.
 
-  On the other branch of the [47mif[0m, if the symbol has no
-  [47mABSOLUTE-EVENT-NUMBER[0m property, we execute the form [47m(value :q)[0m,
+  The true branch of that [47mif[0m is an [47m[er-progn][0m to perform a sequence of
+  commands, each of which returns an ACL2 error triple (see
+  [programming-with-state]).  The first form uses [47m[fmt][0m to print a
+  greeting.  Since [47mfmt[0m returns [47m(mv col state)[0m and we must return an
+  error triple, we embed the [47mfmt[0m term in an [47m(mv-let (col state) ...
+  (value nil))[0m.  The macro [47mvalue[0m takes an object and returns a
+  ``normal return'' error triple.  The second form in the [47mer-progn[0m
+  uses the ACL2 history macro [47mpe[0m (see [pe]) to print the defining
+  event for a name.  The third form sets the prompt of this
+  read-eval-print loop to the standard function for printing the
+  wormhole prompt.  We silenced the printing of the prompt when we
+  called [47mld[0m, thanks to the [47m:ld-prompt nil[0m keyword option.  More on
+  this below.  The fourth form returns the error triple value
+  [47m:invisible[0m as the value of the first form.  This prevents [47mld[0m from
+  printing the value of the first form.  Since we have not exited [47mld[0m,
+  that function just continues by reading the next form from the
+  comment window.  The user perceives this as entering a
+  read-eval-print loop and being prompted for input.  We continue in
+  the loop until the user types [47m:q[0m.
+
+  The false branch of the [47mif[0m is taken when [47mx[0m has no
+  [47mabsolute-event-number[0m property.  We execute the form [47m(value :q)[0m,
   which is the programming equivalent of typing [47m:q[0m.  That causes the
   [47mld[0m to exit.
 
@@ -153773,7 +154577,7 @@ Subtopics
     ...
     Type (good-bye) to quit completely out of ACL2.
 
-  before the first form is read and evaluated.
+  every time the first form is read and evaluated.
 
   By setting [47m:[0m[47m[ld-prompt][0m to [47mnil[0m we prevent [47mld[0m from printing the prompt
   before reading and evaluating the first form.
@@ -153784,6 +154588,34 @@ Subtopics
   understand programming with [47m[state][0m and the effects of the various
   [47m[ld][0m ``special variables.''
 
+  Had we defined [47mdemo-collect-symbols-and-print-events[0m before [47mmy-len[0m we
+  could have called it instead of [47mdemo-collect[0m.  Then
+
+    ACL2 !>(my-len '(4 temp car \"Hi\" fix))
+
+  would have still collected all the symbols into the [47mdemo[0m wormhole,
+  but on the symbols [47mcar[0m and [47mfix[0m it would have entered an interactive
+  break.  Here is the break that would be triggered when this version
+  of [47mmy-len[0m encounters the [47mfix[0m.
+
+    Entering a wormhole on the event name FIX
+    Exit with :q
+
+    V     -8055  (DEFUN FIX (X)
+                    (DECLARE (XARGS :GUARD T :MODE :LOGIC))
+                    (IF (ACL2-NUMBERP X) X 0))
+    Wormhole ACL2 !>(fix 123)
+    123
+    Wormhole ACL2 !>(fix t)
+    0
+    Wormhole ACL2 !>:q
+
+  After printing the [47m(DEFUN FIX ...)[0m above the user in this session
+  called [47mfix[0m twice to see how it behaves.  Then the user issued the
+  [47m:q[0m command to exit the interactive loop, allowing [47mmy-len[0m to
+  continue.  When [47mmy-len[0m finishes processing the list, it would
+  return [47m5[0m.
+
   From the discussion above we see that wormholes can be used to create
   formatted output without passing in the ACL2 [47m[state][0m.  For examples
   see [cw], in particular the discussion at the end of that
@@ -153792,6 +154624,9 @@ Subtopics
 
 Subtopics
 
+  [Get-persistent-whs]
+      Make a wormhole's status visible outside the wormhole
+
   [Get-wormhole-status]
       Make a wormhole's status visible outside the wormhole
 
@@ -153799,11 +154634,17 @@ Subtopics
       Creates a wormhole status object from given status, entry code, and
       data
 
+  [Set-persistent-whs-and-ephemeral-whs]
+      maintaining wormhole coherence
+
   [Set-wormhole-data]
       Sets the wormhole data object in a wormhole status object
 
   [Set-wormhole-entry-code]
       Sets the wormhole entry code in a wormhole status object
+
+  [Sync-ephemeral-whs-with-persistent-whs]
+      establishing wormhole coherence
 
   [Wormhole-data]
       Determines the wormhole data object from a wormhole status object
@@ -153820,8 +154661,16 @@ Subtopics
   [Wormhole-p]
       Predicate to determine if you are inside a [47m[wormhole][0m
 
+  [Wormhole-programming-tips]
+      some tips for how to use wormholes
+
+  [Wormhole-status]
+      the two senses of a wormhole's status
+
   [Wormhole-statusp]
       Predicate recognizing well-formed wormhole status object")
+ (WORMHOLE-COHERENCE (POINTERS)
+                     "See [wormhole-status].")
  (WORMHOLE-DATA
   (WORMHOLE)
   "Determines the wormhole data object from a wormhole status object
@@ -153856,15 +154705,22 @@ Subtopics
     (wormhole-eval name lambda varterm)
 
   where [47mname[0m must be a quoted wormhole name and [47mlambda[0m must be a quoted
-  [47mlambda[0m-expression.  The [47mlambda[0m-expression must have at most one
-  formal parameter but the body of the [47mlambda[0m-expression may contain
-  other variables.  Note that in the example form given above, the
-  [47mlambda[0m has one formal, [47mwhs[0m, and uses [47mname[0m and [47minfo[0m freely.  Note
-  that the [47mlambda[0m is quoted.  The third argument of [47mwormhole-eval[0m,
-  [47mvarterm[0m, is an arbitrary term that should mention all of the free
-  variables in the [47mlambda[0m-expression.  That term establishes your
-  ``right'' to refer to those free variables in the environment in
-  which the [47mwormhole-eval[0m expression occurs.  The value of [47mvarterm[0m is
+  [47mlambda[0m-expression as described below.  It is forbidden to invoke
+  [47mwormhole-eval[0m on the names listed in
+  [47m*protected-system-wormhole-names*[0m, which includes [47mbrr[0m (the
+  [break-rewrite] wormhole name), [47maccumulated-persistence[0m, and
+  [47mfc-wormhole[0m (the name of the wormhole managing
+  [forward-chaining-reports]), among others.
+
+  The [47mlambda[0m-expression must have at most one formal parameter but the
+  body of the [47mlambda[0m-expression may contain other variables.  Note
+  that in the example form given above, the [47mlambda[0m has one formal,
+  [47mwhs[0m, and uses [47mname[0m and [47minfo[0m freely.  Note that the [47mlambda[0m is
+  quoted.  The third argument of [47mwormhole-eval[0m, [47mvarterm[0m, is an
+  arbitrary term that should mention all of the free variables in the
+  [47mlambda[0m-expression.  That term establishes your ``right'' to refer
+  to those free variables in the environment in which the
+  [47mwormhole-eval[0m expression occurs.  The value of [47mvarterm[0m is
   irrelevant and if you provide [47mnil[0m ACL2 will automatically provide a
   suitable term, namely a [47mprog2$[0m form like the one shown in the
   example above.
@@ -153884,13 +154740,14 @@ Subtopics
 
   Here is a succinct summary of [47mwormhole-eval[0m.  If the
   [47mlambda[0m-expression has a local variable, [47mwormhole-eval[0m applies the
-  [47mlambda[0m-expression to the wormhole status of the named wormhole and
-  remembers the value as the new wormhole status.  If the [47mlambda[0m has
-  no formal parameter, the [47mlambda[0m is applied to no arguments and the
-  value is the new status.  [47mWormhole-eval[0m returns [47mnil[0m.  Thus, the
-  formal parameter of the [47mlambda[0m-expression, if provided, denotes the
-  wormhole's hidden status information; the value of the [47mlambda[0m is
-  the new status and is hidden away.
+  [47mlambda[0m-expression to the persistent-whs (see [47m[wormhole-status][0m) of
+  the named wormhole and remembers the value as the new
+  persistent-whs.  If the [47mlambda[0m has no formal parameter, the [47mlambda[0m
+  is applied to no arguments and the value is the new persistent-whs.
+  [47mWormhole-eval[0m returns [47mnil[0m.  Thus, the formal parameter of the
+  [47mlambda[0m-expression, if provided, denotes the wormhole's hidden
+  status information; the value of the [47mlambda[0m is the new status and
+  is hidden away.
 
   The guard of a [47mwormhole-eval[0m call is the guard of the body of the
   [47mlambda[0m-expression, with a fresh variable symbol used in place of
@@ -153898,10 +154755,8 @@ Subtopics
   wormhole status.  If the guard of a [47mwormhole-eval[0m is verified, the
   call is macroexpanded inline to the evaluation of the body in a
   suitable environment.  Thus, it can be a very fast way to access
-  and change hidden state information, but the results must remain
-  hidden.  To do arbitrary computations on the hidden state (i.e., to
-  access the ACL2 [47m[state][0m or logical [world] or to interact with the
-  user) see [wormhole].
+  and change the persistent-whs, but the results remain hidden.  To
+  interact the wormhole's state you must use [47m[wormhole][0m.
 
   Functions that are probably useful in the body of the [47m[lambda][0m or the
   guard of a function using [47mwormhole-eval[0m include the following:
@@ -153924,7 +154779,13 @@ Subtopics
   [47mwormhole[0m.
 
   For a behind-the-scenes description of how wormholes work, See
-  [wormhole-implementation].")
+  [wormhole-implementation].
+
+
+Subtopics
+
+  [Wormhole-programming-tips]
+      some tips for how to use wormholes")
  (WORMHOLE-IMPLEMENTATION
   (WORMHOLE)
   "Notes on how wormholes are implemented
@@ -153941,72 +154802,88 @@ Subtopics
 
   A brief recap of the advertised semantics for [47mwormhole[0m establishes
   our terminology: When the above [47mwormhole[0m is evaluated, the
-  [47mlambda[0m-expression is applied to the wormhole's status and the
-  result is stored as the new status.  Then, if the entry-code of the
-  new status is [47m:ENTER[0m, [47m[ld][0m is invoked on a copy of the ``current
-  state'' with the specified [47mld-[0m ``special variables;'' output is
-  directed to the comment window.  In that copy of the state, the
-  state-global variable [47mwormhole-input[0m is set to the value of [47minput[0m
-  and the state-global variable [47mwormhole-status[0m is set to the (new)
-  status computed by the [47mlambda[0m-expression.  Thus, inside the
-  wormhole, [47m(@ wormhole-input)[0m returns the list of inputs, [47m(@
-  wormhole-status)[0m returns the current status, and [47m(assign
-  wormhole-status ...)[0m sets the wormhole's status.  The first form
-  executed by the [47mld[0m is the value of [47mform[0m and unless that form
+  [47mlambda[0m-expression is applied to the persistent-whs and the result
+  is stored as the new persistent-whs.  Then, if the entry-code of
+  the new status is [47m:ENTER[0m (actually, if it is not [47m:SKIP[0m), [47m[ld][0m is
+  invoked on a copy of the ``current state'' with the specified [47mld-[0m
+  ``special variables;'' output is directed to the comment window.
+  In that copy of the state, the state global variables
+  [47mwormhole-name[0m, [47mwormhole-input[0m and [47mwormhole-status[0m are assigned
+  [47mname[0m, the the value of [47minput[0m and the persistent-whs, respectively.
+  Thus, inside the wormhole, [47m(@ wormhole-name)[0m returns the name of
+  the current wormhole, [47m(@ wormhole-input)[0m returns the list of
+  inputs, [47m(@ wormhole-status)[0m returns the ephemeral-whs.  The first
+  form executed by the [47mld[0m is the value of [47mform[0m and unless that form
   returns [47m(value :q)[0m, causing the [47mld[0m to quit, the [47mld[0m proceeds to take
   subsequent input from the comment window.  Upon exiting from [47mld[0m,
-  the wormhole state ``evaporates.'' The wormhole's status upon exit
-  is remembered and restored the next time the wormhole is entered.
+  the ephemeral-whs is written to the persistent-whs and the wormhole
+  state ``evaporates.'' The next time the wormhole is entered its
+  ephemeral-whs will be what it was when it last exited.
 
   Here is what really happens.
 
-  Each wormhole's status is recorded in an alist stored in a Common
-  Lisp global variable named [47m*wormhole-status-alist*[0m.  This variable
-  is not part of the ACL2 state.  If you exit the ACL2 loop with [47m:q[0m
-  you can inspect the value of [47m*wormhole-status-alist*[0m.  When the
-  [47mlambda[0m-expression is evaluated it is applied to the value
-  associated with [47mname[0m in the alist and the result is stored back
-  into that alist.  This step is performed by [47m[wormhole-eval][0m.  To
-  make things more efficient, [47mwormhole-eval[0m is just a macro that
-  expands into a [47mlet[0m that binds the [47mlambda[0m formal to the current
-  status and whose body is the [47mlambda[0m body.  [Guard] [clause]s are
-  generated from the body, with one exception: the [47mlambda[0m formal is
-  replaced by a new variable so that no prior assumptions are
-  available about the value of the wormhole status.
+  Each wormhole's persistent-whs is recorded in an alist stored in a
+  Common Lisp global variable named [47m*wormhole-status-alist*[0m.  This
+  variable is not part of the ACL2 state.  If you exit the ACL2 loop
+  with [47m:q[0m you can inspect the value of [47m*wormhole-status-alist*[0m.
+  However, be cautious about printing it because the persistent-whs
+  of some wormholes can be quite large.  When the [47mlambda[0m-expression
+  is evaluated it is applied to the value associated with [47mname[0m in the
+  alist and the result is stored back into that alist.  This step is
+  performed by [47m[wormhole-eval][0m.  To make things more efficient,
+  [47mwormhole-eval[0m is just a macro that expands into a [47mlet[0m that binds
+  the [47mlambda[0m formal to the current status and whose body is the
+  [47mlambda[0m body.  [Guard] [clause]s are generated from the body, with
+  one exception: the [47mlambda[0m formal is replaced by a new variable so
+  that no prior assumptions are available about the value of the
+  wormhole status.
 
-  If the newly computed status has an entry code of [47m:ENTER[0m [47m[ld][0m will be
-  invoked.  But we don't really copy state, of course.  Instead we
-  will invoke [47mld[0m on the live state, which is always available in the
-  von Neumann world in which ACL2 is implemented.  To give the
-  illusion of copying state, we will undo changes to the state upon
-  exiting.  To support this, we do two things just before invoking
-  [47mld[0m: we bind a Common Lisp special variable is to [47mt[0m to record that
-  ACL2 is in a wormhole, and we initialize an accumulator that will
-  be used to record state changes made while in the wormhole.
+  If the newly computed status has an entry code other than [47m:SKIP[0m [47m[ld][0m
+  will be invoked.  But we don't really copy state, of course.
+  Instead we will invoke [47mld[0m on the live state, which is always
+  available in the von Neumann world in which ACL2 is implemented.
+  To give the illusion of copying state, we will undo changes to the
+  state upon exiting.  To support this, we do two things just before
+  invoking [47mld[0m: we bind a Common Lisp special variable, [47m*wormholep*[0m,
+  to [47mt[0m to record that ACL2 is in a wormhole, and we initialize an
+  accumulator that will be used to record state changes made while in
+  the wormhole.  Then we assign the three state globals
+  [47mwormhole-name[0m, [47mwormhole-input[0m, and [47mwormhole-status[0m.  Those
+  assignments are made undoably since [47m*wormholep*[0m is set.
 
   Then [47mld[0m is invoked, with first argument, [47mstandard-oi[0m, being set to
   [47m(cons form *standard-oi*)[0m.  According to the standard semantics of
-  [47mld[0m, this reads and evaluates [47mform[0m and then the forms in the
-  specified channel.  The standard channels are directed to and from
-  the terminal, which is the physical realization of the comment
-  window.
+  [47mld[0m, the first read from this [47mstandard-oi[0m returns [47mform[0m and
+  subsequent reads, if any, come from [47m*standard-oi*[0m.  The standard
+  channels are directed to and from the terminal, which is the
+  physical realization of the comment window.
 
   All state modifying functions of ACL2 are sensitive to the special
-  variable that indicates that evaluation is in a wormhole.  Some
-  ACL2 state-modifying functions (e.g., those that modify the file
-  system like [47m[write-byte$][0m) are made to cause an error if invoked
-  inside a wormhole on a file other than the terminal.  Others, like
-  [47mf-put-global[0m (the function behind such features as [47massign[0m and
-  maintenance of the ACL2 logical world by such events as [47m[defun][0m and
-  [47m[defthm][0m) are made to record the old value of the state component
-  being changed; these records are kept in the accumulator
-  initialized above.
+  variable [47m*wormholep*[0m that indicates that evaluation is in a
+  wormhole.  Some ACL2 state-modifying functions (e.g., those that
+  modify the file system like [47m[write-byte$][0m) are made to cause an
+  error if invoked inside a wormhole on a file other than the
+  terminal.  Others, like [47mf-put-global[0m (the function behind such
+  features as [47massign[0m and maintenance of the ACL2 logical world by
+  such events as [47m[defun][0m and [47m[defthm][0m) are made to record the old
+  value of the state component being changed; these records are kept
+  in the accumulator initialized above.
 
-  Upon exit from [47mld[0m for any reason, the final value of [47m(@
-  wormhole-status)[0m is stored in [47m*wormhole-status-alist*[0m and then the
-  accumulator is used to ``undo'' all the state changes.
+  Upon exit from [47mld[0m for any reason, the ephemeral-whs is transferred to
+  the persistent-whs, i.e., the final value of [47m(@ wormhole-status)[0m is
+  stored under the current [47mwormhole-name[0m in [47m*wormhole-status-alist*[0m
+  and then the accumulator is used to ``undo'' all the state changes.
 
-  [47mWormhole[0m always returns [47mnil[0m.")
+  [47mWormhole[0m always returns [47mnil[0m.
+
+  The system wormhole named [47mbrr[0m, which implements [break-rewrite], is
+  treated a little differently.  When [47mld[0m exits due to an abort the
+  ephemeral-whs is not transferred to the persistent-whs.  Instead,
+  the persistent-whs is set to what it was at the time break-rewrite
+  was first entered from the top-level.  See the Essay on
+  Break-Rewrite in the source code file [47mrewrite.lisp[0m for details
+  about the implementation of break-rewrite, which is intimately
+  connected to wormholes.")
  (WORMHOLE-P
   (WORMHOLE)
   "Predicate to determine if you are inside a [47m[wormhole][0m
@@ -154014,6 +154891,369 @@ Subtopics
   See [wormhole] for a discussion of wormholes.  [47m(Wormhole-p state)[0m
   returns [47m(mv nil t state)[0m when evaluated inside a wormhole, else [47m(mv
   nil nil state)[0m.")
+ (WORMHOLE-PROGRAMMING-TIPS
+  (WORMHOLE WORMHOLE-EVAL)
+  "some tips for how to use wormholes
+
+  Wormholes allow one to collect data and print without having access
+  to ACL2's [47m[state][0m.  Many ACL2 utilities are implemented in terms of
+  wormholes.  Examples include [break-rewrite],
+  [47m[accumulated-persistence][0m, and [47m[forward-chaining-reports][0m.  So an
+  ACL2 developer wishing to add features or fixing misbehaviors in
+  these system utilities must be familiar with programming wormholes.
+  But users might also employ wormholes to implement utilities in
+  their own models.  Thus, this documentation topic is as much for
+  future ACL2 developers and maintainers as for ACL2 users (but items
+  meant primarily for developers often include references to
+  functions in the ACL2 source code which other users may just
+  ignore).  This is simply a list of tips for a person programming
+  with wormholes.  This list doesn't replace the topics [47m[wormhole][0m
+  and [47m[wormhole-eval][0m, and their subtopics including the particularly
+  relevant [wormhole-status].  But this list of tips might serve as a
+  useful reminder when you're programming with wormholes.
+
+    * The ``function'' [47m[wormhole][0m is really a macro that expands in raw
+      Lisp into a call of [47m[wormhole-eval][0m to set the entry code and
+      then a call of [47mwormhole1[0m to do the interactive work.  But in
+      addition, the source code functions [47mev-rec[0m,
+      [47mtranslate11-wormhole-eval[0m, [47mtranslate11-call-1[0m, and
+      [47mtranslate11-call[0m all contain special provisions for wormholes.
+      Do not think you can add features to wormholes by just changing
+      the definition of [47mwormhole[0m or [47mwormhole1[0m!  These functions are
+      in what we call the wormhole implementation nexus and there is
+      entitled ``[47m; Essay on the Wormhole Implementation Nexus[0m'' in
+      the source file [47maxioms.lisp[0m.
+    * The built-in ACL2 system wormholes are protected by mechanisms in
+      [47mtranslate11-call-1[0m and [47mtranslate11-call[0m so that code executed
+      during ACL2's boot-strapping process is allowed to manipulate
+      system wormholes but code executed after boot-strap cannot.
+      Search the source code for occurrences of
+      [47m*protected-system-wormhole-names*[0m.
+    * System implementors and maintainers may be hampered by being unable
+      to invoke wormhole functions on system wormholes like [47mbrr[0m or
+      [47maccumulated-persistence[0m.  One way around that, e.g., to test
+      changes to existing code, is to execute [47m(defconst
+      *protected-system-wormhole-names* nil)[0m after doing [47m(redef+)[0m.
+    * Users may wish to employ wormholes so they can build tools allowing
+      the [47m[state][0m-less exploration of their models.  But we confess
+      that to make wormholes as useful to other tool developers as
+      they are to the ACL2 developers we will need to add some
+      protection features (similiar to those in the item above) to
+      user-defined wormholes.  Ideas we have toyed with but not
+      implemented include pairing a wormhole's name with various
+      attributes such as a flag to prevent its use except through
+      named interfaces, a wrapper form or filter that applies to
+      every form read, translated, and evaluated by the [47mld[0m inside
+      that wormhole, and what should happen when the wormhole is
+      exited.  But these ideas are not implemented.  If you really
+      need them, let us know.
+    * Each wormhole has a name, which is typically but not necessarily a
+      symbol.
+    * Each wormhole has a current status.  The status is a cons whose [47mcar[0m
+      is either [47m:ENTER[0m or [47m:SKIP[0m, and whose [47mcdr[0m is an arbitrary ACL2
+      object managed by the creator of the wormhole.  The [47mcar[0m of the
+      status is called the ``entry code''.  The [47mcdr[0m is called the
+      ``data''.  See [47m[wormhole-entry-code][0m, [47m[wormhole-data][0m, and
+      [47m[make-wormhole-status][0m.
+    * The status object of a wormhole named [47mnm[0m is stored in raw Lisp in a
+      part of memory inaccessible to ACL2 terms other than the ACL2
+      oracle (see [47m[read-ACL2-oracle][0m).  We call this the [3mpersistent
+      wormhole status[0m or [3mpersistent-whs[0m.  If you're in raw Lisp ---
+      which you can reach by exiting the ACL2 loop with [47m:q[0m or by
+      invoking [47m[break$][0m --- you can recover the persistent-whs of the
+      [47mnm[0m wormhole with [47m(cdr (assoc nm *wormhole-status-alist*))[0m.
+      However, the logic-mode function [47m[get-persistent-whs][0m takes a
+      name and [47mstate[0m returns an error triple containing the
+      persistent status.  [47mGet-persistent-whs[0m reads the ACL2 oracle
+      (see [read-ACL2-oracle]) to get the otherwise hidden status of
+      the wormhole.  In doing so it changes the state.  So if you're
+      not in a context in which you have [47mstate[0m and can return a
+      modified state, you can't use [47mget-persistent-whs[0m.
+    * [47m[Wormhole-eval][0m gives you a way, without access to state, to set the
+      persistent-whs of a named wormhole as a function of its current
+      persistent-whs.  [47mWormhole-eval[0m takes a wormhole name, a lambda
+      expression, and a term (which is functionally irrelevant),
+      applies the lambda expression to the persistent-whs, stores as
+      the new persistent-whs, and returns [47mnil[0m.
+    * [47m[Wormhole][0m is a function that allows you to set and test the status
+      of a named wormhole and if the resulting status has an entry
+      code of [47m:enter[0m you will enter a read-eval-print loop.  Wormhole
+      has two other arguments, the so-called ``input'' object and the
+      ``first form'' to execute if and when the loop is entered.
+    * The read-eval-print loop is managed by [47m[ld][0m, the same function that
+      manages ACL2's top-level read-eval-print loop.  The [47mwormhole[0m
+      function allows you to specify the standard [47mld[0m variables (e.g.,
+      [47m[ld-error-action][0m, etc.).  One of those variables is
+      [47m[ld-keyword-aliases][0m which specifies the behaviors of keyword
+      commands issued in the wormhole's loop.
+    * Before [47mwormhole[0m (actually [47mwormhole1[0m) calls [47mld[0m it sets the three
+      important state global variables mentioned below.  Then while
+      in the interactive loop:
+
+          (@ wormhole-name) = nm
+
+          (@ wormhole-input) = the ``input'' object supplied to wormhole
+
+          (@ wormhole-status) = the wormhole's persistent-whs at the time of entry
+
+    * When inside the interactive loop of the wormhole we call the value of
+      [47mwormhole-status[0m the [3mephemeral wormhole status[0m or [3mephemeral-whs[0m.
+      It ``disappears'' when the wormhole is exited but it is easy to
+      read without changing state while inside the wormhole.
+    * The ``first form'' is very often the only form executed!  We
+      typically use that form to grab the input and the status and
+      print stuff.  Then the first form returns [47m(value :q)[0m.  Recall
+      that typing [47m(value :q)[0m to the ACL2 loop (i.e., to [47m[ld][0m) exits
+      the loop, which exits the wormhole.  See the example in the
+      documentation topic [47m[wormhole][0m, starting with \"[47m(wormhole
+      'demo[0m\".  If the first form returns any other non-erroneous
+      value triple, user input is read and evaluated.  So if your
+      first form always returns [47m(value :q)[0m you're in complete control
+      of your wormhole --- and if it doesn't, you're not because the
+      next thing that happens is the wormhole reads and evaluates
+      whatever the user types!
+    * The use of [47mld[0m to manage the read-eval-print loop means that the user
+      can execute virtually any ACL2 term.  If you use [47mwormhole[0m and
+      allow input from the user, you have no control over the
+      operations performed.
+    * If, while in the [47mnm[0m wormhole, you execute [47m(wormhole-eval nm ...)[0m it
+      will set the persistent-whs but not set the ephemeral-whs.
+      (Recall, [47mwormhole-eval[0m does not have access to [47mstate[0m.)  This
+      means that you can't trust [47m(@ wormhole-status)[0m after a call of
+      [47mwormhole-eval[0m --- or of any function that calls [47mwormhole-eval[0m
+      --- from within the wormhole.
+    * This brings us to the [3mWormhole Coherence Convention[0m.  The problem
+      described in the bullet above is akin to the cache coherence
+      problem.  Think of the persistent-whs stored in
+      [47m*wormhole-status-alist*[0m as being stored in a distant memory
+      location and the ephemeral-whs stored in [47m(@ wormhole-status)[0m as
+      a nearby, easily accessible cache when you're in the wormhole.
+      [47mWormhole-eval[0m reads and writes the persisten-whs and does not
+      update the cache.  The Wormhole Coherence Convention is to keep
+      persistent-whs and the ephemeral-whs equal.  Of course, the
+      convention is meant to hold except in the region of code
+      between updating the two locations.
+    * The wormhole programmer is responsible for maintaining the wormhole
+      coherence --- or not.  It's up to you.  But remember: if your
+      wormhole permits user interaction, you can't prevent the
+      execution of certain forms.
+    * The state global variable [47mwormhole-status[0m is untouchable, so the user
+      cannot just execute [47m(assign wormhole-status new-status)[0m to
+      change it.  But [47mwormhole-status[0m can be changed by certain
+      special functions available to the user, namely
+      [47m[sync-ephemeral-whs-with-persistent-whs][0m and
+      [47m[set-persistent-whs-and-ephemeral-whs][0m, though these will only
+      have effect after executing [47m[wormhole-eval][0m or [47m[wormhole][0m.
+    * We have already mentioned [47mwormhole-eval[0m, which writes to the
+      persistent-whs not to the ephemeral-whs.  But the other two
+      utilities mentioned above are helpful in establishing and
+      maintaining coherence.
+    * [47m(sync-ephemeral-whs-with-persistent-whs nm state)[0m moves the
+      ``distant'' memory status into the cached status.  It returns
+      the modified state.
+    * [47m(set-persistent-whs-and-ephemeral-whs nm new-status state)[0m writes
+      [47mnew-status[0m to the persistent-whs of [47mnm[0m and, if you're in the
+      wormhole [47mnm[0m, it also updates the ephemeral-whs status.  It
+      returns a new state.
+    * Using [47msync-ephemeral-whs-with-persistent-whs[0m and
+      [47mset-persistent-whs-and-ephemeral-whs[0m you can program your
+      wormhole operations to establish and maintain coherence.  But
+      you can't prevent the user from breaking it if you allow user
+      interaction.
+    * While it may seem that [47mset-persistent-whs-and-ephemeral-whs[0m is the
+      preferred way to update the status of a wormhole, that function
+      suffers from the requirement that you have to have the new
+      status in hand when you call
+      [47mset-persistent-whs-and-ephemeral-whs[0m.  So from a practical
+      perspective [47mset-persistent-whs-and-ephemeral-whs[0m is either used
+      outside the wormhole to initialize the status to some standard
+      value or is used inside the wormhole after having obtained the
+      current status from the cache and modifying it to create the
+      new status.
+    * Both [47msync-ephemeral-whs-with-persistent-whs[0m and
+      [47mset-persistent-whs-and-ephemeral-whs[0m take and return [47mstate[0m and
+      so can only be used in contexts allowing that.
+    * In contrast, [47mwormhole-eval[0m allows you to compute the new status as a
+      function of the old status, [3mWITHOUT HAVING PRIOR ACCESS[0m to the
+      old status and without access to [47mstate[0m.  But then remember to
+      call [47msync-ephemeral-whs-with-persistent-whs[0m, which will restore
+      coherence.
+    * The most direct way to establish and maintain the wormhole coherence
+      is to avoid use of fully interactive calls of [47mwormhole[0m (i.e.,
+      make sure the first form executed always returns [47m(value :q)[0m),
+      and do all modifications to the wormhole status with
+      [47mwormhole-eval[0m, which reads and writes the persistent-whs.  For
+      example, search the ACL2 sources for occurrences of
+      [47m'accumulated-persistence[0m.  You'll see [47mwormhole-eval[0m is used to
+      collect all the data.  Then in [47mshow-accumulated-persistence-fn[0m,
+      [47mwormhole[0m is used to display the data and exit with [47m(value :q)[0m.
+    * But the [47m[break-rewrite][0m wormhole, named [47mbrr[0m, is necessarily different
+      because the whole intention is to allow interaction with the
+      user!  So there is special code here and there throughout ACL2
+      to maintain coherence.  We're sorry we don't provide suitable
+      provisions for other users!
+    * If you're in a wormhole, all modifications to state globals during
+      the execution of the commands in the read-eval-print loop will
+      be undone when the loop is exited.  This cleanup is done in the
+      raw Lisp code for [47mwormhole1[0m, by evaluating the raw Lisp form
+      held in [47m*wormhole-cleanup-form*[0m.  That form is destructively
+      modified every time an [47mf-put-global[0m is executed from within
+      some wormhole.  The modification introduces code to undo each
+      [47mf-put-global[0m and restore the previous values.
+    * The cleanup form just mentioned contains special code for the
+      [47mbreak-rewrite[0m wormhole!  Look for [47m'brr[0m in [47mwormhole1[0m and read
+      the comments.")
+ (WORMHOLE-STATUS
+  (WORMHOLE)
+  "the two senses of a wormhole's status
+
+  As noted in the discussion of [47mwormhole[0ms, every wormhole has a current
+  status, which is some ACL2 object whose shape is largely determined
+  by the author of the wormhole.  That object is not stored in the
+  ACL2 state.  When the wormhole is entered, its status is assigned
+  to the state global variable [47mwormhole-status[0m, making it visible.
+  When the wormhole is exited, the value of [47mwormhole-status[0m is
+  transferred back to its ``hidden'' location outside of the state.
+  Thus, the next time it is entered the [47mwormhole-status[0m is the same
+  as it was when it was last exited.
+
+  We call the ``hidden'' version of a wormhole's status the [3mpersistent
+  wormhole status[0m or [3mpersistent-whs[0m and the version occasionally
+  found in the state global [47mwormhole-status[0m as the [3mephemeral wormhole
+  status[0m or [3mephemeral-whs[0m.  It is helpful to think of the
+  persistent-whs as the wormhole's status as stored in some distant
+  location and its ephemeral-whs as an easily accessible, nearby
+  cache.  When the two locations hold the same value we say the
+  wormhole is [3mcoherent[0m.
+
+  The state global variable [47mwormhole-status[0m is untouchable: you can
+  read it but not directly write to it via [47m[assign][0m or
+  [47m[f-put-global][0m.  But you can write to the persistent-whs.  That is
+  what [47m[wormhole-eval][0m does.  So while a wormhole is coherent when
+  you first enter it it can become incoherent if you use
+  [47mwormhole-eval[0m to change its persistent-whs while inside the
+  wormhole.  And remember, the use of [47mwormhole-eval[0m can be disguised
+  via a function definition.
+
+  The following script illustrates this.  First, create a wormhole
+  named [47mdemo[0m whose data field is empty.  We'll use it to accumulate
+  items without modifying state.  We define [47m(save x)[0m to cons [47mx[0m onto
+  the data field of the [47mdemo[0m wormhole.  So execute these five
+  commands at the top-level of ACL2.
+
+    (wormhole-eval 'demo '(lambda nil '(:enter . nil)) nil)
+    (defun save (x)
+      (wormhole-eval
+       'demo
+       '(lambda (whs)(set-wormhole-data whs (cons x (wormhole-data whs))))
+       nil))
+    (save 'a)
+    (save 'b)
+    (save 'c)
+
+  Then inspect the persistent-whs of [47mdemo[0m:
+
+    ACL2 !>(get-persistent-whs 'demo state)
+     (:ENTER C B A)
+
+  So [47msave[0m works as we planned.  But now let's enter the [47mdemo[0m wormhole.
+  Inside the wormhole we first inspect the ephemeral-whs (i.e., [47m(@
+  wormhole-status)[0m, and the persistent-whs to confirm the wormhole is
+  coherent.  Then we execute [47m(save 'd)[0m to add [47mD[0m to the accumulator.
+  Inspecting the persistent-whs shows that it worked.  But the
+  ephemeral-whs did not change!  The wormhole is now incoherent,
+  thanks to the ``disguised'' use of [47mwormhole-eval[0m while in the
+  wormhole.
+
+    ACL2 !>(wormhole 'demo '(lambda (whs) whs) nil '(quote (welcome!)))
+
+    Project-dir-alist:
+    ((:SYSTEM . \"/Users/moore/Desktop/v85k1/books/\")).
+    Type :help for help.
+    Type (quit) to quit completely out of ACL2.
+
+    Wormhole ACL2 !>(WELCOME!)
+    Wormhole ACL2 !>(@ wormhole-status)
+    (:ENTER C B A)
+    Wormhole ACL2 !>(get-persistent-whs 'demo state)
+     (:ENTER C B A)
+    Wormhole ACL2 !>(save 'd)
+    NIL
+    Wormhole ACL2 !>(get-persistent-whs 'demo state)
+     (:ENTER D C B A)
+    Wormhole ACL2 !>(@ wormhole-status)
+    (:ENTER C B A)
+    Wormhole ACL2 !>:q
+    NIL
+
+  The [47m:q[0m above exits the wormhole.  Now re-enter the wormhole and
+  inspect the ephemeral-whs and persistent-whs.
+
+    ACL2 !>(wormhole 'demo '(lambda (whs) whs) nil '(quote (welcome back!)))
+
+    Project-dir-alist:
+    ((:SYSTEM . \"/Users/moore/Desktop/v85k1/books/\")).
+    Type :help for help.
+    Type (quit) to quit completely out of ACL2.
+
+    Wormhole ACL2 !>(WELCOME BACK!)
+    Wormhole ACL2 !>(@ wormhole-status)
+    (:ENTER C B A)
+    Wormhole ACL2 !>(get-persistent-whs 'demo state)
+     (:ENTER C B A)
+    Wormhole ACL2 !>(value :q)
+    NIL
+
+  The wormhole is coherent of course; wormholes are always coherent
+  upon entry.  But notice the value of the data field!  It doesn't
+  list [47mD[0m!  That happened because when we exited the wormhole, the
+  ephemeral-whs was written back to the persistent-whs, and the
+  emphemeral-whs of the incoherent status did not contain [47mD[0m.
+
+  There are ways ensure that your wormholes remain coherent and they
+  all involve using the function
+  [47m[sync-ephemeral-whs-with-persistent-whs][0m, which does what its name
+  says.  For example, we could have defined [47msave[0m this way instead.
+
+    (defun save (x state)
+      (prog2$
+        (wormhole-eval
+         'demo
+         '(lambda (whs)(set-wormhole-data whs (cons x (wormhole-data whs))))
+         nil)
+        (sync-ephemeral-whs-with-persistent-whs 'demo state)))
+
+  But note that we must now provide [47mstate[0m as an argument to all calls
+  of [47msave[0m and [47msave[0m must return [47mstate[0m because [47m[read-ACL2-oracle][0m was
+  used to reach out to the [47mperistent-whs[0m to refresh the
+  ephemeral-whs.  This means we can only call this version of [47msave[0m in
+  environments in which we have [47mstate[0m and can return [47mstate[0m.
+
+  Perhaps a better way preserve coherence is to keep [47msave[0m defined in
+  the earlier, [47mstate[0m-less way but to call
+  [47msync-ephemeral-whs-with-persistent-whs[0m from within the wormhole
+  after we call [47m(save 'd)[0m.  That is easy enough to do if you are in
+  complete control of the [47mdemo[0m wormhole.  Recall the specification of
+  [47m[wormhole][0m.  If the entry [47mlambda[0m sets the [47m[wormhole-entry-code][0m to
+  [47m:enter[0m, then [47m[ld][0m is invoked but the first form executed by the
+  resulting read-eval-print loop is the [47mform[0m argument of [47mwormhole[0m.
+  We used the [47mform[0m argument in the script above to just print a
+  greeting but it can be an arbitrary form.  If [47mform[0m returns [47m(value
+  nil)[0m the [47mld[0m is exited without ever giving the user the opportunity
+  to type and evaluate an arbitrary form.
+
+  But if the [47mdemo[0m wormhole allows a user to type and evaluate arbitrary
+  forms (including forms like [47mwormhole-eval[0m or the [47mstate[0m-less [47msave[0m),
+  there is no way to ensure coherency.  We admit this is an
+  unfortunate aspect of the current design.
+
+  The simplest way to avoid such problems is to use [47mwormhole-eval[0m
+  exclusively and avoid use of the interactive read-eval-print loop
+  provided by [47m[wormhole][0m, except loops intended for experts.  This is
+  the approach taken by such system utilities as
+  [47m[accumulated-persistence][0m and [47m[fc-report][0m: [47mwormhole-eval[0m is used to
+  collect data and either [47mwormhole-eval[0m or a non-interactive [47mwormhole[0m
+  is used to display it.")
  (WORMHOLE-STATUSP
   (WORMHOLE)
   "Predicate recognizing well-formed wormhole status object
