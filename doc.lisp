@@ -100256,6 +100256,15 @@ Bug Fixes
   inhibited when they should be (where formerly they weren't).
   Thanks to Eric Smith for bringing this problem to our attention.
 
+  Fixed a bug that in rare cases, for direct prover calls (e.g., with
+  [47m[prove$][0m, could cause an error reporting ``HARD ACL2 ERROR in
+  pop-warning-frame''.  Thanks to Eric Smith for bringing this bug to
+  our attention.  Note that with this change, then when an [event]'s
+  evaluation causes a hard error (see [er] and [hard-error]):
+  [summary] information may be printed that was formerly omitted; and
+  a superfluous extra failure message may be omitted that was
+  formerly printed.
+
 
 Changes at the System Level
 
