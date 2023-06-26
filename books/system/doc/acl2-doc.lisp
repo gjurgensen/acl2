@@ -103393,6 +103393,14 @@ it."
  now inhibited when they should be (where formerly they weren't).  Thanks to
  Eric Smith for bringing this problem to our attention.</p>
 
+ <p>Fixed a bug that in rare cases, for direct prover calls (e.g., with @(tsee
+ prove$), could cause an error reporting &ldquo;HARD ACL2 ERROR in
+ pop-warning-frame&rdquo;.  Thanks to Eric Smith for bringing this bug to our
+ attention.  Note that with this change, then when an @(see event)'s evaluation
+ causes a hard error (see @(see er) and @(see hard-error)): @(see summary)
+ information may be printed that was formerly omitted; and a superfluous extra
+ failure message may be omitted that was formerly printed.</p>
+
  <h3>Changes at the System Level</h3>
 
  <p>The `@('make')' target, @('save-exec'), now builds @('custom-saved_acl2')
