@@ -112,6 +112,7 @@
     (MAKE-FLAG "[books]/tools/flag.lisp")
     (MAKE-TERMINATION-THEOREM
      "[books]/kestrel/utilities/make-termination-theorem.lisp")
+    (XDOC::MARKUP "[books]/xdoc/topics.lisp")
     (MEMOIZED-PROVER-FNS "[books]/tools/memoize-prover-fns.lisp")
     (MUST-FAIL "[books]/std/testing/must-fail.lisp")
     (STR::NAT-TO-DEC-STRING "[books]/std/strings/decimal.lisp")
@@ -160,6 +161,7 @@
     (STD/UTIL "[books]/std/util/top.lisp")
     (STD::STRICT-LIST-RECOGNIZERS "[books]/std/util/deflist-base.lisp")
     (SUBSEQ-LIST "[books]/std/lists/subseq.lisp")
+    (XDOC::TERMINAL "[books]/xdoc/topics.lisp")
     (TRANS-EVAL-ERROR-TRIPLE "[books]/kestrel/utilities/trans-eval-error-triple.lisp")
     (TRANS-EVAL-STATE "[books]/kestrel/utilities/trans-eval-error-triple.lisp")
     (UNSOUND-READ "[books]/std/io/unsound-read.lisp")
@@ -748,7 +750,10 @@
  <p>If you are at an ACL2 prompt (as opposed to a raw Lisp break), then you may
  type @(':a!') in place of @('(a!)'); see @(see keyword-commands).</p>
 
- <p>For a related feature that only pops up one level, see @(see p!).</p>
+ <p>For a related feature that only pops up one level of @(tsee ld), see @(tsee
+ p!).  However, @('p!') behaves differently if you're typing to the interactive
+ break caused by @(see break-rewrite).  Instead of popping up one level,
+ @('p!') in break-rewrite prints a message and is otherwise a no-op.</p>
 
  <p>Logically speaking, @('(a!) = nil').  But imagine that it is defined in
  such a way that it causes a stack overflow or other resource exhaustion when
@@ -2601,6 +2606,9 @@
  notion of a ``prefix argument'': a numeric value given first with the
  @('meta') key (or, probably the @('control') key), for example, @('meta-0
  control-t g') or @('control-3 control-t /').</p>
+
+ <p>Note: If you are not happy with the way text is displayed with ACL2-Doc,
+ see @(see xdoc::terminal).</p>
 
  <p>While ACL2-Doc is much like Emacs Info, it is a separate system that
  provides some additional functionality.  ACL2-Doc is text-based.  Any word
@@ -9190,9 +9198,10 @@ and @(tsee include-book)"
  rule which uses a @(tsee syntaxp) hypothesis and to a @(':')@(tsee meta) rule.
  @('Bind-free') is like @(tsee syntaxp), in that it logically always returns
  @('t') but may affect the application of a @(':')@(tsee rewrite), @(':')@(tsee
- definition), or @(':')@(tsee linear) rule when it is called at the top-level
- of a hypothesis.  It is like a @(':')@(tsee meta) rule, in that it allows the
- user to perform transformations of terms under programmatic control.</p>
+ rewrite-quoted-constant), @(':')@(tsee definition), or @(':')@(tsee linear)
+ rule when it is called at the top-level of a hypothesis.  It is like a
+ @(':')@(tsee meta) rule, in that it allows the user to perform transformations
+ of terms under programmatic control.</p>
 
  <p>Note that a @('bind-free') hypothesis does not, in general, deal with the
  meaning or semantics or values of the terms, but rather with their syntactic
@@ -11892,21 +11901,37 @@ with any questions about building the community books.</p>")
 
 (defxdoc break-rewrite
   :parents (debugging)
-  :short "The read-eval-print loop entered to @(see monitor) rules"
+  :short "A version of the ACL2 rewriter with interactive breaks"
   :long "<p>ACL2 allows the user to @(see monitor) the application of @(see
- rewrite), @(see definition), and @(see linear) rules.  When @(see monitor)ed
- rules are about to be tried by the rewriter, an interactive break occurs and
- the user is allowed to watch and, in a limited sense, control the attempt to
- apply the rule.  This interactive loop, which is technically just a call of
- the standard top-level ACL2 read-eval-print loop, @(tsee ld), on a ``@(see
- wormhole) @(see state)'' (see @(see wormhole)), is called ``break-rewrite.''
- While in break-rewrite, certain keyword commands are available for accessing
+ rewrite), @(see definition), and @(see linear) rules.  When the rewriter is
+ about to try to apply a @(see monitor)ed rule, it can trigger an interactive
+ break managed by a version of the rewriter called &ldquo;break-rewrite&rdquo;.
+ From within this read-eval-print loop you can inspect the context, attempt to
+ apply the rule, and see what happens.  This interactive loop is technically
+ just a call of the standard ACL2 read-eval-print loop, @(tsee ld), on a
+ ``@(see wormhole) @(see state)'' (see @(see wormhole)).  While in
+ break-rewrite, certain keyword commands are available for accessing
  information about the context in which the lemma is being tried.  These
- keywords are called break-rewrite ``commands''; see @(see brr-commands).</p>
+ keywords are called break-rewrite ``commands''; see @(see brr-commands).
+ Interactive breaks occur only if the @('break-rewrite') utility is turned
+ on (see @(tsee brr)), a monitored rune is being considered by the rewriter,
+ and the break conditions specified in the monitor are satisfied (see @(tsee
+ monitor)).</p>
 
- <p>For a related proof debugging utility, see @(see with-brr-data).  Also see
- @(see dmr) (Dynamically Monitor Rewrites), which allows you to watch progress
- of the rewriter in real time.</p>
+ <p>The following utilities can also be helpful for proof @(see debugging).</p>
+
+ <ul>
+
+ <li>@(tsee Dmr) (Dynamically Monitor Rewrites) allows you to watch progress of
+ the rewriter in real time.</li>
+
+ <li>The @(see proof-builder) allows you to interactively construct a
+ proof.</li>
+
+ <li>@(tsee with-brr-data) helps you to find the source of a term in prover
+ output.</li>
+
+ </ul>
 
  <p>To abort from inside break-rewrite at any time, execute @(':')@(tsee
  a!).</p>
@@ -11914,13 +11939,27 @@ with any questions about building the community books.</p>")
  <p>Output from break-rewrite is abbreviated by default, but that can be
  changed.  See @(see set-brr-evisc-tuple).</p>
 
+ <p>When the break-rewrite facility is turned on (see @(tsee brr)), the
+ rewriter performs more sluggishly than when break-rewrite is turned off.
+ Therefore if you have done @('(brr t)') to debug a rewriting problem, we
+ recommend that you do @('(brr nil)') after the situation is remedied and you
+ resume normal proof development.</p>
+
  <p>For further information, see the related @(':')@(tsee doc) topics listed
  below.</p>
 
+ <p><i>Advice to Developers and Maintainers of ACL2</i>: If you intend to
+ modify break-rewrite, we strongly urge you to read the Essay on Break-Rewrite
+ in the source code file @('rewrite.lisp').  There we explain the abstraction
+ provided by break-rewrite, how it is implemented as a state machine operating
+ in a wormhole, and some low-level tools for inspecting the state of
+ break-rewrite.  Attempts to add new features without understanding virtually
+ everything about the implementation is most likely to create a mess.</p>
+
  <p>It is possible to cause the ACL2 rewriter to @(see monitor) the attempted
  application of selected rules.  When such a rule is about to be tried, the
- rewriter evaluates its break condition and if the result is non-@('nil'),
- break-rewrite is entered.</p>
+ rewriter evaluates its break condition and if the result is non-@('nil'), an
+ interactive read-eval-print loop is entered.</p>
 
  <p>Break-rewrite permits the user to inspect the current @(see state) by
  evaluating break-rewrite commands.  Type @(':help') in break-rewrite to see
@@ -11939,21 +11978,23 @@ with any questions about building the community books.</p>")
  operates on a copy of the @(see state) being used by rewrite and when
  break-rewrite exits the @(see wormhole) closes and the @(see state)
  ``produced'' by break-rewrite disappears.  For example, all invocations of
- @(tsee trace$) and @(tsee untrace$) that are made during a break at a @(see
- monitor)ed @(see rune) are undone when proceeding from that break.  Thus,
- break-rewrite lets you query the state of the rewriter and even do experiments
- involving proofs, etc., but these experiments have no effect on the ongoing
- proof attempt.</p>
+ @(tsee trace$) and @(tsee untrace$) that are made during such a break are
+ undone when proceeding from that break (including when proceeding via the
+ @(':eval') brr-command).  Thus, break-rewrite lets you query the state of the
+ rewriter and even do experiments involving proofs, etc., but these experiments
+ have no effect on the ongoing proof attempt.</p>
 
  <p>There are however exceptions to this loss of state when exiting a break.
- One exception is that the effect of turning on iprinting in a break (see @(see
- set-iprint)) will persist even after exiting the break.  The other exceptions
- pertain to setting the @(tsee brr-evisc-tuple) or invoking @(tsee monitor) or
- @(tsee unmonitor): if these are done inside the break-rewrite loop at level 1
- of interaction (i.e., at the top level) then their effects will persist even
- after exiting the break.</p>
+ One exception pertains to iprinting (see @(see set-iprint)).  When iprinting
+ is enabled in a break, it nevertheless is again disabled upon exiting the
+ break.  However, the association of values with iprint indices persists even
+ after exiting the break; that is, you can still obtain their values, and if
+ you re-enable ipritning then indices will be generated from where they left
+ off rather than returning to index 1.  The other exception pertains to setting
+ the @(tsee brr-evisc-tuple) while inside break-rewrite: the effects persist.
+ See @(tsee set-brr-evisc-tuple).</p>
 
- <p>When you first enter break-rewrite a simple herald is printed such as:</p>
+ <p>When you enter break-rewrite a simple herald is printed such as:</p>
 
  @({
   (3 Breaking (:rewrite lemma12) on (delta a (+ 1 j)):
@@ -12017,28 +12058,32 @@ with any questions about building the community books.</p>")
   :ok
  })
 
- <p>exits break-rewrite without further interaction.  When break-rewrite exits
- it prints ``@('3)')'', closing the parenthesis that opened the level @('3')
- interaction.</p>
+ <p>exits break-rewrite without further interaction at the current depth.  When
+ break-rewrite exits it prints ``@('3)')'' (actually, of course, the current
+ depth!), closing the parenthesis that opened the current depth, @('3'),
+ interaction.  However, between your typing the @(':ok') command and the exit
+ from depth @('3') you may well see deeper break-rewrite breaks &mdash;
+ triggered by any of your monitored runes &mdash; as the rewriter tries to
+ apply the lemma that prompted the current depth @('3') break.</p>
 
  @({
   :go
  })
 
- <p>exits break-rewrite without further interaction, but prints out the result
- of the application attempt, i.e., whether the application succeeded, if so,
- what the @(':target') term was rewritten to, and if not why the rule was not
- applicable.</p>
+ <p>exits break-rewrite without further interaction at the current depth, but
+ as it exits it prints out the result of the application attempt, i.e., whether
+ the application succeeded, if so, what the @(':target') term was rewritten to,
+ and if not why the rule was not applicable.</p>
 
  @({
   :eval
  })
 
  <p>causes break-rewrite to attempt to apply the rule but interaction at this
- level of break-rewrite resumes when the attempt is complete.  When control
+ depth of break-rewrite resumes when the attempt is complete.  When control
  returns to this level of break-rewrite a message indicating the result of the
  application attempt (just as in @(':go')) is printed, followed by the @(see
- prompt) for additional user input.</p>
+ prompt) for additional user input for the current depth @('3').</p>
 
  <p>Generally speaking, @(':ok') and @(':go') are used when the break in
  question is routine or uninteresting and @(':eval') is used when the break is
@@ -12048,7 +12093,7 @@ with any questions about building the community books.</p>")
  usually @(':eval') the rule and if break-rewrite reports that the rule failed
  then you are in a position to determine why, for example by carefully
  inspecting the @(':')@(tsee type-alist) and perhaps the @(see
- linear-arithmetic) @(':pot-list) of governing assumptions or why some
+ linear-arithmetic) @(':pot-list') of governing assumptions or why some
  hypothesis of the rule could not be established.</p>
 
  <p>It is often the case that when you are in break-rewrite you wish to change
@@ -12059,67 +12104,83 @@ with any questions about building the community books.</p>")
  another rule, say @('main-lemma').  Typically then you would @(see monitor)
  @('main-lemma') at the ACL2 top-level, start the proof-attempt, and then in
  the break-rewrite in which @('main-lemma') is about to be tried, you would
- install a @(see monitor) on @('hyp-reliever').  If during the ensuing
- @(':eval') @('hyp-reliever') is broken you will know it is being used under
- the attempt to apply @('main-lemma').</p>
+ install a @(see monitor) on @('hyp-reliever').  If you then @(':eval') and get
+ a break on @('hyp-reliever') you will know it is being used under the attempt
+ to apply @('main-lemma').</p>
 
- <p>However, once @('hyp-reliever') is being @(see monitor)ed it will be @(see
- monitor)ed even after @('main-lemma') has been tried.  That is, if you let the
- proof attempt proceed then you may see many other breaks on @('hyp-reliever'),
- breaks that are not ``under'' the attempt to apply @('main-lemma').  One way
- to prevent this is to @(':eval') the application of @('main-lemma') and then
- @(':')@(tsee unmonitor) @('hyp-reliever') before exiting.  But this case
- arises so often that ACL2 supports several additional ``flavors'' of proceed
- commands.</p>
+ <p>However, when the rewriter leaves this attempt to apply @('main-lemma'),
+ @('hyp-reliever') will no longer be monitored.  That is, the list of monitored
+ runes is maintained as a local variable of break-rewrite.  See @(tsee
+ monitored-runes).</p>
 
  <p>@(':Ok!'), @(':go!'), and @(':eval!') are just like their counterparts
- (@(':ok'), @(':go'), and @(':eval'), respectively), except that while
- processing the rule that is currently broken no @(see rune)s are @(see
- monitor)ed.  When consideration of the current rule is complete, the set of
- @(see monitor)ed @(see rune)s is restored to its original setting.</p>
+ (@(':ok'), @(':go'), and @(':eval'), respectively), except that before
+ proceeding they unmonitor all runes.  Of course, this is only done in the
+ scope of the interactive break in which these commands were used.  When
+ control returns to the top-level of the ACL2 loop the monitored runes will
+ have reverted to its original value there.  These commands allow you to
+ proceed from the current depth without getting any deeper breaks.</p>
 
  <p>@(':Ok$'), @(':go$'), and @(':eval$') are similar but take an additional
- argument which must be a list of @(see rune)s.  An example usage of
- @(':eval$') is</p>
+ argument which must be a list of runic designators (or a single designator).
+ See @(see rune).  Two examples the use of @(':eval$') are</p>
 
  @({
-  3 ACL2 !>:eval$ ((:rewrite hyp-reliever))
+  3 ACL2 !>:eval$ hyp-reliever
  })
 
- <p>These three commands temporarily install unconditional breaks on the @(see
- rune)s listed, proceed with the consideration of the currently broken rule,
- and then restore the set of @(see monitor)ed rules to its original
- setting.</p>
+ <p>and</p>
+
+ @({
+  3 ACL2 !>:eval$ (hyp-reliever (:definition foo))
+ })
+
+ <p>The second command above is exactly equivalent to</p>
+
+ @({
+  3 ACL2 !>:monitor hyp-reliever t
+  3 ACL2 !>:monitor (:definition foo) t
+  3 ACL2 !>:eval
+ })
+
+ <p>Analogous remarks apply to @(':go$') and @(':ok$').  If you want to specify
+ more sophisticated break criteria (rather than just @(':condition t')) you
+ must use the @(':monitor') command explicitly before proceeding.</p>
 
  <p>Thus, there are nine ways to proceed from the initial entry into
  break-rewrite although we often speak as though there are two, @(':ok') and
  @(':eval'), and leave the others implicit.  We group @(':go') with @(':ok')
  because in all their flavors they exit break-rewrite without further
- interaction (at the current level).  All the flavors of @(':eval') require
+ interaction (at the current depth).  All the flavors of @(':eval') require
  further interaction after the rule has been tried.</p>
 
+ <p>You are not permitted to &ldquo;re-@(':eval')&rdquo; a rule.  That is,
+ after issuing the @(':eval') command in a given break, you cannot issue it
+ again in that break.  The rule has been evaluated, the results are available
+ to you, and that's that!  All you can do, aside from inspecting the context,
+ is allow rewrite to continue, by issuing an @(':ok') or @(':go'), or
+ abort.</p>
+
  <p>To abort a proof attempt and return to the top-level of ACL2 you may at any
- time type @('(a!)') followed by a carriage return.  If you are not in a raw
- Lisp break, you may type @(':a!') instead.  The utility @('p!') is completely
- analogous to @('a!') except that it pops up only one @(tsee ld) level.  If you
- have just entered the break-rewrite loop, this will pop you out of that loop,
- back to the proof.  See @(see a!) and see @(see p!).</p>
+ time type @('(a!)') followed by a carriage return or, equivalently (if you are
+ not in a raw Lisp break) use the keyword command @(':a!').  See @(see a!).</p>
 
  <p>We now address ourselves to the post-@(':eval') interaction with
- break-rewrite.  As noted, that interaction begins with break-rewrite's report
- on the results of applying the rule: whether it worked and either what it
- produced or why it failed.  This information is also printed by certain
- keyword commands available after @(':eval'), namely @(':wonp'),
- @(':rewritten-rhs') or (for @(see linear) rules) @(':poly-list'), and
- @(':failure-reason').  In addition, by using @(tsee brr@) you can obtain this
- information in the form of ACL2 data objects.  This allows the development of
- more sophisticated ``break conditions''; see @(see monitor) for examples.  In
- this connection we point out the macro form @('(ok-if term)').  See @(see
- ok-if).  This command exits break-rewrite if @('term') evaluates to
- non-@('nil') and otherwise does not exit.  Thus it is possible to define
- macros that provide other kinds of exits from break-rewrite.  The only way to
- exit break-rewrite after @(':eval') is @(':ok') (or, equivalently, the use of
- @(tsee ok-if)).</p>
+ break-rewrite.  As noted, post-@(':eval') interaction begins with
+ break-rewrite's report on the results of applying the rule: whether it worked
+ and either what it produced or why it failed.  This information is also
+ printed by certain keyword commands available after @(':eval'), namely
+ @(':wonp'), @(':rewritten-rhs') or (for @(see linear) rules) @(':poly-list'),
+ and @(':failure-reason').  In addition, by using @(tsee brr@) you can obtain
+ this information in the form of ACL2 data objects.  This allows the
+ development of more sophisticated ``break conditions'' that test the context
+ of of the pending break and that return a list of commands to execute if a
+ break occurs; see @(see monitor) for examples.  In this connection we point
+ out the macro form @('(ok-if term)').  See @(see ok-if).  This command exits
+ break-rewrite if @('term') evaluates to non-@('nil') and otherwise does not
+ exit.  Thus it is possible to define macros that provide other kinds of exits
+ from break-rewrite.  The only way to exit break-rewrite after @(':eval') is
+ @(':ok') or @(':go') or the use of @(tsee ok-if).</p>
 
  <p>Note that when inside break-rewrite, all @(see history) commands, such as
  @(':')@(tsee pe), show the @(see enable)d status of rules with respect to the
@@ -12133,41 +12194,70 @@ with any questions about building the community books.</p>")
  disabledp) is also evaluated inside break-rewrite with respect to the current
  enabled state of the prover.</p>
 
+ <p>We have not discussed &ldquo;near-miss&rdquo; breaks.  These are caused
+ when a monitored rune specifies one of the near-miss break criteria and the
+ rune's pattern fails to match the target but &ldquo;almost&rdquo; matches
+ according to the criteria.  See @(tsee monitor) for a discussion of near-miss
+ break criteria.  But for example, if @('main-lemma') rewrites the term
+ @('(f (g (h x) y) x)') and you've installed a monitor on it like this:</p>
+
+ @({
+ :monitor main-lemma (:abstraction (f (g u v) w))
+ })
+
+ <p>then if the rewriter encountered the target term @('(F (G (MUMBLE A) B)
+ C)') it would cause a near-miss break because the pattern of @('main-lemma')
+ does not match the target but the specified abstraction of the pattern does
+ match the target.</p>
+
+ <p>You interact with a near-miss break just like the breaks described above,
+ except some commands (e.g., @(':eval')) are unavailable because the rule did
+ not match and thus there is no way to proceed except to exit the break and try
+ the next lemma.</p>
+
  <p>The rest of this @(see documentation) discusses a few implementation
  details of break-rewrite and may not be interesting to the typical user.</p>
 
- <p>There is no ACL2 function named break-rewrite.  It is an illusion created
- by appropriate calls to two functions named @('brkpt1') and @('brkpt2').  As
- previously noted, break-rewrite is @(tsee ld) operating on a @(see wormhole)
- @(see state).  One might therefore wonder how break-rewrite can apply a rule
- and then communicate the results back to the rewriter running in the external
- @(see state).  The answer is that it cannot.  Nothing can be communicated
- through a @(see wormhole).  In fact, @('brkpt1') and @('brkpt2') are each
- calls of @(tsee ld) running on @(see wormhole) @(see state)s.  @('Brkpt1')
- implements the pre-@(':eval') break-rewrite and @('brkpt2') implements the
- post-@(':eval') break-rewrite.  The rewriter actually calls @('brkpt1') before
- attempting to apply a rule and calls @('brkpt2') afterwards.  In both cases,
- the rewriter passes into the @(see wormhole) the relevant information about
- the current context.  Logically @('brkpt1') and @('brkpt2') are no-ops and
- @(tsee rewrite) ignores the @('nil') they return.  But while control is in
- them, the execution of @(tsee rewrite) is suspended and cannot proceed until
- the break-rewrite interactions complete.</p>
+ <p>There is no ACL2 function named break-rewrite &mdash; which is why we don't
+ write it in typewriter font in this documentation.  Break-rewrite is an
+ illusion created by appropriate calls to three ``break point handlers'' named
+ @('near-miss-brkpt1'), @('brkpt1') and @('brkpt2').  As previously noted,
+ break-rewrite is @(tsee ld) operating on a @(see wormhole) @(see state).  One
+ might therefore wonder how break-rewrite can apply a rule and then communicate
+ the results back to the rewriter running in the external @(see state).  The
+ answer is that it cannot.  Nothing can be communicated through a @(see
+ wormhole).  In fact, the break point handlers are each calls of @(tsee ld)
+ running on @(see wormhole) @(see state)s.  They maintain a state machine
+ inside the wormhole.  For example, @('brkpt1') is called by rewrite after a
+ successful match, if the monitored @(':condition') is true, an interactive
+ break occurs.  Upon an @(':ok') or @(':eval'), the wormhole's status
+ information is updated, the wormhole is exited (losing any state changes made
+ inside the wormhole), rewrite continues to do whatever rewrite does for that
+ lemma, and then @('brkpt2') is called.  @('Brkpt2') then uses the state
+ information in the wormhole to decide whether to interact or not.</p>
 
- <p>This design causes a certain anomaly that might be troubling.  Suppose that
- inside break-rewrite before @(':evaling') a rule (i.e., in the @('brkpt1')
- @(see wormhole) @(see state)) you define some function, @('foo').  Suppose
- then you @(':eval') the rule and eventually control returns to break-rewrite
- (i.e., to @('brkpt2') on a @(see wormhole) @(see state) with the results of
- the application in it).  You will discover that @('foo') is no longer defined!
- That is because the @(see wormhole) @(see state) created during your
- @('pre-:eval') interaction is lost when we exit the @(see wormhole) to resume
- the proof attempt.  The post-@(':eval') @(see wormhole) @(see state) is in
- fact identical to the initial pre-@(':eval') @(see state) (except for the
- results of the application) because @(tsee rewrite) did not change the
- external @(see state) and both @(see wormhole) @(see state)s are copies of it.
- A similar issue occurs with the use of @(see trace) utilities: all effects of
- calling @(tsee trace$) and @(tsee untrace$) are erased when you proceed from a
- break in the break-rewrite loop.</p>
+ <p>This helps explain why the rewriter behaves more sluggishly when @('(brr
+ t)') has been done: it is entering and exiting wormholes to figure out whether
+ to trigger an interactive break.  When you are through with break-rewrite, we
+ recommend @('(brr nil)').</p>
+
+ <p>This design causes certain anomalies that might be troubling.</p>
+
+ <p>Suppose you are inside a depth @('3') break before @(':evaling') a
+ rule (i.e., you're in the @('brkpt1') @(see wormhole) @(see state)) you define
+ some function, @('foo').  Suppose then you @(':eval') the rule and eventually
+ control returns to the depth @('3') break (i.e., now you're in the @('brkpt2')
+ @(see wormhole) @(see state) with the results of the application in it).  You
+ will discover that @('foo') is no longer defined!  That is because the @(see
+ wormhole) @(see state) created during your pre-@(':eval') interaction is lost
+ when we exit the @(see wormhole) to resume the proof attempt.  The
+ post-@(':eval') @(see wormhole) @(see state) is in fact identical to the
+ initial pre-@(':eval') @(see state) (except for the results of the
+ application) because @(tsee rewrite) did not change the external @(see state)
+ and both @(see wormhole) @(see state)s are copies of it.  A similar issue
+ occurs with the use of @(see trace) utilities: all effects of calling @(tsee
+ trace$) and @(tsee untrace$) are erased when you proceed from a break in the
+ break-rewrite loop.</p>
 
  <p>See the subtopics listed below to learn more about
  @('break-rewrite').</p>")
@@ -12301,65 +12391,74 @@ with any questions about building the community books.</p>")
  <p>BRR Mode, Console Interrupts, and Subsidiary Prover Calls: If the system is
  operating in @('brr') mode and you break into raw Lisp (as by causing a
  console interrupt or happening upon a signaled Lisp error; see @(see breaks)),
- you can return to the ACL2 top-level, outside any @('brr') environment, by
- executing @('(')@(tsee abort!)@(')').  Otherwise, the normal way to quit from
- such a break (for example @(':q') in GCL, @(':reset') in Allegro CL, and
- @('q') in CMU CL) will return to the innermost ACL2 read-eval-print loop,
- which may or may not be the top-level of your ACL2 session!  In particular, if
- the break happens to occur while ACL2 is within the @('brr') environment (in
- which it is preparing to read @(tsee brr-commands)), the abort will merely
- return to that @('brr') environment.  Upon exiting that environment, normal
- theorem proving is continued (and the @('brr') environment may be entered
- again in response to subsequent monitored rule applications).  Before
- returning to the @('brr') environment, ACL2 ``cleans up'' from the interrupted
- @('brr') processing.  However, it is not possible (given the current
- implementation) to clean up perfectly.  This may have two side-effects.
- First, the system may occasionally print the self-explanatory ``Cryptic BRR
- Message 1'' (or 2), informing you that the system has attempted to recover
- from an aborted @('brr') environment.  Second, it is possible that subsequent
- @('brr') behavior in that proof will be erroneous because the cleanup was done
- incorrectly.  The moral is that you should not trust what you learn from
- @('brr') if you have interrupted and aborted @('brr') processing during the
- proof.  Such ``clean up'' may also occur when you call the prover from within
- the @('brr') environment (for example using @(tsee defthm) or @(tsee thm), or
- even @(tsee defun) or any other @(see event) that invoke the prover), unless
- you invoke @(':brr nil') before making that call.  These issues do not affect
- the behavior or soundness of the theorem prover.</p>")
+ you can return to the ACL2 top-level, outside any break-rewrite environment,
+ by executing @('(')@(tsee abort!)@(')').  Otherwise, the normal way to quit
+ from such a raw Lisp break (for example @(':q') in GCL, @(':reset') in Allegro
+ CL, and @('q') in CMU CL) will return to the innermost ACL2 read-eval-print
+ loop, which may or may not be the top-level of your ACL2 session!  In
+ particular, if the interrupt or error break happens to occur while ACL2 is
+ within a break-rewrite break (in which it is preparing to read @(tsee
+ brr-commands)), the abort will merely return to break-rewrite break.  Upon
+ exiting that environment, normal theorem proving is continued (and the
+ break-rewrite breaks may be entered again in response to subsequent monitored
+ rule applications).  In addition, if while in a break-rewrite break, say at
+ depth @('d'), you invoke the theorem prover recursively as by typing a @(tsee
+ thm) or @(tsee defthm) or @(tsee defun) command to break-rewrite, recursive
+ breaks may occur with depths starting at @('d+1').  This can get confusing
+ because it may appear that the ongoing (sub-)proofs are part of the original
+ proof when in fact the system is just carrying out your commands.</p>")
 
 (defxdoc brr-commands
   :parents (break-rewrite)
   :short "@(see Break-Rewrite) Commands"
-  :long "<p>Many commands display terms that are abbreviated (``eviscerated'')
-  by default.  These have corresponding commands with a ``+'' suffix that avoid
-  such abbreviation, as shown below; also see @(see brr-evisc-tuple).  For
-  example, the notation ``@(':ancestors[+]')'' below indicates that the
-  @(':ancestors') command may abbreviate terms but the @(':ancestors+') command
-  does not.</p>
+  :long "<p>Below is a list of commonly used @(see break-rewrite) keyword
+  commands.  These are only defined within the breaks caused by @(tsee
+  monitor)s on runes in the process of being considered by the ACL2 rewriter.
+  These breaks interact with you from within a @(tsee wormhole) and are handled
+  by @(tsee ld) (the same function that manages ACL2's top-level interactive
+  read-eval-print loop).  So within certain limitations imposed by wormholes,
+  you can evaluate any command you would at the top-level of ACL2 in addition
+  to the special commands below.</p>
+
+  <p>Many break commands display terms, e.g., the target being rewritten, and
+  &ldquo;large&rdquo; terms are &ldquo;eviscerated&rdquo; (i.e., abbreviated)
+  before printing.  These commands have corresponding commands suffixed with a
+  ``+'' that avoid evisceration so that the terms in question are printed in
+  full.  See @(see brr-evisc-tuple).  The notation ``@(':ancestors[+]')'' below
+  indicates that the @(':ancestors') command may print abbreviate terms but the
+  @(':ancestors+') command does not.</p>
 
  @({
  :a!                abort to ACL2 top-level
  :ancestors[+]      negations of backchaining hypotheses being pursued
  :btm[+]            bottom-most frame in :path
- :eval              try rule and re-enter break afterwards
- :eval!             :eval but no recursive breaks
- :eval$ runes       :eval with runes monitored during recursion
+ :eval              try the rule (i.e., recursively try to relieve
+                      the hypotheses and other conditions, possibly
+                      producing other breaks) and return to this
+                      break afterwards so you can query results
+ :eval!             :eval but remove all monitors first (see below)
+ :eval$ runes       :eval but first add monitors for runes (see below)
  :failure-reason[+] reason rule failed (after :eval)
  :final-ttree[+]    ttree after :eval (see :DOC ttree)
  :frame[+] i        ith frame in :path
- :go                exit break, printing result
- :go!               :go but no recursive breaks
- :go$ runes         :go with runes monitored during recursion
+ :go                :eval but don't return to this break, just
+                      print the result of the try
+ :go!               :go but first remove all monitors (see below)
+ :go$ runes         :go but first add monitors for runes (see below)
  :help              this message
  :hyp i             ith hypothesis of the rule
  :hyps              hypotheses of the rule
  :initial-ttree[+]  ttree before :eval (see :DOC ttree)
- :lhs               left-hand side of rule's conclusion (or, in the case
+ :lhs[+]            left-hand side of rule's conclusion (or, in the case
                       of :rewrite-quoted-constant rules of form [2], the
-                      right-hand side!)
- :ok                exit break
- :ok!               :ok but no recursive breaks
- :ok$ runes         :ok with runes monitored during recursion
- :p!                pop one level (exits a top-level break-rewrite loop)
+                      right-hand side!); this is the pattern that the
+                      target must match for this :rewrite rule to fire
+ :max-term[+]       maximal term of a :linear lemma; this is the pattern
+                      that the target must match for this :linear rule to
+                      fire
+ :ok                like :go, but don't print the result of the try
+ :ok!               :ok but first remove all monitors (see below)
+ :ok$ runes         :ok but first add monitors for runes (see below)
  :path[+]           rewriter's path from top clause to :target
  :poly-list[+]      list of polynomials (after :eval) of a linear rule,
                       where the leading term of each is enclosed in an
@@ -12378,26 +12477,67 @@ with any questions about building the community books.</p>")
  :wonp              indicates whether application succeeded (after :eval)
  })
 
+ <p>The form @('('))@(tsee brr@)@(' :cmd)'), when evaluated within a break,
+ will return the value that is only printed by certain of the keyword commands
+ above.  This is particularly useful when programming break conditions.  See
+ @(tsee monitor).</p>
+
+ <p>Since you're actually in a general read-eval-print loop when interacting
+ with @(see break-rewrite) you may type the usual ACL2 commands like
+ @(':')@(tsee pbt) or @(':')@(tsee pe) or even @(tsee defun) and @(tsee
+ defthm).  You cannot modify @(see stobj)s or files from within the break.
+ However, all @(see state) changes you cause from within @(see break-rewrite)
+ are lost when you exit or @(':eval') the rule.</p>
+
+ <p>Note that if you are breaking on a @(see monitor)ed @(see linear) rule,
+ several of the commands listed above do not apply: @(':lhs'), @(':rhs'),
+ @(':initial-ttree'), and @(':final-ttree').  The pattern used to fire a linear
+ rule is found with the command @(':max-term').  In addition,
+ @(':rewritten-rhs') also does not apply to linear rules, but instead,
+ @(':poly-list') shows the result of applying the linear lemma as a list of
+ polynomials, implicitly conjoined.  The leading term of each polynomial is
+ enclosed in an extra set of parentheses.</p>
+
  <p>See the discussion of form [2] @(':')@(tsee rewrite-quoted-constant) rules
  for an explanation of the swapped meanings of ``@(':lhs')'' and
  ``@(':rhs').''</p>
 
- <p>@(see Break-rewrite) is just a call of the standard ACL2 read-eval-print
- loop, @(tsee ld), on a ``@(see wormhole)'' @(see state).  Thus, you may
- execute most commands you might normally execute at the top-level of ACL2.
- However, all @(see state) changes you cause from within @(see break-rewrite)
- are lost when you exit or @(':eval') the rule.  You cannot modify @(see
- stobj)s from within the break.  See @(see break-rewrite) for more details and
- see @(see ld) for general information about the standard ACL2 read-eval-print
- loop.  Also see @(see brr@) for a utility that can return a value for many of
- the keywords above, instead of merely printing to the screen.</p>
+ <p>The commands @(':eval$'), @(':go$'), and @(':ok$') take an argument, called
+ runes, which may be a list of runes and/or runic designators (see @(see rune))
+ or a single rune or runic designator.  For each rune in runes, these commands
+ execute @(':')@(tsee monitor) rune @('t'), and then execute @(':eval'),
+ @(':go') or @(':ok') as appropriate.</p>
 
- <p>Note that if you are breaking on a @(see monitor)ed @(see linear) rule,
- several of the commands listed above do not apply: @(':lhs'), @(':rhs'),
- @(':initial-ttree'), and @(':final-ttree').  Moreover, @(':rewritten-rhs')
- also does not apply, but instead, @(':poly-list') shows the result of applying
- the linear lemma as a list of polynomials, implicitly conjoined.  The leading
- term of each polynomial is enclosed in an extra set of parentheses.</p>")
+ <p>This is useful if you want to monitor the use of a &ldquo;secondary&rdquo;
+ rune only during the attempt to apply a &ldquo;primary&rdquo; rune: install
+ the monitor on the secondary rune inside the break caused by the primary rune.
+ In the case of @(':eval$'), when the attempt to apply the primary rune is
+ finished you will be back in the interactive break and can inspect the
+ results.  You will notice that the secondary rune is still on the list of
+ @(tsee monitored-runes).  However, when you exit that break
+ @('monitored-runes') will be restored to its earlier value.  In the case of
+ @('go$') and @('ok$'), no interactive break occurs after the primary rune has
+ been applied.</p>
+
+ <p>Similar remarks apply to @(':eval!'), @(':go!'), and @(':ok!') except they
+ first @(':')@(tsee unmonitor) @(':all'), before proceeding with the
+ appropriate @(':eval'), @(':go'), or @(':ok').  These commands are useful if
+ you want no breaks to occur while attempting to apply the rune that caused the
+ current break.</p>
+
+ <p>Recall (from the discussion of @(tsee monitor)s) that break conditions
+ terms installed as part of break criteria do not just determine whether a
+ break occurs but can compute the initial break commands fed to the interactive
+ loop.  Thus, for example, you can install a monitor that causes the rewriter
+ to not only break when a certain rune is used, but then automatically print
+ information, proceed from the break, inspect the result, and then either exit
+ the break or prompt for user input.  See the discussion in @(tsee
+ monitor).</p>
+
+ <p>Note: If you use commands that change the monitored runes during a break,
+ e.g., @(tsee monitor), @(tsee unmonitor), or @(':eval!'), @(':eval$'), etc.,
+ then abort during the recursion, the list of monitored runes will not
+ necessarily be restored to its original top-level setting.</p>")
 
 (defxdoc brr-evisc-tuple
   :parents (brr evisc-tuple)
@@ -12406,12 +12546,14 @@ with any questions about building the community books.</p>")
  eliding of subexpressions during printing.  Also see @(see break-rewrite) for
  background on the break-rewrite loop.</p>
 
- <p>One of the settable evisc-tuples (see @(see set-evisc-tuple)) can control
- output from @(see brr-commands): the @('brr-evisc-tuple').  Unlike most other
- evisc-tuples, if you set the @('brr-evisc-tuple') inside the break-rewrite
- loop at level 1 of interaction (i.e., at the top level; see @(see
- break-rewrite)), then its effect will persist even after you exit the
- break.</p>
+ @({
+ General Form:
+ (brr-evisc-tuple state)
+ })
+
+ <p>The value of this function is used as the evisceration tuple by @(see
+ brr-commands).  The value can be changed with @(tsee set-brr-evisc-tuple) or
+ the more general @(tsee set-evisc-tuple).</p>
 
  <p>A special value, @(':default'), is legal for this evisc-tuple, and is its
  initial value.  In that case the actual evisc-tuple used during output from
@@ -12420,12 +12562,80 @@ with any questions about building the community books.</p>")
  @(see set-evisc-tuple), in particular, the discussion of the @(':term') site
  for setting evisc-tuples.</p>
 
- <p>You can see the effective value of the @('brr-evisc-tuple') by evaluating
- the form, @('(show-brr-evisc-tuple)').  Note that this value is only printed
- by such evaluation as a side-effect, not returned.  (Technical note: This is
- because the @('brr-evisc-tuple') is maintained entirely within the
- break-rewrite @(see wormhole).  That implementation enables the persistence of
- this evisc-tuple within and without the break-rewrite loop.)</p>")
+ <p>Think of @('brr-evisc-tuple') as a true global variable, not a locally
+ bound variable of break-rewrite.  In particular, if you set the
+ @('brr-evisc-tuple') inside a break-rewrite interactive break and eventually
+ exit that break &mdash; either to enter a deeper break or return to a
+ shallower break or to the ACL2 top-level &mdash; the @('brr-evisc-tuple') will
+ retain its chronologically most recent setting.</p>
+
+ <p>The @('brr-evisc-tuple') is used when @(see break-rewrite) prints its
+ banner opening or closing a break on some monitored rune and when certain
+ @(see brr-commands) print their results.</p>
+
+ <p>When you're in a break-rewrite break, you're actually dealing with the
+ read-eval-print loop managed by @(tsee ld).  It prints its results using the
+ @(tsee ld-evisc-tuple), while @(tsee brr-commands) use @('brr-evisc-tuple').
+ This can cause some confusion.</p>
+
+ <p>For example, suppose you have set the @('brr-evisc-tuple') to
+ @('(evisc-tuple 2 3 nil nil)') so break-rewrite banners and brr-commands only
+ print to depth 2 and length 3.  Suppose the target term is @('(F (G (H 1)) 2 3
+ 4 5 6 7)').  Then the following interaction with break-rewrite could
+ occur:</p>
+
+ @({
+ 3 ACL2 >:target
+ (F (G #) 2 ...)
+ 3 ACL2 >(make-list 10)
+ (NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL)
+ })
+
+ <p>You might ask ``Given that the @('brr-evisc-tuple') limits the print length
+ to @('3'), which I see when I print @(':target'), how come the @('make-list')
+ showed all 10 elements?''  The answer is that the @('brr-command')
+ @(':target') actually printed the target with the @('brr-evisc-tuple') and
+ returned @('(value :invisible)') which @('ld')'s read-eval-print loop doesn't
+ print.  But the @('make-list') returned a list of length ten and the
+ read-eval-print loop printed it using the @(tsee ld-evisc-tuple).</p>
+
+ <p>Another issue relating @('brr-evisc-tuple') and @('ld-evisc-tuple') is that
+ while @('brr-evisc-tuple') is a true global, retaining its chronologically
+ most recently set value at all depths of break-rewrite, @('ld-evisc-tuple') is
+ locally bound by break-rewrite (actually, by the @('ld') in @('wormhole')) and
+ so sees its value restored as break-rewrite ascends back toward the top-level
+ of ACL2.</p>")
+
+(defxdoc brr-near-missp
+  :parents (break-rewrite)
+  :short "attachable function for determining &ldquo;near misses&rdquo;"
+  :long "<p>This is a system function that determine whether a failed match of
+  a monitored rule constitutes a near miss.</p>
+
+  <p><b>Note:</b>Our intention is to make this function attachable (see @(see
+  defattach)).</p>
+
+  @({
+  General Form:
+  (brr-near-missp msgp lemma target rcnst criteria-alist)
+  })
+
+  <p>where msgp is @('t') or @('nil'), @('lemma') is the ACL2 record
+  representing a @(tsee monitor)ed @(':rewrite') rule or @(':linear') rule,
+  @('target') is a term to which the rewriter tried to apply the rule but
+  failed to match the pattern in the lemma, @('rcnst') is the rewrite constant
+  at the time of the attempt, and @('criteria-alist') is a symbol-alist
+  associated with the rule in @(tsee monitored-runes).</p>
+
+  <p>The function determines whether the pattern of the lemma
+  &ldquo;almost&rdquo; matches the target, i.e., whether a &ldquo;near
+  miss&rdquo; has occurred.  The function is only called if the exact match
+  failed.  The built-in version of this function checks the criteria described
+  in @(tsee monitor).  If a near miss has occurred, the result is either @('t')
+  or a message (see @(tsee msg)) object describing the near miss.  If a near
+  miss did not occur, the result is @('nil').  See the source code for
+  @('built-in-brr-near-missp') for details of how the built-in version of this
+  function operates.</p>")
 
 (defxdoc brr@
   :parents (break-rewrite)
@@ -13353,18 +13563,19 @@ with any questions about building the community books.</p>")
   \"/usr/home/smith/\"
  })
 
- <p>The connected book directory (``cbd'') is a nonempty string that specifies
- a directory as an absolute pathname.  (See @(see pathname) for a discussion of
- file naming conventions.)  When utilities that take a filename argument, such
- as @(tsee include-book), are given a relative pathname, it is elaborated it
- into an absolute pathname, essentially by appending the connected book
- directory string to the left and @('\".lisp\"') to the right.  (This absolute
- pathname is actuallly canonical when elaborating book names.  For more details
- on book names, see @(see book-name) and also see @(see full-book-name).)
- Furthermore, @(tsee include-book) and @(tsee ld) temporarily set the connected
- book directory to the directory string of the resulting full pathname so that
- references to files in the same directory may omit the directory.  See @(see
- set-cbd) for how to set the connected book directory string.</p>
+ <p>The connected book directory (``cbd'') is a string ending with the @('/')
+ character that specifies a directory as an absolute pathname.  (See @(see
+ pathname) for a discussion of file naming conventions.)  When utilities that
+ take a filename argument, such as @(tsee include-book), are given a relative
+ pathname, it is elaborated it into an absolute pathname, essentially by
+ appending the connected book directory string to the left and @('\".lisp\"')
+ to the right.  (This absolute pathname is actuallly canonical when elaborating
+ book names.  For more details on book names, see @(see book-name) and also see
+ @(see full-book-name).)  Furthermore, @(tsee include-book) and @(tsee ld)
+ temporarily set the connected book directory to the directory string of the
+ resulting full pathname so that references to files in the same directory may
+ omit the directory.  See @(see set-cbd) for how to set the connected book
+ directory string.</p>
 
  <p>Note that the cbd is used for elaborating every @(see pathname) argument,
  not just a pathname that represents a book.  (Technical remark: Some
@@ -14212,6 +14423,7 @@ with any questions about building the community books.</p>")
                 :useless-runes          ; :write/:read/:read?/n/-n/nil
                                         ;   (-100 < n < 0 or 0 < n <= 100)
                                         ;   [default nil or from environment]
+                :write-event-data       ; [default nil]
                 )
  })
 
@@ -14220,11 +14432,12 @@ with any questions about building the community books.</p>")
  control whether the book is to be compiled.  The defaults for
  @('compile-flg'), @('skip-proofs-okp'), @('acl2x'), @('write-port'),
  @('pcert'), and @(':useless-runes') can be affected by environment variables.
- All of these arguments are described in detail below, except for @(':pcert')
- and @(':useless-runes'): see @(see provisional-certification) and @(see
- useless-runes), respectively, for the effects of these two arguments and their
- corresponding environment variables, as we ignore those effects in the present
- topic.</p>
+ All of these arguments are described in detail below, except for @(':pcert'),
+ @(':useless-runes'), and @(':write-event-data'): see @(see
+ provisional-certification), @(see useless-runes), and @(see
+ saving-event-data), respectively, for the effects of these three arguments and
+ (for the first two) their corresponding environment variables, as we ignore
+ those effects in the present topic.</p>
 
  <p>NOTE: If a given book includes some books (see @(see include-book)), then
  those included books need to be certified before the given book is certified.
@@ -14713,8 +14926,9 @@ with any questions about building the community books.</p>")
 (defxdoc characterp
   :parents (characters acl2-built-ins)
   :short "Recognizer for @(see characters)"
-  :long "<p>@('(characterp x)') is true if and only if @('x') is a
-  character.</p>")
+  :long "<p>@('(characterp x)') is true if and only if @('x') is a character.
+ Note that ACL2 supports characters with ASCII codes between 0 and 255.  See
+ also @(see code-char) and @(see char-code).</p>")
 
 (defxdoc characters
   :parents (programming)
@@ -26500,10 +26714,11 @@ subtree of X with T, without duplication.</p>
   :parents (io)
   :short "Delete a file"
   :long "<p>This analogue of the Common Lisp function, @('delete-file'), uses
- that function under the hood to delete a given file.  The @(tsee guard) of
- @('delete-file$') requires that the first argument is a string; the second
- argument is the ACL2 @(tsee state).  The logical definition does not actually
- look at the file and hence is not useful for reasoning.</p>
+ that function under the hood to delete a given file.  It returns @('(mv t
+ state)') if deletion succeeds and @('(mv nil state)') otherwise.  The @(tsee
+ guard) of @('delete-file$') requires that the first argument is a string; the
+ second argument is the ACL2 @(tsee state).  The logical definition does not
+ actually look at the file and hence is not useful for reasoning.</p>
 
  @(def delete-file$)")
 
@@ -27604,7 +27819,7 @@ ld) and @(tsee include-book)"
  603
  to
  603.
- Logically, @('do$') returns ACL2_INVISIBLE::|The Live State Itself| in this
+ Logically, do$ returns ACL2_INVISIBLE::|The Live State Itself| in this
  situation.
 
 
@@ -28242,8 +28457,11 @@ ld) and @(tsee include-book)"
  @(`(:raw (combined-manual-ref))`), for topics documented in the ACL2 community
  @(see books) or in the ACL2 system (where the latter are rearranged).</p>
 
- <p>Alternatively, consider using the ACL2-doc Emacs browser; see @(see
- acl2-doc).</p>
+ <p>If you are not happy with the way text is displayed using @(':doc'), see
+ @(see xdoc::terminal).</p>
+
+ <p>Alternatively, consider using the ACL2-Doc Emacs browser; see @(see
+ ACL2-Doc).</p>
 
  @({
   Examples:
@@ -28258,8 +28476,8 @@ ld) and @(tsee include-book)"
  package (that is, as though the current package were @('\"ACL2\"')).  So for
  example, a link to the present topic will be displayed as @('[doc]'), not as
  @('[acl2::doc]'), regardless of the current package or the package of the
- topic being displayed.  Such links can thus take you to topics in the acl2-doc
- Emacs browser (see @(see acl2-doc)).</p>
+ topic being displayed.  Such links can thus take you to topics in the ACL2-Doc
+ Emacs browser (see @(see ACL2-Doc)).</p>
 
  <p>Note that @(see community-book) @('xdoc/top') redefines @(':doc') (using
  @(see add-ld-keyword-alias!)) to invoke the similar macro @('xdoc'), which can
@@ -30848,13 +31066,22 @@ ld) and @(tsee include-book)"
  even an additional option, @('hard?!'), which avoids guard proof obligations
  like @('hard?') but ensures errors like @('hard!').</p>
 
- <p>@('Er') is a macro, and the above examples expand to calls of ACL2
- functions, as shown below.  See @(see illegal), see @(see hard-error), and see
- @(see error1).  The @('hard?')/@('hard?!') forms have guards of (essentially)
- @('NIL') while the @('hard')/@('hard!') forms have guards of (essentially)
- @('T').  @(tsee Error1), on the other hand, is in @(':')@(tsee program)
- mode; for variants of @('(er soft ...)') that generate @(':')@(tsee logic)
- mode code, see @(see er-soft-logic) and @(see er-soft+).</p>
+ <p>@('Er') is a macro, and the examples above expand to calls of ACL2
+ functions; see below.  Also see @(see illegal), @(see hard-error), and @(see
+ error1).  The @('hard?')/@('hard?!') forms have expansions that call the
+ function, @(tsee hard-error), which has a @(see guard) of @('T'), while the
+ @('hard')/@('hard!') forms have expansions that call the function, @(tsee
+ illegal), which has a guard that is logically @('NIL').  Those generate code
+ that is in @(':')@(tsee logic) mode, in contrast to variants of @('(er soft
+ ...)'), which generate calls of the @(':')@(tsee program) mode function,
+ @(tsee error1).  For variants of @('(er soft ...)') that generate @(':')@(tsee
+ logic) mode code, see @(see er-soft-logic) and @(see er-soft+).</p>
+
+ <p>The general forms of the macros are as follows.  Their macroexpansions
+ include code that avoids the printing of error messages when error output is
+ inhibited &mdash; see @(see set-inhibit-output-lst) &mdash; but here we show
+ only the essential function calls.  Note that all arguments are evaluated even
+ when error output is inhibited.</p>
 
  @({
   General Forms:
@@ -32676,7 +32903,20 @@ ld) and @(tsee include-book)"
 (defxdoc explain-giant-lambda-object
   :parents (apply$)
   :short "print data related to a large lambda object"
-  :long "<p>When a @(tsee lambda) object is translated we @(tsee hons-copy) it
+  :long "<p>Translate will signal an error if it encounters an
+  &ldquo;excessively large&rdquo; @(tsee lambda) object.  These objects are so
+  large they are difficult to comprehend when printed.  So the error message
+  directs you to this documentation topic.  To see the @('lambda') object that
+  caused the error, execute</p>
+
+  @({
+  (explain-giant-lambda-object)
+  })
+
+  <p>The rest of this documentation topic explains why we detect these objects
+  and what you can do about them.</p>
+
+  <p>When a @(tsee lambda) object is translated we @(tsee hons-copy) it
   so that it is uniquely represented.  This speeds up the performance of the
   compiled @('lambda') cache (see @(tsee print-cl-cache)).</p>
 
@@ -32887,10 +33127,10 @@ ld) and @(tsee include-book)"
   :parents (io acl2-built-ins)
   :short "Extend a relative pathname to an absolute pathname"
   :long "<p>@('Extend-pathname') is a @(':')@(tsee program) mode function that
- takes a directory name and a filename (a string) and returns a corresponding
- pathname for the given file that is relative to the specified directory.  If
- the filename is already an absolute pathname then the return value is that
- filename, unchanged.</p>
+ takes a directory name as specified below and a filename (a string), and
+ returns a corresponding pathname for the given file that is relative to the
+ specified directory.  If the filename is already an absolute pathname then the
+ return value is that filename, unchanged.</p>
 
  @({
  General Form:
@@ -32898,12 +33138,12 @@ ld) and @(tsee include-book)"
  (extend-pathname dir filename state)
  })
 
- <p>where @('dir') is either a non-empty string, representing a directory's
- pathname, or a keyword, representing a project directory (see @(see
+ <p>where @('dir') is either a string, representing an absolute pathname for a
+ directory, or a keyword, representing a project directory (see @(see
  project-dir-alist)); filename is a string representing a relative or absolute
  pathname; and @('state') is the ACL2 @(see state).</p>
 
- <p>The following examples flesh out the behavior of @('extend-pathname').</p>
+ <p>The following examples illustrate the behavior of @('extend-pathname').</p>
 
  @({
  Examples (comments added)
@@ -32918,7 +33158,14 @@ ld) and @(tsee include-book)"
  ; name of non-existent file is still extended
  \"/home/bubba/temp/no-such-file\"
  ACL2 !>(extend-pathname \".\" \"no-such-file\" state)
- ; assumes that the current working directory is \"/home/joe\"
+ ; THIS IS NOT SUPPORTED, because the first argument is a relative pathname,
+ ; not an absolute pathname; but in this case a reasonable answer happens to
+ ; be provided.  See the next example for how to do this properly.
+ ; Here we assume that the current working directory is \"/home/joe\"
+ \"/home/joe/no-such-file\"
+ ACL2 !>(extend-pathname (canonical-pathname \".\" t state) \"no-such-file\" state)
+ ; As above, but the first argument is first turned into an absolute pathname,
+ ; which makes the call a supported one.
  \"/home/joe/no-such-file\"
  ACL2 !>(extend-pathname (cbd) \"no-such-file\" state)
  ; assumes that the connected book directory (see :DOC cbd) is \"/data/santa\"
@@ -35529,10 +35776,10 @@ current fast alists."
  <p>Note: @('~p'), @('~q'), @('~P'), and @('~Q') are also currently supported,
  but are deprecated and generally avoided in this manual.  These are
  respectively the same as @('~x'), @('~y'), @('~X'), and @('~Y'), except that
- their arguments are expected to be terms, preferably untranslated (user-level)
- terms, that could be printed using infix notation in certain environments.
- Infix printing is not currently supported but may be if there is sufficient
- need for it.</p>
+ their arguments may be expected to be terms, preferably
+ untranslated (user-level) terms, since at one time there was the possibility
+ that they could be printed using infix notation in certain environments.
+ Infix printing is no longer supported, however.</p>
 
  <p>ACL2's formatting functions print to the indicated channel, keeping track
  of which column they are in.  @(tsee Fmt1) can be used if the caller knows
@@ -42050,17 +42297,21 @@ current fast alists."
  somewhat over time.  For more details, see the ACL2 source code.</p>
 
  <p>Evaluation of the form @('(get-event-data key state)') returns the value of
- @('key') in an association list, namely, in the value of @(see state) global
- variable @('last-event-data') (see @(see programming-with-state)).  That alist
- contains certain information stored at the conclusion of the immediately
- preceding event, some of which corresponds to the event's @(see summary).  For
- each key the corresponding value, @('VAL'), is as follows.</p>
+ @('key') in an association list, which we call an <i>event-data alist</i>.
+ Such an alist is the value of @(see state) global variable
+ @('last-event-data').  (See @(see programming-with-state) for a discussion of
+ state global variables.)  An event-data alist contains certain information
+ stored at the conclusion of the immediately preceding event, some of which
+ corresponds to the event's @(see summary).  We anticipate continuing to
+ support at least the following keys, each with value @('VAL') as follows.</p>
 
  <ul>
 
  <li>@('ABORT-CAUSES'): @('VAL') is a list of reasons why the proof aborted.
  In particular, if the value @('INTERRUPT') is in the list, then the proof was
  interrupted (typically with Control-C).</li>
+
+ <li>@('EVENT'): the @(see event).</li>
 
  <li>@('FORM'): @('VAL') is the ``context'' for the event, printed in the
  summary, @(see warnings), and @(see errors).</li>
@@ -42088,7 +42339,7 @@ current fast alists."
  <li>@('TIME'): @('VAL') represents the corresponding field of the event
  summary, as the list @('(prove print proof-tree other)').</li>
 
- <li>@(' WARNINGS'): @('VAL') is as in the corresponding field of the event
+ <li>@('WARNINGS'): @('VAL') is as in the corresponding field of the event
  summary.</li>
 
  </ul>")
@@ -42157,6 +42408,39 @@ current fast alists."
  ACL2 loop; see @(see read-run-time), and also see @(see get-cpu-time) and
  @(see get-real-time).</p>")
 
+(defxdoc get-persistent-whs ; wormhole-status
+  :parents (wormhole)
+  :short "Make a wormhole's status visible outside the wormhole"
+  :long "@({
+  General Form:
+  (get-persistent-whs name state)
+  })
+
+ <p>@('Name') should be the name of a wormhole (see @(see wormhole)).  This
+ function returns an @(see error-triple) of the form @('(mv nil s state)'),
+ where @('s') is the persistent-whs of the named wormhole (i.e., the status of
+ of wormhole stored outside of the ACL2 state).  The status is obtained by
+ reading the oracle in the ACL2 @(tsee state) with @(tsee
+ read-acl2-oracle).</p>
+
+ <p>Recall that the status of a wormhole is some ACL2 object largely determined
+ by the author of the wormhole.  It is always treated as a pair whose @('car')
+ is the &ldquo;entry code&rdquo; (@(':enter') or @(':skip')) or, more
+ precisely, is either @(':skip') or not @(':skip'), the latter case being
+ treated like @(':enter').  But the @('cdr') of the status can be whatever the
+ author of the wormhole chooses to hold the data of the wormhole.  When a
+ wormhole is entered its persistent status, aka its persistent-whs, is used to
+ configure the state of the read-eval-print loop the user sees inside the
+ wormhole.  In particular, upon entry the persistent-whs is moved to the value
+ of the state global variable @(''wormhole-status') and is thus accessible via
+ @('(f-get-global 'wormhole-status state)').  We call this copy of the status
+ the ephemeral-whs because when the wormhole is exited the ephemeral-whs is
+ moved to the @('persistent-whs') and the state global @(''wormhole-status')
+ is restored to whatever value it had when the wormhole was entered.</p>
+
+ <p>See @(tsee wormhole-status) for a discussion of these two senses of the
+ status of a wormhole.  See also @(see wormhole-programming-tips).</p>")
+
 (defxdoc get-real-time
   :parents (programming-with-state acl2-built-ins read-run-time)
   :short "Read elapsed real time"
@@ -42170,19 +42454,22 @@ current fast alists."
 (defxdoc get-wormhole-status
   :parents (wormhole)
   :short "Make a wormhole's status visible outside the wormhole"
-  :long "<p>General Form:
- (get-wormhole-status name state)</p>
+  :long "@({
+  General Form:
+  (get-wormhole-status name state)
+  })
 
- <p>@('Name') should be the name of a wormhole (see @(see wormhole)).  This
- function returns an @(see error-triple) of the form @('(mv nil s state)'),
- where @('s') is the status of the named wormhole.  The status is obtained by
- reading the oracle in the ACL2 @(tsee state).</p>
+ <p>Warning: This function is deprecated and will likely be eliminated after
+ ACL2 Version  8.6.</p>
 
- <p>This function makes the status of a wormhole visible outside the wormhole.
- But since this function takes @(tsee state) and modifies it, the function may
- only be used in contexts in which you may change @(tsee state).  Otherwise,
- the wormhole status may stay in the wormhole.  See @(tsee wormhole-eval) and
- @(tsee wormhole).</p>")
+ <p>This function has been renamed to be @(tsee get-persistent-whs), i.e.,
+ &ldquo;persistent wormhole status&rdquo;.  While the old name is still
+ defined, we recommend that you use the new name because it clarifies which
+ status object is being fetched: the persistent one (i.e., the one that must be
+ logically read from the ACL2 oracle and which survives the exit from a
+ wormhole to the next entrance to that wormhole) and not the ephemeral one
+ sometimes found in @('(@ wormhole-status)').  If these concepts are new to you
+ we recommend you read about @(tsee wormhole-status).</p>")
 
 (defxdoc getenv$
   :parents (programming-with-state acl2-built-ins)
@@ -43094,8 +43381,8 @@ current fast alists."
  state)') returns a translated term.</p>")
 
 (defxdoc guarantees-of-the-top-level-loop
-  :parents (ld)
-  :short "ACL2 interactive top-level read-eval-print loop"
+  :parents (soundness ld)
+  :short "Guarantees provided by top-level evaluation"
   :long "<p>We often refer to the ``top-level loop,'' or just ``the loop'' when
   the context is understood.  The loop is the interactive read-eval-print loop
   with which the user interacts to issue commands, query the ACL2 logical
@@ -43108,6 +43395,17 @@ current fast alists."
 
   <p>But here we are concerned with what it means, logically, when a term
   <i>tm</i> evaluates without error to a value <i>v</i> in the loop.</p>
+
+  <p>We do not formalize macroexpansion here, but rather, we deal with
+  so-called &ldquo;translated&rdquo; @(see term)s, where macros and constants
+  have been expanded away.  We also do not discuss here how ACL2 evaluates
+  expressions; see @(see evaluation) for such discussion.
+  (Those interested in implementation issues may also read the long comment in
+  ACL2 source file @('interface-raw.lisp') that is labeled &ldquo;Essay on
+  Evaluation in ACL2&rdquo;.)</p>
+
+  <p>See @(see soundness) for a more general discussion of soundness-related
+  issues (including, for example, interrupts and trust tags).</p>
 
   <h3>A Strawman Proposal on the Meaning of Top-Level Evaluation</h3>
 
@@ -43431,12 +43729,17 @@ current fast alists."
   @(tsee Defstobj) and @(tsee defabsstobj) add recognizers, constructors, and
   accessors for single-threaded objects (aka ``@(see stobj)s'') but logically
   just use @('defun') to add new functions and then syntactically restrict
-  their use.  Finally, we provide a means of adding an arbitrary formula as an
-  axiom, @(tsee defaxiom), but <i>strongly discourage its use</i>.  There are
-  many other events that add axioms, e.g., @(tsee defun-nx) and @(tsee
-  defun-sk) but these are defined as macros that expand into the primitives
-  just listed.  In addition, there is a facility for including files of
-  previously admitted events, @(tsee include-book).</p>
+  their use in code.  Finally, we provide a means of adding an arbitrary
+  formula as an axiom, @(tsee defaxiom), but <i>strongly discourage its
+  use</i>.  There are many other events that add axioms, e.g., @(tsee defun-nx)
+  and @(tsee defun-sk) but these are defined as macros that expand into the
+  primitives just listed.  In addition, there is a facility for including files
+  of previously admitted events, @(tsee include-book).</p>
+
+  <p>Note that an event of the form @('(skip-proofs EV)') does not introduce
+  any axioms other that those added by the event, @('EV').  However, this
+  @(tsee skip-proofs) event does assume that all proof obligations introduced
+  by @('EV') are indeed provable in the prover's theory.</p>
 
   <p>Given a user's session, we call the above described theory the <i>prover's
   theory</i>.</p>
@@ -43494,14 +43797,18 @@ current fast alists."
 
   <li><p>For every @('(defattach f g)') event in the prover's theory the
   axiom (i.e., constraints) on @('f') is replaced by the axiom @('(equal (f
-  ...) (g ...))') in the evaluation theory.</p></li>
+  ...) (g ...))') in the evaluation theory.  (Of course this replacement also
+  takes place when using the more general form for @(tsee defattach),
+  @('(defattach ... (f g ...) ...)').)</p></li>
 
   </ul>
 
   <p>Given the restrictions enforced by @('defun'), @('defstobj'),
   @('defwarrant'), @('apply$'), @('encapsulate'), and @('defattach'), the
   evaluation theory is consistent if the prover's theory is consistent and free
-  of @('defaxiom') events.</p>
+  of @('defaxiom') events.  (Those interested in reading a proof of this claim
+  are welcome to read the &ldquo;Essay on Defattach&rdquo; in ACL2 source file
+  @('other-events.lisp').)</p>
 
   <p>Furthermore, the top-level evaluation</p>
 
@@ -43529,8 +43836,9 @@ current fast alists."
 
   <p>The ACL2 prover cannot generally prove these theorems, since it operates
   in the prover's theory.  However, as noted, there are often ways to encode
-  the conjectures into ACL2 formulas that are provable though the ACL2 system
-  does not provide tools for doing so.</p>
+  the conjectures into ACL2 formulas that are provable &mdash; in particular,
+  by adding suitable warrant hypotheses &mdash; though the ACL2 system does not
+  provide tools for doing so.</p>
 
   <h3>Some Examples of Top-Level Evaluations</h3>
 
@@ -43627,8 +43935,8 @@ current fast alists."
   theory) succeeds.  While all warrants are assumed true in the evaluation
   theory, they must be made explicit as hypotheses for proofs in the prover's
   theory.  This is the mechanism whereby ACL2 can avoid the ``local problem''
-  illustrated <b>Lesson 12</b> of @(see introduction-to-apply$) and discussed
-  more thoroughly in <a
+  illustrated in <b>Lesson 12</b> of @(see introduction-to-apply$) and
+  discussed more thoroughly in <a
   href='http://www.cs.utexas.edu/users/kaufmann/papers/apply/index.html'>``Limited
   Second-Order Functionality in a First-Order Setting''</a> by Matt Kaufmann
   and J Strother Moore.</p>")
@@ -45579,9 +45887,11 @@ current fast alists."
 
  </ul>
 
- <p>Each feature above has an argument (possibly optional) that control the
+ <p>Each feature above has an argument (possibly optional) that controls the
  level of simplification.  Each such argument can take any of three values, as
- follows.</p>
+ follows.  But <b>NOTE</b>: @('T') and @(':LIMITED') are the only legal values
+ for the &ldquo;AT&rdquo; (first) group, and @(':LIMITED') and @('NIL') are the
+ only legal values for the &ldquo;AFTER'' (second) group.</p>
 
  <ul>
 
@@ -66653,16 +66963,21 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
               :CHECK-EXPANSION t)
 
   General Form:
-  (make-event form :CHECK-EXPANSION chk :ON-BEHALF-OF obj :EXPANSION? form)
+  (make-event form
+              :CHECK-EXPANSION chk
+              :ON-BEHALF-OF obj
+              :EXPANSION? form
+              :SAVE-EVENT-DATA save)
  })
 
  <p>where @('chk') is @('nil') (the default), @('t'), or the intended
  ``expansion result'' from the evaluation of @('form') (as explained below);
- and if supplied, @('obj') is an arbitrary ACL2 object, used only in reporting
- errors in expansion, i.e., in the evaluation of form.  The @(':EXPANSION?')
- keyword is discussed in the final section, on Advanced Expansion Control. See
+ @('obj') is an arbitrary ACL2 object, used only in reporting errors in
+ expansion, i.e., in the evaluation of form; and @('save') is arbitrary but is
+ considered only as either @('nil') or non-@('nil').  The @(':EXPANSION?')
+ keyword is discussed in the final section, on Advanced Expansion Control.  See
  @(see make-event-details) for discussion of the @(':ON-BEHALF-OF')
- keyword.</p>
+ and :SAVE-EVENT-DATA keywords.</p>
 
  <p>We strongly recommend that you browse some @('.lisp') files in the
  community books directory @('books/make-event/').  You may even find it
@@ -67561,7 +67876,7 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
  some superior book and the appropriate @(':ttags') arguments have not been
  provided, that certification will fail.</p>
 
- <h3>Expansion errors and the @(':ON-BEHALF-OF') keyword</h3>
+ <h3>Expansion errors and the @(':ON-BEHALF-OF') keyword argument</h3>
 
  <p>Consider the case that expansion returns an @(see error-triple) @('(mv erp
  val state)'), where @('erp') is not @('nil').  Then @('make-event') may
@@ -67596,7 +67911,20 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
  </ul>
 
  <p>Note that errors generated during expansion are not affected by the cases
- above; those only control the concluding error message, if any.</p>")
+ above; those only control the concluding error message, if any.</p>
+
+ <h3>The @(':save-event-data') keyword argument</h3>
+
+ <p>See @(see get-event-data) for relevant background on data stored for each
+ event.  The association list stored in @('last-event-data') is normally
+ replaced every time an event concludes (at the summary phase), and that holds
+ for calls of @('make-event').  But there is the following exception: when
+ @('make-event') is called with a non-@('nil') value for keyword
+ @(':save-event-data'), then that association list persists from the expansion
+ phase.  This is how the @(tsee thm) macro is able to populate the
+ @('last-event-data') association list without having that list be smashed when
+ the surrounding @('make-event') (used for implementing @('thm'))
+ concludes.</p>")
 
 (defxdoc make-event-example-1
   :parents (make-event)
@@ -68056,20 +68384,23 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
 
  <p>However, this version of @('thm') did not permit calls of @('thm') in @(see
  books) or @(tsee encapsulate) forms.  To remedy that deficiency, ACL2 now
- defines @('thm') as follows; below we explain each component of this
+ defines @('thm') as follows; below we explain components of this
  definition.</p>
 
  @({
- (defmacro thm (term &key hints otf-flg)
+ (defmacro thm (&whole event-form
+                       term &key hints otf-flg)
    `(with-output :off summary :stack :push
       (make-event (er-progn (with-output :stack :pop
                               (thm-fn ',term
                                       state
                                       ',hints
-                                      ',otf-flg))
+                                      ',otf-flg
+                                      ',event-form))
                             (value '(value-triple :invisible)))
                   :expansion? (value-triple :invisible)
-                  :on-behalf-of :quiet!)))
+                  :on-behalf-of :quiet!
+                  :save-event-data t)))
  })
 
  <p>The use of @(tsee with-output) avoids printing anything about
@@ -68099,7 +68430,10 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
  See @(see make-event).</p>
 
  <p>The use of @(':on-behalf-of :quiet!') avoids a needless, distracting error
- message from @('make-event') when the proof fails.</p>")
+ message from @('make-event') when the proof fails.</p>
+
+ <p>The @(':save-event-data') keyword argument is a low-level implementation
+ detail that we ignore here.</p>")
 
 (defxdoc make-fast-alist
   :parents (fast-alists acl2-built-ins)
@@ -71248,64 +71582,126 @@ it."
 
 (defxdoc monitor
   :parents (break-rewrite)
-  :short "To monitor the attempted application of a rule name"
-  :long "@({
+  :short "To monitor attempted applications of certain rules by the rewriter"
+  :long "<p>This function stores information about which runes should be
+  monitored during rewriting and what criteria are used to invoke an
+  interactive break when those runes are tried by the rewriter during a
+  subsequent proof attempt.</p>
+
+  <h3>Outline</h3>
+
+  <ul>
+  <li>Protocol for Using Monitors</li>
+  <li>Example and General Forms</li>
+  <li>Background on Rewriting</li>
+  <li>Criteria for Breaks</li>
+  <li>Example Break Conditions</li>
+  <li>What If No Break Occurs?</li>
+  </ul>
+
+  <h3>Protocol for Using Monitors</h3>
+
+  <p>When a proof fails and you expected it to succeed by applying rules you've
+  proved, it can be helpful to see what happens when (if) the rewriter attempts
+  to use your rules.  The @(see break-rewrite) utility allows you to monitor
+  each attempt by the rewriter to use specific rules (@(see rune)s).  The basic
+  protocol is that you turn on the break-rewrite utility with @(tsee brr) and
+  then you use this facility, @('monitor'), to specify the rules you want to
+  monitor and the criteria for entering an interactive break.
+  (The variant @(tsee monitor!) is like @('monitor') but also makes sure the
+  break rewrite utility is turned on.)  Then you attempt the failed proof
+  again.  When a monitored rule is tried and the criteria for that rule are
+  satisfied, the rewriter triggers an interactive break allowing you to query
+  the environment and watch what happens.  The break is a read-eval-print
+  loop (in fact it is managed by @('ld'), the same function that provides
+  ACL2's top-level interactive loop).  However, it is inside a @(tsee
+  wormhole), allowing you to see what happening in rewrite.  But any changes
+  you make while in this break disappear when the break exits and the wormhole
+  evaporates.  See @(see brr-commands) for a list of the commands that
+  specifically give you access to parts of the rewriter's state.  Such breaks
+  do not allow you to change the course of the rewriter or otherwise guide the
+  proof attempt!  Breaks <b>do</b> allow you to abort a proof attempt, which
+  you typically do when you've understood why your rule failed to apply.  If
+  you're seeking an interactive proof checker see @(tsee proof-builder).  To
+  learn about the interactive breaks triggered when monitored runes are tried,
+  see @(see break-rewrite).</p>
+
+  <p>The current topic deals with how to install a monitor on a rule.</p>
+
+  <h3>Example and General Forms</h3>
+
+  @({
   Examples:
   (monitor '(:rewrite assoc-of-app) 't)
-  :monitor (:rewrite assoc-of-app) t
   (monitor '(:r assoc-of-app) t)
-  :monitor (:r assoc-of-app) t
+  (monitor 'assoc-of-app t)
+  (monitor '(rewrite assoc-of-app) '(:condition t :depth 2))
+
+  Keyword Command Examples:
   :monitor assoc-of-app t
-  :monitor (:definition app) (equal (brr@ :target) '(app c d))
-  :monitor (:linear rule3) t
- })
+  :monitor lemma42 (:condition (equal (brr@ :target) '(F A (G A (H B))))
+                    :depth 2
+                    :abstraction (F x (G x y))
+                    :lambda t))
 
- <p>In the examples above, the first four forms are equivalent; see @(see
- keyword-commands) and see @(see rune).  Those are equivalent to the fifth form
- if the event @('assoc-of-app') corresponds to a @(see rewrite) rule, or more
- precisely, to a single @(see rune), @('(:rewrite assoc-of-app)').</p>
-
- @({
   General Forms:
-  (monitor x condition)
-  :monitor y z ; same as (monitor 'y 'z)
-  (monitor x condition t) ; same as above, but avoiding output
+  (monitor x criteria)
+  (monitor x criteria t) ; a quiet version
+  (monitor! x criteria)  ; like quiet monitor but turns on brr first
  })
 
- <p>where we focus below on the first form, in which the arguments are
- evaluated.  The second form quotes its arguments; see @(see keyword-commands).
- The third form is a quiet version of the first that avoids the need to invoke
- @(tsee brr) explicitly, as discussed below.</p>
+ <p>where (the value of) @('x') is a @(see rune) or more generally a runic
+ designator (see @(see theories)) designating one or more runes of classes
+ @(':')@(tsee rewrite), @(':')@(tsee definition), @(':')@(tsee
+ rewrite-quoted-constant), or @(':')@(tsee linear) and (the value of)
+ @('criteria') is a &ldquo;keyword value list&rdquo; &mdash; a list of
+ alternating keywords and values.  If no @(':condition') key is supplied,
+ @(':condition t') is used.  If @('criteria') is some term, @('y'), it is
+ treated as the keyword value list @('(:condition y)').  The following keywords
+ and values are supported but the details are discussed below.</p>
 
- <p>Above, @('x') (or more precisely, the result of evaluating @('x')) is a
- runic designator (see @(see theories)) other than a theory name (see @(see
- theories)) and (the value of) @('condition') is a term, called the ``break
- condition.'' If @('x') is not a symbol then it must designate a @(see rune)
- corresponding to a rule of class @(':')@(tsee rewrite), @(':')@(tsee
- definition), or @(':')@(tsee linear).  If @('x') is a symbol then it
- represents all such runes that it designates, and there must be at least one
- such.  (Thus, @('x') cannot name an event that generates only rules of classes
- other than those three.)</p>
+ <ul>
 
- <p>@('Monitor') does not affect proof attempts until the @(see break-rewrite)
- utility is turned on with @(tsee brr) (for example, using @(':brr t')) or in
- the scope of @(see with-brr-data).  For a shortcut that turns on break-rewrite
- automatically while avoiding output, see @(see monitor!).</p>
+ <li>@(':depth') &mdash; value must be a natural number</li>
 
- <p>When a @(see rune) is @(see monitor)ed any attempt to apply it may result
- in an interactive break in an ACL2 ``@(see wormhole) @(see state).''  There
- you will get a chance to see how the application proceeds.  Whether an
- interactive break occurs depends on the value of the break condition
- expression associated with the @(see monitor)ed @(see rune).  See @(see
- break-rewrite) for a description of the interactive loop entered, and in
- particular, for discussion of what happens if you monitor or unmonitor a rune
- while inside a break (in short: the effect disappears when existing the break,
- unless it is a top-level break).  Also see @(see set-brr-evisc-tuple) for how
- to see output in full.</p>
+ <li>@(':abstraction') &mdash; value must be a term and it is most often an
+ abstraction of the pattern that triggers @('x') obtained by replacing some
+ subterms of that pattern by new variables</li>
+ 
+ <li>@(':lambda') &mdash; value must be @('t') or @('nil')</li>
 
- <p>NOTE: Some @(':rewrite') rules are considered ``simple abbreviations''; see
- @(see simple).  These can be be monitored, but only at certain times during
- the proof.  Monitoring is carried out by code inside the rewriter but
+ <li>@(':condition') &mdash; value must be a term, called the &ldquo;break
+ condition&rdquo; which contains at most one free variable and that variable
+ must be @(tsee state).</li>
+
+ </ul>
+
+ <p>The keys @(':depth'), @(':abstraction'), and @(':lambda') are only relevant
+ when the &ldquo;pattern&rdquo; that may trigger the rule named by @('x')
+ <b>does not match</b> the target.  They specify criteria under which a failed
+ match is to be considered a &ldquo;near miss.&rdquo; Details are given below.
+ However, other keywords are allowed with no constraints on their values.  The
+ purpose of this allowance is so that the user who wants to attach his or her
+ own function to ACL2's @(tsee brr-near-missp) predicate can pass information
+ to that function.</p>
+
+ <p>The @(':condition') key is only relevant when the pattern of the monitored
+ rune <b>matches</b> the target to which the rewriter tried to apply it.</p>
+
+ <p>When successful, @('monitor') arranges for the rewriter to trigger an
+ interactive break when any rule named by @('x') and of the above classes is
+ tried, provided the @(see break-rewrite) utility has been turned on &mdash;
+ using @(':')@(tsee brr)@(' t'), @(':')@(tsee monitor!), or @(see
+ with-brr-data) &mdash; and the circumstances of the attempt to apply the rule
+ satisfy the @('criteria') as checked by the function @(tsee brr-near-missp).
+ @('Monitor') prints to the comment window a list of all the
+ currently-monitored runes and their criteria and returns the error-triple
+ @('(value :invisible)').  The so-called &ldquo;quiet&rdquo; versions above do
+ no printing.</p>
+
+ <p>Some @(':rewrite') rules are considered ``simple abbreviations''; see @(see
+ simple).  These can be be monitored, but are only tried at certain times
+ during the proof.  Monitoring is carried out by code inside the rewriter but
  abbreviation rules may be applied by a special purpose simplifier inside the
  so-called <i>preprocess</i> phase of a proof.  If you desire to monitor an
  abbreviation rule, a warning will be printed suggesting that you may want to
@@ -71313,36 +71709,154 @@ it."
  hint, an abbreviation rule can be applied during the preprocess phase of a
  proof, and no such application will cause an interactive break.</p>
 
- <p>To remove a @(see rune) from the list of @(see monitor)ed @(see rune)s, use
- @('unmonitor').  To see which @(see rune)s are @(see monitor)ed and what their
- break conditions are, evaluate @('(monitored-runes)').</p>
+ <p>To remove a rune from the list of monitored runes, use @(tsee
+ unmonitor).  To see which runes are monitored and what their break
+ criteria are, evaluate @('(')@(tsee monitored-runes)@(')').</p>
 
  <p>@('Monitor'), @('unmonitor') and @('monitored-runes') are macros that
  expand into expressions involving @('state').  While these macros appear to
- return the list of @(see monitor)ed @(see rune)s this is an illusion.  They
- all print @(see monitor)ed @(see rune) information to the comment window and
+ return the list of @(see monitor)ed runes this is an illusion.  They
+ all print @(see monitor)ed rune information to the comment window and
  then return @(see error-triple)s instructing @('ld') to print nothing.  It is
- impossible to return the list of @(see monitor)ed @(see rune)s because it
+ impossible to return the list of @(see monitor)ed runes because it
  exists only in the @(see wormhole) @(see state) with which you interact when a
- break occurs.  This allows you to change the @(see monitor)ed @(see rune)s and
+ break occurs.  This allows you to change the @(see monitor)ed runes and
  their conditions during the course of a proof attempt without changing the
  @(see state) in which the proof is being constructed.</p>
 
- <p>Unconditional break points are obtained by using the break condition
- @('t').  We now discuss conditional break points.  The break condition,
- @('condition'), must be a term that contains no free variables other than
- @('state') and that returns a single non-@('state') result.  In fact, the
- result should be @('nil'), @('t'), or a true list of commands to be fed to the
- resulting interactive break.  Whenever the system attempts to use the
- associated rule, the break condition (that is, @('condition')) is evaluated in
- the @(see wormhole) interaction @(see state).  A break occurs only if the
- result of evaluating @('condition') is non-@('nil').  If the result is a true
- list, that list is appended to the front of @('standard-oi') and hence is
- taken as the initial user commands issued to the interactive break.</p>
+ <p>Note: This list of monitored runes is maintained as a locally bound
+ variable by break-rewrite.  For example, suppose that at the top-level of ACL2
+ the list of monitored runes and their criteria is @('x').  Suppose you then
+ start a proof attempt, a break-rewrite break occurs and in that break you use
+ @('monitor') or @('unmonitor') to change the list of monitored runes to
+ @('y').  Now suppose that you release or abort from the break and ACL2 returns
+ to the top-level.  You might think the list of monitored runes is @('y') but
+ in fact it is @('x').  The list is locally bound to value in the caller's
+ environment each time break-rewrite is entered and thus restored to the value
+ in the caller's environment when break-rewrite returns.</p>
+
+ <h3>Background on Rewriting</h3>
+
+ <p>Before we explain the criteria for triggering breaks we establish some
+ basic terminology about the rewriter.  We start with how it applies
+ @(':rewrite') rules.  The rewriter walks through a term (typically
+ left-to-right, innermost first) maintaining a list of known assumptions
+ represented as a @(see type-alist).  It rewrites each subterm under those
+ assumptions.  The subterm the rewriter is currently considering is called the
+ &ldquo;target&rdquo;.  Each @(':rewrite') rule is derived from some theorem
+ essentially of the form @('(implies (and hyp1 ... hypn) (equiv lhs rhs))'),
+ where the @('hypi'), @('lhs'), and @('rhs') are terms and @('equiv') is known
+ @(see equivalence) relation.  The @('lhs') is always a function application
+ and the rule derived from the theorem is stored in the ACL2 logical @(see
+ world) under the topmost function symbol of the @('lhs').</p>
+
+ <p>Each time the rewriter steps to a new target it retrieves all the rules
+ stored under the topmost function symbol of the target and tries each rule in
+ turn (provided the rule is enabled and its @('equiv') is a @(see congruence)
+ relation in the current context).  To try a @(':rewrite') rule the rewriter
+ first attempts to match the @('lhs') to the target.  By &ldquo;match&rdquo; we
+ mean the rewriter tries to find a substitution for the variables of
+ @('lhs') (consistent with the @(tsee restrict) hints governing the target)
+ such that applying the substitution to the @('lhs') produces the target.  If
+ the @('lhs') matches the target, the rewriter then attempts to establish the
+ @('hypi') by rewriting each of them in turn, instantiating each @('hypi') with
+ the substitution.  If the instance of each @('hypi') rewrites to true, we know
+ &mdash; by the theorem justifying this rule &mdash; that that the instance of
+ @('lhs') is equivalent to the corresponding instance of @('rhs'), but the
+ instance of @('lhs') is the target.  So the rewriter is logically justified in
+ replacing the occurrence of the target by the instance of @('rhs') and
+ recursively rewrites that.  Heuristic considerations may prevent such a
+ replacement, e.g., the instantiated @('rhs') is considered ``too
+ complicated,'' a loop might be detected, etc.</p>
+
+ <p>We can generalize and summarize this description just by saying that each
+ rule has a pattern, some hypotheses, and a result.  We say the rule is
+ &ldquo;about&rdquo; the topmost function symbol in the pattern.  If the
+ pattern matches the target, the hypotheses are true, and heuristic
+ considerations allow, we use the result.  @(':Definition') and
+ @(':rewrite-quoted-constant') rules fit easily within this scheme.  But
+ @(':linear') rules are a little different.  The conclusion of a @(':linear')
+ rule an arithmetic inequality relating subterms, the pattern is one of those
+ subterms, and the result is the entire inequality conclusion.  If the
+ hypotheses are all rewritten to true, the result is instantiated and added to
+ the context, telling the rewriter possibly useful information about the
+ target.</p>
+
+ <h3>Criteria for Breaks</h3>
+
+ <p>If matching fails it is sometimes useful to see why.  How did the pattern
+ and the target differ?  But since a rule about a given function symbol is
+ tried every time the target has that same topmost function symbol, most rules
+ fail to match much more often than they match.  Triggering a break on every
+ failed match is counterproductive.  Instead, we introduce the notion of a
+ &ldquo;near miss&rdquo; and allow you to set criteria that trigger breaks when
+ a failed match is a near miss. There are three built-in near miss criteria,
+ @(':depth'), @(':abstraction'), and @(':lambda').  We expect any given
+ monitored command will probably specify only one of these three criteria,
+ depending on the pattern in the rule and your judgement of what might be going
+ wrong, but there is nothing preventing you from specifying multiple criteria.
+ If any one of them is satisfied by a failed match a break will occur.</p>
+
+ <ul>
+
+ <li>@(':depth n') causes a break if the pattern of the rune fails to match the
+ target but the pattern does match down to depth @('n').  For example, the
+ pattern @('(F X (G X (H Y (I Z))))') fails to match the target @('(F A (G B
+ C))'), but it does match to depth 2.  To check this criterion the break
+ utility abstracts the pattern by copying it and replacing every subterm at
+ @('n') by a new variable symbol.  The depth @('n') abstractions of
+ @('(F X (G (H Y (I Z))))') for @('n')=1, 2, and 3 are shown below.
+
+  <ul>
+  <li>@('n') = 1: @('(F GENSYM0 GENSYM1)')</li>
+
+  <li>@('n') = 2: @('(F X (G GENSYM0 GENSYM1))')</li>
+
+  <li>@('n') = 3: @('(F X (G X (H GENSYM0 GENSYM1)))')</li>
+  </ul>
+ </li>
+
+ <li>@(':abstraction apat') causes a break if the pattern of the rune fails to
+ match the target but the translation of @('apat') does match the target.  This
+ is useful when you want more control over the abstraction of the pattern than
+ @(':depth') gives you.  For example, the depth 2 abstraction of @('(F X (G
+ X (H Y (I Z))))') is @('(F X (G GENSYM0 GENSYM1))') but you may be interested
+ only in breaks when @('(F X (G X GENSYM1))') matches the target, i.e., where
+ the first arguments of @('F') and @('G') are the same.  If so you could
+ specify the criterion @(':abstraction (F X (G X Y))') or, equivalently,
+ @(':abstraction (F X (G X GENSYM1))').
+ <ul></ul></li>
+
+ <li>@(':lambda t') causes a break if the pattern of the rune fails to
+ match the target but does match everywhere except on quoted @(tsee lambda)
+ constants.  This is checked by replacing each quoted @('lambda') object in the
+ pattern by a new variable.  This is particularly useful when your rule
+ contains a @('lambda$') expression, which translates to a quoted @('lambda')
+ constant, but the occurrence of that constant in the target has been
+ rewritten (see @(see rewrite-lambda-object)).  See also the discussion of
+ &ldquo;Normal Forms in Loop$ Bodies&rdquo; in @(see
+ stating-and-proving-lemmas-about-loop$s).</li>
+
+ </ul>
+
+ <p>On the other hand, suppose the pattern of the rune matches the target.
+ Then the break condition term, i.e., the @(':condition') criterion, is
+ evaluated.  The only variable allowed in the break condition term is
+ @('state'), which in the context of the break-rewrite utility is a @(tsee
+ wormhole) state.  Suppose the break condition term evaluates to @('ans').  If
+ @('ans') is @('nil'), no break occurs.  If @('ans') is @('t'), an interactive
+ break occurs and the user is prompted for commands.  Otherwise, @('ans') is
+ expected to be a true list of commands to be fed to the break, i.e., to be
+ appended to @('standard-oi').  Those commands are then executed just as though
+ the user typed them.  If they exit the break, the user is not prompted for
+ further commands.  If they don't exit the break, the user is prompted for more
+ commands.</p>
+
+ <h3>Example Break Conditions</h3>
 
  <p>In order to develop effective break conditions it must be possible to
  access context sensitive information, i.e., information about the context in
- which the @(see monitor)ed @(see rune) is being tried.  The @(tsee brr@) macro
+ which the @(see monitor)ed rune is being tried.  The @(tsee brr@) macro
  may be used in break conditions to access such information as the term being
  rewritten and the current governing assumptions.  This information is not
  stored in the proof @(see state) but is transferred into the @(see wormhole)
@@ -71357,17 +71871,16 @@ it."
 
  @({
   ACL2 !>:monitor (:rewrite assoc-of-app)
-                  (equal (brr@ :target) '(app a (app b c)))
+                  (equal (brr@ :target) '(app (app a b) c))
  })
 
  <p>will monitor @('(:rewrite assoc-of-app)') but will cause an interactive
- break only when the target term, the term being rewritten, is @('(app a (app b
- c))').</p>
+ break only when the target term is literally @('(APP (APP A B) C)').</p>
 
  <p>Because break conditions are evaluated in the interaction environment, the
- user developing a break condition for a given @(see rune) can test candidate
+ user developing a break condition for a given rune can test candidate
  break conditions before installing them.  For example, suppose an
- unconditional break has been installed on a @(see rune), that an interactive
+ unconditional break has been installed on a rune, that an interactive
  break has occurred and that the user has determined both that this particular
  application is uninteresting and that many more such applications will likely
  occur.  An appropriate response would be to develop an expression that
@@ -71383,16 +71896,16 @@ it."
   ACL2 !>:monitor (:rewrite assoc-of-app) '(:go)
  })
 
- <p>will cause @('(:rewrite assoc-of-app)') to be @(see monitor)ed and will
- make the break condition be @(''(:go)').  This break condition always
- evaluates the non-@('nil') true list @('(:go)').  Thus, an interactive break
- will occur every time @('(:rewrite assoc-of-app)') is tried.  The break is fed
- the command @(':go').  Now the command @(':go') causes @('break-rewrite') to
+ <p>will cause @('(:rewrite assoc-of-app)') to be monitored and will make the
+ break condition be @(''(:go)').  This break condition always evaluates to the
+ non-@('nil') true list @('(:go)').  Thus, an interactive break will occur
+ every time @('(:rewrite assoc-of-app)') is tried.  The break is fed the
+ command @(':go').  Now the command @(':go') causes @('break-rewrite') to
  (a) evaluate the attempt to apply the lemma, (b) print the result of that
  attempt, and (c) exit from the interactive break and let the proof attempt
- continue.  Thus, in effect, the above @(':monitor') merely ``traces'' the
- attempted applications of the @(see rune) but never causes an interactive
- break requiring input from the user.</p>
+ continue.  Thus, in effect, the above @(':monitor') merely
+ &ldquo;traces&rdquo; the attempted applications of the rune but never causes
+ an interactive break requiring input from the user.</p>
 
  <p>It is possible to use this feature to cause a conditional break where the
  effective break condition is tested <b>after</b> the lemma has been tried.
@@ -71401,7 +71914,7 @@ it."
  @({
   ACL2 !>:monitor (:rewrite lemma12)
                   '(:unify-subst
-                    :eval$ nil
+                    :eval!
                     :ok-if (or (not (brr@ :wonp))
                                (not (equal (brr@ :rewritten-rhs) '(foo a))))
                     :rewritten-rhs)
@@ -71410,8 +71923,8 @@ it."
  <p>causes the following behavior when @('(:rewrite lemma12)') is tried.  A
  break always occurs, but it is fed the commands above.  The first,
  @(':unify-subst'), causes @('break-rewrite') to print out the unifying
- substitution.  Then in response to @(':eval$') @('nil') the lemma is tried but
- with all @(see rune)s temporarily @(see unmonitor)ed.  Thus no breaks will
+ substitution.  Then in response to @(':eval!') the lemma is tried but
+ with all runes temporarily @(see unmonitor)ed.  Thus no breaks will
  occur during the rewriting of the hypotheses of the lemma.  When the attempt
  has been made, control returns to @('break-rewrite') (which will print the
  results of the attempt, i.e., whether the lemma was applied, if so what the
@@ -71424,14 +71937,14 @@ it."
  @(':rewritten-rhs'), prints the result of the application (which in this
  contrived example is known to be @('(foo a)')).  Finally, the list of supplied
  commands is exhausted but @('break-rewrite') expects more input.  Therefore,
- it begins prompting the user for input.  The end result, then, of the above
- @(':monitor') command is that the @(see rune) in question is elaborately
+ it begins prompting the user for input.  The end result of the above
+ @(':monitor') command is that the rune in question is elaborately
  traced and interactive breaks occur whenever it rewrites its target to @('(foo
  a)').</p>
 
  <p>We recognize that the above break condition is fairly arcane.  We suspect
  that with experience we will develop some useful idioms.  For example, it is
- straightforward now to define macros that monitor @(see rune)s in the ways
+ straightforward now to define macros that monitor runes in the ways
  suggested by the following names: @('trace-rune'), @('break-if-target-is'),
  and @('break-if-result-is').  For example, the last could be defined as</p>
 
@@ -71447,7 +71960,56 @@ it."
  <p>Since we don't have any experience with this kind of control on lemmas we
  thought it best to provide a general (if arcane) mechanism and hope that the
  ACL2 community will develop the special cases that we find most
- convenient.</p>")
+ convenient.</p>
+
+ <p>Note: The combination of a non-trivial @(':condition') and some near-miss
+ criteria can result in confusing behavior.  To get a near-miss break a target
+ has to fail to match the rule's pattern but succeed in matching the near-miss
+ criteria.  So the near-miss criteria is irrelevant if the target matches the
+ rule. But to get a break the target must match the rule in such a way that the
+ @(':condition') is satisfied.  Failure to get any breaks when you have a
+ non-trivial @(':condition') and a very general near-miss criteria may mean
+ targets matching the near-miss criteria also matched the rule's pattern but
+ failed to satisfy your @(':condition').  Our personal preference when
+ monitoring for near-misses is to use the default @(':condition') of @('t'), at
+ least until we see what kind of matches are arising.</p>
+
+ <h3>What If No Break Occurs?</h3>
+
+ <p>Suppose @('rune') is a rune that names a rule about some function symbol
+ @('fn').  What does it mean if you've installed a monitor on @('rune') with
+ @('(:condition t :depth 1)') and <b>no break ever occurs</b>?  Then one of the
+ following is probably true.</p>
+
+ <ul>
+
+ <li>the break-rewrite utility is not turned on &mdash; you should evaluate
+ @('(brr t)'),</li>
+
+ <li>@('rune') is disabled in the theory used for subgoals mentioning @('fn')
+ &mdash; you should enable it either with a global @(tsee in-theory) command or
+ a subgoal-specific @(':in-theory') hint (see @(see hints)),</li>
+
+ <li>@('rune') names an abbreviation rule as discussed above &mdash; you should
+ add the hint @(':DO-NOT '(PREPROCESS)') (see @(see hints)),</li>
+
+ <li>the @(':')@(tsee hints) supplied includes a @(':hands-off') list that
+ includes @('fn') &mdash; perhaps you should disable other rules about
+ @('fn') (since that is presumably why you put @('fn') on the @(':hands-off')
+ list in the first place) and remove @('fn') from the @(':hands-off')
+ list,</li>
+
+ <li>the only terms that the rewriter ever encountered with the topmost
+ function @('fn') were within a @('HIDE'),</li>
+
+ <li>no target with the topmost function symbol @('fn') was ever seen by
+ rewrite &mdash; perhaps @('fn') was involved in the conjecture or introduced
+ into the proof attempt but was eliminated by another rewrite.</li>
+
+ </ul>
+
+ <p>The rewriter is complicated.  There may be other ways this could
+ happen!</p>")
 
 (defxdoc monitor!
   :parents (break-rewrite)
@@ -71465,12 +72027,27 @@ it."
   :short "Print the @(see monitor)ed @(see rune)s and their break conditions"
   :long "@({
   Example and General Form:
+  (monitored-runes)
   :monitored-runes
  })
 
  <p>This macro prints a list, each element of which is of the form @('(rune
  condition)'), showing each @(see monitor)ed @(see rune) and its current break
- condition.</p>")
+ condition.</p>
+
+ <p>The list is printed to the comment window and <i>not</i> returned as the
+ value @('(monitored-runes)').  The actual list is maintained in a wormhole
+ managed by @(see break-rewrite).</p>
+
+ <p>Technically, the list of monitored runes is a locally bound variable of
+ break-rewrite.  The initial value of the variable is determined by its value
+ in the containing scope of a call of break-rewrite.  The value may be changed
+ during interactions within the break, but it reverts to its old value upon
+ return from break-rewrite.  Thus if you monitor some runes, start a proof,
+ adjust the monitored runes from within break-rewrite breaks in the proof
+ attempt, and eventually return to the top-level, the value shown by
+ @(':monitored-runes') will be the same as it was when you started the
+ proof.</p>")
 
 (defxdoc msg
   :parents (io acl2-built-ins)
@@ -86639,7 +87216,7 @@ it."
  })
 
  <p>Second, change the @('form') argument so that instead of talking about the
- state-global variable @('wormhole-output') it talks about the state-global
+ state global variable @('wormhole-output') it talks about the state global
  variable @('wormhole-status').  Look for @('(@ wormhole-output)'), @('(assign
  wormhole-output ...)'), @('(f-get-global 'wormhole-output ...)') and
  @('(f-put-global 'wormhole-output ...)') in @('form') and replace them with
@@ -89104,7 +89681,7 @@ it."
  <p><b>BUG FIXES</b></p>
 
  <p>Fixed a class of soundness bugs involving each of the following functions:
- @(tsee getenv$), @(tsee get-wormhole-status), @(tsee cpu-core-count), @(tsee
+ @(tsee getenv$), @('get-wormhole-status'), @(tsee cpu-core-count), @(tsee
  wormhole-p), @(tsee random$), @('file-write-date$'), and
  @('serialize-read-fn'), and (for the HONS version of ACL2) @(tsee
  clear-memoize-table) and @(tsee clear-memoize-tables) as well as (possible
@@ -96675,8 +97252,9 @@ it."
 
  <li>Text within ``@('<stv> ... </stv>')'' is now replaced by the text
  ``@('{STV display}')''.  A general mechanism is in place for extending this
- behavior to other tags (see @('xdoc-tag-elide-alist') in @(see
- community-books) file 'books/xdoc/display.lisp').</li>
+ behavior to other tags (see @('xdoc-tag-elide-alist') [after Version 8.5,
+ @('xdoc-tag-alist')]) in @(see community-books) file
+ 'books/xdoc/display.lisp').</li>
 
  <li>In the @(see acl2-doc) browser, when the ``i'' (@('acl2-doc-index'))
  command is invoked without a prefix argument, the mode line shows the number
@@ -101988,6 +102566,16 @@ it."
 ; it's not clear what to print in the case of nested implications such as
 ; (implies (and h1 ...) (implies (and k1 ...) c)).
 
+; Infix printing was essentially removed in 2017 with Version 8.0, but code
+; remained to support it.  That code has been completely removed.  The
+; following macros became trivial and hence were also removed:
+; with-infixp-nil and make-ctx-for-event.  Some formal parameters were removed for
+; the following functions, when they were used on for infix printing:
+; - flsz: eliminated termp
+; - flpr: eliminated termp
+; - fmt-ppr: eliminated termp
+; - defun-ctx: eliminated event-form and state
+
   :parents (release-notes)
   :short "ACL2 Version  8.6 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -102352,6 +102940,66 @@ it."
  conclusion&rdquo;.  That remark points to a new documentation topic, which
  provides explanation: see @(see clause).</p>
 
+ <p>@(csee State) global @('trace-co') is now untouchable.</p>
+
+ <p>ACL2 now warns when the hypothesis of a @(see type-prescription) or @(see
+ forward-chaining) rule is a call of @(tsee syntaxp) or @(tsee bind-free),
+ since these get no special treatment for such rules.</p>
+
+ <p>The utility @(tsee get-event-data) now returns data from the proof done on
+ behalf of a @(tsee thm) event, rather than from the surrounding @(tsee
+ make-event) call used for implementing @('thm').  Thanks to Eric Smith for
+ requesting this change.</p>
+
+ <p>In the case that a proof is interrupted after @('(set-debugger-enable t)')
+ and then aborted, ACL2 formerly printed failures in a special way, in
+ particular showing the @(see pstack).  This is no longer the case: all @(see
+ event) failures are printed in the same way.</p>
+
+ <p>A new key, @('EVENT'), is available for @(tsee get-event-data).  Thanks to
+ Eric Smith for a discussion leading to this addition.</p>
+
+ <p>Most ACL2 reader errors are now ACL2 hard errors rather than raw Lisp
+ errors (as they were formerly).  As a result, such errors can sometimes be
+ &ldquo;caught&rdquo; by suitable programming.  Thanks to Grant Jurgensen and
+ Eric Smith for requesting this change.  Note that input is still flushed in
+ these cases, perhaps more thoroughly than before.</p>
+
+ <p>@(tsee Break-rewrite), @(tsee brr-commands), @(tsee monitor), and @(tsee
+ unmonitor) have been radically changed but in a largely backwards compatible
+ way.  It is now possible to cause interactive breaks when a monitored rule is
+ tried but fails to match the target.  See @(tsee monitor), in particular, see
+ the &ldquo;near-miss&rdquo; break criteria in @(tsee monitor) for a
+ discussion.  Changes to @(tsee break-rewrite) largely just correct anomalous
+ behavior.  One significant behavioral change is that the list of monitored
+ runes is locally bound by @('break-rewrite'), so that while it can be changed
+ in inferior breaks, when control returns to superior levels (and to the
+ top-level) the list of monitored runes is unchanged.  Related changes are
+ discussed in the following three items.  Note that for this work, including
+ the three items just below: Release was approved by DARPA with ``DISTRIBUTION
+ STATEMENT A. Approved for public release. Distribution is unlimited.''</p>
+
+ <ul>
+
+ <li>The @(tsee brr)-command @(':')@(tsee p!) (see @(see brr-commands)) has
+ been redefined so that in @(see break-rewrite) it is a no-op.  (Actually, it
+ did not always work as advertised in @(see break-rewrite)!  Its behavior
+ outside of break-rewrite is unchanged.)  A comment in the source code
+ definition of @('p!') explains why.</li>
+
+ <li>The function @('get-wormhole-status') is deprecated, and its new name is
+ @(tsee get-persistent-whs).</li>
+
+ <li>The macro @('show-brr-evisc-tuple') has been eliminated, but @(tsee
+ brr-evisc-tuple) is available instead.</li>
+
+ </ul>
+
+ <p>The utilities @(':')@(tsee pe) and @(':')@(tsee pr) now provide more useful
+ output when applied to function symbols that are built into ACL2 without a
+ defining event.  Thanks to Warren Hunt for discussions leading to this
+ improvement.</p>
+
  <h3>New Features</h3>
 
  <p>The new zero-ary attachable system function, @(tsee heavy-linear-p), allows
@@ -102423,9 +103071,21 @@ it."
  <p>@('Lambda') objects in positions of @(see ilk) @(':FN') are now subjected
  to a size limitation.  See @(tsee explain-giant-lambda-object).</p>
 
- <p>The keyword @(':off') for the utility @(tsee with-output) (also @(tsee
+ <p>The utilities @(tsee with-output) and @(tsee with-output!) have been
+ enhanced in the following two ways; see @(see with-output) for details.</p>
+
+ <ul>
+
+ <li>A new keyword, @(':inhibit-er-hard'), can be supplied a non-@('nil') value
+ to turn off hard errors when error output is inhibited.  Thanks to Eric Smith
+ for a conversation leading to this enhancement.</li>
+
+ <li>The keyword @(':off') for the utility @(tsee with-output) (also @(tsee
  with-output!)) can take on a new value, @(':all!'), which is treated exactly
- the same as using arguments @(':off :all :gag-mode nil').</p>
+ the same as using arguments @(':off :all :gag-mode nil :inhibit-er-hard
+ t').</li>
+
+ </ul>
 
  <p>The new utility @(tsee with-cbd) creates a scope for an indicated value of
  the connected book directory (see @(see cbd)).  Calls of @('with-cbd') are
@@ -102467,6 +103127,16 @@ it."
  requesting a related utility (see @(see community-books)
  @('kestrel/utilities/brr-data-failures.lisp') and
  @('kestrel/utilities/brr-data-all.lisp')).  See @(see with-brr-data).</p>
+
+ <p>@(tsee Make-event) takes a new keyword, @('save-event-data').  When that
+ keyword is non-@('nil'), event-data from the expansion saved is preserved; see
+ the new section at the end of @(see make-event-details).  This new feature was
+ motivated by the desire to preserve a proof's event-data in calls of @(tsee
+ thm), as described in the &ldquo;Changes&rdquo; section above.</p>
+
+ <p>New utilities allow one to explore what has changed when an event fails in
+ a book that formerly certified.  See @(see saving-event-data).  Thanks to Eric
+ Smith for requesting such a capability.</p>
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
@@ -102738,6 +103408,27 @@ it."
  second argument of a call of @(tsee implies), and fixed an analogous bug for
  @(tsee return-last).</p>
 
+ <p>Fixed a bug in @(tsee intersection$) that prevented it from being called
+ with keyword argument @(':test 'equal').  Thanks to Anna Slobodova for
+ bringing this bug to our attention.</p>
+
+ <p>Certain error messages from @(tsee translate) and @(tsee untranslate) are
+ now inhibited when they should be (where formerly they weren't).  Thanks to
+ Eric Smith for bringing this problem to our attention.</p>
+
+ <p>Fixed a bug that in rare cases, for direct prover calls (e.g., with @(tsee
+ prove$), could cause an error reporting &ldquo;HARD ACL2 ERROR in
+ pop-warning-frame&rdquo;.  Thanks to Eric Smith for bringing this bug to our
+ attention.  Note that with this change, then when an @(see event)'s evaluation
+ causes a hard error (see @(see er) and @(see hard-error)): @(see summary)
+ information may be printed that was formerly omitted; and a superfluous extra
+ failure message may be omitted that was formerly printed.</p>
+
+ <p>The function @(tsee delete-file$) executed in a way that diverged from its
+ logical definition: successful deletion caused return values of @('(mv t
+ state)') but this was provably impossible according to the logical
+ definition.  This has been fixed.</p>
+
  <h3>Changes at the System Level</h3>
 
  <p>The `@('make')' target, @('save-exec'), now builds @('custom-saved_acl2')
@@ -102758,9 +103449,9 @@ it."
  Thanks to Eric Smith for suggesting this enhancement.</p>
 
  <p>Significant new @(see documentation) topics, together with subtopics and
- books supporting those topics, include the following.  Note that for all but
- the  their release was approved by DARPA with &ldquo;DISTRIBUTION STATEMENT
- A. Approved for public release. Distribution is unlimited.&rdquo;</p>
+ books supporting those topics, include the following.  Release was approved by
+ DARPA with &ldquo;DISTRIBUTION STATEMENT A. Approved for public
+ release. Distribution is unlimited.&rdquo;</p>
 
  <ul>
 
@@ -102778,16 +103469,45 @@ it."
  <li>@(see Loop$-primer) provides an extensive primer on the the ACL2 @(tsee
  loop$) feature.</li>
 
- <li>@(see Type-reasoning) gives a basic introduction to what is sometimes
- called ``type-set reasoning''.  This new topic is now referenced in many other
+ <li>@(see Type-reasoning) gives a basic introduction to what has sometimes
+ been called ``type-set reasoning'' but is now generally referred to as
+ &ldquo;type reasoning&rdquo;.  This new topic is now referenced in many other
  built-in documentation topics.  Thanks to Warren Hunt for communication
  leading to this new topic.</li>
+
+ <li>@(see Soundness) discusses what we can conclude when we use ACL2 to prove
+ a formula or to compute the value of an expression.</li>
 
  </ul>
 
  <p>Allow @(tsee ld) output in @(see raw-mode) to go to other than the channel,
  @('*standard-co*').  Thanks to Vivek Ramanathan and Warren Hunt for an example
  illustrating the issue.</p>
+
+ <p>(For system hackers only) The feature @(':acl2-loop-only') is now true
+ inside the ACL2 read-eval-print loop.  Therefore, the function @('lp!') is no
+ longer supported or necessary, since @('(lp)') enters the loop with feature
+ @(':acl2-loop-only') true, just as @('(lp!)') did previously.</p>
+
+ <p>(CCL only) @(csee Stobj) array code now has a workaround for a <a
+ href='https://github.com/Clozure/ccl/issues/446'>CCL bug</a> found by Yahya
+ Sohail, in the case of reading a stobj array of integers where the element
+ type includes at least one negative number and one non-fixnum.  That bug has
+ been around since at least as far back as 2017, and was fixed on June 12,
+ 2023.  For those using a CCL version with the bug, this fix may slow down such
+ stobj array reads a bit in the case described above; one measurement showed
+ about 37% more time for such a read.  Thanks to Yahya for the bug report, to
+ Warren Hunt for encouraging a workaround, and to the CCL developers (in
+ particular Gary Palter) for fixing the CCL bug.</p>
+
+ <p>The undocumented utility, @('thm-fn') &mdash; which is used in several
+ @(see community-books) &mdash; now has an additional formal (at the end),
+ @('event-form').  That argument can generally be passed as @('nil') for
+ appropriate behavior.</p>
+
+ <p>Code for @(tsee set-cbd) has been tweaked to add assurance that the @(tsee
+ cbd) always ends in a forward slash (&lsquo;@('/')&rsquo;), as specified.
+ Thanks to Stephen Westfold for a comment leading to this modification.</p>
 
  <h3>EMACS Support</h3>
 
@@ -102810,6 +103530,31 @@ it."
  notable @('acl2-doc.el') &mdash; from that same directory, rather than from
  the @('emacs/') directory that is directly under the top level of the ACL2
  distribution.</p>
+
+ <p>@(csee Documentation) printed to the terminal or in the @(see ACL2-Doc)
+ Emacs browser can respect certain @(see xdoc::markup) that was formerly
+ ignored, but is no longer (by default), as follows.</p>
+
+ <ul>
+
+ <li>Fonts are largely respected.  For example, text marked as underline is now
+ underlined, and text marked as having typewriter font now has a grey
+ background.  This closes GitHub Issue 1487.  Thanks to Grant Jurgensen for
+ helpful feedback on the original plan, which had been to use delimiting
+ underscores rather than Select Graphic Rendition (SGR) control sequences.  See
+ @(see xdoc::terminal) for details and for ways to customize behavior,
+ including avoidance of SGR.</li>
+
+ <li>Images now appear in @(see ACL2-Doc) (but not with @(':')@('doc') at the
+ terminal), instead of @('{IMAGE}'), on systems that can display graphics
+ inside Emacs.  Thanks to Warren Hunt for requesting this enhancement.</li>
+
+ </ul>
+
+ <p>The documentation for @(see ACL2-Doc) says of the search commands @('s')
+ and @('S'), &ldquo;go to that topic with the cursor put immediately after the
+ found text&rdquo;.  But the cursor was at the end of the found text, not
+ immediately after it.  That has been fixed.</p>
 
  <h3>Experimental Versions</h3>
 
@@ -103648,7 +104393,14 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 (defxdoc ok-if
   :parents (break-rewrite)
   :short "Conditional exit from @('break-rewrite')"
-  :long "@({
+  :long "<p>Recall that one way to exit from a @(see break-rewrite) interactive
+  break is to type the command @(':ok').  See @(see brr-commands).  The
+  @(':ok') command exits silently, without printing the result of attempting to
+  apply the rule that caused the break.  The @(':ok-if') command takes a term
+  as an argument and is like @(':ok') but exits only if the term evaluates to
+  non-@('nil').</p>
+
+  @({
   Example Form:
   :ok-if (null (brr@ :wonp))
 
@@ -104572,7 +105324,12 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  For more information, see @(see ld-error-action).</p>
 
  <p>If you are at an ACL2 prompt (as opposed to a raw Lisp break), then you may
- type @(':p!') in place of @('(p!)'); see @(see keyword-commands).</p>")
+ type @(':p!') in place of @('(p!)'); see @(see keyword-commands).</p>
+
+ <p>If you are actually in a break caused by @(see break-rewrite), @(':p!') and
+ @('(p!)') just print a message and otherwise are no-ops.  (A comment in the
+ source code definition of @('p!') explains why break-rewrite cannot support
+ ``popping up one level'' in the sense that you would probably expect.)</p>")
 
 (defxdoc packages-for-generated-symbols
   :parents (packages)
@@ -105490,9 +106247,6 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>For examples of such an application, including explanatory comments, see
  @(see community-books) and @('books/demos/partial-encapsulate.lisp') and
  @('books/demos/include-raw-examples/mem-access-sound/mem.lisp').</p>
-
- <p>For an example of such an application, including explanatory comments, see
- @(see community-book) @('books/demos/partial-encapsulate.lisp').</p>
 
  <p>Partial-encapsulates are, in essence, also used in the implementation of
  dependent clause-processors, where the list of supporters might well be
@@ -124165,6 +124919,194 @@ work on <tt>(q x)</tt>.</p>
  output, to check that your customization file loaded as intended (presumably,
  without errors).</p>")
 
+(defxdoc saving-event-data
+  :parents (system-utilities output-controls)
+  :short "Save data stored for subsidiary @(see events)"
+  :long "<p>Warning: This is a low-level system utility that may change
+ somewhat over time.  For more details, see the ACL2 source code.</p>
+
+ @({
+ General Forms:
+ (saving-event-data form)
+
+ ; See Further information below for keyword options for these two:
+ (runes-diff book-name)
+ (old-and-new-event-data book-name)
+ })
+
+ <p>where @('form') is any form that evaluates to an @(see error-triple) and
+ @('book-name') is a file ending with @('\".lisp\"').  See below for typical
+ usage.</p>
+
+ <p>A common problem is that a book whose certification formerly succeeded now
+ has a certification failure.  In that case, the failure is often caused by a
+ proof failure; then one may wish for information on what has changed from the
+ previous, successful proof attempt and the new, failing proof attempt.  Here
+ is a procedure for obtaining such information.  After that we discuss some
+ variations on that procedure.</p>
+
+ <h3>Finding @(see rune)s that were used only previously, or only now</h3>
+
+ <p>Here we discuss a procedure for discovering, given a book @('BOOK.lisp'),
+ which @(see rune)s were used in a previous successful proof but not in the new
+ failed proof attempt, or vice-versa.</p>
+
+ <p>The procedure described here requires certain &ldquo;event-data&rdquo;
+ information to have been written by a previous certification of
+ @('BOOK.lisp').  Such writing of event-data can be accomplished by providing
+ @(tsee certify-book) the keyword argument @(':write-event-data t').  Writing
+ of event-data by @('certify-book') can also be accomplished by setting
+ environment variable @('ACL2_WRITE_EVENT_DATA') to a non-empty value, though
+ that is overridden if @(tsee certify-book) keyword argument
+ @(':write-event-data') is explicitly supplied the value, @('nil').  See @(see
+ build::custom-certify-book-commands) for discussion about how a
+ @('cert-flags') comment can set @('certify-book') keyword values when using
+ the @('cert.pl') utility.</p>
+
+ <p>When @('certify-book') writes event-data under either condition above
+ (keyword argument or environment variable), it writes it to
+ @('.sys/BOOK@event-data.lsp').  That file includes entries of the form
+ @('(name . alist)'), where @('alist') is an <i>event-data alist</i> &mdash;
+ see @(tsee get-event-data) &mdash; where each entry corresponds to one of the
+ following event types, possibly generated by a macro or @(tsee make-event)
+ call.</p>
+
+ <ul>
+ <li>defthm</li>
+ <li>defun</li>
+ <li>verify-guards</li>
+ <li>thm</li>
+ </ul>
+
+ <p>One @('(name . alist)') entry is written for each such event, in the order
+ in which the events were encountered during the proof pass of certification.
+ Normally @('name') is the name of the event, but it is @('nil') in the case of
+ a @(tsee thm) event.</p>
+
+ <p>Suppose that you have file @('.sys/BOOK@event-data.lsp') as discussed
+ above, that is, from having previously certified @('BOOK.lisp') when writing
+ event-data.  Also suppose that you now have a copy of @('BOOK.lisp') (maybe
+ the same one, maybe not) for which certification has failed, possibly using a
+ different ACL2 version than the first, and let @('EV') be the event that
+ caused the failure; assume that's because of a proof failure.  Below are steps
+ that allow you to see which rules (actually, @(see rune)s) were used in the
+ proof attempt for the first event but not the second, or vice-versa.  That
+ information might help you to repair the proof, for example by enabling or
+ disabling a rule whose @(see enable)d status has changed after the successful
+ certification, or by proving a rule that was in an included book during the
+ successful certification but has since been deleted.</p>
+
+ <p><b>Step 1</b>.  Load the @(see portcullis) commands:</p>
+
+ @({
+ (ld \"BOOK.port\")
+ })
+
+ <p><b>Step 2</b>.  Execute the following command, which will presumably end
+ with a failed proof for the event, @('EV').</p>
+
+ @({
+ (saving-event-data (ld \"BOOK.lisp\"))
+ })
+
+ <p><b>Step 3</b>.  See which runes were used in the old proof and not the new,
+ and vice-versa, respectively:</p>
+
+ @({
+ (runes-diff \"BOOK.lisp\")
+ })
+
+ <p>An example is in @(see community-books) file
+ @('books/demos/event-data/test1.lisp'), which has comments that lead through a
+ variant of the steps above.  File @('test1-input.lsp') in that directory
+ actually carries out that process, resulting in output displayed in log file
+ @('test1-log.txt') in that directory.  Here is the output of a @('runes-diff')
+ call shown both in that log file and in a comment in file
+ @('test1-input.lsp').  It shows that a @(see type-prescription) rule, named
+ @('true-listp-append'), was used in the original proof but not the failed
+ proof (which made the @(tsee ld) call of Step 2 above made without first
+ performing Step 1, which would have introduced that type-prescription rule.
+ This output also shows that the new (failed) proof attempt used many runes not
+ used in the previous proof &mdash; not surprisingly, since without the rule
+ @('true-listp-reverse') the prover made a desperate attempt involving
+ destructor elimination and induction.</p>
+
+ @({
+  ((:OLD ((:TYPE-PRESCRIPTION TRUE-LISTP-REVERSE)))
+   (:NEW ((:DEFINITION ALISTP)
+          (:DEFINITION ATOM)
+          (:DEFINITION NOT)
+          (:DEFINITION TRUE-LISTP)
+          (:ELIM CAR-CDR-ELIM)
+          (:EXECUTABLE-COUNTERPART CONSP)
+          (:EXECUTABLE-COUNTERPART NOT)
+          (:EXECUTABLE-COUNTERPART REVERSE)
+          (:FAKE-RUNE-FOR-TYPE-SET NIL)
+          (:INDUCTION ALISTP))))
+ })
+
+ <p>A second, analogous set of three files is in that same directory; just
+ replace @('\"test1\"') by @('\"test2\"') in the filenames.</p>
+
+ <h3>Further information</h3>
+
+ <p>The @('runes-diff') utility is intended to serve as an example of a class
+ of such query utilities.  It is a macro that expands to a corresponding
+ function call.</p>
+
+ @({
+ ACL2 !>:trans1 (runes-diff \"BOOK.lisp\")
+  (RUNES-DIFF-FN \"BOOK.lisp\" NIL NIL NIL 'RUNES-DIFF
+                 STATE)
+ ACL2 !>
+ })
+
+ <p>@('Runes-diff-fn') is actually quite simple.</p>
+
+ @(def runes-diff-fn)
+
+ <p>It is simple because the real work is carried out using a more complex
+ function, @('old-and-new-event-data-fn').  That function returns a pair
+ @('(old . new)'), where @('old') and @('new') are event-data alists for the
+ failed event (called @('EV') above).  Then @('runes-diff-fn') only needs to
+ pick out the @('RULES') fields and form the set-differences.</p>
+
+ <p>The macro @('old-and-new-event-data') provides a convenient interface to
+ @('old-and-new-event-data-fn').</p>
+
+ @({
+ ACL2 !>:trans1 (old-and-new-event-data \"BOOK.lisp\")
+  (OLD-AND-NEW-EVENT-DATA-FN \"BOOK.lisp\"
+                             NIL NIL NIL 'OLD-AND-NEW-EVENT-DATA
+                             STATE)
+ ACL2 !>
+ })
+
+ <p>Both @('runes-diff') and @('old-and-new-event-data') have keyword arguments
+ that allow one to choose a specific name for a failed event &mdash; the most
+ recent event with that name, rather than @('EV') &mdash; and a directory for
+ the given filename, which may be a string or a keyword representing a project
+ directory (see @(see project-dir-alist)).  The @('\"test2\"') files mentioned
+ above have an example in which the name @('nil') is supplied to specify the
+ @(tsee thm) event most recently preceding the failed event (actually it's the
+ only one preceding the failed event).</p>
+
+ @({
+ General Forms:
+ (runes-diff book-string &key name dir)
+ (old-and-new-event-data book-string &key name dir)
+ })
+
+ <p>If you want to use these programmatically, call the corresponding
+ @('\"-FN\"') versions, where @('namep') is @('t') to represent the case that a
+ name is provided, else @('nil').</p>
+
+ @({
+ General Forms:
+ (runes-diff-fn book-string name namep dir ctx state)
+ (old-and-new-event-data book-string name namep dir ctx state)
+ })")
+
 (defxdoc sbcl-installation
 
 ; This :DOC topic replaces what was in the section on "Obtaining SBCL" in ACL2
@@ -124818,10 +125760,27 @@ work on <tt>(q x)</tt>.</p>
 (defxdoc set-brr-evisc-tuple
   :parents (brr brr-evisc-tuple set-evisc-tuple)
   :short "Set the @(tsee brr-evisc-tuple)"
-  :long "<p>The call @('(set-brr-evisc-tuple e state)') is simply a convenient
- way to set the @(see brr-evisc-tuple) to @('e') directly, that is, without
- using the more general mechanism, @(tsee set-evisc-tuple).  See @(see
- brr-evisc-tuple).</p>")
+  :long "@({
+  General Form:
+  (set-brr-evisc-tuple ev state)
+  })
+
+ <p>where @('ev') is either the keyword @(':default') or a legal @(tsee
+ evisc-tuple).  This function sets the evisceration tuple used by @(see
+ brr-commands).  The current value can be retrieved with @(tsee
+ brr-evisc-tuple).  The initial value is @(':default') which means the
+ @(':term') evisceration tuple is used.  To see how the @('brr-evisc-tuple')
+ is used see @(tsee brr-evisc-tuple).</p>
+
+ <p>Think of @('brr-evisc-tuple') as a true global variable, not a locally
+ bound variable of break-rewrite.  In particular, if you set the
+ @('brr-evisc-tuple') inside a break-rewrite interactive break and eventually
+ exit that break &mdash; either to enter a deeper break or return to a
+ shallower break or to the ACL2 top-level &mdash; the @('brr-evisc-tuple') will
+ retain its chronologically most recent setting.</p>
+
+ <p>The general command for setting any of the system evisc-tuples is @(tsee
+ set-evisc-tuple).</p>")
 
 (defxdoc set-case-split-limitations
   :parents (miscellaneous)
@@ -125866,9 +126825,7 @@ work on <tt>(q x)</tt>.</p>
  <li>@(':BRR') &mdash; used for output from @(see brr-commands) issued in the
  @(see break-rewrite) loop.  When the value is @(':DEFAULT') then the
  <i>effective value</i> of this evisc-tuple is the @(':TERM') evisc-tuple with
- @('flg = t') (see above).  Also see @(see brr-evisc-tuple).  No accessor is
- available to return this evisc-tuple, but its effective value is displayed by
- evaluating @('(show-brr-evisc-tuple)').</li>
+ @('flg = t') (see above).  Also see @(see brr-evisc-tuple).</li>
 
  <li>@(':GAG-MODE') &mdash; used for printing induction schemes (and perhaps,
  in the future, for other printing) when @(see gag-mode) is on.  If gag-mode is
@@ -126953,7 +127910,8 @@ work on <tt>(q x)</tt>.</p>
  session that used the @(see break-rewrite) utility, but familiarity with that
  utility is not necessary in order to understand this example.  What it shows
  is that the form @('(set-iprint t)') allows you to recover, using @(see
- without-evisc), output that had been hidden.</p>
+ without-evisc), output that had been hidden.  (See @(see break-rewrite) for
+ more about the interaction of @('break-rewrite') with iprinting.)</p>
 
  @({
  ACL2 !>(thm (p y))
@@ -127179,7 +128137,10 @@ work on <tt>(q x)</tt>.</p>
  @(':reset-enable').</p>
 
  <p>@('nil') &mdash; Disable iprinting.  If either keyword @(':share') or
- @(':hard-bound') is supplied, then @('nil') is converted to @(':reset').</p>
+ @(':hard-bound') is supplied, then @('nil') is converted to @(':reset').
+ Otherwise, if the next call of @('set-iprint') is with a first argument of
+ @('t'), then iprint indices will start at the next available value rather than
+ going back to 1.</p>
 
  <p>@(':reset') &mdash; Reset iprinting to its initial disabled state, so that
  when enabled, the first index @('i') for which `@('#@i#') is printed will be
@@ -127637,6 +128598,31 @@ work on <tt>(q x)</tt>.</p>
  All parallelism primitives degrade to their serial equivalents, including
  their calls made directly in the ACL2 top-level loop.  Thus, uses of
  parallelism primitives do not in themselves cause errors.</p>")
+
+(defxdoc set-persistent-whs-and-ephemeral-whs
+  :parents (wormhole)
+  :short "maintaining wormhole coherence"
+  :long "@({
+  General Form:
+  (set-persistent-whs-and-ephemeral-whs name new-status state)
+  })
+
+  <p>where @('name') is the name of a @(tsee wormhole) other than one of the
+  built-in ACL2 system wormholes, and @('new-status') is the desired status of
+  the wormhole.  ACL2 insists that @('name') be supplied as a @(see quote)d
+  constant.  The constant @('*protected-system-wormhole-names*') lists the
+  names of the built-in wormholes and includes @('brr') (the @(see
+  break-rewrite) wormhole name), @('accumulated-persistence'), and
+  @('fc-wormhole') (the name of the wormhole managing @(see
+  forward-chaining-reports)), among others.</p>
+
+  <p>@('Set-persistent-whs-and-ephemeral-whs') moves @('new-status') into the
+  wormhole's persistent-whs (the status stored outside of the ACL2 state) and
+  then executes @(tsee sync-ephemeral-whs-with-persistent-whs) to re-establish
+  coherence.  It returns a modified @('state').</p>
+
+  <p>See @(see wormhole-programming-tips) for some tips for using this
+  function.</p>")
 
 (defxdoc set-print-base
   :parents (io acl2-built-ins)
@@ -129543,10 +130529,9 @@ work on <tt>(q x)</tt>.</p>
 
  <p>See @(see wormhole).  @('Whs') should be a well-formed wormhole status;
  @('data') is arbitrary.  This function returns a new status with the same
- entry code as @('whs') but with the new @('data').  It avoids unnecessary
- consing if the data for @('whs') is already set to @('data').  This function
- does not affect state or a wormhole's hidden status.  It just returns a
- (possibly) new status object suitable as the value of the @('lambda')
+ entry code as @('whs') but with the new @('data').  This function does not
+ affect state or a wormhole's persistent-whs or ephemeral-whs.  It just returns
+ a (possibly) new status object suitable as the value of the @('lambda')
  expressions in @(tsee wormhole-eval) and @(tsee wormhole).</p>")
 
 (defxdoc set-wormhole-entry-code
@@ -129558,11 +130543,11 @@ work on <tt>(q x)</tt>.</p>
 
  <p>See @(see wormhole).  @('Whs') should be a well-formed wormhole status and
  @('code') should be @(':ENTER') or @(':SKIP').  This function returns a new
- status with the specified entry code but the same data as @('whs').  It avoids
- unnecessary consing if the entry code for @('whs') is already set to
- @('code').  This function does not affect state or a wormhole's hidden status.
- It just returns a (possibly) new status object suitable as the value of the
- @('lambda') expressions in @(tsee wormhole-eval) and @(tsee wormhole).</p>")
+ status with the specified entry code but the same data as @('whs').  This
+ function does not affect state or a wormhole's persistent-whs or
+ ephemeral-whs.  It just returns a (possibly) new status object suitable as the
+ value of the @('lambda') expressions in @(tsee wormhole-eval) and @(tsee
+ wormhole).</p>")
 
 (defxdoc set-write-acl2x
   :parents (books-reference)
@@ -129782,7 +130767,7 @@ work on <tt>(q x)</tt>.</p>
  takes nor returns the ACL2 @(see state).  The reason is that @(tsee getenv$)
  takes responsibility for trafficking in @(see state); it is defined in the
  logic using the function @(tsee read-acl2-oracle), which (again, in the logic)
- does modify state, by popping an entry from its acl2-oracle field.  @(see
+ does modify state, by popping an entry from its acl2-oracle field.  See @(see
  getenv$).</p>
 
  <p>As suggested above, a call of @(tsee getenv$) takes into account the most
@@ -129941,7 +130926,7 @@ work on <tt>(q x)</tt>.</p>
  #f{i}.{j}e{n}  => (i + (/ j 10^k)) * 10^n where k is the length of {j}
  })
 
- <p>We have the following similar semantics for the #('#fx') case, except that
+ <p>We have the following similar semantics for the @('#fx') case, except that
  {i} and {j} are now read in base 16.  Note that {n} is still read in base
  10.</p>
 
@@ -130115,14 +131100,6 @@ work on <tt>(q x)</tt>.</p>
   (show-bodies function-symbol)
   :show-bodies function-symbol
  })")
-
-(defxdoc show-brr-evisc-tuple
-  :parents (brr brr-evisc-tuple)
-  :short "Display the @(tsee brr-evisc-tuple)"
-  :long "<p>Evaluation of the form @('(show-brr-evisc-tuple)') displays the
- effective value of the @('brr-evisc-tuple').  Note that this value is only
- printed by such evaluation as a side-effect, not returned.  See also @(see
- brr-evisc-tuple).</p>")
 
 (defxdoc show-custom-keyword-hint-expansion
   :parents (custom-keyword-hints)
@@ -130860,6 +131837,141 @@ work on <tt>(q x)</tt>.</p>
       (iff (leaf-p atm x)
            (member-equal atm (fringe x))))
  })")
+
+(defxdoc soundness
+  :parents (about-acl2)
+  :short "Correctness property claimed for ACL2"
+  :long "<p>What can we conclude when we use ACL2 to prove a formula or to
+ compute the value of an expression?  This topic provides a high-level sketch
+ of an answer.</p>
+
+ <p>Any notion of correctness of ACL2 necessarily depends on the logic that it
+ is intended to implement.  At its core, the ACL2 logic is just classical
+ first-order logic.  The first-order theory for a given ACL2 session, which we
+ may call the &ldquo;prover's theory&rdquo;, is the result of extending its set
+ of built-in axioms according to @(see events) that have been executed in the
+ session.</p>
+
+ <ul>
+
+ <li>The built-in axioms describe properties of the ACL2 data types, such as
+ the following.
+
+ @({
+ ACL2 !>:pe car-cons
+        -8139  (DEFAXIOM CAR-CONS
+                 (EQUAL (CAR (CONS X Y)) X))
+ ACL2 !>
+ })</li>
+
+ <li>A key extension principle is the Principle of Definition, which, for a
+ definition @('(defun <fn> <args> <body>)'), introduces an axiom equating
+ @('<body>') with application of @('<fn>') to @('<args>').  This principle
+ permits recursion, and even @(see mutual-recursion), provided a suitable
+ <i>measure conjecture</i> is provable.</li>
+
+ <li>Other @(see events) come with extension principles too, including @(tsee
+ encapsulate), @(tsee defchoose), @(tsee defpkg), and @(tsee include-book).
+ Note that from a logical perspective, @(tsee defstobj) and @(tsee defabsstobj)
+ just provide definitional extensions.</li>
+
+ <li>Each ACL2 theory is <i>closed under induction</i>: that is, every instance
+ of induction (in the language of the theory) below the ordinal @('epsilon-0')
+ (see @(see ordinals)) is also in the theory.  In practical terms, this is what
+ allows ACL2 to prove theorems by induction.</li>
+
+ </ul>
+
+ <p>For more about the ACL2 logic see the following publications by Matt
+ Kaufmann and J Moore.</p>
+
+ <ul>
+
+ <li><a
+ href='http://www.cs.utexas.edu/users/moore/publications/km97a.pdf'>&ldquo;A
+ Precise Description of the ACL2 Logic&rdquo;</a> (April, 1998).</li>
+
+ <li><a
+ href='https://www.cs.utexas.edu/users/moore/publications/encap-story.pdf'>&ldquo;Structured
+ Theory Development for a Mechanized Logic&rdquo;</a>, <i>Journal of Automated
+ Reasoning</i> 26, no. 2 (2001) 161-203.</li>
+
+ </ul>
+
+ <p>The following soundness property is key for a given ACL2 session.</p>
+
+ <ul>
+
+ <li>The theorem prover proves only formulas that are theorems in the
+ corresponding prover's theory in that session.</li>
+
+ </ul>
+
+ <p>Note that the theorem prover uses evaluation during proofs.  The soundness
+ property thus encompasses the following: when such evaluation of a term
+ @('tm') produces a value @('v'), then @('(equal tm 'v)') is provable from the
+ context of that evaluation.  Evaluation in the top-level loop has such a
+ property as well, but because of attachments (see @(see defattach)) and @(tsee
+ apply$), provability is with respect to a larger &ldquo;evaluation
+ theory&rdquo;; see @(see guarantees-of-the-top-level-loop).</p>
+
+ <p>Here is a list of general restrictions on the soundness guarantee.</p>
+
+ <ul>
+
+ <li>The prover's theory of a session includes all axioms introduced by hidden
+ @(see defpkg) events.  See @(see hidden-death-package).</li>
+
+ <li>There is no soundness guarantee for a session in which there is raw Lisp
+ evaluation with side effects.  (ACL2 normally avoids putting the user into raw
+ Lisp, but this can happen with an interrupt, the use of @(tsee break$), or
+ explicitly leaving the top-level loop with @(':q').)  &ldquo;Side
+ effects&rdquo; should be interpreted as generously as possible: this certainly
+ includes redefining a function or assigning to a variable, but not merely
+ evaluating an arithmetic expression, for example.</li>
+
+ <li>There is no soundness guarantee for a session in which any trust tag has
+ been installed (see @(see defttag)).  The absence of trust tags is guaranteed
+ by the absence of &ldquo;@('TTAG NOTE')&rdquo; being printed to standard
+ output (that is, to @(tsee *standard-co*)).</li>
+
+ <li>Technically, the soundness guarantee only applies to the case that a set
+ of books is certified from scratch, including @(see community-books).  In
+ practice this is generally not necessary.</li>
+
+ </ul>
+
+ <p>This topic has discussed the soundness guarantee from the user perspective.
+ Those interested in exploring deeper theoretical and implementation issues are
+ welcome to read the extensive relevant comments in the ACL2 source code,
+ including the comments labeled as follows (listed in order of appearance as of
+ this writing, not to indicate the order in which to read them).</p>
+
+ <ul>
+
+ <li>Essay on Admitting a Model for Apply$ and the Functions that Use It</li>
+
+ <li>Essay on Hidden Packages</li>
+
+ <li>Essay on Soundness Threats</li>
+
+ <li>Essay on a Total Order of the ACL2 Universe</li>
+
+ <li>Essay on Illegal-states</li>
+
+ <li>Essay on Evaluation in ACL2</li>
+
+ <li>Essay on the Logical Basis for Linear Arithmetic</li>
+
+ <li>Essay on the Correctness of Abstract Stobjs</li>
+
+ <li>Essay on Memoization with Partial Functions (Memoize-partial)</li>
+
+ <li>Essay on Correctness of Evaluation with Stobjs</li>
+
+ <li>Essay on Correctness of Meta Reasoning</li>
+
+ </ul>")
 
 (defxdoc spec-mv-let
   :parents (parallel-programming acl2-built-ins)
@@ -134873,6 +135985,41 @@ work on <tt>(q x)</tt>.</p>
   has two components: its name (see @(see symbol-name)) and its package name
   (see @(see symbol-package-name)).</p>")
 
+(defxdoc sync-ephemeral-whs-with-persistent-whs 
+  :parents (wormhole)
+  :short "establishing wormhole coherence"
+  :long "@({
+  General Form:
+  (sync-ephemeral-whs-with-persistent-whs name state)
+  })
+
+  <p>where @('name') is the quoted name of a @(tsee wormhole) other than one of
+  the built-in ACL2 system wormholes.  It is forbidden to invoke
+  @('sync-ephemeral-whs-with-persistent-whs') on the names listed in the
+  constant @('*protected-system-wormhole-names*') which includes @('brr') (the
+  @(see break-rewrite) wormhole name), @('accumulated-persistence'), and
+  @('fc-wormhole') (the name of the wormhole managing @(see
+  forward-chaining-reports)), among others.</p>
+
+  <p>If executed on the live state and while in the named wormhole, this
+  function moves the wormhole's status from the persistent-whs (located in that
+  part of the memory outside of ACL2's state) to the ephemeral-whs (the value
+  of the state global variable @('wormhole-status')).  Subsequently,
+  @('name')'s persistent-whs is equal to its ephemeral-whs: the @('name')
+  wormhole is coherent.  If executed on a state other than the live one or
+  while outside of the named wormhole, this function is a no-op.  Of course,
+  the next time the @('name') wormhole is entered it will be in a coherent
+  state since entry to a wormhole initializes the @('wormhole-status') to the
+  persistent-whs.  @('sync-ephemeral-whs-with-persistent-whs') returns the new
+  state.</p>
+
+  <p>Logically speaking, this function uses @(tsee read-acl2-oracle) to obtain
+  the wormhole's hidden status.  So the output state is almost certainly
+  different than the input state.</p>
+
+  <p>See @(see wormhole-programming-tips) for some tips for using this
+  function.</p>")
+
 (defxdoc syntactically-clean-lambda-objects-theory
   :parents (theories theory-functions rewrite)
   :short "how to specify syntactic cleaning of lambda objects"
@@ -134969,9 +136116,10 @@ work on <tt>(q x)</tt>.</p>
   :parents (rewrite definition linear meta)
   :short "Attach a heuristic filter on a rule"
   :long "<p>A call of @('syntaxp') in the hypothesis of a @(':')@(tsee
- rewrite), @(':')@(tsee definition), or @(':')@(tsee linear) rule is treated
- specially, as described below.  Similar treatment is given to the evaluation
- of a @(':')@(tsee meta) rule's hypothesis function call.</p>
+ rewrite), @(':')@(tsee rewrite-quoted-constant), @(':')@(tsee definition), or
+ @(':')@(tsee linear) rule is treated specially, as described below.  Similar
+ treatment is given to the evaluation of a @(':')@(tsee meta) rule's hypothesis
+ function call.</p>
 
  <p>For example, consider the @(':')@(tsee rewrite) rule created from the
  following formula.</p>
@@ -146336,10 +147484,9 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
 
  <p>Subtle point: Because you may want to unmonitor a ``@(see rune)'' that is
  no longer a @(see rune) in the current ACL2 @(see world), we don't actually
- check this about @(see rune).  Instead, we simply check that @(see rune) is a
- @('consp') beginning with a @('keywordp').  That way, you'll know you've made
- a mistake if you try to @(':unmonitor binary-append') instead of @(':unmonitor
- (:definition binary-append)'), for example.</p>")
+ check this about @('rune').  We simply check that @('rune') is currently
+ monitored and remove it.  If @('rune') corresponds to no entry on the list of
+ monitored runes we cause an error since it may indicate a mispelling.</p>")
 
 (defxdoc unquote
   :parents (quote acl2-built-ins)
@@ -152145,6 +153292,10 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  brr-data from later proof attempts will be combined, probably in unexpected
  ways, with brr-data from earlier proof attempts.</li>
 
+ <li>@('With-brr-data') and its queries pay no attention to
+ &ldquo;near-miss&rdquo; breaks (see @(see break-rewrite) for discussion of
+ these breaks).</li>
+
  </ul>
 
  <p>The first item above is worth emphasizing.  Consider the following
@@ -152240,6 +153391,19 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
 
  <p>There is probably little reason for most users to supply either keyword
  argument.  They are documented in the section after next.</p>
+
+ <p><b>Notes</b>.</p>
+
+ <ul>
+
+ <li>The data collected by a call of <tt>with-brr-data</tt> will persist until
+ the next call of @('with-brr-data').</li>
+
+ <li>Behavior is undefined for nested calls of @('with-brr-data').  (If this
+ presents a problem then you may ask the ACL2 implementors to consider
+ specifying that behavior.)</li>
+
+ </ul>
 
  <h3>General forms of queries</h3>
 
@@ -153782,6 +154946,7 @@ for the execution of @('form')."
   (with-output
    :off :all
    :gag-mode nil
+   :inhibit-er-hard t
    (thm (equal (app (app x y) z) (app x (app y z)))))
 
   ; Equivalent to the example just above.
@@ -153884,19 +155049,19 @@ for the execution of @('form')."
 
  <p>The set of ``associated valid symbols'' is defined as follows.  For
  @(':off') or @(':on'), these symbols are the <i>output types</i> that can be
- inhibited (see @(see set-inhibit-output-lst)), that is, members of the list
- stored in the constant @('*valid-output-names*'), the list
- @(`*valid-output-names*`).  Similarly, for @(':summary-on') or
- @(':summary-off'), these are the <i>summary types</i>: the parts of the @(see
- summary) that can be inhibited (see @(see set-inhibited-summary-types)), that
- is, members of the list stored in the constant @('*summary-types*'), the list
- @(`*summary-types*`).  An on-off spec consisting of associated valid symbols,
- @('(sym1 ... symk)'), indicates the set of symbols, @('{sym1,...,symk}').  The
- other legal forms of on-off spec and their meanings are as follows: @(':all')
- represents the set of all associated valid symbols, any other symbol @('sym')
- abbreviates @('(sym)'), and @('(:other-than sym1 ... symk)') represents the
- set of associated valid symbols that are not in the list @('(sym1
- ... symk)').</p>
+ inhibited &mdash; that is, members of the list stored in the constant
+ @('*valid-output-names*'), which is the list @(`*valid-output-names*`) &mdash;
+ and they are treated as in @(tsee set-inhibit-output-lst).  Similarly, for
+ @(':summary-on') or @(':summary-off'), these are the <i>summary types</i>: the
+ parts of the @(see summary) that can be inhibited as in @(tsee
+ set-inhibited-summary-types), that is, members of the list stored in the
+ constant @('*summary-types*'), which is the list @(`*summary-types*`).  An
+ on-off spec consisting of associated valid symbols, @('(sym1 ... symk)'),
+ indicates the set of symbols, @('{sym1,...,symk}').  The other legal forms of
+ on-off spec and their meanings are as follows: @(':all') represents the set of
+ all associated valid symbols, any other symbol @('sym') abbreviates
+ @('(sym)'), and @('(:other-than sym1 ... symk)') represents the set of
+ associated valid symbols that are not in the list @('(sym1 ... symk)').</p>
 
  <p>Note that these two notions of ``associated valid symbols'' &mdash; the
  <i>output types</i> controlled by keywords @(':on') and @(':off'), and the
@@ -153988,6 +155153,21 @@ for the execution of @('form')."
  @('with-output'), as discussed in the next section.  Note that the handling of
  the @(':stack') argument pays no attention to the @(':summary-on') or
  @(':summary-off') arguments.</p>
+
+ <p>@(':inhibit-er-hard')</p>
+
+ <p>By default, ACL2 prints messages for hard errors &mdash; errors whose
+ message starts with &ldquo;HARD ACL2 ERROR&rdquo; &mdash; even when @('error')
+ output is inhibited (whether by using the keyword, @(':off'), or by calling
+ @(tsee set-inhibit-output-lst)).  This behavior holds when @(see state) global
+ @('inhibit-er-hard') has its default value of @('nil'); see @(see
+ set-inhibit-output-lst).  When keyword @(':inhibit-er-hard') is supplied an
+ expression, the value @('v') of that expression overrides the global value of
+ @('inhibit-er-hard'): thus when error output is inhibited, hard error messages
+ are printed if @('v') is @('nil') and they are not printed if @('v') is not
+ @('nil').  Note that this behavior automatically takes place when
+ @('with-output') is supplied the arguments @(':off :all!'), but not
+ @(':off :all').</p>
 
  <h3>More about the @('stack') argument</h3>
 
@@ -154754,7 +155934,8 @@ created from the original fast alist during @('form') must be manually freed."
  next.  Second, some information from the wormhole call itself is transferred
  into the new state; this allows the wormhole to be sensitive to context.
  These two changes to the current state are reflected in the settings @('(@
- wormhole-status)') and @('(@ wormhole-input)') discussed in detail below.</p>
+ wormhole-status)') and @('(@ wormhole-input)') when in the wormhole.  This is
+ discussed in detail below.</p>
 
  <p>Note that @('wormhole') may be called from environments in which @(tsee
  state) is not bound.  It is still applicative because it always returns
@@ -154762,12 +155943,13 @@ created from the original fast alist during @('form') must be manually freed."
 
  <p>There are some restrictions about what can be done inside a wormhole.  As
  you may imagine, we really do not ``copy the current state'' but rather just
- keep track of how we modified it and undo those modifications upon exit.  In
- particular, when exiting a wormhole, values of state globals (see @(see
- programming-with-state)) are restored to their values at the time the wormhole
- was entered.  Note that information about traced functions is stored in state
- globals (see @(see trace$)); accordingly, all tracing and untracing done
- inside a wormhole is undone upon exit from the wormhole.</p>
+ keep track of how it is modified while in the wormhole and we undo those
+ modifications upon exit.  In particular, when exiting a wormhole, values of
+ state globals (see @(see programming-with-state)) are restored to their values
+ at the time the wormhole was entered.  Note that information about traced
+ functions is stored in state globals (see @(see trace$)); accordingly, all
+ tracing and untracing done inside a wormhole is undone upon exit from the
+ wormhole.</p>
 
  <p>An error is signaled if you try to modify state in an unsupported way.
  For this same reason, wormholes do not allow updating of any user-defined
@@ -154782,48 +155964,56 @@ created from the original fast alist during @('form') must be manually freed."
  wormhole to update the data as rules are tried.  When you request a display of
  the data, @(tsee show-accumulated-persistence) enters the wormhole and prints
  the data.  But the data is never available outside that wormhole.  The ACL2
- system uses a second wormhole to implement the @(tsee brr) facility, allowing
- the user to interact with the rewriter as rules are applied.</p>
+ system uses a second wormhole, named @(tsee brr), to implement the @(see
+ break-rewrite) facility, allowing the user to interact with the rewriter as
+ rules are applied.</p>
 
  <p>We now specify the arguments and behavior of @('wormhole').</p>
 
  <p>The @('name') argument must be a quoted constant and is typically a symbol.
  It will be the ``name'' of the wormhole.  A wormhole of that name will be
- created the first time either @('wormhole') or @(tsee wormhole-eval) is
- called.</p>
+ created the first time @('wormhole'), @(tsee wormhole-eval), or @(tsee
+ set-persistent-whs-and-ephemeral-whs) is called.  However, it is forbidden to
+ invoke these functions on any name listed in
+ @('*protected-system-wormhole-names*'), which includes @('brr') (the @(see
+ break-rewrite) wormhole name), @('accumulated-persistence'), and
+ @('fc-wormhole') (the name of the wormhole managing @(see
+ forward-chaining-reports)), among others.</p>
 
  <p>Every wormhole name has a ``status.''  The status of a wormhole is stored
- outside of ACL2; it is inaccessible to the ACL2 user except when in the named
- wormhole.  But the status of a wormhole may be set by the user from within the
- wormhole.</p>
+ outside of ACL2 at a location known to hold the ``persistent wormhole status''
+ or ``persistent-whs'' of that wormhole.  Before @('wormhole') enters its
+ read-eval-print loop the persistent-whs is assigned to the state global
+ variable @('wormhole-status') and so while inside the wormhole the status is
+ available as @('(@ wormhole-status)').  @('Wormhole-status') is untouchable:
+ you cannot change it directly as with @('(assign wormhole-status ...)').  But
+ the persistent-whs can be changed, e.g., with @('wormhole'),
+ @('wormhole-eval'), or @('set-persistent-whs-and-ephemeral-whs').  See @(tsee
+ wormhole-status) for a discussion of the ramifications of there being two
+ places a wormhole's status might be found and of the importance of the notion
+ of ``wormhole coherence.''</p>
 
- <p>Upon the first call of @('wormhole') or @('wormhole-eval') on a name, the
- status of that name is @('nil').  But in general you should arrange for the
- status to be a cons.  The status is set by the quoted @('lambda') every time
- @('wormhole') is called; but it may also be set in the @('form') argument (the
- first form evaluated in the interactive loop) by assigning to the state global
- variable @('wormhole-status'), as with</p>
+ <p>Upon the first call on name of @('wormhole') (or the other wormhole creator
+ functions mentioned above) the status of that name is @('nil').  But in
+ general you should arrange for the status to be a cons.  The status is set by
+ the quoted @('lambda') every time @('wormhole') is called; but it may also be
+ by set in the @('form') argument of @('wormhole') using
+ @('set-persistent-whs-and-ephemeral-whs') or @(tsee
+ sync-ephemeral-whs-with-persistent-whs).</p>
 
- @({
-  (assign wormhole-status ...)
- })
+ <p>The @('car') of the status should be either @(':ENTER') or @(':SKIP') and
+ is called the wormhole's ``entry code.''  The entry code of @('nil') or,
+ indeed, of any value other than @(':SKIP') is treated as thought it were
+ @(':ENTER').  The @('cdr') of the status is arbitrary data maintained by the
+ author of the wormhole.</p>
 
- <p>or even by the user interacting with the loop if you do not exit the loop
- with the first form.  The @('car') of the cons should be either @(':ENTER') or
- @(':SKIP') and is called the wormhole's ``entry code.''  The entry code of
- @('nil') or an unexpectedly shaped status is @(':ENTER').  The @('cdr') of the
- cons is arbitrary data maintained by you.</p>
-
- <p>When @('wormhole') is invoked, the status of the specified name is
- incorporated into the manufactured wormhole state.  In particular, inside the
- wormhole, the status is the value of the state global variable
- @('wormhole-status').  That is, inside the wormhole, the status may be
- accessed by @('(@ wormhole-status)') and set by @('(assign wormhole-status
- ...)'), @('f-get-global') and @('f-put-global').  When @('ld') exits &mdash;
- typically because the form @(':q') was read by @('ld') &mdash; the
- then-current value of wormhole-status is hidden away so that it can be
- restored when this wormhole is entered again.  The rest of the wormhole state
- is lost.</p>
+ <p>When the wormhole is exited &mdash; typically because the form @(':q') was
+ read by @('ld') &mdash; the then-current ephemeral-whs (i.e., (@
+ wormhole-status)) is moved to the persistent-whs so that it can be restored
+ when this wormhole is entered again.  (Note: The break-rewrite wormhole,
+ @('brr'), is handled differently.  When it is exited back to the top-level,
+ the persistent-whs is set to the what it was when ACL2 was last at the
+ top-level.)  The rest of the wormhole state is lost upon exit.</p>
 
  <p>This allows a sequence of entries and exits to a wormhole to maintain some
  history in the status and this information can be manipulated by ACL2
@@ -154835,14 +156025,14 @@ created from the original fast alist during @('form') must be manually freed."
  <p>The third argument, @('input'), may be any term.  The value of the term is
  passed into the manufactured wormhole state, allowing you to pass in
  information about the calling context.  Inside the wormhole, the @('input') is
- available via @('(@ wormhole-input)').  It could be reassigned via @('(assign
- wormhole-input ...)'), but there is no reason to do that.</p>
+ available via @('(@ wormhole-input)') and may be assigned with @(tsee
+ assign).</p>
 
  <p>The fourth argument, @('form'), may be any term; when @(tsee ld) is called
  on the manufactured wormhole state, the first form evaluated by @('ld') will
  be the value of @('form').  Note that @('form') will be translated by @('ld').
  Errors, including guard violations, in the translation or execution of that
- first form will leave you in the interactive loop of the wormhole state.</p>
+ first form will exit the wormhole.</p>
 
  <p>When used properly, the first form allows you to greet your user before
  reading the first interactive command or simply to do whatever computation you
@@ -154854,19 +156044,19 @@ created from the original fast alist during @('form') must be manually freed."
  least, to decide whether to incur that expense.</p>
 
  <p>Before the wormhole state is manufactured and entered, the
- @('entry-lambda') is applied to the current wormhole status with @(tsee
- wormhole-eval).  That @('lambda') application must produce a new wormhole
- status, which is stored as the wormhole's status.  The entry code for the new
+ @('entry-lambda') is applied to the persistent-whs with @(tsee wormhole-eval).
+ That @('lambda') application must produce a new wormhole status, which is
+ stored as the wormhole's new persistent-whs.  The entry code for the new
  status determines whether @('wormhole') actually manufactures a wormhole state
  and calls @('ld').</p>
 
- <p>If the entry code for that new status is @(':ENTER') the wormhole state is
- manufactured and entered; otherwise, the new status is simply saved as the
- most recent status but the wormhole state is not manufactured or entered.
- Note therefore that the @('entry-lambda') may be used to perform two
- functions: (a) to determine if it is really necessary to manufacture a state
- and (b) to update the data in the wormhole status as a function of the old
- status without invoking @('ld').</p>
+ <p>If the entry code for that new status is @(':SKIP') the wormhole state is
+ not manufactured; the new persistent-whs is merely saved and @('wormhole')
+ returns nil.  Otherwise, a new state is manufactured and entered.  Note
+ therefore that the @('entry-lambda') may be used to perform two functions: (a)
+ to determine if it is really necessary to manufacture a state and (b) to
+ update the data in the wormhole status as a function of the old status without
+ invoking @('ld').</p>
 
  <p>The @('entry-lambda') must be a quoted lambda expression of at most one
  argument.  Thus, the argument must be either</p>
@@ -154898,16 +156088,8 @@ created from the original fast alist during @('form') must be manually freed."
  and @(tsee make-wormhole-status) may be useful in manipulating entry codes and
  data in the @('entry-lambda').</p>
 
- <p>Note that you access and manipulate the wormhole's status in two different
- ways depending on whether you're ``outside'' of the wormhole applying the
- quoted @('lambda') or ``inside'' the read-eval-print loop of the wormhole.</p>
-
- <p>OUTSIDE (@('wormhole-eval')): access via the value of the @('lambda')
- formal and set by returning the new status as the value of the @('lambda')
- body.</p>
-
- <p>INSIDE (@('ld') phase of @('wormhole')): access via @('(@
- wormhole-status)'), and set via @('(assign wormhole-status ...)').</p>
+ <p>See @(tsee wormhole-programming-tips) for some advice about using wormholes,
+ maintaining (or not maintaining) coherence, etc.</p>
 
  <p>Pragmatic Advice on Designing a Wormhole: Suppose you are using wormholes
  to implement some extra-logical utility.  You must contemplate how you will
@@ -154925,18 +156107,19 @@ created from the original fast alist during @('form') must be manually freed."
  wormhole-implementation).</p>
 
  <p>Here are some sample situations handled by @('wormhole-eval') and
- @('wormhole').  Let the wormhole in question be named @('DEMO').  Initially
- its status is @('NIL').  The functions below all maintain the convention that
- the status is either @('nil') or of the form @('(:key . lst)'), where
- @(':key') is either @(':SKIP') or @(':ENTER') and @('lst') is a true-list of
- arbitrary objects.  But since there is no way to prevent the user from
- entering the @('DEMO') wormhole interactively and doing something to the
- status, this convention cannot be enforced.  Thus, the functions below do what
- we say they do, e.g., remember all the values of @('x') ever seen, only if
- they're the only functions messing with the @('DEMO') status.  On the other
- hand, the guards of all the functions below can be verified.  We have
- explicitly declared that the guards on the functions below are to be verified,
- to confirm that they can be.  Guard verification is optional but wormholes
+ @('wormhole').  The wormhole in question will be named @('demo') and it is
+ created in the answer to the first question below.  The functions below all
+ maintain the convention that the status is either @('nil') or of the form
+ @('(:key . lst)'), where @(':key') is either @(':skip') or @(':enter') and
+ @('lst') is a true-list of arbitrary objects.  But since there is no way to
+ prevent the user from entering the @('demo') wormhole interactively and doing
+ something to the status, this convention cannot be enforced.  Thus, the
+ functions below do what we say they do, e.g., remember all the values of
+ @('x') ever seen, only if they're the only functions messing with the
+ @('DEMO') status.  On the other hand, the guards of all the functions below
+ can be verified.  We have explicitly declared that the guards on the functions
+ below are to be verified, to confirm that they can be.  Guard verification is
+ optional but wormholes
  (and @('wormhole-eval') in particular) are more efficient when guards have
  been verified.  All of the functions defined below return @('nil').</p>
 
@@ -154944,8 +156127,27 @@ created from the original fast alist during @('form') must be manually freed."
  wormholes we recommend that you evaluate each of the forms below, in the order
  they are discussed.</p>
 
- <p><b>Q.</b> How do I create a wormhole that prints its status to the comment
- window?</p>
+ <p><b>Q.</b> How do I initialize the status of the @('demo') wormhole?</p>
+
+ <p>Actually, it is often unnecessary to explicitly initialize the status of a
+ new wormhole because it is @('nil') by default, the @(tsee
+ wormhole-entry-code) of @('nil') is @(':enter') and the @(tsee wormhole-data)
+ of @('nil') is @('nil'), which often is enough.  But if the data field of your
+ wormhole needs more structure for whatever you're planning to do with it to
+ make sense, you can initialize it by executing a form like this, where the
+ @('nil') below is the contents of the initial data field.</p>
+
+ @({
+ ACL2 !>(wormhole-eval 'demo
+                       '(lambda (whs) (make-wormhole-status whs :enter nil))
+                       nil)
+ NIL
+ ACL2 !>(get-persistent-whs 'demo state)
+  (:ENTER)
+ })
+
+ <p><b>Q.</b> How do I define a function that prints the (persistent) status of
+ the @('demo') wormhole to the comment window?</p>
 
  @({
   (defun demo-status ()
@@ -154957,16 +156159,17 @@ created from the original fast alist during @('form') must be manually freed."
                    nil))
  })
 
- <p>Note above that after printing the status to the comment window we return
- the new (unchanged) status @('whs').  Had we just written the call of @('cw'),
- which returns @('nil'), the function would print the status and then set it to
- @('nil')!</p>
+ <p>Note the @('prog2$') above.  After printing the status to the comment
+ window we return the unchanged status @('whs').  Had we just written the
+ @('cw') term, which returns @('nil'), without then returning @('whs'), the
+ function would print the status and then set it to @('nil')!</p>
 
- <p><b>Q.</b> How do I use a wormhole to collect every symbol, @('x'), passed
- to the function?</p>
+ <p><b>Q.</b> How can I define a function, @('demo-collect'), that does not
+ take or return @(tsee state) but that can collect every symbol passed to
+ it (but not collect non-symbols)?</p>
 
- @({
-  (defun demo-collect (x)
+ @({ 
+ (defun demo-collect (x)
     (declare (xargs :verify-guards t))
     (wormhole-eval 'demo
                    '(lambda (whs)
@@ -154994,11 +156197,57 @@ created from the original fast alist during @('form') must be manually freed."
 
  <p>Both versions always return @('nil') and both versions collect into the
  wormhole data field just the symbols @('x') upon which @('demo-collect') is
- called.</p>
+ called.  Note that the @('lambda') expressions used in both definitions
+ mention @('x') as a free variable.</p>
 
- <p><b>Q.</b> How do I use @('demo-collect')?  Below is a function that maps
- over a list and computes its length.  But it has been annotated with a call to
- @('demo-collect') on every element.</p>
+ <p><b>Q.</b> How do I use @('demo-collect')?  Below we show an interactive
+ session log with @('demo-collect') and @('demo-status').  Notice that
+ @('state') is nowhere involved but that the functions always return @('nil').
+ The computation, collection, and printing are done inside the wormhole.</p>
+
+ @({
+ ACL2 !>(demo-status)
+ DEMO status:
+ (:ENTER)
+ NIL
+ ACL2 !>(demo-collect 'a)
+ NIL
+ ACL2 !>(demo-status)
+ DEMO status:
+ (:ENTER A)
+ NIL
+ ACL2 !>(demo-collect 'b)
+ NIL
+ ACL2 !>(demo-collect 'c)
+ NIL
+ ACL2 !>(demo-status)
+ DEMO status:
+ (:ENTER C B A)
+ NIL
+ })
+
+ <p><b>Q.</b> How do I reset the data to @('nil')?</p>
+
+ <p>The answer is the same as the answer to the first question, use
+ @('wormhole-eval') as we did there.  But we'll repeat it as a session
+ log because in the next question we want the data field to start off at @('nil')
+ again.</p>
+
+ @({
+ ACL2 !>(wormhole-eval 'demo
+                       '(lambda (whs) (make-wormhole-status whs :enter nil))
+                       nil)
+ NIL
+ ACL2 !>(demo-status)
+ DEMO status:
+ (:ENTER)
+ NIL
+ })
+
+ <p><b>Q.</b> How can I use @('demo-collect') in a function?  Below is a
+ function that maps over a list and computes its length.  But it has been
+ annotated with a call to @('demo-collect') on every element.  We illustrate a
+ call below.</p>
 
  @({
    (defun my-len (lst)
@@ -155009,28 +156258,33 @@ created from the original fast alist during @('form') must be manually freed."
                     (my-len (cdr lst))))))
  })
 
- <p>Thus, for example:</p>
+ <p>Thus, for example, if we call @('my-len') on a list of length @('5') it
+ returns @('5') but accumulates the symbols into the @('demo') wormhole,
+ without @('state').  From a logical perspective @('my-len') is just @('len')
+ and that can be proved trivially.</p>
 
  @({
-  ACL2 !>(my-len '(4 temp car \"Hi\" rfix))
+  ACL2 !>(my-len '(4 temp car \"Hi\" fix))
   5
   ACL2 !>(demo-status)
   DEMO status:
-  (:ENTER RFIX CAR TEMP)
+  (:ENTER FIX CAR TEMP)
   NIL
-  ACL2 !>
- })
+  ACL2 !>(thm (equal (my-len x) (len x)))
+  ...
+  Proof succeeded.
+  })
 
- <p><b>Q.</b> How do I set the entry code to @(':ENTER') or @(':SKIP')
+ <p><b>Q.</b> How do I set the entry code to @(':enter') or @(':skip')
  according to whether @('name') is a @('member-equal') of the list of things
  seen so far?  Note that we cannot check this condition outside the wormhole,
  because it depends on the list of things collected so far.  We make the
  decision inside the @('lambda')-expression.  Note that we explicitly check
- that the guard of @('member-equal') is satisfied by the current wormhole
- status, since we cannot rely on the invariant that no other function
- interferes with the status of the @('DEMO') wormhole.  In the case that the
- status is ``unexpected'' we act like the status is @('nil') and set it to
- @('(:SKIP . NIL)').</p>
+ that the guard of @('member-equal') is satisfied by the current wormhole data,
+ since we cannot rely on the invariant that no other function interferes with
+ the status of the @('demo') wormhole.  In the case that the data is not a
+ true-list we act like the data is @('nil') and set the status to @('(:skip
+ . nil)').</p>
 
  @({
   (defun demo-set-entry-code (name)
@@ -155041,9 +156295,9 @@ created from the original fast alist during @('form') must be manually freed."
                           (set-wormhole-entry-code
                            whs
                            (if (member-equal name (wormhole-data whs))
-                               :ENTER
-                               :SKIP))
-                          '(:SKIP . NIL)))
+                               :enter
+                               :skip))
+                          '(:skip . nil)))
                    nil))
  })
 
@@ -155054,24 +156308,27 @@ created from the original fast alist during @('form') must be manually freed."
   NIL
   ACL2 !>(demo-status)
   DEMO status:
-  (:SKIP RFIX CAR TEMP)
+  (:SKIP FIX CAR TEMP)
   NIL
-  ACL2 !>(demo-set-entry-code 'rfix)
+  ACL2 !>(demo-set-entry-code 'fix)
   NIL
   ACL2 !>(demo-status)
   DEMO status:
-  (:ENTER RFIX CAR TEMP)
+  (:ENTER FIX CAR TEMP)
   NIL
   ACL2 !>
  })
 
+ <p>We won't be using @('demo-set-entry-code') again in these questions and
+ answers, so don't spend time learning more about it!</p>
+
  <p><b>Q.</b> Suppose I want to collect every symbol and then, if the symbol
- has an @('ABSOLUTE-EVENT-NUMBER') property in the ACL2 logical world, print
+ has an @('absolute-event-number') property in the ACL2 logical world, print
  the defining event with @(':pe') and then enter an interactive loop; but if
- the symbol does not have an @('ABSOLUTE-EVENT-NUMBER'), don't print anything
+ the symbol does not have an @('absolute-event-number'), don't print anything
  and don't enter an interactive loop.</p>
 
- <p>Here it is not important to know what @('ABSOLUTE-EVENT-NUMBER') is; this
+ <p>Here it is not important to know what @('absolute-event-number') is; this
  example just shows that we can use a wormhole to access the ACL2 logical
  world, even in a function that does not take the state as an argument.</p>
 
@@ -155080,30 +156337,31 @@ created from the original fast alist during @('form') must be manually freed."
  loop.  But for efficiency we do as much as we can inside the entry
  @('lambda'), where we can check whether @('x') is symbol and collect it into
  the data field of the wormhole status.  Note that if we collect @('x'), we
- also set the entry code to @(':ENTER').  If we don't collect @('x'), we set
- the entry code to @(':SKIP').</p>
+ also set the entry code to @(':enter').  If we don't collect @('x'), we set
+ the entry code to @(':skip').</p>
 
  <code>
- (defun collect-symbols-and-print-events (x)
+ (defun demo-collect-symbols-and-print-events (x)
    (declare (xargs :guard t))
    (wormhole 'demo
              '(lambda (whs)
                 (if (symbolp x)
                     (make-wormhole-status whs
-                                          :ENTER
+                                          :enter
                                           (cons x (wormhole-data whs)))
-                    (set-wormhole-entry-code whs :SKIP)))
+                    (set-wormhole-entry-code whs :skip)))
 
  ; The wormhole will not get past here is unless the entry code is
- ; :ENTER.  If we get past here, we manufacture a state, put
- ; x into @('(@ wormhole-input)') and call ld in such a way that the
+ ; :enter.  If we get past here, wormhole will manufacture a state, put
+ ; x into (@ wormhole-input) and call ld in such a way that the
  ; first form executed is the quoted if-expression below.
 
              x
              '(if (getpropc (@@ wormhole-input) 'absolute-event-number)
                   (er-progn
                    (mv-let (col state)
-                           (fmt \"~%Entering a wormhole on the event name ~x0~%\"
+                           (fmt \"~%Entering a wormhole on the event name ~x0~%~
+                                  Exit with :q~%~%\"
                                 (list (cons #\\0 (@@ wormhole-input)))
                                 *standard-co* state nil)
                            (declare (ignore col))
@@ -155116,28 +156374,32 @@ created from the original fast alist during @('form') must be manually freed."
              :ld-prompt nil))
  </code>
 
- <p>The ``first form'' (the @('if')) asks whether the @('wormhole-input')
- (i.e., @('x')) has an @('ABSOLUTE-EVENT-NUMBER') property.  If so, it enters
- an @(tsee er-progn) to perform a sequence of commands, each of which returns
- an ACL2 error triple (see @(see programming-with-state)).  The first form uses
- @(tsee fmt) to print a greeting.  Since @('fmt') returns @('(mv col state)')
- and we must return an error triple, we embed the @('fmt') term in an
- @('(mv-let (col state) ... (value nil))').  The macro @('value') takes an
- object and returns a ``normal return'' error triple.  The second form in the
- @('er-progn') uses the ACL2 history macro @('pe') (see @(see pe)) to print the
- defining event for a name.  The third form sets the prompt of this
- read-eval-print loop to the standard function for printing the wormhole
- prompt.  We silenced the printing of the prompt when we called @('ld'), thanks
- to the @(':ld-prompt nil') keyword option.  More on this below.  The fourth
- form returns the error triple value @(':invisible') as the value of the first
- form.  This prevents @('ld') from printing the value of the first form.  Since
- we have not exited @('ld'), that function just continues by reading the next
- form from the comment window.  The user perceives this as entering a
- read-eval-print loop.  We continue in the loop until the user types
- @(':q').</p>
+ <p>The ``first form'' &mdash; so called because it is the first form executed
+ by the wormhole's read-eval-print loop &mdash; is the quoted
+ @('if')-expression in the fourth argument of @('wormhole').  It asks whether
+ the @('wormhole-input')
+ (i.e., @('x')) has an @('absolute-event-number') property.</p>
 
- <p>On the other branch of the @('if'), if the symbol has no
- @('ABSOLUTE-EVENT-NUMBER') property, we execute the form @('(value :q)'),
+ <p>The true branch of that @('if') is an @(tsee er-progn) to perform a
+ sequence of commands, each of which returns an ACL2 error triple (see @(see
+ programming-with-state)).  The first form uses @(tsee fmt) to print a
+ greeting.  Since @('fmt') returns @('(mv col state)') and we must return an
+ error triple, we embed the @('fmt') term in an @('(mv-let (col state)
+ ... (value nil))').  The macro @('value') takes an object and returns a
+ ``normal return'' error triple.  The second form in the @('er-progn') uses the
+ ACL2 history macro @('pe') (see @(see pe)) to print the defining event for a
+ name.  The third form sets the prompt of this read-eval-print loop to the
+ standard function for printing the wormhole prompt.  We silenced the printing
+ of the prompt when we called @('ld'), thanks to the @(':ld-prompt nil')
+ keyword option.  More on this below.  The fourth form returns the error triple
+ value @(':invisible') as the value of the first form.  This prevents @('ld')
+ from printing the value of the first form.  Since we have not exited @('ld'),
+ that function just continues by reading the next form from the comment window.
+ The user perceives this as entering a read-eval-print loop and being prompted
+ for input.  We continue in the loop until the user types @(':q').</p>
+
+ <p>The false branch of the @('if') is taken when @('x') has no
+ @('absolute-event-number') property.  We execute the form @('(value :q)'),
  which is the programming equivalent of typing @(':q').  That causes the
  @('ld') to exit.</p>
 
@@ -155153,7 +156415,7 @@ created from the original fast alist during @('form') must be manually freed."
   Type (good-bye) to quit completely out of ACL2.
  })
 
- <p>before the first form is read and evaluated.</p>
+ <p>every time the first form is read and evaluated.</p>
 
  <p>By setting @(':')@(tsee ld-prompt) to @('nil') we prevent @('ld') from
  printing the prompt before reading and evaluating the first form.</p>
@@ -155162,6 +156424,37 @@ created from the original fast alist during @('form') must be manually freed."
  protocol for using wormhole status to control whether a wormhole state is
  manufactured for @('ld') and you must also understand programming with @(tsee
  state) and the effects of the various @(tsee ld) ``special variables.''</p>
+
+ <p>Had we defined @('demo-collect-symbols-and-print-events') before @('my-len')
+ we could have called it instead of @('demo-collect').  Then</p>
+
+ @({
+  ACL2 !>(my-len '(4 temp car \"Hi\" fix))
+ })
+
+ <p>would have still collected all the symbols into the @('demo') wormhole, but
+ on the symbols @('car') and @('fix') it would have entered an interactive
+ break.  Here is the break that would be triggered when this version of
+ @('my-len') encounters the @('fix').</p>
+
+ @({
+ Entering a wormhole on the event name FIX
+ Exit with :q
+
+ V     -8055  (DEFUN FIX (X)
+                 (DECLARE (XARGS :GUARD T :MODE :LOGIC))
+                 (IF (ACL2-NUMBERP X) X 0))
+ Wormhole ACL2 !>(fix 123)
+ 123
+ Wormhole ACL2 !>(fix t)
+ 0
+ Wormhole ACL2 !>:q
+ })
+
+ <p>After printing the @('(DEFUN FIX ...)') above the user in this session
+ called @('fix') twice to see how it behaves.  Then the user issued the @(':q')
+ command to exit the interactive loop, allowing @('my-len') to continue.  When
+ @('my-len') finishes processing the list, it would return @('5').</p>
 
  <p>From the discussion above we see that wormholes can be used to create
  formatted output without passing in the ACL2 @(tsee state).  For examples see
@@ -155207,17 +156500,24 @@ created from the original fast alist during @('form') must be manually freed."
  })
 
  <p>where @('name') must be a quoted wormhole name and @('lambda') must be a
- quoted @('lambda')-expression.  The @('lambda')-expression must have at most
- one formal parameter but the body of the @('lambda')-expression may contain
- other variables.  Note that in the example form given above, the @('lambda')
- has one formal, @('whs'), and uses @('name') and @('info') freely.  Note that
- the @('lambda') is quoted.  The third argument of @('wormhole-eval'),
- @('varterm'), is an arbitrary term that should mention all of the free
- variables in the @('lambda')-expression.  That term establishes your ``right''
- to refer to those free variables in the environment in which the
- @('wormhole-eval') expression occurs.  The value of @('varterm') is irrelevant
- and if you provide @('nil') ACL2 will automatically provide a suitable term,
- namely a @('prog2$') form like the one shown in the example above.</p>
+ quoted @('lambda')-expression as described below.  It is forbidden to invoke
+ @('wormhole-eval') on the names listed in
+ @('*protected-system-wormhole-names*'), which includes @('brr') (the @(see
+ break-rewrite) wormhole name), @('accumulated-persistence'), and
+ @('fc-wormhole') (the name of the wormhole managing @(see
+ forward-chaining-reports)), among others.</p>
+
+ <p>The @('lambda')-expression must have at most one formal parameter but the
+ body of the @('lambda')-expression may contain other variables.  Note that in
+ the example form given above, the @('lambda') has one formal, @('whs'), and
+ uses @('name') and @('info') freely.  Note that the @('lambda') is quoted.
+ The third argument of @('wormhole-eval'), @('varterm'), is an arbitrary term
+ that should mention all of the free variables in the @('lambda')-expression.
+ That term establishes your ``right'' to refer to those free variables in the
+ environment in which the @('wormhole-eval') expression occurs.  The value of
+ @('varterm') is irrelevant and if you provide @('nil') ACL2 will automatically
+ provide a suitable term, namely a @('prog2$') form like the one shown in the
+ example above.</p>
 
  <p>Aside: Exception for ACL2(p) (see @(see parallelism)) to the irrelevance of
  @('varterm').  By default, calls of @('wormhole-eval') employ a lock,
@@ -155234,23 +156534,22 @@ created from the original fast alist during @('form') must be manually freed."
 
  <p>Here is a succinct summary of @('wormhole-eval').  If the
  @('lambda')-expression has a local variable, @('wormhole-eval') applies the
- @('lambda')-expression to the wormhole status of the named wormhole and
- remembers the value as the new wormhole status.  If the @('lambda') has no
- formal parameter, the @('lambda') is applied to no arguments and the value is
- the new status.  @('Wormhole-eval') returns @('nil').  Thus, the formal
- parameter of the @('lambda')-expression, if provided, denotes the wormhole's
- hidden status information; the value of the @('lambda') is the new status and
- is hidden away.</p>
+ @('lambda')-expression to the persistent-whs (see @(tsee wormhole-status)) of
+ the named wormhole and remembers the value as the new persistent-whs.  If the
+ @('lambda') has no formal parameter, the @('lambda') is applied to no
+ arguments and the value is the new persistent-whs.  @('Wormhole-eval') returns
+ @('nil').  Thus, the formal parameter of the @('lambda')-expression, if
+ provided, denotes the wormhole's hidden status information; the value of
+ the @('lambda') is the new status and is hidden away.</p>
 
  <p>The guard of a @('wormhole-eval') call is the guard of the body of the
  @('lambda')-expression, with a fresh variable symbol used in place of the
  formal so that no assumptions are possible about the hidden wormhole status.
  If the guard of a @('wormhole-eval') is verified, the call is macroexpanded
  inline to the evaluation of the body in a suitable environment.  Thus, it can
- be a very fast way to access and change hidden state information, but the
- results must remain hidden.  To do arbitrary computations on the hidden state
- (i.e., to access the ACL2 @(tsee state) or logical @(see world) or to interact
- with the user) see @(see wormhole).</p>
+ be a very fast way to access and change the persistent-whs, but the results
+ remain hidden.  To interact the wormhole's state you must use @(tsee
+ wormhole).</p>
 
  <p>Functions that are probably useful in the body of the @(tsee lambda) or the
  guard of a function using @('wormhole-eval') include the following: @(tsee
@@ -155294,68 +156593,83 @@ created from the original fast alist during @('form') must be manually freed."
 
  <p>A brief recap of the advertised semantics for @('wormhole') establishes our
  terminology: When the above @('wormhole') is evaluated, the
- @('lambda')-expression is applied to the wormhole's status and the result is
- stored as the new status.  Then, if the entry-code of the new status is
- @(':ENTER'), @(tsee ld) is invoked on a copy of the ``current state'' with the
- specified @('ld-') ``special variables;'' output is directed to the comment
- window.  In that copy of the state, the state-global variable
- @('wormhole-input') is set to the value of @('input') and the state-global
- variable @('wormhole-status') is set to the (new) status computed by the
- @('lambda')-expression.  Thus, inside the wormhole, @('(@ wormhole-input)')
- returns the list of inputs, @('(@ wormhole-status)') returns the current
- status, and @('(assign wormhole-status ...)') sets the wormhole's status.  The
- first form executed by the @('ld') is the value of @('form') and unless that
- form returns @('(value :q)'), causing the @('ld') to quit, the @('ld')
- proceeds to take subsequent input from the comment window.  Upon exiting from
- @('ld'), the wormhole state ``evaporates.''  The wormhole's status upon exit
- is remembered and restored the next time the wormhole is entered.</p>
+ @('lambda')-expression is applied to the persistent-whs and the result is
+ stored as the new persistent-whs.  Then, if the entry-code of the new status
+ is @(':ENTER') (actually, if it is not @(':SKIP')), @(tsee ld) is invoked on
+ a copy of the ``current state'' with the specified @('ld-') ``special
+ variables;'' output is directed to the comment window.  In that copy of the
+ state, the state global variables @('wormhole-name'), @('wormhole-input') and
+ @('wormhole-status') are assigned @('name'), the the value of @('input') and
+ the persistent-whs, respectively.  Thus, inside the wormhole, @('(@
+ wormhole-name)') returns the name of the current wormhole, @('(@
+ wormhole-input)') returns the list of inputs, @('(@ wormhole-status)') returns
+ the ephemeral-whs.  The first form executed by the @('ld') is the value of
+ @('form') and unless that form returns @('(value :q)'), causing the @('ld') to
+ quit, the @('ld') proceeds to take subsequent input from the comment window.
+ Upon exiting from @('ld'), the ephemeral-whs is written to the persistent-whs
+ and the wormhole state ``evaporates.''  The next time the wormhole is entered
+ its ephemeral-whs will be what it was when it last exited.</p>
 
  <p>Here is what really happens.</p>
 
- <p>Each wormhole's status is recorded in an alist stored in a Common Lisp
- global variable named @('*wormhole-status-alist*').  This variable is not part
- of the ACL2 state.  If you exit the ACL2 loop with @(':q') you can inspect the
- value of @('*wormhole-status-alist*').  When the @('lambda')-expression is
- evaluated it is applied to the value associated with @('name') in the alist
- and the result is stored back into that alist.  This step is performed by
- @(tsee wormhole-eval).  To make things more efficient, @('wormhole-eval') is
- just a macro that expands into a @('let') that binds the @('lambda') formal to
- the current status and whose body is the @('lambda') body.  @(csee Guard)
- @(see clause)s are generated from the body, with one exception: the
- @('lambda') formal is replaced by a new variable so that no prior assumptions
- are available about the value of the wormhole status.</p>
+ <p>Each wormhole's persistent-whs is recorded in an alist stored in a Common
+ Lisp global variable named @('*wormhole-status-alist*').  This variable is not
+ part of the ACL2 state.  If you exit the ACL2 loop with @(':q') you can
+ inspect the value of @('*wormhole-status-alist*').  However, be cautious about
+ printing it because the persistent-whs of some wormholes can be quite large.
+ When the @('lambda')-expression is evaluated it is applied to the value
+ associated with @('name') in the alist and the result is stored back into that
+ alist.  This step is performed by @(tsee wormhole-eval).  To make things more
+ efficient, @('wormhole-eval') is just a macro that expands into a @('let')
+ that binds the @('lambda') formal to the current status and whose body is the
+ @('lambda') body.  @(csee Guard) @(see clause)s are generated from the body,
+ with one exception: the @('lambda') formal is replaced by a new variable so
+ that no prior assumptions are available about the value of the wormhole
+ status.</p>
 
- <p>If the newly computed status has an entry code of @(':ENTER') @(tsee ld)
- will be invoked.  But we don't really copy state, of course.  Instead we will
- invoke @('ld') on the live state, which is always available in the von Neumann
- world in which ACL2 is implemented.  To give the illusion of copying state, we
- will undo changes to the state upon exiting.  To support this, we do two
- things just before invoking @('ld'): we bind a Common Lisp special variable is
- to @('t') to record that ACL2 is in a wormhole, and we initialize an
- accumulator that will be used to record state changes made while in the
- wormhole.</p>
+ <p>If the newly computed status has an entry code other than @(':SKIP') @(tsee
+ ld) will be invoked.  But we don't really copy state, of course.  Instead we
+ will invoke @('ld') on the live state, which is always available in the von
+ Neumann world in which ACL2 is implemented.  To give the illusion of copying
+ state, we will undo changes to the state upon exiting.  To support this, we do
+ two things just before invoking @('ld'): we bind a Common Lisp special
+ variable, @('*wormholep*'), to @('t') to record that ACL2 is in a wormhole,
+ and we initialize an accumulator that will be used to record state changes
+ made while in the wormhole.  Then we assign the three state globals
+ @('wormhole-name'), @('wormhole-input'), and @('wormhole-status').  Those
+ assignments are made undoably since @('*wormholep*') is set.</p>
 
  <p>Then @('ld') is invoked, with first argument, @('standard-oi'), being set
  to @('(cons form *standard-oi*)').  According to the standard semantics of
- @('ld'), this reads and evaluates @('form') and then the forms in the
- specified channel.  The standard channels are directed to and from the
- terminal, which is the physical realization of the comment window.</p>
+ @('ld'), the first read from this @('standard-oi') returns @('form') and
+ subsequent reads, if any, come from @('*standard-oi*').  The standard channels
+ are directed to and from the terminal, which is the physical realization of
+ the comment window.</p>
 
  <p>All state modifying functions of ACL2 are sensitive to the special variable
- that indicates that evaluation is in a wormhole.  Some ACL2 state-modifying
- functions (e.g., those that modify the file system like @(tsee write-byte$))
- are made to cause an error if invoked inside a wormhole on a file other than
- the terminal.  Others, like @('f-put-global') (the function behind such
- features as @('assign') and maintenance of the ACL2 logical world by such
- events as @(tsee defun) and @(tsee defthm)) are made to record the old value
- of the state component being changed; these records are kept in the
+ @('*wormholep*') that indicates that evaluation is in a wormhole.  Some ACL2
+ state-modifying functions (e.g., those that modify the file system like @(tsee
+ write-byte$)) are made to cause an error if invoked inside a wormhole on a
+ file other than the terminal.  Others, like @('f-put-global') (the function
+ behind such features as @('assign') and maintenance of the ACL2 logical world
+ by such events as @(tsee defun) and @(tsee defthm)) are made to record the old
+ value of the state component being changed; these records are kept in the
  accumulator initialized above.</p>
 
- <p>Upon exit from @('ld') for any reason, the final value of @('(@
- wormhole-status)') is stored in @('*wormhole-status-alist*') and then the
- accumulator is used to ``undo'' all the state changes.</p>
+ <p>Upon exit from @('ld') for any reason, the ephemeral-whs is transferred to
+ the persistent-whs, i.e., the final value of @('(@ wormhole-status)') is
+ stored under the current @('wormhole-name') in @('*wormhole-status-alist*')
+ and then the accumulator is used to ``undo'' all the state changes.</p>
 
- <p>@('Wormhole') always returns @('nil').</p>")
+ <p>@('Wormhole') always returns @('nil').</p>
+
+ <p>The system wormhole named @('brr'), which implements @(see break-rewrite),
+ is treated a little differently.  When @('ld') exits due to an abort the
+ ephemeral-whs is not transferred to the persistent-whs.  Instead, the
+ persistent-whs is set to what it was at the time break-rewrite was first
+ entered from the top-level.  See the Essay on Break-Rewrite in the source code
+ file @('rewrite.lisp') for details about the implementation of break-rewrite,
+ which is intimately connected to wormholes.</p>")
 
 (defxdoc wormhole-p
   :parents (wormhole)
@@ -155363,6 +156677,393 @@ created from the original fast alist during @('form') must be manually freed."
   :long "<p>See @(see wormhole) for a discussion of wormholes.  @('(Wormhole-p
  state)') returns @('(mv nil t state)') when evaluated inside a wormhole, else
  @('(mv nil nil state)').</p>")
+
+(defxdoc wormhole-programming-tips
+  :parents (wormhole wormhole-eval)
+  :short "some tips for how to use wormholes"
+  :long "<p>Wormholes allow one to collect data and print without having access
+  to ACL2's @(tsee state).  Many ACL2 utilities are implemented in terms of
+  wormholes.  Examples include @(see break-rewrite), @(tsee
+  accumulated-persistence), and @(tsee forward-chaining-reports).  So an ACL2
+  developer wishing to add features or fixing misbehaviors in these system
+  utilities must be familiar with programming wormholes.  But users might also
+  employ wormholes to implement utilities in their own models.  Thus, this
+  documentation topic is as much for future ACL2 developers and maintainers as
+  for ACL2 users (but items meant primarily for developers often include
+  references to functions in the ACL2 source code which other users may just
+  ignore).  This is simply a list of tips for a person programming with
+  wormholes.  This list doesn't replace the topics @(tsee wormhole) and @(tsee
+  wormhole-eval), and their subtopics including the particularly relevant @(see
+  wormhole-status).  But this list of tips might serve as a useful reminder
+  when you're programming with wormholes.</p>
+
+  <ul>
+
+  <li>The &ldquo;function&rdquo; @(tsee wormhole) is really a macro that
+  expands in raw Lisp into a call of @(tsee wormhole-eval) to set the entry
+  code and then a call of @('wormhole1') to do the interactive work.  But in
+  addition, the source code functions @('ev-rec'),
+  @('translate11-wormhole-eval'), @('translate11-call-1'), and
+  @('translate11-call') all contain special provisions for wormholes.  Do not
+  think you can add features to wormholes by just changing the definition of
+  @('wormhole') or @('wormhole1')!  These functions are in what we call the
+  wormhole implementation nexus and there is entitled ``@('; Essay on the
+  Wormhole Implementation Nexus')&rdquo; in the source file
+  @('axioms.lisp').</li>
+
+  <li>The built-in ACL2 system wormholes are protected by mechanisms in
+  @('translate11-call-1') and @('translate11-call') so that code executed
+  during ACL2's boot-strapping process is allowed to manipulate system
+  wormholes but code executed after boot-strap cannot.  Search the source code
+  for occurrences of @('*protected-system-wormhole-names*').</li>
+
+  <li>System implementors and maintainers may be hampered by being unable to
+  invoke wormhole functions on system wormholes like @('brr') or
+  @('accumulated-persistence').  One way around that, e.g., to test changes to
+  existing code, is to execute @('(defconst *protected-system-wormhole-names*
+  nil)') after doing @('(redef+)').</li>
+
+  <li>Users may wish to employ wormholes so they can build tools allowing the
+  @(tsee state)-less exploration of their models.  But we confess that to make
+  wormholes as useful to other tool developers as they are to the ACL2
+  developers we will need to add some protection features (similiar to those in
+  the item above) to user-defined wormholes.  Ideas we have toyed with but not
+  implemented include pairing a wormhole's name with various attributes such as
+  a flag to prevent its use except through named interfaces, a wrapper form or
+  filter that applies to every form read, translated, and evaluated by the
+  @('ld') inside that wormhole, and what should happen when the wormhole is
+  exited.  But these ideas are not implemented.  If you really need them, let
+  us know.</li>
+
+  <li>Each wormhole has a name, which is typically but not necessarily a
+  symbol.</li>
+
+  <li>Each wormhole has a current status.  The status is a cons whose @('car')
+  is either @(':ENTER') or @(':SKIP'), and whose @('cdr') is an arbitrary ACL2
+  object managed by the creator of the wormhole.  The @('car') of the status is
+  called the &ldquo;entry code&rdquo;.  The @('cdr') is called the
+  &ldquo;data&rdquo;.  See @(tsee wormhole-entry-code), @(tsee wormhole-data),
+  and @(tsee make-wormhole-status).</li>
+
+  <li>The status object of a wormhole named @('nm') is stored in raw Lisp in a
+  part of memory inaccessible to ACL2 terms other than the ACL2 oracle (see
+  @(tsee read-acl2-oracle)).  We call this the <i>persistent wormhole
+  status</i> or <i>persistent-whs</i>.  If you're in raw Lisp &mdash; which you
+  can reach by exiting the ACL2 loop with @(':q') or by invoking @(tsee break$)
+  &mdash; you can recover the persistent-whs of the @('nm') wormhole with
+  @('(cdr (assoc nm *wormhole-status-alist*))').  However, the logic-mode
+  function @(tsee get-persistent-whs) takes a name and @('state') returns an
+  error triple containing the persistent status.  @('Get-persistent-whs') reads
+  the ACL2 oracle (see @(see read-acl2-oracle)) to get the otherwise hidden
+  status of the wormhole.  In doing so it changes the state.  So if you're not
+  in a context in which you have @('state') and can return a modified state,
+  you can't use @('get-persistent-whs').</li>
+
+  <li>@(tsee Wormhole-eval) gives you a way, without access to state, to set
+  the persistent-whs of a named wormhole as a function of its current
+  persistent-whs.  @('Wormhole-eval') takes a wormhole name, a lambda
+  expression, and a term (which is functionally irrelevant), applies the lambda
+  expression to the persistent-whs, stores as the new persistent-whs, and
+  returns @('nil').</li>
+
+  <li>@(tsee Wormhole) is a function that allows you to set and test the status
+  of a named wormhole and if the resulting status has an entry code of
+  @(':enter') you will enter a read-eval-print loop.  Wormhole has two other
+  arguments, the so-called ``input'' object and the ``first form'' to execute
+  if and when the loop is entered.</li>
+
+  <li>The read-eval-print loop is managed by @(tsee ld), the same function that
+  manages ACL2's top-level read-eval-print loop.  The @('wormhole') function
+  allows you to specify the standard @('ld') variables (e.g., @(tsee
+  ld-error-action), etc.).  One of those variables is @(tsee
+  ld-keyword-aliases) which specifies the behaviors of keyword commands issued
+  in the wormhole's loop.</li>
+
+  <li>Before @('wormhole') (actually @('wormhole1')) calls @('ld') it sets
+  the three important state global variables mentioned below.  Then while
+  in the interactive loop:
+
+    @({
+    (@ wormhole-name) = nm
+
+    (@ wormhole-input) = the ``input'' object supplied to wormhole
+
+    (@ wormhole-status) = the wormhole's persistent-whs at the time of entry
+    })</li>
+
+  <li>When inside the interactive loop of the wormhole we call the value of
+  @('wormhole-status') the <i>ephemeral wormhole status</i> or
+  <i>ephemeral-whs</i>.  It ``disappears'' when the wormhole is exited but it
+  is easy to read without changing state while inside the wormhole.</li>
+
+  <li>The ``first form'' is very often the only form executed!  We typically
+  use that form to grab the input and the status and print stuff.  Then the
+  first form returns @('(value :q)').  Recall that typing @('(value :q)') to
+  the ACL2 loop (i.e., to @(tsee ld)) exits the loop, which exits the wormhole.
+  See the example in the documentation topic @(tsee wormhole), starting with
+  \"@('(wormhole 'demo')\".  If the first form returns any other non-erroneous
+  value triple, user input is read and evaluated.  So if your first form always
+  returns @('(value :q)') you're in complete control of your wormhole &mdash;
+  and if it doesn't, you're not because the next thing that happens is the
+  wormhole reads and evaluates whatever the user types!</li>
+
+  <li>The use of @('ld') to manage the read-eval-print loop means that the user
+  can execute virtually any ACL2 term.  If you use @('wormhole') and allow
+  input from the user, you have no control over the operations performed.</li>
+
+  <li>If, while in the @('nm') wormhole, you execute @('(wormhole-eval nm
+  ...)')  it will set the persistent-whs but not set the ephemeral-whs.
+  (Recall, @('wormhole-eval') does not have access to @('state').)  This means
+  that you can't trust @('(@ wormhole-status)') after a call of
+  @('wormhole-eval') &mdash; or of any function that calls @('wormhole-eval')
+  &mdash; from within the wormhole.</li>
+
+  <li>This brings us to the <i>Wormhole Coherence Convention</i>.  The problem
+  described in the bullet above is akin to the cache coherence problem.  Think
+  of the persistent-whs stored in @('*wormhole-status-alist*') as being stored
+  in a distant memory location and the ephemeral-whs stored in @('(@
+  wormhole-status)') as a nearby, easily accessible cache when you're in the
+  wormhole.  @('Wormhole-eval') reads and writes the persisten-whs and does not
+  update the cache.  The Wormhole Coherence Convention is to keep
+  persistent-whs and the ephemeral-whs equal.  Of course, the convention is
+  meant to hold except in the region of code between updating the two
+  locations.</li>
+
+  <li>The wormhole programmer is responsible for maintaining the wormhole
+  coherence &mdash; or not.  It's up to you.  But remember: if your wormhole
+  permits user interaction, you can't prevent the execution of certain
+  forms.</li>
+
+  <li>The state global variable @('wormhole-status') is untouchable, so the
+  user cannot just execute @('(assign wormhole-status new-status)') to change
+  it.  But @('wormhole-status') can be changed by certain special functions
+  available to the user, namely @(tsee sync-ephemeral-whs-with-persistent-whs)
+  and @(tsee set-persistent-whs-and-ephemeral-whs), though these will only have
+  effect after executing @(tsee wormhole-eval) or @(tsee wormhole).</li>
+
+  <li>We have already mentioned @('wormhole-eval'), which writes to the
+  persistent-whs not to the ephemeral-whs.  But the other two utilities
+  mentioned above are helpful in establishing and maintaining coherence.</li>
+
+  <li>@('(sync-ephemeral-whs-with-persistent-whs nm state)') moves the
+  ``distant'' memory status into the cached status.  It returns the modified
+  state.</li>
+
+  <li>@('(set-persistent-whs-and-ephemeral-whs nm new-status state)') writes
+  @('new-status') to the persistent-whs of @('nm') and, if you're in the
+  wormhole @('nm'), it also updates the ephemeral-whs status.  It returns a new
+  state.</li>
+
+  <li>Using @('sync-ephemeral-whs-with-persistent-whs') and
+  @('set-persistent-whs-and-ephemeral-whs') you can program your wormhole
+  operations to establish and maintain coherence.  But you can't prevent the
+  user from breaking it if you allow user interaction.</li>
+
+  <li>While it may seem that @('set-persistent-whs-and-ephemeral-whs') is the
+  preferred way to update the status of a wormhole, that function suffers from
+  the requirement that you have to have the new status in hand when you call
+  @('set-persistent-whs-and-ephemeral-whs').  So from a practical perspective
+  @('set-persistent-whs-and-ephemeral-whs') is either used outside the wormhole
+  to initialize the status to some standard value or is used inside the
+  wormhole after having obtained the current status from the cache and
+  modifying it to create the new status.</li>
+
+  <li>Both @('sync-ephemeral-whs-with-persistent-whs') and
+  @('set-persistent-whs-and-ephemeral-whs') take and return @('state') and so
+  can only be used in contexts allowing that.</li>
+
+  <li>In contrast, @('wormhole-eval') allows you to compute the new status as a
+  function of the old status, <i>WITHOUT HAVING PRIOR ACCESS</i> to the old
+  status and without access to @('state').  But then remember to call
+  @('sync-ephemeral-whs-with-persistent-whs'), which will restore
+  coherence.</li>
+
+  <li>The most direct way to establish and maintain the wormhole coherence is
+  to avoid use of fully interactive calls of @('wormhole') (i.e., make sure the
+  first form executed always returns @('(value :q)')), and do all modifications
+  to the wormhole status with @('wormhole-eval'), which reads and writes the
+  persistent-whs.  For example, search the ACL2 sources for occurrences of
+  @(''accumulated-persistence').  You'll see @('wormhole-eval') is used to
+  collect all the data.  Then in @('show-accumulated-persistence-fn'),
+  @('wormhole') is used to display the data and exit with @('(value :q)').</li>
+
+  <li>But the @(tsee break-rewrite) wormhole, named @('brr'), is necessarily
+  different because the whole intention is to allow interaction with the user!
+  So there is special code here and there throughout ACL2 to maintain
+  coherence.  We're sorry we don't provide suitable provisions for other
+  users!</li>
+
+  <li>If you're in a wormhole, all modifications to state globals during the
+  execution of the commands in the read-eval-print loop will be undone when the
+  loop is exited.  This cleanup is done in the raw Lisp code for
+  @('wormhole1'), by evaluating the raw Lisp form held in
+  @('*wormhole-cleanup-form*').  That form is destructively modified every time
+  an @('f-put-global') is executed from within some wormhole.  The modification
+  introduces code to undo each @('f-put-global') and restore the previous
+  values.</li>
+
+  <li>The cleanup form just mentioned contains special code for the
+  @('break-rewrite') wormhole!  Look for @(''brr') in @('wormhole1') and read
+  the comments.</li>
+
+  </ul>")
+
+(defxdoc wormhole-status
+  :parents (wormhole)
+  :short "the two senses of a wormhole's status"
+  :long "<p>As noted in the discussion of @('wormhole')s, every wormhole has a
+  current status, which is some ACL2 object whose shape is largely determined
+  by the author of the wormhole.  That object is not stored in the ACL2 state.
+  When the wormhole is entered, its status is assigned to the state global
+  variable @('wormhole-status'), making it visible.  When the wormhole is
+  exited, the value of @('wormhole-status') is transferred back to its
+  ``hidden'' location outside of the state.  Thus, the next time it is entered
+  the @('wormhole-status') is the same as it was when it was last exited.</p>
+
+  <p>We call the ``hidden'' version of a wormhole's status the <i>persistent
+  wormhole status</i> or <i>persistent-whs</i> and the version occasionally
+  found in the state global @('wormhole-status') as the <i>ephemeral wormhole
+  status</i> or <i>ephemeral-whs</i>.  It is helpful to think of the
+  persistent-whs as the wormhole's status as stored in some distant location
+  and its ephemeral-whs as an easily accessible, nearby cache.  When the two
+  locations hold the same value we say the wormhole is <i>coherent</i>.</p>
+
+  <p>The state global variable @('wormhole-status') is untouchable: you can
+  read it but not directly write to it via @(tsee assign) or @(tsee
+  f-put-global).  But you can write to the persistent-whs.  That is what @(tsee
+  wormhole-eval) does.  So while a wormhole is coherent when you first enter it
+  it can become incoherent if you use @('wormhole-eval') to change its
+  persistent-whs while inside the wormhole.  And remember, the use of
+  @('wormhole-eval') can be disguised via a function definition.</p>
+
+  <p>The following script illustrates this.  First, create a wormhole named
+  @('demo') whose data field is empty.  We'll use it to accumulate items
+  without modifying state.  We define @('(save x)') to cons @('x') onto the
+  data field of the @('demo') wormhole.  So execute these five commands at
+  the top-level of ACL2.</p>
+
+  @({
+  (wormhole-eval 'demo '(lambda nil '(:enter . nil)) nil)
+  (defun save (x)
+    (wormhole-eval
+     'demo
+     '(lambda (whs)(set-wormhole-data whs (cons x (wormhole-data whs))))
+     nil))
+  (save 'a)
+  (save 'b)
+  (save 'c)
+  })
+
+  <p>Then inspect the persistent-whs of @('demo'):</p>
+
+  @({
+  ACL2 !>(get-persistent-whs 'demo state)
+   (:ENTER C B A)
+  })
+
+  <p>So @('save') works as we planned.  But now let's enter the @('demo')
+  wormhole.  Inside the wormhole we first inspect the ephemeral-whs (i.e.,
+  @('(@ wormhole-status)'), and the persistent-whs to confirm the wormhole is
+  coherent.  Then we execute @('(save 'd)') to add @('D') to the accumulator.
+  Inspecting the persistent-whs shows that it worked.  But the ephemeral-whs
+  did not change!  The wormhole is now incoherent, thanks to the ``disguised''
+  use of @('wormhole-eval') while in the wormhole.</p>
+
+  @({
+  ACL2 !>(wormhole 'demo '(lambda (whs) whs) nil '(quote (welcome!)))
+
+  Project-dir-alist:
+  ((:SYSTEM . \"/Users/moore/Desktop/v85k1/books/\")).
+  Type :help for help.
+  Type (quit) to quit completely out of ACL2.
+
+  Wormhole ACL2 !>(WELCOME!)
+  Wormhole ACL2 !>(@ wormhole-status)
+  (:ENTER C B A)
+  Wormhole ACL2 !>(get-persistent-whs 'demo state)
+   (:ENTER C B A)
+  Wormhole ACL2 !>(save 'd)
+  NIL
+  Wormhole ACL2 !>(get-persistent-whs 'demo state)
+   (:ENTER D C B A)
+  Wormhole ACL2 !>(@ wormhole-status)
+  (:ENTER C B A)
+  Wormhole ACL2 !>:q
+  NIL
+  })
+
+  <p>The @(':q') above exits the wormhole.  Now re-enter the wormhole and
+  inspect the ephemeral-whs and persistent-whs.</p>
+
+  @({
+  ACL2 !>(wormhole 'demo '(lambda (whs) whs) nil '(quote (welcome back!)))
+
+  Project-dir-alist:
+  ((:SYSTEM . \"/Users/moore/Desktop/v85k1/books/\")).
+  Type :help for help.
+  Type (quit) to quit completely out of ACL2.
+
+  Wormhole ACL2 !>(WELCOME BACK!)
+  Wormhole ACL2 !>(@ wormhole-status)
+  (:ENTER C B A)
+  Wormhole ACL2 !>(get-persistent-whs 'demo state)
+   (:ENTER C B A)
+  Wormhole ACL2 !>(value :q)
+  NIL
+  })
+
+  <p>The wormhole is coherent of course; wormholes are always coherent upon
+  entry.  But notice the value of the data field!  It doesn't list @('D')!
+  That happened because when we exited the wormhole, the ephemeral-whs was
+  written back to the persistent-whs, and the emphemeral-whs of the incoherent
+  status did not contain @('D').</p>
+
+  <p>There are ways ensure that your wormholes remain coherent and they all
+  involve using the function @(tsee sync-ephemeral-whs-with-persistent-whs),
+  which does what its name says.  For example, we could have defined @('save')
+  this way instead.</p>
+
+  @({
+  (defun save (x state)
+    (prog2$
+      (wormhole-eval
+       'demo
+       '(lambda (whs)(set-wormhole-data whs (cons x (wormhole-data whs))))
+       nil)
+      (sync-ephemeral-whs-with-persistent-whs 'demo state)))
+  })
+
+  <p>But note that we must now provide @('state') as an argument to all calls
+  of @('save') and @('save') must return @('state') because @(tsee
+  read-acl2-oracle) was used to reach out to the @('peristent-whs') to refresh
+  the ephemeral-whs.  This means we can only call this version of @('save') in
+  environments in which we have @('state') and can return @('state').</p>
+
+  <p>Perhaps a better way preserve coherence is to keep @('save') defined in
+  the earlier, @('state')-less way but to call
+  @('sync-ephemeral-whs-with-persistent-whs') from within the wormhole after we
+  call @('(save 'd)').  That is easy enough to do if you are in complete
+  control of the @('demo') wormhole.  Recall the specification of @(tsee
+  wormhole).  If the entry @('lambda') sets the @(tsee wormhole-entry-code) to
+  @(':enter'), then @(tsee ld) is invoked but the first form executed by the
+  resulting read-eval-print loop is the @('form') argument of @('wormhole').
+  We used the @('form') argument in the script above to just print a greeting
+  but it can be an arbitrary form.  If @('form') returns @('(value nil)') the
+  @('ld') is exited without ever giving the user the opportunity to type and
+  evaluate an arbitrary form.</p>
+
+  <p>But if the @('demo') wormhole allows a user to type and evaluate arbitrary
+  forms (including forms like @('wormhole-eval') or the @('state')-less
+  @('save')), there is no way to ensure coherency.  We admit this is an
+  unfortunate aspect of the current design.</p>
+
+  <p>The simplest way to avoid such problems is to use @('wormhole-eval')
+  exclusively and avoid use of the interactive read-eval-print loop provided by
+  @(tsee wormhole), except loops intended for experts.  This is the approach
+  taken by such system utilities as @(tsee accumulated-persistence) and @(tsee
+  fc-report): @('wormhole-eval') is used to collect data and either
+  @('wormhole-eval') or a non-interactive @('wormhole') is used to display
+  it.</p>")
 
 (defxdoc wormhole-statusp
   :parents (wormhole)
@@ -155568,7 +157269,9 @@ created from the original fast alist during @('form') must be manually freed."
 
  @('Value'): hints (see @(see hints)), to be used during the @(see guard)
  verification proofs as opposed to the termination proofs of the @(tsee
- defun).</p>
+ defun).  Note that these hints apply only to guard proofs, not to the
+ generation of guard proof obligations; for that, see @(see
+ guard-simplification).</p>
 
  <p>@(':guard-simplify')<br></br>
 
@@ -159340,6 +161043,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer close-input-channel io)
 (defpointer close-output-channel io)
 (defpointer check-sum checksum)
+(defpointer coherence wormhole-status)
 (defpointer collect$ loop$)
 (defpointer collect$+ loop$)
 (defpointer comma backquote)
@@ -159370,6 +161074,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer dumb-occur-var system-utilities)
 (defpointer enabled-numep system-utilities)
 (defpointer enabled-runep system-utilities)
+(defpointer ephemeral-whs wormhole-status)
 (defpointer er-cmp context-message-pair)
 (defpointer er-let* programming-with-state)
 (defpointer er-let*-cmp context-message-pair)
@@ -159520,6 +161225,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer note9 note-1-9)
 (defpointer nvariablep system-utilities)
 (defpointer observation-cw observation)
+(defpointer old-and-new-event-data saving-event-data)
 (defpointer open-input-channel io)
 (defpointer open-input-channel-p io)
 (defpointer open-output-channel io)
@@ -159529,6 +161235,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer partition-rest-and-keyword-args system-utilities)
 (defpointer pe-table extend-pe-table)
 (defpointer peek-char$ io)
+(defpointer persistent-whs wormhole-status)
 (defpointer plist-worldp system-utilities)
 (defpointer position-eq position)
 (defpointer position-equal position)
@@ -159574,6 +161281,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer rewrite-cache set-rw-cache-state)
 (defpointer ruler-extenders rulers)
 (defpointer ruler rulers)
+(defpointer runes-diff saving-event-data)
 (defpointer rw-cache set-rw-cache-state)
 (defpointer rw-cache-state hints t)
 (defpointer saving-and-restoring save-exec)
@@ -159649,6 +161357,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer thereis$+ loop$)
 (defpointer time-limit with-prover-time-limit) ; referenced in :doc prove$
 (defpointer too-many-ifs efficiency)
+(defpointer top-level-loop guarantees-of-the-top-level-loop)
 (defpointer trans-eval-default-warning user-stobjs-modified-warnings)
 (defpointer trans-eval-no-warning user-stobjs-modified-warnings)
 (defpointer translate system-utilities)
@@ -159679,6 +161388,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer when$+ loop$)
 (defpointer with-output! with-output)
 (defpointer with-prover-step-limit! with-prover-step-limit)
+(defpointer wormhole-coherence wormhole-status)
 (defpointer write-byte$ io)
 
 #||
