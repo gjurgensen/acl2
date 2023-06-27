@@ -14926,8 +14926,9 @@ with any questions about building the community books.</p>")
 (defxdoc characterp
   :parents (characters acl2-built-ins)
   :short "Recognizer for @(see characters)"
-  :long "<p>@('(characterp x)') is true if and only if @('x') is a
-  character.</p>")
+  :long "<p>@('(characterp x)') is true if and only if @('x') is a character.
+ Note that ACL2 supports characters with ASCII codes between 0 and 255.  See
+ also @(see code-char) and @(see char-code).</p>")
 
 (defxdoc characters
   :parents (programming)
@@ -26713,10 +26714,11 @@ subtree of X with T, without duplication.</p>
   :parents (io)
   :short "Delete a file"
   :long "<p>This analogue of the Common Lisp function, @('delete-file'), uses
- that function under the hood to delete a given file.  The @(tsee guard) of
- @('delete-file$') requires that the first argument is a string; the second
- argument is the ACL2 @(tsee state).  The logical definition does not actually
- look at the file and hence is not useful for reasoning.</p>
+ that function under the hood to delete a given file.  It returns @('(mv t
+ state)') if deletion succeeds and @('(mv nil state)') otherwise.  The @(tsee
+ guard) of @('delete-file$') requires that the first argument is a string; the
+ second argument is the ACL2 @(tsee state).  The logical definition does not
+ actually look at the file and hence is not useful for reasoning.</p>
 
  @(def delete-file$)")
 
@@ -68382,20 +68384,23 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
 
  <p>However, this version of @('thm') did not permit calls of @('thm') in @(see
  books) or @(tsee encapsulate) forms.  To remedy that deficiency, ACL2 now
- defines @('thm') as follows; below we explain each component of this
+ defines @('thm') as follows; below we explain components of this
  definition.</p>
 
  @({
- (defmacro thm (term &key hints otf-flg)
+ (defmacro thm (&whole event-form
+                       term &key hints otf-flg)
    `(with-output :off summary :stack :push
       (make-event (er-progn (with-output :stack :pop
                               (thm-fn ',term
                                       state
                                       ',hints
-                                      ',otf-flg))
+                                      ',otf-flg
+                                      ',event-form))
                             (value '(value-triple :invisible)))
                   :expansion? (value-triple :invisible)
-                  :on-behalf-of :quiet!)))
+                  :on-behalf-of :quiet!
+                  :save-event-data t)))
  })
 
  <p>The use of @(tsee with-output) avoids printing anything about
@@ -68425,7 +68430,10 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
  See @(see make-event).</p>
 
  <p>The use of @(':on-behalf-of :quiet!') avoids a needless, distracting error
- message from @('make-event') when the proof fails.</p>")
+ message from @('make-event') when the proof fails.</p>
+
+ <p>The @(':save-event-data') keyword argument is a low-level implementation
+ detail that we ignore here.</p>")
 
 (defxdoc make-fast-alist
   :parents (fast-alists acl2-built-ins)
@@ -102977,6 +102985,11 @@ it."
 
  </ul>
 
+ <p>The utilities @(':')@(tsee pe) and @(':')@(tsee pr) now provide more useful
+ output when applied to function symbols that are built into ACL2 without a
+ defining event.  Thanks to Warren Hunt for discussions leading to this
+ improvement.</p>
+
  <h3>New Features</h3>
 
  <p>The new zero-ary attachable system function, @(tsee heavy-linear-p), allows
@@ -103401,6 +103414,11 @@ it."
  information may be printed that was formerly omitted; and a superfluous extra
  failure message may be omitted that was formerly printed.</p>
 
+ <p>The function @(tsee delete-file$) executed in a way that diverged from its
+ logical definition: successful deletion caused return values of @('(mv t
+ state)') but this was provably impossible according to the logical
+ definition.  This has been fixed.</p>
+
  <h3>Changes at the System Level</h3>
 
  <p>The `@('make')' target, @('save-exec'), now builds @('custom-saved_acl2')
@@ -103476,6 +103494,10 @@ it."
  @(see community-books) &mdash; now has an additional formal (at the end),
  @('event-form').  That argument can generally be passed as @('nil') for
  appropriate behavior.</p>
+
+ <p>Code for @(tsee set-cbd) has been tweaked to add assurance that the @(tsee
+ cbd) always ends in a forward slash (&lsquo;@('/')&rsquo;), as specified.
+ Thanks to Stephen Westfold for a comment leading to this modification.</p>
 
  <h3>EMACS Support</h3>
 
