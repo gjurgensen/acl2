@@ -39261,10 +39261,10 @@ Example 2
   Note: [47m~p[0m, [47m~q[0m, [47m~P[0m, and [47m~Q[0m are also currently supported, but are
   deprecated and generally avoided in this manual.  These are
   respectively the same as [47m~x[0m, [47m~y[0m, [47m~X[0m, and [47m~Y[0m, except that their
-  arguments are expected to be terms, preferably untranslated
-  (user-level) terms, that could be printed using infix notation in
-  certain environments.  Infix printing is not currently supported
-  but may be if there is sufficient need for it.
+  arguments may be expected to be terms, preferably untranslated
+  (user-level) terms, since at one time there was the possibility
+  that they could be printed using infix notation in certain
+  environments.  Infix printing is no longer supported, however.
 
   ACL2's formatting functions print to the indicated channel, keeping
   track of which column they are in.  [47m[Fmt1][0m can be used if the

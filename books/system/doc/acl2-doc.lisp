@@ -35776,10 +35776,10 @@ current fast alists."
  <p>Note: @('~p'), @('~q'), @('~P'), and @('~Q') are also currently supported,
  but are deprecated and generally avoided in this manual.  These are
  respectively the same as @('~x'), @('~y'), @('~X'), and @('~Y'), except that
- their arguments are expected to be terms, preferably untranslated (user-level)
- terms, that could be printed using infix notation in certain environments.
- Infix printing is not currently supported but may be if there is sufficient
- need for it.</p>
+ their arguments may be expected to be terms, preferably
+ untranslated (user-level) terms, since at one time there was the possibility
+ that they could be printed using infix notation in certain environments.
+ Infix printing is no longer supported, however.</p>
 
  <p>ACL2's formatting functions print to the indicated channel, keeping track
  of which column they are in.  @(tsee Fmt1) can be used if the caller knows
@@ -102565,6 +102565,16 @@ it."
 ; (and h1 ...) c), when q simplifies to nil.  Even if that were manageable,
 ; it's not clear what to print in the case of nested implications such as
 ; (implies (and h1 ...) (implies (and k1 ...) c)).
+
+; Infix printing was essentially removed in 2017 with Version 8.0, but code
+; remained to support it.  That code has been completely removed.  The
+; following macros became trivial and hence were also removed:
+; with-infixp-nil and make-ctx-for-event.  Some formal parameters were removed for
+; the following functions, when they were used on for infix printing:
+; - flsz: eliminated termp
+; - flpr: eliminated termp
+; - fmt-ppr: eliminated termp
+; - defun-ctx: eliminated event-form and state
 
   :parents (release-notes)
   :short "ACL2 Version  8.6 (xxx, 20xx) Notes"
