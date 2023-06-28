@@ -24058,7 +24058,7 @@ subtree of X with T, without duplication.</p>
             halt   ; = (halt :type t :initially nil)
             (mem :type (array (unsigned-byte 31) (*mem-size*))
                  :initially 0 :resizable t)
-            (ht  :type (hash-table eq 70 integer)))
+            (ht  :type (hash-table eq 70 integer) :initially 0))
 
   General Form:
   (defstobj name
@@ -71667,7 +71667,7 @@ it."
  <li>@(':abstraction') &mdash; value must be a term and it is most often an
  abstraction of the pattern that triggers @('x') obtained by replacing some
  subterms of that pattern by new variables</li>
- 
+
  <li>@(':lambda') &mdash; value must be @('t') or @('nil')</li>
 
  <li>@(':condition') &mdash; value must be a term, called the &ldquo;break
@@ -103508,6 +103508,19 @@ it."
  <p>Code for @(tsee set-cbd) has been tweaked to add assurance that the @(tsee
  cbd) always ends in a forward slash (&lsquo;@('/')&rsquo;), as specified.
  Thanks to Stephen Westfold for a comment leading to this modification.</p>
+
+ <p>Updated file @('GNUmakefile') in the top-level directory so that when an
+ ACL2 executable is built, files are updated in subdirectory @('books/build/')
+ to support the use of @(tsee build::cert.pl).  Thanks to Eric Smith for the
+ idea, and thanks to Eric and also Sol Swords for help with the
+ implementation.</p>
+
+ <p>The notion of ACL2 @(see state) is formalized in function @('state-p1'),
+ which has implicitly changed because it depends on the constant
+ *initial-global-table*, whose value has changed.  That constant's value, which
+ is still an alist, now includes additional pairs, which are from the constant
+ *initial-ld-special-bindings*; thus, *initial-global-table* now specifies a
+ value for each so-called &ldquo;@(tsee ld) special&rdquo;.</p>
 
  <h3>EMACS Support</h3>
 
@@ -135985,7 +135998,7 @@ work on <tt>(q x)</tt>.</p>
   has two components: its name (see @(see symbol-name)) and its package name
   (see @(see symbol-package-name)).</p>")
 
-(defxdoc sync-ephemeral-whs-with-persistent-whs 
+(defxdoc sync-ephemeral-whs-with-persistent-whs
   :parents (wormhole)
   :short "establishing wormhole coherence"
   :long "@({
@@ -156168,7 +156181,7 @@ created from the original fast alist during @('form') must be manually freed."
  take or return @(tsee state) but that can collect every symbol passed to
  it (but not collect non-symbols)?</p>
 
- @({ 
+ @({
  (defun demo-collect (x)
     (declare (xargs :verify-guards t))
     (wormhole-eval 'demo

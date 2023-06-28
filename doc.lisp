@@ -27225,7 +27225,7 @@ Subtopics
               halt   ; = (halt :type t :initially nil)
               (mem :type (array (unsigned-byte 31) (*mem-size*))
                    :initially 0 :resizable t)
-              (ht  :type (hash-table eq 70 integer)))
+              (ht  :type (hash-table eq 70 integer) :initially 0))
 
     General Form:
     (defstobj name
@@ -100357,6 +100357,20 @@ Changes at the System Level
   Code for [47m[set-cbd][0m has been tweaked to add assurance that the [47m[cbd][0m
   always ends in a forward slash (`[47m/[0m'), as specified.  Thanks to
   Stephen Westfold for a comment leading to this modification.
+
+  Updated file [47mGNUmakefile[0m in the top-level directory so that when an
+  ACL2 executable is built, files are updated in subdirectory
+  [47mbooks/build/[0m to support the use of [47m[build::cert.pl][0m.  Thanks to
+  Eric Smith for the idea, and thanks to Eric and also Sol Swords for
+  help with the implementation.
+
+  The notion of ACL2 [state] is formalized in function [47mstate-p1[0m, which
+  has implicitly changed because it depends on the constant
+  *initial-global-table*, whose value has changed.  That constant's
+  value, which is still an alist, now includes additional pairs,
+  which are from the constant *initial-ld-special-bindings*; thus,
+  *initial-global-table* now specifies a value for each so-called
+  ``[47m[ld][0m special''.
 
 
 EMACS Support
