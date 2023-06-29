@@ -17871,7 +17871,9 @@ Subtopics
   (CHARACTERS ACL2-BUILT-INS)
   "Recognizer for [characters]
 
-  [47m(characterp x)[0m is true if and only if [47mx[0m is a character.")
+  [47m(characterp x)[0m is true if and only if [47mx[0m is a character.  Note that
+  ACL2 supports characters with ASCII codes between 0 and 255.  See
+  also [code-char] and [char-code].")
  (CHARACTERS
   (PROGRAMMING)
   "Characters in ACL2 and operations on them
@@ -27223,7 +27225,7 @@ Subtopics
               halt   ; = (halt :type t :initially nil)
               (mem :type (array (unsigned-byte 31) (*mem-size*))
                    :initially 0 :resizable t)
-              (ht  :type (hash-table eq 70 integer)))
+              (ht  :type (hash-table eq 70 integer) :initially 0))
 
     General Form:
     (defstobj name
@@ -29911,11 +29913,12 @@ Subtopics
   "Delete a file
 
   This analogue of the Common Lisp function, [47mdelete-file[0m, uses that
-  function under the hood to delete a given file.  The [47m[guard][0m of
-  [47mdelete-file$[0m requires that the first argument is a string; the
-  second argument is the ACL2 [47m[state][0m.  The logical definition does
-  not actually look at the file and hence is not useful for
-  reasoning.
+  function under the hood to delete a given file.  It returns [47m(mv t
+  state)[0m if deletion succeeds and [47m(mv nil state)[0m otherwise.  The
+  [47m[guard][0m of [47mdelete-file$[0m requires that the first argument is a
+  string; the second argument is the ACL2 [47m[state][0m.  The logical
+  definition does not actually look at the file and hence is not
+  useful for reasoning.
 
   [31;1mFunction: [0m<delete-file$>
 
@@ -29925,8 +29928,8 @@ Subtopics
       (declare (ignore file))
       (mv-let (erp val state)
               (read-acl2-oracle state)
-        (mv (and (null erp) (natp val) val)
-            state)))")
+        (declare (ignore val))
+        (mv (null erp) state)))")
  (DELETE-INCLUDE-BOOK-DIR
   (BOOKS-REFERENCE)
   "Unlink keyword for [47m:dir[0m argument of [47m[ld][0m and [47m[include-book][0m
@@ -39258,10 +39261,10 @@ Example 2
   Note: [47m~p[0m, [47m~q[0m, [47m~P[0m, and [47m~Q[0m are also currently supported, but are
   deprecated and generally avoided in this manual.  These are
   respectively the same as [47m~x[0m, [47m~y[0m, [47m~X[0m, and [47m~Y[0m, except that their
-  arguments are expected to be terms, preferably untranslated
-  (user-level) terms, that could be printed using infix notation in
-  certain environments.  Infix printing is not currently supported
-  but may be if there is sufficient need for it.
+  arguments may be expected to be terms, preferably untranslated
+  (user-level) terms, since at one time there was the possibility
+  that they could be printed using infix notation in certain
+  environments.  Infix printing is no longer supported, however.
 
   ACL2's formatting functions print to the indicated channel, keeping
   track of which column they are in.  [47m[Fmt1][0m can be used if the
@@ -71676,19 +71679,22 @@ Subtopics
 
   However, this version of [47mthm[0m did not permit calls of [47mthm[0m in [books]
   or [47m[encapsulate][0m forms.  To remedy that deficiency, ACL2 now
-  defines [47mthm[0m as follows; below we explain each component of this
+  defines [47mthm[0m as follows; below we explain components of this
   definition.
 
-    (defmacro thm (term &key hints otf-flg)
+    (defmacro thm (&whole event-form
+                          term &key hints otf-flg)
       `(with-output :off summary :stack :push
          (make-event (er-progn (with-output :stack :pop
                                  (thm-fn ',term
                                          state
                                          ',hints
-                                         ',otf-flg))
+                                         ',otf-flg
+                                         ',event-form))
                                (value '(value-triple :invisible)))
                      :expansion? (value-triple :invisible)
-                     :on-behalf-of :quiet!)))
+                     :on-behalf-of :quiet!
+                     :save-event-data t)))
 
   The use of [47m[with-output][0m avoids printing anything about [47mmake-event[0m in
   the [summary] (by using [47m:off summary[0m).  But we do want a summary
@@ -71714,7 +71720,10 @@ Subtopics
   file.  See [make-event].
 
   The use of [47m:on-behalf-of :quiet![0m avoids a needless, distracting error
-  message from [47mmake-event[0m when the proof fails.")
+  message from [47mmake-event[0m when the proof fails.
+
+  The [47m:save-event-data[0m keyword argument is a low-level implementation
+  detail that we ignore here.")
  (MAKE-FAST-ALIST
   (FAST-ALISTS ACL2-BUILT-INS)
   "[47m(make-fast-alist alist)[0m creates a fast-alist from the input alist,
@@ -99858,6 +99867,11 @@ Changes to Existing Features
     * The macro [47mshow-brr-evisc-tuple[0m has been eliminated, but
       [47m[brr-evisc-tuple][0m is available instead.
 
+  The utilities [47m:[0m[47m[pe][0m and [47m:[0m[47m[pr][0m now provide more useful output when
+  applied to function symbols that are built into ACL2 without a
+  defining event.  Thanks to Warren Hunt for discussions leading to
+  this improvement.
+
 
 New Features
 
@@ -100265,6 +100279,11 @@ Bug Fixes
   a superfluous extra failure message may be omitted that was
   formerly printed.
 
+  The function [47m[delete-file$][0m executed in a way that diverged from its
+  logical definition: successful deletion caused return values of [47m(mv
+  t state)[0m but this was provably impossible according to the logical
+  definition.  This has been fixed.
+
 
 Changes at the System Level
 
@@ -100334,6 +100353,24 @@ Changes at the System Level
   [community-books] --- now has an additional formal (at the end),
   [47mevent-form[0m.  That argument can generally be passed as [47mnil[0m for
   appropriate behavior.
+
+  Code for [47m[set-cbd][0m has been tweaked to add assurance that the [47m[cbd][0m
+  always ends in a forward slash (`[47m/[0m'), as specified.  Thanks to
+  Stephen Westfold for a comment leading to this modification.
+
+  Updated file [47mGNUmakefile[0m in the top-level directory so that when an
+  ACL2 executable is built, files are updated in subdirectory
+  [47mbooks/build/[0m to support the use of [47m[build::cert.pl][0m.  Thanks to
+  Eric Smith for the idea, and thanks to Eric and also Sol Swords for
+  help with the implementation.
+
+  The notion of ACL2 [state] is formalized in function [47mstate-p1[0m, which
+  has implicitly changed because it depends on the constant
+  *initial-global-table*, whose value has changed.  That constant's
+  value, which is still an alist, now includes additional pairs,
+  which are from the constant *initial-ld-special-bindings*; thus,
+  *initial-global-table* now specifies a value for each so-called
+  ``[47m[ld][0m special''.
 
 
 EMACS Support
