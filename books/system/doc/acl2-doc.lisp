@@ -103136,7 +103136,8 @@ it."
 
  <p>New utilities allow one to explore what has changed when an event fails in
  a book that formerly certified.  See @(see saving-event-data).  Thanks to Eric
- Smith for requesting such a capability.</p>
+ Smith for requesting such a capability and for helpful bug reports for early
+ versions of these utilities..</p>
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
@@ -103428,6 +103429,12 @@ it."
  logical definition: successful deletion caused return values of @('(mv t
  state)') but this was provably impossible according to the logical
  definition.  This has been fixed.</p>
+
+ <p>Fixed the @(see useless-runes) feature to work properly when reading a
+ useless-runes file while certifying a book in a package other than the
+ @('\"ACL2\"') package.  The fix is to ensure that the useless-runes file is
+ read while in the @('\"ACL2\"') package, which is the same package used when
+ the file was written.</p>
 
  <h3>Changes at the System Level</h3>
 
@@ -129067,16 +129074,13 @@ work on <tt>(q x)</tt>.</p>
 
  <p>Typical benefits of raw mode are fast loading of source and compiled files
  and the capability to hack arbitrary Common Lisp code in an environment with
- the ACL2 sources loaded (and hence with ACL2 primitives available).  In
- addition, ACL2 hard errors will put you into the Lisp debugger, rather than
- returning you to the ACL2 loop, and this may be helpful for debugging; see
- @(see hard-error) and see @(see illegal), but also see @(see break-on-error)
- and @(see break$).  However, it probably is generally best to avoid raw mode
- unless these advantages seem important.  We expect the main benefit of raw
- mode to be in deployment of applications, where raw Lisp code may be useful,
- and where load time is much faster than the time required for a full-blown
- @(tsee include-book) &mdash; but not that the fast loading of books and
- treatment of hard errors discussed above may be useful during development.</p>
+ the ACL2 sources loaded (and hence with ACL2 primitives available).  However,
+ it probably is generally best to avoid raw mode unless these advantages seem
+ important.  We expect the main benefit of raw mode to be in deployment of
+ applications, where raw Lisp code may be useful, and where load time is much
+ faster than the time required for a full-blown @(tsee include-book) &mdash;
+ but not that the fast loading of books and treatment of hard errors discussed
+ above may be useful during development.</p>
 
  <p>Raw mode is also useful for those who want to build extensions of ACL2.
  For example, the following form can be put into a certifiable book to load an
