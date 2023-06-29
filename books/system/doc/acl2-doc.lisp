@@ -14926,8 +14926,9 @@ with any questions about building the community books.</p>")
 (defxdoc characterp
   :parents (characters acl2-built-ins)
   :short "Recognizer for @(see characters)"
-  :long "<p>@('(characterp x)') is true if and only if @('x') is a
-  character.</p>")
+  :long "<p>@('(characterp x)') is true if and only if @('x') is a character.
+ Note that ACL2 supports characters with ASCII codes between 0 and 255.  See
+ also @(see code-char) and @(see char-code).</p>")
 
 (defxdoc characters
   :parents (programming)
@@ -24057,7 +24058,7 @@ subtree of X with T, without duplication.</p>
             halt   ; = (halt :type t :initially nil)
             (mem :type (array (unsigned-byte 31) (*mem-size*))
                  :initially 0 :resizable t)
-            (ht  :type (hash-table eq 70 integer)))
+            (ht  :type (hash-table eq 70 integer) :initially 0))
 
   General Form:
   (defstobj name
@@ -26713,10 +26714,11 @@ subtree of X with T, without duplication.</p>
   :parents (io)
   :short "Delete a file"
   :long "<p>This analogue of the Common Lisp function, @('delete-file'), uses
- that function under the hood to delete a given file.  The @(tsee guard) of
- @('delete-file$') requires that the first argument is a string; the second
- argument is the ACL2 @(tsee state).  The logical definition does not actually
- look at the file and hence is not useful for reasoning.</p>
+ that function under the hood to delete a given file.  It returns @('(mv t
+ state)') if deletion succeeds and @('(mv nil state)') otherwise.  The @(tsee
+ guard) of @('delete-file$') requires that the first argument is a string; the
+ second argument is the ACL2 @(tsee state).  The logical definition does not
+ actually look at the file and hence is not useful for reasoning.</p>
 
  @(def delete-file$)")
 
@@ -35774,10 +35776,10 @@ current fast alists."
  <p>Note: @('~p'), @('~q'), @('~P'), and @('~Q') are also currently supported,
  but are deprecated and generally avoided in this manual.  These are
  respectively the same as @('~x'), @('~y'), @('~X'), and @('~Y'), except that
- their arguments are expected to be terms, preferably untranslated (user-level)
- terms, that could be printed using infix notation in certain environments.
- Infix printing is not currently supported but may be if there is sufficient
- need for it.</p>
+ their arguments may be expected to be terms, preferably
+ untranslated (user-level) terms, since at one time there was the possibility
+ that they could be printed using infix notation in certain environments.
+ Infix printing is no longer supported, however.</p>
 
  <p>ACL2's formatting functions print to the indicated channel, keeping track
  of which column they are in.  @(tsee Fmt1) can be used if the caller knows
@@ -68382,20 +68384,23 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
 
  <p>However, this version of @('thm') did not permit calls of @('thm') in @(see
  books) or @(tsee encapsulate) forms.  To remedy that deficiency, ACL2 now
- defines @('thm') as follows; below we explain each component of this
+ defines @('thm') as follows; below we explain components of this
  definition.</p>
 
  @({
- (defmacro thm (term &key hints otf-flg)
+ (defmacro thm (&whole event-form
+                       term &key hints otf-flg)
    `(with-output :off summary :stack :push
       (make-event (er-progn (with-output :stack :pop
                               (thm-fn ',term
                                       state
                                       ',hints
-                                      ',otf-flg))
+                                      ',otf-flg
+                                      ',event-form))
                             (value '(value-triple :invisible)))
                   :expansion? (value-triple :invisible)
-                  :on-behalf-of :quiet!)))
+                  :on-behalf-of :quiet!
+                  :save-event-data t)))
  })
 
  <p>The use of @(tsee with-output) avoids printing anything about
@@ -68425,7 +68430,10 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
  See @(see make-event).</p>
 
  <p>The use of @(':on-behalf-of :quiet!') avoids a needless, distracting error
- message from @('make-event') when the proof fails.</p>")
+ message from @('make-event') when the proof fails.</p>
+
+ <p>The @(':save-event-data') keyword argument is a low-level implementation
+ detail that we ignore here.</p>")
 
 (defxdoc make-fast-alist
   :parents (fast-alists acl2-built-ins)
@@ -71659,7 +71667,7 @@ it."
  <li>@(':abstraction') &mdash; value must be a term and it is most often an
  abstraction of the pattern that triggers @('x') obtained by replacing some
  subterms of that pattern by new variables</li>
- 
+
  <li>@(':lambda') &mdash; value must be @('t') or @('nil')</li>
 
  <li>@(':condition') &mdash; value must be a term, called the &ldquo;break
@@ -102558,6 +102566,16 @@ it."
 ; it's not clear what to print in the case of nested implications such as
 ; (implies (and h1 ...) (implies (and k1 ...) c)).
 
+; Infix printing was essentially removed in 2017 with Version 8.0, but code
+; remained to support it.  That code has been completely removed.  The
+; following macros became trivial and hence were also removed:
+; with-infixp-nil and make-ctx-for-event.  Some formal parameters were removed for
+; the following functions, when they were used on for infix printing:
+; - flsz: eliminated termp
+; - flpr: eliminated termp
+; - fmt-ppr: eliminated termp
+; - defun-ctx: eliminated event-form and state
+
   :parents (release-notes)
   :short "ACL2 Version  8.6 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -102976,6 +102994,11 @@ it."
  brr-evisc-tuple) is available instead.</li>
 
  </ul>
+
+ <p>The utilities @(':')@(tsee pe) and @(':')@(tsee pr) now provide more useful
+ output when applied to function symbols that are built into ACL2 without a
+ defining event.  Thanks to Warren Hunt for discussions leading to this
+ improvement.</p>
 
  <h3>New Features</h3>
 
@@ -103401,6 +103424,11 @@ it."
  information may be printed that was formerly omitted; and a superfluous extra
  failure message may be omitted that was formerly printed.</p>
 
+ <p>The function @(tsee delete-file$) executed in a way that diverged from its
+ logical definition: successful deletion caused return values of @('(mv t
+ state)') but this was provably impossible according to the logical
+ definition.  This has been fixed.</p>
+
  <h3>Changes at the System Level</h3>
 
  <p>The `@('make')' target, @('save-exec'), now builds @('custom-saved_acl2')
@@ -103476,6 +103504,23 @@ it."
  @(see community-books) &mdash; now has an additional formal (at the end),
  @('event-form').  That argument can generally be passed as @('nil') for
  appropriate behavior.</p>
+
+ <p>Code for @(tsee set-cbd) has been tweaked to add assurance that the @(tsee
+ cbd) always ends in a forward slash (&lsquo;@('/')&rsquo;), as specified.
+ Thanks to Stephen Westfold for a comment leading to this modification.</p>
+
+ <p>Updated file @('GNUmakefile') in the top-level directory so that when an
+ ACL2 executable is built, files are updated in subdirectory @('books/build/')
+ to support the use of @(tsee build::cert.pl).  Thanks to Eric Smith for the
+ idea, and thanks to Eric and also Sol Swords for help with the
+ implementation.</p>
+
+ <p>The notion of ACL2 @(see state) is formalized in function @('state-p1'),
+ which has implicitly changed because it depends on the constant
+ *initial-global-table*, whose value has changed.  That constant's value, which
+ is still an alist, now includes additional pairs, which are from the constant
+ *initial-ld-special-bindings*; thus, *initial-global-table* now specifies a
+ value for each so-called &ldquo;@(tsee ld) special&rdquo;.</p>
 
  <h3>EMACS Support</h3>
 
@@ -135953,7 +135998,7 @@ work on <tt>(q x)</tt>.</p>
   has two components: its name (see @(see symbol-name)) and its package name
   (see @(see symbol-package-name)).</p>")
 
-(defxdoc sync-ephemeral-whs-with-persistent-whs 
+(defxdoc sync-ephemeral-whs-with-persistent-whs
   :parents (wormhole)
   :short "establishing wormhole coherence"
   :long "@({
@@ -156136,7 +156181,7 @@ created from the original fast alist during @('form') must be manually freed."
  take or return @(tsee state) but that can collect every symbol passed to
  it (but not collect non-symbols)?</p>
 
- @({ 
+ @({
  (defun demo-collect (x)
     (declare (xargs :verify-guards t))
     (wormhole-eval 'demo
