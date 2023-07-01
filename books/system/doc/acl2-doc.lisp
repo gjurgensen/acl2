@@ -7602,8 +7602,6 @@ and @(tsee include-book)"
   :long "<p>The predicate @('atom-listp') tests whether its argument is a
  @(tsee true-listp) of @(see atom)s, i.e., of non-conses.</p>
 
- <p>Also see @(see good-atom-listp).</p>
-
  @(def atom-listp)")
 
 (defxdoc |About Models|
@@ -43029,17 +43027,6 @@ current fast alists."
        :hints ((\"Subgoal *1/\" :in-theory nil)))
  })")
 
-(defxdoc good-atom-listp
-  :parents (atom lists acl2-built-ins)
-  :short "Recognizer for a true list of ``good'' @(see atom)s"
-  :long "<p>The predicate @('good-atom-listp') tests whether its argument is a
- @(tsee true-listp) of ``good'' @(see atom)s, i.e., where each element is a
- number, a symbol, a character, or a string.</p>
-
- <p>Also see @(see atom-listp).</p>
-
- @(def good-atom-listp)")
-
 (defxdoc good-bye
   :parents (basics acl2-built-ins)
   :short "Quit entirely out of Lisp"
@@ -61906,21 +61893,18 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
   <p><b>LP8-3</b> The two recursive functions below are used in the ACL2
   sources (thus, you won't have to define them in your session).  Define
   @('packn1-loop$') that is equivalent to @('packn1') but so that it uses
-  @('loop$')s and does not mention @('good-atom-listp').</p>
+  @('loop$')s and does not mention @('atom-listp').</p>
 
   @({
-  (defun good-atom-listp (lst)
+  (defun atom-listp (lst)
     (declare (xargs :guard t
                     :mode :logic))
     (cond ((atom lst) (eq lst nil))
-          (t (and (or (acl2-numberp (car lst))
-                      (symbolp (car lst))
-                      (characterp (car lst))
-                      (stringp (car lst)))
-                  (good-atom-listp (cdr lst))))))
+          (t (and (atom (car lst))
+                  (atom-listp (cdr lst))))))
 
   (defun packn1 (lst)
-    (declare (xargs :guard (good-atom-listp lst)))
+    (declare (xargs :guard (atom-listp lst)))
     (cond ((endp lst) nil)
           (t (append (explode-atom (car lst) 10)
                      (packn1 (cdr lst))))))
@@ -103000,6 +102984,17 @@ it."
  defining event.  Thanks to Warren Hunt for discussions leading to this
  improvement.</p>
 
+ <p>The @(see guard)s for @(tsee princ$), @('prin1$'), @(see explode-atom), and
+ @('explode-atom+') have been weakened so that the first argument, @('x'), is
+ required merely to satisfy @('(atom x)') instead of being a &ldquo;good
+ atom&rdquo; &mdash; that is, instead of being either a number, a character, a
+ string, or a symbolp.  As a result, the definition bodies of @(tsee princ$),
+ @('prin1$'), and @(see explode-atom) have been tweaked slightly.  Also, the
+ guards for @('packn1'), @(tsee packn-pos), @('find-first-non-cl-symbol'), and
+ @(tsee packn) have similarly been weakened to require only @(tsee atom-listp)
+ instead of @('good-atom-listp'), and the definition of @('good-atom-listp')
+ has been removed.</p>
+
  <h3>New Features</h3>
 
  <p>The new zero-ary attachable system function, @(tsee heavy-linear-p), allows
@@ -105421,7 +105416,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   :short "Build a symbol from a list"
   :long "<p>The call @('(packn lst)') returns a symbol whose name is a
  concatenation of string representations of the atoms in the @(tsee
- good-atom-listp), @('lst').  The symbol's package is the package of the first
+ atom-listp), @('lst').  The symbol's package is the package of the first
  symbol in @('lst') whose package is not @('\"COMMON-LISP\"') if any, else
  @('\"ACL2\"').</p>")
 
