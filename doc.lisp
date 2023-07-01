@@ -77,7 +77,7 @@ Subtopics
   [defthm], [in-theory], [xargs], [state], etc., without an [47macl2::[0m
   prefix.
 
-  The constant [47m*acl2-exports*[0m lists [47m1582[0m symbols, including most
+  The constant [47m*acl2-exports*[0m lists [47m1581[0m symbols, including most
   documented ACL2 system constants, functions, and macros.  You will
   typically also want to import many symbols from Common Lisp; see
   [*common-lisp-symbols-from-main-lisp-package*].
@@ -328,12 +328,11 @@ Subtopics
        get-persistent-whs get-real-time
        get-register-invariant-risk
        get-serialize-character
-       get-slow-alist-action
-       get-timer get-wormhole-status
-       getenv$ getprop getprop-default
-       getpropc getprops getprops1 global-table
-       global-table-cars global-table-cars1
-       global-val good-atom-listp
+       get-slow-alist-action get-timer
+       get-wormhole-status getenv$ getprop
+       getprop-default getpropc getprops
+       getprops1 global-table global-table-cars
+       global-table-cars1 global-val
        good-bye granularity ground-zero gthm
        guard guard-obligation guard-theorem
        hands-off-lambda-objects-theory
@@ -3513,9 +3512,6 @@ Subtopics
 
   [Getpropc]
       Access fast property lists
-
-  [Good-atom-listp]
-      Recognizer for a true list of ``good'' [atom]s
 
   [Good-bye]
       Quit entirely out of Lisp
@@ -10523,18 +10519,13 @@ Subtopics
 Subtopics
 
   [Atom-listp]
-      Recognizer for a true list of [atom]s
-
-  [Good-atom-listp]
-      Recognizer for a true list of ``good'' [atom]s")
+      Recognizer for a true list of [atom]s")
  (ATOM-LISTP
   (ATOM LISTS ACL2-BUILT-INS)
   "Recognizer for a true list of [atom]s
 
   The predicate [47matom-listp[0m tests whether its argument is a [47m[true-listp][0m
   of [atom]s, i.e., of non-conses.
-
-  Also see [good-atom-listp].
 
   [31;1mFunction: [0m<atom-listp>
 
@@ -36500,10 +36491,7 @@ Subtopics
   [31;1mFunction: [0m<explode-atom>
 
     (defun explode-atom (x print-base)
-     (declare (xargs :guard (and (or (acl2-numberp x)
-                                     (characterp x)
-                                     (stringp x)
-                                     (symbolp x))
+     (declare (xargs :guard (and (atom x)
                                  (print-base-p print-base))))
      (cond
       ((rationalp x)
@@ -36528,7 +36516,9 @@ Subtopics
                                   '(#\\)))))))
       ((characterp x) (list x))
       ((stringp x) (coerce x 'list))
-      (t (coerce (symbol-name x) 'list))))")
+      ((symbolp x)
+       (coerce (symbol-name x) 'list))
+      (t (coerce \"SOME BAD ATOM\" 'list))))")
  (EXPLODE-NONNEGATIVE-INTEGER
   (CHARACTERS NUMBERS ACL2-BUILT-INS)
   "The list of [characters] in the radix-r form of a number
@@ -46049,26 +46039,6 @@ Subtopics
 
   [Clause-identifier]
       The internal form of a [goal-spec]")
- (GOOD-ATOM-LISTP
-  (ATOM LISTS ACL2-BUILT-INS)
-  "Recognizer for a true list of ``good'' [atom]s
-
-  The predicate [47mgood-atom-listp[0m tests whether its argument is a
-  [47m[true-listp][0m of ``good'' [atom]s, i.e., where each element is a
-  number, a symbol, a character, or a string.
-
-  Also see [atom-listp].
-
-  [31;1mFunction: [0m<good-atom-listp>
-
-    (defun good-atom-listp (lst)
-      (declare (xargs :guard t))
-      (cond ((atom lst) (eq lst nil))
-            (t (and (or (acl2-numberp (car lst))
-                        (symbolp (car lst))
-                        (characterp (car lst))
-                        (stringp (car lst)))
-                    (good-atom-listp (cdr lst))))))")
  (GOOD-BYE
   (BASICS ACL2-BUILT-INS)
   "Quit entirely out of Lisp
@@ -62251,9 +62221,6 @@ Subtopics
   [Fix-true-list]
       Coerce to a true list
 
-  [Good-atom-listp]
-      Recognizer for a true list of ``good'' [atom]s
-
   [Improper-consp]
       Recognizer for improper (non-[47mnil[0m-terminated) non-empty lists
 
@@ -69225,20 +69192,17 @@ LP8: Challenge Problems about [47mFOR[0m [47mLoop$[0m in [47mDefun[0ms
   [31;1mLP8-3[0m The two recursive functions below are used in the ACL2 sources
   (thus, you won't have to define them in your session).  Define
   [47mpackn1-loop$[0m that is equivalent to [47mpackn1[0m but so that it uses
-  [47mloop$[0ms and does not mention [47mgood-atom-listp[0m.
+  [47mloop$[0ms and does not mention [47matom-listp[0m.
 
-    (defun good-atom-listp (lst)
+    (defun atom-listp (lst)
       (declare (xargs :guard t
                       :mode :logic))
       (cond ((atom lst) (eq lst nil))
-            (t (and (or (acl2-numberp (car lst))
-                        (symbolp (car lst))
-                        (characterp (car lst))
-                        (stringp (car lst)))
-                    (good-atom-listp (cdr lst))))))
+            (t (and (atom (car lst))
+                    (atom-listp (cdr lst))))))
 
     (defun packn1 (lst)
-      (declare (xargs :guard (good-atom-listp lst)))
+      (declare (xargs :guard (atom-listp lst)))
       (cond ((endp lst) nil)
             (t (append (explode-atom (car lst) 10)
                        (packn1 (cdr lst))))))
@@ -99872,6 +99836,17 @@ Changes to Existing Features
   defining event.  Thanks to Warren Hunt for discussions leading to
   this improvement.
 
+  The [guard]s for [47m[princ$][0m, [47mprin1$[0m, [explode-atom], and [47mexplode-atom+[0m
+  have been weakened so that the first argument, [47mx[0m, is required
+  merely to satisfy [47m(atom x)[0m instead of being a ``good atom'' ---
+  that is, instead of being either a number, a character, a string,
+  or a symbolp.  As a result, the definition bodies of [47m[princ$][0m,
+  [47mprin1$[0m, and [explode-atom] have been tweaked slightly.  Also, the
+  guards for [47mpackn1[0m, [47m[packn-pos][0m, [47mfind-first-non-cl-symbol[0m, and
+  [47m[packn][0m have similarly been weakened to require only [47m[atom-listp][0m
+  instead of [47mgood-atom-listp[0m, and the definition of [47mgood-atom-listp[0m
+  has been removed.
+
 
 New Features
 
@@ -102851,9 +102826,9 @@ Subtopics
   "Build a symbol from a list
 
   The call [47m(packn lst)[0m returns a symbol whose name is a concatenation
-  of string representations of the atoms in the [47m[good-atom-listp][0m,
-  [47mlst[0m.  The symbol's package is the package of the first symbol in
-  [47mlst[0m whose package is not [47m\"COMMON-LISP\"[0m if any, else [47m\"ACL2\"[0m.")
+  of string representations of the atoms in the [47m[atom-listp][0m, [47mlst[0m.
+  The symbol's package is the package of the first symbol in [47mlst[0m
+  whose package is not [47m\"COMMON-LISP\"[0m if any, else [47m\"ACL2\"[0m.")
  (PACKN-POS
   (SYMBOLS ACL2-BUILT-INS)
   "Build a symbol in a specified package from a list
