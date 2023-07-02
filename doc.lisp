@@ -99836,16 +99836,29 @@ Changes to Existing Features
   defining event.  Thanks to Warren Hunt for discussions leading to
   this improvement.
 
-  The [guard]s for [47m[princ$][0m, [47mprin1$[0m, [explode-atom], and [47mexplode-atom+[0m
-  have been weakened so that the first argument, [47mx[0m, is required
-  merely to satisfy [47m(atom x)[0m instead of being a ``good atom'' ---
-  that is, instead of being either a number, a character, a string,
-  or a symbolp.  As a result, the definition bodies of [47m[princ$][0m,
-  [47mprin1$[0m, and [explode-atom] have been tweaked slightly.  Also, the
-  guards for [47mpackn1[0m, [47m[packn-pos][0m, [47mfind-first-non-cl-symbol[0m, and
-  [47m[packn][0m have similarly been weakened to require only [47m[atom-listp][0m
-  instead of [47mgood-atom-listp[0m, and the definition of [47mgood-atom-listp[0m
-  has been removed.
+  The [47m[guard][0ms and bodies have changed slightly for some built-in
+  function definitions, as follows.
+
+    * For functions [47m[princ$][0m, [47mprin1$[0m, [47m[explode-atom][0m, and [47mexplode-atom+[0m,
+      the guard now requires of the first argument only that it be an
+      atom; it no longer must be a ``good atom'', i.e., a number, a
+      character, a string, or a symbolp.  As a result, the definition
+      bodies of [47m[princ$][0m, [47mprin1$[0m, and [47m[explode-atom][0m have been
+      tweaked slightly.
+    * The guards for [47mpackn1[0m, [47m[packn-pos][0m, [47mfind-first-non-cl-symbol[0m, and
+      [47m[packn][0m have similarly been weakened to require only
+      [47m[atom-listp][0m instead of [47mgood-atom-listp[0m, and the definition of
+      [47mgood-atom-listp[0m has been removed.
+    * The guard for [47m(prin1$ x channel state)[0m now requires [47m(symbolp
+      channel)[0m; it was a bug that this conjunct was formerly omitted.
+    * Several functions that take [47m[state][0m had guards requiring that
+      built-in [state] globals --- those bound in
+      [47minitial-global-table[0m --- are bound in the global-table of the
+      [state] (using [47mf-boundp-global[0m or [47mboundp-global[0m).  However, the
+      predicate [47mstate-p1[0m, which recognizes ACL2 [state]s, implies
+      that these conditions all hold; so, they have been removed from
+      those guards.  Such a test has also been removed from the
+      definition of [47mmain-timer[0m.
 
 
 New Features
@@ -100032,6 +100045,12 @@ Heuristic and Efficiency Improvements
   The utility [47m[set-cbd][0m is more efficient when setting to the current
   [47m[cbd][0m, including the common case of calls to [47mset-cbd[0m by [47m[ld][0m and
   (hence) [47m[wormhole][0m.
+
+  New built-in [rewrite] rules [47mall-boundp-initial-global-table-alt[0m and
+  [47mall-boundp-initial-global-table[0m may help with reasoning about
+  [47mstate-p1[0m.  Use [47m:[0m[47m[pe][0m to see their [events].  The latter is
+  [disable]d by default and may useful to [enable] when developing
+  proofs that rely on built-in [state] globals being bound.
 
 
 Bug Fixes

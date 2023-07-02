@@ -102984,16 +102984,35 @@ it."
  defining event.  Thanks to Warren Hunt for discussions leading to this
  improvement.</p>
 
- <p>The @(see guard)s for @(tsee princ$), @('prin1$'), @(see explode-atom), and
- @('explode-atom+') have been weakened so that the first argument, @('x'), is
- required merely to satisfy @('(atom x)') instead of being a &ldquo;good
- atom&rdquo; &mdash; that is, instead of being either a number, a character, a
- string, or a symbolp.  As a result, the definition bodies of @(tsee princ$),
- @('prin1$'), and @(see explode-atom) have been tweaked slightly.  Also, the
- guards for @('packn1'), @(tsee packn-pos), @('find-first-non-cl-symbol'), and
- @(tsee packn) have similarly been weakened to require only @(tsee atom-listp)
- instead of @('good-atom-listp'), and the definition of @('good-atom-listp')
- has been removed.</p>
+ <p>The @(tsee guard)s and bodies have changed slightly for some built-in
+ function definitions, as follows.</p>
+
+ <ul>
+
+ <li>For functions @(tsee princ$), @('prin1$'), @(tsee explode-atom), and
+ @('explode-atom+'), the guard now requires of the first argument only that it
+ be an atom; it no longer must be a &ldquo;good atom&rdquo;, i.e., a number, a
+ character, a string, or a symbolp.  As a result, the definition bodies of
+ @(tsee princ$), @('prin1$'), and @(tsee explode-atom) have been tweaked
+ slightly.</li>
+
+ <li>The guards for @('packn1'), @(tsee packn-pos),
+ @('find-first-non-cl-symbol'), and @(tsee packn) have similarly been weakened
+ to require only @(tsee atom-listp) instead of @('good-atom-listp'), and the
+ definition of @('good-atom-listp') has been removed.</li>
+
+ <li>The guard for @('(prin1$ x channel state)') now requires @('(symbolp
+ channel)'); it was a bug that this conjunct was formerly omitted.</li>
+
+ <li>Several functions that take @(tsee state) had guards requiring that
+ built-in @(see state) globals &mdash; those bound in @('initial-global-table')
+ &mdash; are bound in the global-table of the @(see state) (using
+ @('f-boundp-global') or @('boundp-global')).  However, the predicate
+ @('state-p1'), which recognizes ACL2 @(see state)s, implies that these
+ conditions all hold; so, they have been removed from those guards.  Such a
+ test has also been removed from the definition of @('main-timer').</li>
+
+ </ul>
 
  <h3>New Features</h3>
 
@@ -103170,6 +103189,12 @@ it."
  <p>The utility @(tsee set-cbd) is more efficient when setting to the current
  @(tsee cbd), including the common case of calls to @('set-cbd') by @(tsee ld)
  and (hence) @(tsee wormhole).</p>
+
+ <p>New built-in @(see rewrite) rules @('all-boundp-initial-global-table-alt')
+ and @('all-boundp-initial-global-table') may help with reasoning about
+ @('state-p1').  Use @(':')@(tsee pe) to see their @(see events).  The latter
+ is @(see disable)d by default and may useful to @(see enable) when developing
+ proofs that rely on built-in @(see state) globals being bound.</p>
 
  <h3>Bug Fixes</h3>
 
