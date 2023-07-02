@@ -100367,10 +100367,10 @@ Changes at the System Level
 
   The notion of ACL2 [state] is formalized in function [47mstate-p1[0m, which
   has implicitly changed because it depends on the constant
-  *initial-global-table*, whose value has changed.  That constant's
+  [47m*initial-global-table*[0m, whose value has changed.  That constant's
   value, which is still an alist, now includes additional pairs,
-  which are from the constant *initial-ld-special-bindings*; thus,
-  *initial-global-table* now specifies a value for each so-called
+  which are from the constant [47m*initial-ld-special-bindings*[0m; thus,
+  [47m*initial-global-table*[0m now specifies a value for each so-called
   ``[47m[ld][0m special''.
 
 

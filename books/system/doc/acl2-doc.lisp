@@ -103544,10 +103544,10 @@ it."
 
  <p>The notion of ACL2 @(see state) is formalized in function @('state-p1'),
  which has implicitly changed because it depends on the constant
- *initial-global-table*, whose value has changed.  That constant's value, which
- is still an alist, now includes additional pairs, which are from the constant
- *initial-ld-special-bindings*; thus, *initial-global-table* now specifies a
- value for each so-called &ldquo;@(tsee ld) special&rdquo;.</p>
+ @('*initial-global-table*'), whose value has changed.  That constant's value,
+ which is still an alist, now includes additional pairs, which are from the
+ constant @('*initial-ld-special-bindings*'); thus, @('*initial-global-table*')
+ now specifies a value for each so-called &ldquo;@(tsee ld) special&rdquo;.</p>
 
  <h3>EMACS Support</h3>
 
