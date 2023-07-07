@@ -56630,15 +56630,17 @@ tables in the current Hons Space."
  back, because ACL2 quits immediately with exit status @('N').</p>
 
  <p>@('Ld') returns an error triple, @('(mv erp val state)').  @('Erp') is
- @('t') or @('nil') indicating whether an error is being signaled.  If no
- error is signaled, @('val') is the ``reason'' @('ld') terminated and is one
- of @(':exit') (meaning @(':')@(tsee q) was read), @(':eof') (meaning the input
+ @('t') or @('nil') indicating whether an error is being signaled.  If no error
+ is signaled, @('val') is the ``reason'' @('ld') terminated and is one of
+ @(':exit') (meaning @(':')@(tsee q) was read), @(':eof') (meaning the input
  source was exhausted), @(':error') (meaning an error occurred but has been
  suppressed), @(':filter') (meaning the @(tsee ld-pre-eval-filter) terminated
- @('ld')), or a cons pair whose first component is the symbol @(':STOP-LD'),
- which typically indicates that an error occurred while the value of variable
- @(''')@(tsee ld-error-action) was @(':RETURN!').  See @(see ld-error-action)
- for details of this last case.</p>")
+ @('ld')), @(':missing-input') (meaning that the specified input file is
+ missing, in the case that keyword @(':ld-missing-input-ok') has a non-@('nil')
+ value so that an error is avoided), or a cons pair whose first component is
+ the symbol @(':STOP-LD'), which typically indicates that an error occurred
+ while the value of variable @(''')@(tsee ld-error-action) was @(':RETURN!').
+ See @(see ld-error-action) for details of this last case.</p>")
 
 (defxdoc ld-always-skip-top-level-locals
   :parents (ld)
@@ -103038,6 +103040,10 @@ it."
  when @('(er hard ...)') is called in raw-mode).  Thanks to Eric McCarthy for
  reporting issues that led to these improvements.</p>
 
+ <p>When @(tsee ld) is invoked) with a non-@('nil') value of keyword
+ @(':ld-missing-input-ok') and the input file is missing, the value returned is
+ now @(':missing-input') instead of @(':eof').</p>
+
  <h3>New Features</h3>
 
  <p>The new zero-ary attachable system function, @(tsee heavy-linear-p), allows
@@ -103479,6 +103485,12 @@ it."
  @('\"ACL2\"') package.  The fix is to ensure that the useless-runes file is
  read while in the @('\"ACL2\"') package, which is the same package used when
  the file was written.</p>
+
+ <p>Fixed a bug in handling of the @(tsee ld) keyword
+ @(':ld-missing-input-ok'), by eliminating an error in the case that the
+ specified input file's directory does not exist.  The fix avoids executing
+ some of the @('ld') code that was formerly executed.  Thanks to Alessandro
+ Coglio and Eric Smith for bringing this bug to our attention.</p>
 
  <h3>Changes at the System Level</h3>
 
