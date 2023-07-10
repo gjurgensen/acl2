@@ -60197,10 +60197,13 @@ About Guard Verification of Lambda Objects
   (meaning [47m:[0m[47m[q][0m was read), [47m:eof[0m (meaning the input source was
   exhausted), [47m:error[0m (meaning an error occurred but has been
   suppressed), [47m:filter[0m (meaning the [47m[ld-pre-eval-filter][0m terminated
-  [47mld[0m), or a cons pair whose first component is the symbol [47m:STOP-LD[0m,
-  which typically indicates that an error occurred while the value of
-  variable [47m'[0m[47m[ld-error-action][0m was [47m:RETURN![0m.  See [ld-error-action]
-  for details of this last case.
+  [47mld[0m), [47m:missing-input[0m (meaning that the specified input file is
+  missing, in the case that keyword [47m:ld-missing-input-ok[0m has a
+  non-[47mnil[0m value so that an error is avoided), or a cons pair whose
+  first component is the symbol [47m:STOP-LD[0m, which typically indicates
+  that an error occurred while the value of variable
+  [47m'[0m[47m[ld-error-action][0m was [47m:RETURN![0m.  See [ld-error-action] for details
+  of this last case.
 
 
 Subtopics
@@ -99880,6 +99883,10 @@ Changes to Existing Features
   happens when [47m(er hard ...)[0m is called in raw-mode).  Thanks to Eric
   McCarthy for reporting issues that led to these improvements.
 
+  When [47m[ld][0m is invoked) with a non-[47mnil[0m value of keyword
+  [47m:ld-missing-input-ok[0m and the input file is missing, the value
+  returned is now [47m:missing-input[0m instead of [47m:eof[0m.
+
 
 New Features
 
@@ -100304,6 +100311,12 @@ Bug Fixes
   the [47m\"ACL2\"[0m package.  The fix is to ensure that the useless-runes
   file is read while in the [47m\"ACL2\"[0m package, which is the same package
   used when the file was written.
+
+  Fixed a bug in handling of the [47m[ld][0m keyword [47m:ld-missing-input-ok[0m, by
+  eliminating an error in the case that the specified input file's
+  directory does not exist.  The fix avoids executing some of the [47mld[0m
+  code that was formerly executed.  Thanks to Alessandro Coglio and
+  Eric Smith for bringing this bug to our attention.
 
 
 Changes at the System Level
