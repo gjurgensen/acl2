@@ -10362,7 +10362,7 @@ and @(tsee include-book)"
    :PORT-THEORIES port-theories-val
    :THMS          thms-val
    :PORT-THMS     port-thms-val
- }))
+ )})
 
  <p>The first entry in the form will always be the @(see full-book-name) of the
  certified book, @('BK'), possibly in @(see sysfile) format.</p>
@@ -125100,8 +125100,8 @@ work on <tt>(q x)</tt>.</p>
  call shown both in that log file and in a comment in file
  @('test1-input.lsp').  It shows that a @(see type-prescription) rule, named
  @('true-listp-append'), was used in the original proof but not the failed
- proof (which made the @(tsee ld) call of Step 2 above made without first
- performing Step 1, which would have introduced that type-prescription rule.
+ proof (which made the @(tsee ld) call of Step 2 above without first
+ performing Step 1, which would have introduced that type-prescription rule).
  This output also shows that the new (failed) proof attempt used many runes not
  used in the previous proof &mdash; not surprisingly, since without the rule
  @('true-listp-reverse') the prover made a desperate attempt involving
