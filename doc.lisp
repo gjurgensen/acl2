@@ -13099,26 +13099,26 @@ Subtopics
   although not necessarily in the following order, according to the
   description that follows below.
 
-    (\"...BK.lisp\"
-     :PKGS          pkgs-val
-     :BOOKS         book-val
-     :PORT-BOOKS    port-book-val
-     :CONSTS        consts-val
-     :PORT-CONSTS   port-consts-val
-     :FNS           fns-val
-     :PORT-FNS      port-fns-val
-     :LABELS        labels-val
-     :PORT-LABELS   port-labels-val
-     :MACROS        macros-val
-     :PORT-MACROS   port-macros-val
-     :STOBJS        stobjs-val
-     :PORT-STOBJS   port-stobjs-val
-     :THEORIES      theories-val
-     :PORT-THEORIES port-theories-val
-     :THMS          thms-val
-     :PORT-THMS     port-thms-val
+     (\"...BK.lisp\"
+      :PKGS          pkgs-val
+      :BOOKS         book-val
+      :PORT-BOOKS    port-book-val
+      :CONSTS        consts-val
+      :PORT-CONSTS   port-consts-val
+      :FNS           fns-val
+      :PORT-FNS      port-fns-val
+      :LABELS        labels-val
+      :PORT-LABELS   port-labels-val
+      :MACROS        macros-val
+      :PORT-MACROS   port-macros-val
+      :STOBJS        stobjs-val
+      :PORT-STOBJS   port-stobjs-val
+      :THEORIES      theories-val
+      :PORT-THEORIES port-theories-val
+      :THMS          thms-val
+      :PORT-THMS     port-thms-val
+    )
 
-)
   The first entry in the form will always be the [full-book-name] of
   the certified book, [47mBK[0m, possibly in [sysfile] format.
 
@@ -123833,10 +123833,10 @@ Finding [rune]s that were used only previously, or only now
   comment in file [47mtest1-input.lsp[0m.  It shows that a
   [type-prescription] rule, named [47mtrue-listp-append[0m, was used in the
   original proof but not the failed proof (which made the [47m[ld][0m call
-  of Step 2 above made without first performing Step 1, which would
-  have introduced that type-prescription rule.  This output also
-  shows that the new (failed) proof attempt used many runes not used
-  in the previous proof --- not surprisingly, since without the rule
+  of Step 2 above without first performing Step 1, which would have
+  introduced that type-prescription rule).  This output also shows
+  that the new (failed) proof attempt used many runes not used in the
+  previous proof --- not surprisingly, since without the rule
   [47mtrue-listp-reverse[0m the prover made a desperate attempt involving
   destructor elimination and induction.
 
