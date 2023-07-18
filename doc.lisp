@@ -73226,7 +73226,7 @@ Detailed Documentation
   its final argument.
 
   Let us refer to each specified function as the ``total'' function.  A
-  succesful invocation admits a sequence of three definitions for
+  successful invocation admits a sequence of three definitions for
   each total function, which we call the ``changed'', ``stable'', and
   ``partial'' function.  Here are those three definitions, where
   ``[47m...[0m'' denotes the formals of the partial function (that is, the
@@ -99883,7 +99883,7 @@ Changes to Existing Features
   happens when [47m(er hard ...)[0m is called in raw-mode).  Thanks to Eric
   McCarthy for reporting issues that led to these improvements.
 
-  When [47m[ld][0m is invoked) with a non-[47mnil[0m value of keyword
+  When [47m[ld][0m is invoked with a non-[47mnil[0m value of keyword
   [47m:ld-missing-input-ok[0m and the input file is missing, the value
   returned is now [47m:missing-input[0m instead of [47m:eof[0m.
 
