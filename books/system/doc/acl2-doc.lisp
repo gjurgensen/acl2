@@ -69903,7 +69903,7 @@ it."
  argument.</p>
 
  <p>Let us refer to each specified function as the ``total'' function.  A
- succesful invocation admits a sequence of three definitions for each total
+ successful invocation admits a sequence of three definitions for each total
  function, which we call the ``changed'', ``stable'', and ``partial'' function.
  Here are those three definitions, where ``@('...')'' denotes the formals of
  the partial function (that is, the formals of the total function other than
@@ -103040,7 +103040,7 @@ it."
  when @('(er hard ...)') is called in raw-mode).  Thanks to Eric McCarthy for
  reporting issues that led to these improvements.</p>
 
- <p>When @(tsee ld) is invoked) with a non-@('nil') value of keyword
+ <p>When @(tsee ld) is invoked with a non-@('nil') value of keyword
  @(':ld-missing-input-ok') and the input file is missing, the value returned is
  now @(':missing-input') instead of @(':eof').</p>
 
