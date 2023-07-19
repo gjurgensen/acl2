@@ -73226,7 +73226,7 @@ Detailed Documentation
   its final argument.
 
   Let us refer to each specified function as the ``total'' function.  A
-  succesful invocation admits a sequence of three definitions for
+  successful invocation admits a sequence of three definitions for
   each total function, which we call the ``changed'', ``stable'', and
   ``partial'' function.  Here are those three definitions, where
   ``[47m...[0m'' denotes the formals of the partial function (that is, the
@@ -99883,7 +99883,7 @@ Changes to Existing Features
   happens when [47m(er hard ...)[0m is called in raw-mode).  Thanks to Eric
   McCarthy for reporting issues that led to these improvements.
 
-  When [47m[ld][0m is invoked) with a non-[47mnil[0m value of keyword
+  When [47m[ld][0m is invoked with a non-[47mnil[0m value of keyword
   [47m:ld-missing-input-ok[0m and the input file is missing, the value
   returned is now [47m:missing-input[0m instead of [47m:eof[0m.
 
@@ -100317,6 +100317,17 @@ Bug Fixes
   directory does not exist.  The fix avoids executing some of the [47mld[0m
   code that was formerly executed.  Thanks to Alessandro Coglio and
   Eric Smith for bringing this bug to our attention.
+
+  An error formerly occurred if one first evaluated [47m(defwarrant FN)[0m for
+  some [47mFN[0m and then attempted to include a certified book containing
+  [47m(defbadge FN)[0m.  That has been fixed.  Thanks to Mertcan Temel for
+  reporting this bug.  Such a [47m[defbadge][0m event is now a no-op, which
+  is reported by an [47m[observation][0m except during [47m[include-book][0m and
+  except during the second pass of an [47m[encapsulate][0m event.  Moreover,
+  the [47m[defwarrant][0m event now returns the value [47m:WARRANTED[0m instead of
+  [47mT[0m --- more precisely, it returns a [value-triple] whose value
+  component is [47m:WARRANTED[0m --- and similarly for [47m[defbadge][0m and
+  [47m:BADGED[0m.
 
 
 Changes at the System Level
