@@ -69903,7 +69903,7 @@ it."
  argument.</p>
 
  <p>Let us refer to each specified function as the ``total'' function.  A
- succesful invocation admits a sequence of three definitions for each total
+ successful invocation admits a sequence of three definitions for each total
  function, which we call the ``changed'', ``stable'', and ``partial'' function.
  Here are those three definitions, where ``@('...')'' denotes the formals of
  the partial function (that is, the formals of the total function other than
@@ -103040,7 +103040,7 @@ it."
  when @('(er hard ...)') is called in raw-mode).  Thanks to Eric McCarthy for
  reporting issues that led to these improvements.</p>
 
- <p>When @(tsee ld) is invoked) with a non-@('nil') value of keyword
+ <p>When @(tsee ld) is invoked with a non-@('nil') value of keyword
  @(':ld-missing-input-ok') and the input file is missing, the value returned is
  now @(':missing-input') instead of @(':eof').</p>
 
@@ -103491,6 +103491,17 @@ it."
  specified input file's directory does not exist.  The fix avoids executing
  some of the @('ld') code that was formerly executed.  Thanks to Alessandro
  Coglio and Eric Smith for bringing this bug to our attention.</p>
+
+ <p>An error formerly occurred if one first evaluated @('(defwarrant FN)') for
+ some @('FN') and then attempted to include a certified book containing
+ @('(defbadge FN)').  That has been fixed.  Thanks to Mertcan Temel for
+ reporting this bug.  Such a @(tsee defbadge) event is now a no-op, which is
+ reported by an @(tsee observation) except during @(tsee include-book) and
+ except during the second pass of an @(tsee encapsulate) event.  Moreover, the
+ @(tsee defwarrant) event now returns the value @(':WARRANTED') instead of
+ @('T') &mdash; more precisely, it returns a @(see value-triple) whose value
+ component is @(':WARRANTED') &mdash; and similarly for @(tsee defbadge) and
+ @(':BADGED').</p>
 
  <h3>Changes at the System Level</h3>
 
