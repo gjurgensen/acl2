@@ -100318,6 +100318,17 @@ Bug Fixes
   code that was formerly executed.  Thanks to Alessandro Coglio and
   Eric Smith for bringing this bug to our attention.
 
+  An error formerly occurred if one first evaluated [47m(defwarrant FN)[0m for
+  some [47mFN[0m and then attempted to include a certified book containing
+  [47m(defbadge FN)[0m.  That has been fixed.  Thanks to Mertcan Temel for
+  reporting this bug.  Such a [47m[defbadge][0m event is now a no-op, which
+  is reported by an [47m[observation][0m except during [47m[include-book][0m and
+  except during the second pass of an [47m[encapsulate][0m event.  Moreover,
+  the [47m[defwarrant][0m event now returns the value [47m:WARRANTED[0m instead of
+  [47mT[0m --- more precisely, it returns a [value-triple] whose value
+  component is [47m:WARRANTED[0m --- and similarly for [47m[defbadge][0m and
+  [47m:BADGED[0m.
+
 
 Changes at the System Level
 

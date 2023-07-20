@@ -103492,6 +103492,17 @@ it."
  some of the @('ld') code that was formerly executed.  Thanks to Alessandro
  Coglio and Eric Smith for bringing this bug to our attention.</p>
 
+ <p>An error formerly occurred if one first evaluated @('(defwarrant FN)') for
+ some @('FN') and then attempted to include a certified book containing
+ @('(defbadge FN)').  That has been fixed.  Thanks to Mertcan Temel for
+ reporting this bug.  Such a @(tsee defbadge) event is now a no-op, which is
+ reported by an @(tsee observation) except during @(tsee include-book) and
+ except during the second pass of an @(tsee encapsulate) event.  Moreover, the
+ @(tsee defwarrant) event now returns the value @(':WARRANTED') instead of
+ @('T') &mdash; more precisely, it returns a @(see value-triple) whose value
+ component is @(':WARRANTED') &mdash; and similarly for @(tsee defbadge) and
+ @(':BADGED').</p>
+
  <h3>Changes at the System Level</h3>
 
  <p>The `@('make')' target, @('save-exec'), now builds @('custom-saved_acl2')
