@@ -11762,7 +11762,10 @@ with any questions about building the community books.</p>")
  Advanced users may, on occasion, see the need to do so.  Evaluating
  @('(break$)') will have that effect.  (Exception: @('break$') is disabled
  after evaluation of @('(set-debugger-enable :never)'); see @(see
- set-debugger-enable).)  @('Break$') returns @('nil').</p>
+ set-debugger-enable).)  @('Break$') returns @('nil').  Note that upon
+ returning to the ACL2 read-eval-print loop (for example, using @(':q') if the
+ host Lisp is CCL), one will be at the top level even if one had been inside a
+ recursive call of @(tsee ld) or a @(see wormhole).</p>
 
  @(def break$)")
 
@@ -11998,7 +12001,7 @@ with any questions about building the community books.</p>")
  is enabled in a break, it nevertheless is again disabled upon exiting the
  break.  However, the association of values with iprint indices persists even
  after exiting the break; that is, you can still obtain their values, and if
- you re-enable ipritning then indices will be generated from where they left
+ you re-enable iprinting then indices will be generated from where they left
  off rather than returning to index 1.  The other exception pertains to setting
  the @(tsee brr-evisc-tuple) while inside break-rewrite: the effects persist.
  See @(tsee set-brr-evisc-tuple).</p>
@@ -102573,6 +102576,14 @@ it."
 ; - fmt-ppr: eliminated termp
 ; - defun-ctx: eliminated event-form and state
 
+; As part of the brr work, wormhole1 has been modified, in particular to remove
+; a call of bind-acl2-time-limit there.  That was the only call of
+; bind-acl2-time-limit that took its optional argument, so that argument has
+; been deleted from the definition of bind-acl2-time-limit.  Related
+; modifications were made to our-abort and break$.  Release was approved by
+; DARPA with "DISTRIBUTION STATEMENT A. Approved for public
+; release. Distribution is unlimited."
+
   :parents (release-notes)
   :short "ACL2 Version  8.6 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -102586,13 +102597,29 @@ it."
  category, though of course many changes could be placed in more than one
  category.</p>
 
+ <p><i>DARPA Note.</i>  The following statement applies to items below that are
+ marked with &ldquo;See DARPA Note above&rdquo;: Release was approved by
+ DARPA with &ldquo;DISTRIBUTION STATEMENT A. Approved for public
+ release. Distribution is unlimited.&rdquo;</p>
+
  <p>Note that only ACL2 system changes are listed below.  See also @(see
  note-8-5-books) for a summary of changes made to the ACL2 Community Books
  since ACL2 8.5, including the build system.  Also note that with each release,
  it is typical that the value of constant @(tsee *acl2-exports*) has been
  extended, and that some built-in functions that were formerly in @(':')@(tsee
  program) mode are now @(see guard)-verified @(':')@(tsee logic) mode
- functions.</p>
+ functions.  For this release the following are particularly significant.</p>
+
+ <ul>
+
+ <li>@('One-way-unify') (see @('books/system/brr-near-missp.lisp'))</li>
+
+ <li>@(tsee Genvar) (see @('books/system/brr-near-missp.lisp'))</li>
+
+ <li>@('Eviscerate-top'), towards the @(tsee fmt) family of functions (see
+ @('books/system/eviscerate-top.lisp'))  [See DARPA Note above.]</li>
+
+ </ul>
 
  <h3>Changes to Existing Features</h3>
 
@@ -102972,9 +102999,8 @@ it."
  runes is locally bound by @('break-rewrite'), so that while it can be changed
  in inferior breaks, when control returns to superior levels (and to the
  top-level) the list of monitored runes is unchanged.  Related changes are
- discussed in the following three items.  Note that for this work, including
- the three items just below: Release was approved by DARPA with ``DISTRIBUTION
- STATEMENT A. Approved for public release. Distribution is unlimited.''</p>
+ discussed in the following three items.  [See DARPA Note above for this work,
+ including the following three items.]</p>
 
  <ul>
 
@@ -102991,6 +103017,22 @@ it."
  brr-evisc-tuple) is available instead.</li>
 
  </ul>
+
+ <p>The definition of bounded-integer-alistp has been modified by adding a
+ guard @('(posp n)') and removing the @('(integerp n)') test from the body of
+ its @(tsee defun).  [See DARPA Note above.]</p>
+
+ <p>As before, when calling @(tsee break$) from a @(see wormhole) &mdash; for
+ example when inside @(see break-rewrite) &mdash; one is left at a raw Lisp
+ prompt.  However, when returning from that prompt (e.g., with @(':q') if the
+ host Lisp is CCL), one no longer stays in the wormhole, as noted by a message,
+ &ldquo;Aborting to top level from a wormhole break (see :DOC
+ wormhole).&rdquo;  [See DARPA Note above.]</p>
+
+ <p>The function @('iprint-oracle-updates'), which is called by @(tsee
+ read-object), is now @(see disable)d, because it was made more complicated
+ to accommodate the conversion of function @('eviscerate-top') into
+ @(':')@(tsee logic) mode.  [See DARPA Note above.]</p>
 
  <p>The utilities @(':')@(tsee pe) and @(':')@(tsee pr) now provide more useful
  output when applied to function symbols that are built into ACL2 without a
@@ -103181,7 +103223,7 @@ it."
  <p>New utilities allow one to explore what has changed when an event fails in
  a book that formerly certified.  See @(see saving-event-data).  Thanks to Eric
  Smith for requesting such a capability and for helpful bug reports for early
- versions of these utilities..</p>
+ versions of these utilities.</p>
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
@@ -103523,9 +103565,8 @@ it."
  Thanks to Eric Smith for suggesting this enhancement.</p>
 
  <p>Significant new @(see documentation) topics, together with subtopics and
- books supporting those topics, include the following.  Release was approved by
- DARPA with &ldquo;DISTRIBUTION STATEMENT A. Approved for public
- release. Distribution is unlimited.&rdquo;</p>
+ books supporting those topics, include the following.  [See DARPA Note
+ above.]</p>
 
  <ul>
 
@@ -103600,8 +103641,7 @@ it."
 
  <p>A set of tools for assisting in the conversion of certain HTML to @(tsee
  XDOC) may be found, without much documentation, in @('emacs/html-to-xdoc.el').
- Note that its release was approved by DARPA with &ldquo;DISTRIBUTION STATEMENT
- A. Approved for public release. Distribution is unlimited.&rdquo;</p>
+ [See DARPA Note above.]</p>
 
  <p>When new @(see acl2-doc) buffers are created by using the @('G') or
  @('Shift-<Return>') commands, their name reflects the topic name, e.g.,
@@ -103642,6 +103682,10 @@ it."
  and @('S'), &ldquo;go to that topic with the cursor put immediately after the
  found text&rdquo;.  But the cursor was at the end of the found text, not
  immediately after it.  That has been fixed.</p>
+
+ <p>For the @(see acl2-doc) browser, the download (@('D')) command now
+ accesses, by default, an @('https') address instead of an @('http') address.
+ Thanks to Warren Hunt for suggesting this change.</p>
 
  <h3>Experimental Versions</h3>
 
