@@ -14580,7 +14580,10 @@ Subtopics
   Advanced users may, on occasion, see the need to do so.  Evaluating
   [47m(break$)[0m will have that effect.  (Exception: [47mbreak$[0m is disabled
   after evaluation of [47m(set-debugger-enable :never)[0m; see
-  [set-debugger-enable].)  [47mBreak$[0m returns [47mnil[0m.
+  [set-debugger-enable].)  [47mBreak$[0m returns [47mnil[0m.  Note that upon
+  returning to the ACL2 read-eval-print loop (for example, using [47m:q[0m
+  if the host Lisp is CCL), one will be at the top level even if one
+  had been inside a recursive call of [47m[ld][0m or a [wormhole].
 
   [31;1mFunction: [0m<break$>
 
@@ -14805,7 +14808,7 @@ Subtopics
   disabled upon exiting the break.  However, the association of
   values with iprint indices persists even after exiting the break;
   that is, you can still obtain their values, and if you re-enable
-  ipritning then indices will be generated from where they left off
+  iprinting then indices will be generated from where they left off
   rather than returning to index 1.  The other exception pertains to
   setting the [47m[brr-evisc-tuple][0m while inside break-rewrite: the
   effects persist.  See [47m[set-brr-evisc-tuple][0m.
@@ -99458,13 +99461,24 @@ Experimental Versions
   Each change is described in just one category, though of course
   many changes could be placed in more than one category.
 
+  [3mDARPA Note.[0m The following statement applies to items below that are
+  marked with ``See DARPA Note above'': Release was approved by DARPA
+  with ``DISTRIBUTION STATEMENT A. Approved for public release.
+  Distribution is unlimited.''
+
   Note that only ACL2 system changes are listed below.  See also
   [note-8-5-books] for a summary of changes made to the ACL2
   Community Books since ACL2 8.5, including the build system.  Also
   note that with each release, it is typical that the value of
   constant [47m[*ACL2-exports*][0m has been extended, and that some built-in
   functions that were formerly in [47m:[0m[47m[program][0m mode are now
-  [guard]-verified [47m:[0m[47m[logic][0m mode functions.
+  [guard]-verified [47m:[0m[47m[logic][0m mode functions.  For this release the
+  following are particularly significant.
+
+    * [47mOne-way-unify[0m (see [47mbooks/system/brr-near-missp.lisp[0m)
+    * [47m[Genvar][0m (see [47mbooks/system/brr-near-missp.lisp[0m)
+    * [47mEviscerate-top[0m, towards the [47m[fmt][0m family of functions (see
+      [47mbooks/system/eviscerate-top.lisp[0m) [See DARPA Note above.]
 
 
 Changes to Existing Features
@@ -99825,10 +99839,9 @@ Changes to Existing Features
   runes is locally bound by [47mbreak-rewrite[0m, so that while it can be
   changed in inferior breaks, when control returns to superior levels
   (and to the top-level) the list of monitored runes is unchanged.
-  Related changes are discussed in the following three items.  Note
-  that for this work, including the three items just below: Release
-  was approved by DARPA with ``DISTRIBUTION STATEMENT A. Approved for
-  public release. Distribution is unlimited.''
+  Related changes are discussed in the following three items.  [See
+  DARPA Note above for this work, including the following three
+  items.]
 
     * The [47m[brr][0m-command [47m:[0m[47m[p!][0m (see [brr-commands]) has been redefined so
       that in [break-rewrite] it is a no-op.  (Actually, it did not
@@ -99839,6 +99852,22 @@ Changes to Existing Features
       [47m[get-persistent-whs][0m.
     * The macro [47mshow-brr-evisc-tuple[0m has been eliminated, but
       [47m[brr-evisc-tuple][0m is available instead.
+
+  The definition of bounded-integer-alistp has been modified by adding
+  a guard [47m(posp n)[0m and removing the [47m(integerp n)[0m test from the body
+  of its [47m[defun][0m.  [See DARPA Note above.]
+
+  As before, when calling [47m[break$][0m from a [wormhole] --- for example
+  when inside [break-rewrite] --- one is left at a raw Lisp prompt.
+  However, when returning from that prompt (e.g., with [47m:q[0m if the host
+  Lisp is CCL), one no longer stays in the wormhole, as noted by a
+  message, ``Aborting to top level from a wormhole break (see :DOC
+  wormhole).'' [See DARPA Note above.]
+
+  The function [47miprint-oracle-updates[0m, which is called by [47m[read-object][0m,
+  is now [disable]d, because it was made more complicated to
+  accommodate the conversion of function [47meviscerate-top[0m into [47m:[0m[47m[logic][0m
+  mode.  [See DARPA Note above.]
 
   The utilities [47m:[0m[47m[pe][0m and [47m:[0m[47m[pr][0m now provide more useful output when
   applied to function symbols that are built into ACL2 without a
@@ -100030,7 +100059,7 @@ New Features
   New utilities allow one to explore what has changed when an event
   fails in a book that formerly certified.  See [saving-event-data].
   Thanks to Eric Smith for requesting such a capability and for
-  helpful bug reports for early versions of these utilities..
+  helpful bug reports for early versions of these utilities.
 
 
 Heuristic and Efficiency Improvements
@@ -100351,9 +100380,8 @@ Changes at the System Level
   enhancement.
 
   Significant new [documentation] topics, together with subtopics and
-  books supporting those topics, include the following.  Release was
-  approved by DARPA with ``DISTRIBUTION STATEMENT A. Approved for
-  public release. Distribution is unlimited.''
+  books supporting those topics, include the following.  [See DARPA
+  Note above.]
 
     * [Start-here] provides a guide for those getting started with ACL2.
     * [Recursion-and-induction] has been extensively modified from past,
@@ -100422,9 +100450,7 @@ EMACS Support
 
   A set of tools for assisting in the conversion of certain HTML to
   [47m[xdoc][0m may be found, without much documentation, in
-  [47memacs/html-to-xdoc.el[0m.  Note that its release was approved by DARPA
-  with ``DISTRIBUTION STATEMENT A. Approved for public release.
-  Distribution is unlimited.''
+  [47memacs/html-to-xdoc.el[0m.  [See DARPA Note above.]
 
   When new [ACL2-doc] buffers are created by using the [47mG[0m or
   [47mShift-<Return>[0m commands, their name reflects the topic name, e.g.,
