@@ -103683,6 +103683,10 @@ it."
  found text&rdquo;.  But the cursor was at the end of the found text, not
  immediately after it.  That has been fixed.</p>
 
+ <p>For the @(see acl2-doc) browser, the download (@('D')) command now
+ accesses, by default, an @('https') address instead of an @('http') address.
+ Thanks to Warren Hunt for suggesting this change.</p>
+
  <h3>Experimental Versions</h3>
 
  <p>The note &ldquo;Note: No checkpoints to print.&rdquo; that might be printed
