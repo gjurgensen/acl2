@@ -100489,6 +100489,10 @@ EMACS Support
   text''.  But the cursor was at the end of the found text, not
   immediately after it.  That has been fixed.
 
+  For the [ACL2-doc] browser, the download ([47mD[0m) command now accesses, by
+  default, an [47mhttps[0m address instead of an [47mhttp[0m address.  Thanks to
+  Warren Hunt for suggesting this change.
+
 
 Experimental Versions
 
