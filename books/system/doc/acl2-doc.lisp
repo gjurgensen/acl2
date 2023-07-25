@@ -66627,7 +66627,7 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
 
  <li>@('Fn') must be a function symbol of the current ACL2 @(see world) other
  than @('if'), whose arity is equal to the length of the true-list,
- @('arglist').:</li>
+ @('arglist').</li>
 
  <li>@('Fn') must not have any @('stobj') inputs or be a stobj creator.</li>
 
