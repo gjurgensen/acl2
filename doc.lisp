@@ -69984,7 +69984,7 @@ Subtopics
 
     * [47mFn[0m must be a function symbol of the current ACL2 [world] other than
       [47mif[0m, whose arity is equal to the length of the true-list,
-      [47marglist[0m.:
+      [47marglist[0m.
     * [47mFn[0m must not have any [47mstobj[0m inputs or be a stobj creator.
     * Calls of [47mfn[0m must not require a trust tag (see [defttag]).
     * [47mFn[0m must not be untouchable (see [push-untouchable]).
