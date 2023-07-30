@@ -4579,7 +4579,7 @@ Silent loading of ACL2 customization files
 
     :verify-guards-eagerness
 
-  an integer between 0 and 2 indicating how eager the system is to
+  an integer between 0 and 3 indicating how eager the system is to
   verify the [guard]s of a [defun] event.  See
   [set-verify-guards-eagerness].
 
@@ -100061,6 +100061,15 @@ New Features
   Thanks to Eric Smith for requesting such a capability and for
   helpful bug reports for early versions of these utilities.
 
+  A new legal value for [47m[set-verify-guards-eagerness][0m, [47m3[0m, causes guard
+  verification even when [47m:verify-guards nil[0m has been [declare]d.
+  This can be helpful when a [47m[verify-termination][0m event in a book is
+  intended to verify [guard]s but a [local]ly included book declares
+  [47m:verify-guards nil[0m in the corresponding [47mverify-termination[0m event.
+  (Technical note: That issue occurs because [47mverify-termimnation[0m
+  invokes [47m[make-event][0m, and the expansion is saved when locally
+  including the sub-book.)
+
 
 Heuristic and Efficiency Improvements
 
@@ -128735,6 +128744,7 @@ Subtopics
     (set-verify-guards-eagerness 0) ; no, unless :verify-guards t
     (set-verify-guards-eagerness 1) ; yes if :guard, type or :stobjs is supplied
     (set-verify-guards-eagerness 2) ; yes, unless :verify-guards nil
+    (set-verify-guards-eagerness 3) ; yes
 
   Note: This is an event!  It does not print the usual event [summary]
   but nevertheless changes the ACL2 logical [world] and is so
@@ -128743,8 +128753,8 @@ Subtopics
     General Form:
     (set-verify-guards-eagerness n)
 
-  where [47mn[0m is a variable-free term that evaluates to [47m0[0m, [47m1[0m, or [47m2[0m.  This
-  macro is essentially equivalent to
+  where [47mn[0m is a variable-free term that evaluates to [47m0[0m, [47m1[0m, [47m2[0m, or [47m3[0m.
+  This macro is essentially equivalent to
 
     (table acl2-defaults-table :verify-guards-eagerness n)
 
@@ -128754,22 +128764,23 @@ Subtopics
   output results from a [47mset-verify-guards-eagerness[0m event.
 
   [47mSet-verify-guards-eagerness[0m may be thought of as an event that merely
-  sets a flag to [47m0[0m, [47m1[0m, or [47m2[0m.  The flag is used by certain [47m[defun][0m
+  sets a flag to [47m0[0m, [47m1[0m, [47m2[0m, or [47m3[0m.  The flag is used by certain [47m[defun][0m
   [events] to determine whether [guard] verification is tried.  The
-  flag is irrelevant to those [47m[defun][0m [events] in [47m:[0m[47m[program][0m mode and
-  to those [47m[defun][0m [events] in which an explicit [47m:[0m[47m[verify-guards][0m
-  setting is provided among the [47m[xargs][0m.  In the former case, [guard]
+  flag is irrelevant to those [47m[defun][0m [events] in [47m:[0m[47m[program][0m mode.
+  It is also irrelevant to those [47m[defun][0m [events] in which an
+  explicit [47m:[0m[47m[verify-guards][0m setting is provided among the [47m[xargs][0m,
+  except when the flag is [47m3[0m.  In the [47m:[0m[47m[program][0m mode case, [guard]
   verification is not done because it can only be done when logical
-  functions are being defined.  In the latter case, the explicit
-  [47m:[0m[47m[verify-guards][0m setting determines whether [guard] verification is
-  tried.  So consider a [47m:[0m[47m[logic][0m mode [47m[defun][0m in which no
-  [47m:[0m[47m[verify-guards][0m setting is provided.  Is [guard] verification
-  tried?  The answer depends on the eagerness setting as follows.  If
-  the eagerness is [47m0[0m, [guard] verification is not tried.  If the
-  eagerness is [47m1[0m, it is tried if and only if a guard is explicitly
-  specified in the [47m[defun][0m, in the following sense: there is an [47mxargs[0m
-  keyword [47m:guard[0m or [47m:stobjs[0m or a [47m[type][0m declaration.  If the
-  eagerness is [47m2[0m, [guard] verification is tried.
+  functions are being defined.  Otherwise, unless the flag is [47m3[0m, the
+  explicit [47m:[0m[47m[verify-guards][0m setting determines whether [guard]
+  verification is tried.  So consider a [47m:[0m[47m[logic][0m mode [47m[defun][0m in
+  which no [47m:[0m[47m[verify-guards][0m setting is provided.  Is [guard]
+  verification tried?  The answer depends on the eagerness setting as
+  follows.  If the eagerness is [47m0[0m, [guard] verification is not tried.
+  If the eagerness is [47m1[0m, it is tried if and only if a guard is
+  explicitly specified in the [47m[defun][0m, in the following sense: there
+  is an [47mxargs[0m keyword [47m:guard[0m or [47m:stobjs[0m or a [47m[type][0m declaration.  If
+  the eagerness is [47m2[0m or [47m3[0m, [guard] verification is tried.
 
   The above remarks apply to [47m[verify-termination][0m [events], according
   to whether guards are explicitly specified in the existing,
