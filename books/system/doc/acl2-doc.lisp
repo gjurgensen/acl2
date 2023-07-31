@@ -2204,7 +2204,7 @@
   :verify-guards-eagerness
  })
 
- <p>an integer between 0 and 2 indicating how eager the system is to verify the
+ <p>an integer between 0 and 3 indicating how eager the system is to verify the
  @(see guard)s of a @(see defun) event.  See @(see
  set-verify-guards-eagerness).</p>
 
@@ -103225,6 +103225,15 @@ it."
  Smith for requesting such a capability and for helpful bug reports for early
  versions of these utilities.</p>
 
+ <p>A new legal value for @(tsee set-verify-guards-eagerness), @('3'), causes
+ guard verification even when @(':verify-guards nil') has been @(see declare)d.
+ This can be helpful when a @(tsee verify-termination) event in a book is
+ intended to verify @(see guard)s but a @(see local)ly included book declares
+ @(':verify-guards nil') in the corresponding @('verify-termination')
+ event.  (Technical note: That issue occurs because @('verify-termimnation')
+ invokes @(tsee make-event), and the expansion is saved when locally including
+ the sub-book.)</p>
+
  <h3>Heuristic and Efficiency Improvements</h3>
 
  <p>Added a &ldquo;desperation heuristic&rdquo; to compute a stronger context,
@@ -130202,6 +130211,7 @@ work on <tt>(q x)</tt>.</p>
   (set-verify-guards-eagerness 0) ; no, unless :verify-guards t
   (set-verify-guards-eagerness 1) ; yes if :guard, type or :stobjs is supplied
   (set-verify-guards-eagerness 2) ; yes, unless :verify-guards nil
+  (set-verify-guards-eagerness 3) ; yes
  })
 
  <p>Note: This is an event!  It does not print the usual event @(see summary)
@@ -130212,8 +130222,8 @@ work on <tt>(q x)</tt>.</p>
   (set-verify-guards-eagerness n)
  })
 
- <p>where @('n') is a variable-free term that evaluates to @('0'), @('1'), or
- @('2').  This macro is essentially equivalent to</p>
+ <p>where @('n') is a variable-free term that evaluates to @('0'), @('1'),
+ @('2'), or @('3').  This macro is essentially equivalent to</p>
 
  @({
   (table acl2-defaults-table :verify-guards-eagerness n)
@@ -130225,22 +130235,24 @@ work on <tt>(q x)</tt>.</p>
  table)), no output results from a @('set-verify-guards-eagerness') event.</p>
 
  <p>@('Set-verify-guards-eagerness') may be thought of as an event that merely
- sets a flag to @('0'), @('1'), or @('2').  The flag is used by certain @(tsee
- defun) @(see events) to determine whether @(see guard) verification is tried.
- The flag is irrelevant to those @(tsee defun) @(see events) in @(':')@(tsee
- program) mode and to those @(tsee defun) @(see events) in which an explicit
- @(':')@(tsee verify-guards) setting is provided among the @(tsee xargs).  In
- the former case, @(see guard) verification is not done because it can only be
- done when logical functions are being defined.  In the latter case, the
- explicit @(':')@(tsee verify-guards) setting determines whether @(see guard)
- verification is tried.  So consider a @(':')@(tsee logic) mode @(tsee defun)
- in which no @(':')@(tsee verify-guards) setting is provided.  Is @(see guard)
- verification tried?  The answer depends on the eagerness setting as follows.
- If the eagerness is @('0'), @(see guard) verification is not tried.  If the
- eagerness is @('1'), it is tried if and only if a guard is explicitly
- specified in the @(tsee defun), in the following sense: there is an @('xargs')
- keyword @(':guard') or @(':stobjs') or a @(tsee type) declaration.  If the
- eagerness is @('2'), @(see guard) verification is tried.</p>
+ sets a flag to @('0'), @('1'), @('2'), or @('3').  The flag is used by certain
+ @(tsee defun) @(see events) to determine whether @(see guard) verification is
+ tried.  The flag is irrelevant to those @(tsee defun) @(see events) in
+ @(':')@(tsee program) mode.  It is also irrelevant to those @(tsee defun)
+ @(see events) in which an explicit @(':')@(tsee verify-guards) setting is
+ provided among the @(tsee xargs), except when the flag is @('3').  In the
+ @(':')@(tsee program) mode case, @(see guard) verification is not done because
+ it can only be done when logical functions are being defined.  Otherwise,
+ unless the flag is @('3'), the explicit @(':')@(tsee verify-guards) setting
+ determines whether @(see guard) verification is tried.  So consider a
+ @(':')@(tsee logic) mode @(tsee defun) in which no @(':')@(tsee verify-guards)
+ setting is provided.  Is @(see guard) verification tried?  The answer depends
+ on the eagerness setting as follows.  If the eagerness is @('0'), @(see guard)
+ verification is not tried.  If the eagerness is @('1'), it is tried if and
+ only if a guard is explicitly specified in the @(tsee defun), in the following
+ sense: there is an @('xargs') keyword @(':guard') or @(':stobjs') or a @(tsee
+ type) declaration.  If the eagerness is @('2') or @('3'), @(see guard)
+ verification is tried.</p>
 
  <p>The above remarks apply to @(tsee verify-termination) @(see events),
  according to whether guards are explicitly specified in the existing,
