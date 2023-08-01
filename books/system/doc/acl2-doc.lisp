@@ -103277,6 +103277,13 @@ it."
  is @(see disable)d by default and may useful to @(see enable) when developing
  proofs that rely on built-in @(see state) globals being bound.</p>
 
+ <p>ACL2 has a procedure for evaluating ground @(see term)s (terms without free
+ variables) that is used in the generation of @(see guard) obligations as well
+ as in @(see linear-arithmetic) and @(see forward-chaining).  This procedure
+ was not used on subterms of bodies of @(see lambda) expressions, but now it
+ is.  Thanks to Eric Smith for requesting this enhancement (in particular for
+ generation of guard obligations).</p>
+
  <h3>Bug Fixes</h3>
 
  <p>Fixed a soundness bug based on rules of class @(':')@(tsee meta) or

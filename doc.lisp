@@ -100117,6 +100117,14 @@ Heuristic and Efficiency Improvements
   [disable]d by default and may useful to [enable] when developing
   proofs that rely on built-in [state] globals being bound.
 
+  ACL2 has a procedure for evaluating ground [term]s (terms without
+  free variables) that is used in the generation of [guard]
+  obligations as well as in [linear-arithmetic] and
+  [forward-chaining].  This procedure was not used on subterms of
+  bodies of [lambda] expressions, but now it is.  Thanks to Eric
+  Smith for requesting this enhancement (in particular for generation
+  of guard obligations).
+
 
 Bug Fixes
 
