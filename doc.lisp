@@ -15605,8 +15605,7 @@ Subtopics
   This is a system function that determine whether a failed match of a
   monitored rule constitutes a near miss.
 
-  [31;1mNote:[0mOur intention is to make this function attachable (see
-  [defattach]).
+  [31;1mNote:[0mThis function is attachable (see [defattach]).
 
     General Form:
     (brr-near-missp msgp lemma target rcnst criteria-alist)
@@ -33300,11 +33299,26 @@ Miscellaneous efficiency ideas
   function symbol in [47mthm1[0m.
 
   Remark on return value.  As with all [events], a call of [47mencapsulate[0m
-  returns an [error-triple], [47m(mv erp val state)[0m, where [47merp[0m is nil
-  when the event is successfully admitted.  In that case, [47mval[0m is [47mt[0m if
-  the list of signatures is [47mnil[0m; [47mval[0m is [47mfn[0m if there is a single
-  signature, which introduces the function symbol, [47mfn[0m; and otherwise
-  is the list of function symbols introduced in the signatures.
+  returns an [error-triple], [47m(mv erp val state)[0m, where [47merp[0m is [47mnil[0m
+  when the event is redundant or is successfully admitted.  When [47merp[0m
+  is [47mnil[0m, the value [47mval[0m, which is typically printed after a space, is
+  determined as follows.
+
+    * If the [47mencapsulate[0m event is [redundant], then [47mval[0m is [47m:redundant[0m.
+    * Otherwise, if no new events are introduced, then [47mval[0m is
+      [47m:empty-encapsulate[0m.
+    * Otherwise, if the last sub-event in the final pass of the [47mencapsulate[0m
+      form evaluates to [47m(mv nil '(:return-value x)[0m) for some [47mx[0m, [47mval[0m
+      is [47mx[0m.  Note that this can be accomplished by placing the form
+      [47m(value-triple '(:return-value x) :on-skip-proofs t)[0m as the
+      final form in the [47mencapsulate[0m, but since proofs are skipped
+      during that pass, the argument [47m:on-skip-proofs t[0m is necessary
+      for [47mval[0m to be [47mx[0m.
+    * Otherwise, if the list of [signature]s is [47mnil[0m then [47mval[0m is [47mt[0m.
+    * Otherwise, if there is a single signature introducing the function
+      symbol, [47mfn[0m, then [47mval[0m is [47mfn[0m.
+    * Otherwise, [47mval[0m is the list of function symbols introduced in the list
+      of signatures.
 
   Remark on implicit [constraint]s (unknown-constraints).  See
   [partial-encapsulate] for a related utility that allows some of the
@@ -33319,20 +33333,6 @@ Miscellaneous efficiency ideas
   (respectively, non-classical) [47m[local][0m witness functions.  A related
   requirement applies to functional instantiation; see
   [lemma-instance].
-
-  Remark on the value returned.  As with all [embedded-event-form]s, a
-  successful call of [47mencapsulate[0m returns an [error-triple] of the
-  form [47m(mv nil val state)[0m.  By default, you will therefore see [47mval[0m
-  printed, preceded by a space, before the next prompt is printed.
-  But what is that value returned, [47mval[0m?  If the value returned by the
-  final event [47mevent-k[0m in the second (or sole) pass through the
-  [47m[encapsulate][0m event is of the form [47m(:return-value name)[0m --- for
-  example, if [47mevent-k[0m is [47m(value-triple '(:return-value name)
-  :on-skip-proofs t)[0m --- then that [47mname[0m is the value returned for the
-  [47mencapsulate[0m.  Otherwise, if the [signature] list is non-empty, then
-  the value returned is the list of names introduced by the
-  signatures except when there is just one name, in which case the
-  value returned is that name.  Otherwise, the value returned is [47mT[0m.
 
 
 Subtopics
@@ -99915,6 +99915,12 @@ Changes to Existing Features
   When [47m[ld][0m is invoked with a non-[47mnil[0m value of keyword
   [47m:ld-missing-input-ok[0m and the input file is missing, the value
   returned is now [47m:missing-input[0m instead of [47m:eof[0m.
+
+  When [47m[defbadge][0m is applied to a function symbol that is built into
+  ACL2 with a [badge], such as [47m[nth][0m, the result is a no-op and an
+  [observation] is printed to that effect.  (Formerly the [47mbadge-table[0m
+  was needlessly extended and ACL2 reported that the function symbol
+  was being given a badge.)
 
 
 New Features
