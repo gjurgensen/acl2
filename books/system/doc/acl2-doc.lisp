@@ -12624,8 +12624,7 @@ with any questions about building the community books.</p>")
   :long "<p>This is a system function that determine whether a failed match of
   a monitored rule constitutes a near miss.</p>
 
-  <p><b>Note:</b>Our intention is to make this function attachable (see @(see
-  defattach)).</p>
+  <p><b>Note:</b>This function is attachable (see @(see defattach)).</p>
 
   @({
   General Form:
@@ -30132,11 +30131,35 @@ ld) and @(tsee include-book)"
 
  <p>Remark on return value.  As with all @(see events), a call of
  @('encapsulate') returns an @(see error-triple), @('(mv erp val state)'),
- where @('erp') is nil when the event is successfully admitted.  In that case,
- @('val') is @('t') if the list of signatures is @('nil'); @('val') is @('fn')
- if there is a single signature, which introduces the function symbol, @('fn');
- and otherwise is the list of function symbols introduced in the
- signatures.</p>
+ where @('erp') is @('nil') when the event is redundant or is successfully
+ admitted.  When @('erp') is @('nil'), the value @('val'), which is typically
+ printed after a space, is determined as follows.</p>
+
+ <ul>
+
+ <li>If the @('encapsulate') event is @(see redundant), then @('val') is
+ @(':redundant').</li>
+
+ <li>Otherwise, if no new events are introduced, then @('val') is
+ @(':empty-encapsulate').</li>
+
+ <li>Otherwise, if the last sub-event in the final pass of the @('encapsulate')
+ form evaluates to @('(mv nil '(:return-value x)')) for some @('x'), @('val')
+ is @('x').  Note that this can be accomplished by placing the form
+ @('(value-triple '(:return-value x) :on-skip-proofs t)') as the final form in
+ the @('encapsulate'), but since proofs are skipped during that pass, the
+ argument @(':on-skip-proofs t') is necessary for @('val') to be @('x').</li>
+
+ <li>Otherwise, if the list of @(see signature)s is @('nil') then @('val') is
+ @('t').</li>
+
+ <li>Otherwise, if there is a single signature introducing the function symbol,
+ @('fn'), then @('val') is @('fn').</li>
+
+ <li>Otherwise, @('val') is the list of function symbols introduced in the list
+ of signatures.</li>
+
+ </ul>
 
  <p>Remark on implicit @(see constraint)s (unknown-constraints).  See @(see
  partial-encapsulate) for a related utility that allows some of the constraints
@@ -30149,21 +30172,7 @@ ld) and @(tsee include-book)"
  the signatures; see @(see signature).  Those marked as classical (respectively
  non-classical) must have classical (respectively, non-classical) @(tsee local)
  witness functions.  A related requirement applies to functional instantiation;
- see @(see lemma-instance).</p>
-
- <p>Remark on the value returned.  As with all @(see embedded-event-form)s, a
- successful call of @('encapsulate') returns an @(see error-triple) of the form
- @('(mv nil val state)').  By default, you will therefore see @('val') printed,
- preceded by a space, before the next prompt is printed.  But what is that
- value returned, @('val')?  If the value returned by the final event
- @('event-k') in the second (or sole) pass through the @(tsee encapsulate)
- event is of the form @('(:return-value name)') &mdash; for example, if
- @('event-k') is @('(value-triple '(:return-value name) :on-skip-proofs t)')
- &mdash; then that @('name') is the value returned for the @('encapsulate').
- Otherwise, if the @(see signature) list is non-empty, then the value returned
- is the list of names introduced by the signatures except when there is just
- one name, in which case the value returned is that name.  Otherwise, the value
- returned is @('T').</p>")
+ see @(see lemma-instance).</p>")
 
 (defxdoc endp
   :parents (lists acl2-built-ins)
@@ -103085,6 +103094,12 @@ it."
  <p>When @(tsee ld) is invoked with a non-@('nil') value of keyword
  @(':ld-missing-input-ok') and the input file is missing, the value returned is
  now @(':missing-input') instead of @(':eof').</p>
+
+ <p>When @(tsee defbadge) is applied to a function symbol that is built into
+ ACL2 with a @(see badge), such as @(tsee nth), the result is a no-op and an
+ @(see observation) is printed to that effect.  (Formerly the @('badge-table')
+ was needlessly extended and ACL2 reported that the function symbol was being
+ given a badge.)</p>
 
  <h3>New Features</h3>
 
