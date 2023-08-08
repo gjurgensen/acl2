@@ -77,7 +77,7 @@ Subtopics
   [defthm], [in-theory], [xargs], [state], etc., without an [47macl2::[0m
   prefix.
 
-  The constant [47m*acl2-exports*[0m lists [47m1582[0m symbols, including most
+  The constant [47m*acl2-exports*[0m lists [47m1581[0m symbols, including most
   documented ACL2 system constants, functions, and macros.  You will
   typically also want to import many symbols from Common Lisp; see
   [*common-lisp-symbols-from-main-lisp-package*].
@@ -328,12 +328,11 @@ Subtopics
        get-persistent-whs get-real-time
        get-register-invariant-risk
        get-serialize-character
-       get-slow-alist-action
-       get-timer get-wormhole-status
-       getenv$ getprop getprop-default
-       getpropc getprops getprops1 global-table
-       global-table-cars global-table-cars1
-       global-val good-atom-listp
+       get-slow-alist-action get-timer
+       get-wormhole-status getenv$ getprop
+       getprop-default getpropc getprops
+       getprops1 global-table global-table-cars
+       global-table-cars1 global-val
        good-bye granularity ground-zero gthm
        guard guard-obligation guard-theorem
        hands-off-lambda-objects-theory
@@ -3514,9 +3513,6 @@ Subtopics
   [Getpropc]
       Access fast property lists
 
-  [Good-atom-listp]
-      Recognizer for a true list of ``good'' [atom]s
-
   [Good-bye]
       Quit entirely out of Lisp
 
@@ -4583,7 +4579,7 @@ Silent loading of ACL2 customization files
 
     :verify-guards-eagerness
 
-  an integer between 0 and 2 indicating how eager the system is to
+  an integer between 0 and 3 indicating how eager the system is to
   verify the [guard]s of a [defun] event.  See
   [set-verify-guards-eagerness].
 
@@ -10523,18 +10519,13 @@ Subtopics
 Subtopics
 
   [Atom-listp]
-      Recognizer for a true list of [atom]s
-
-  [Good-atom-listp]
-      Recognizer for a true list of ``good'' [atom]s")
+      Recognizer for a true list of [atom]s")
  (ATOM-LISTP
   (ATOM LISTS ACL2-BUILT-INS)
   "Recognizer for a true list of [atom]s
 
   The predicate [47matom-listp[0m tests whether its argument is a [47m[true-listp][0m
   of [atom]s, i.e., of non-conses.
-
-  Also see [good-atom-listp].
 
   [31;1mFunction: [0m<atom-listp>
 
@@ -13108,26 +13099,26 @@ Subtopics
   although not necessarily in the following order, according to the
   description that follows below.
 
-    (\"...BK.lisp\"
-     :PKGS          pkgs-val
-     :BOOKS         book-val
-     :PORT-BOOKS    port-book-val
-     :CONSTS        consts-val
-     :PORT-CONSTS   port-consts-val
-     :FNS           fns-val
-     :PORT-FNS      port-fns-val
-     :LABELS        labels-val
-     :PORT-LABELS   port-labels-val
-     :MACROS        macros-val
-     :PORT-MACROS   port-macros-val
-     :STOBJS        stobjs-val
-     :PORT-STOBJS   port-stobjs-val
-     :THEORIES      theories-val
-     :PORT-THEORIES port-theories-val
-     :THMS          thms-val
-     :PORT-THMS     port-thms-val
+     (\"...BK.lisp\"
+      :PKGS          pkgs-val
+      :BOOKS         book-val
+      :PORT-BOOKS    port-book-val
+      :CONSTS        consts-val
+      :PORT-CONSTS   port-consts-val
+      :FNS           fns-val
+      :PORT-FNS      port-fns-val
+      :LABELS        labels-val
+      :PORT-LABELS   port-labels-val
+      :MACROS        macros-val
+      :PORT-MACROS   port-macros-val
+      :STOBJS        stobjs-val
+      :PORT-STOBJS   port-stobjs-val
+      :THEORIES      theories-val
+      :PORT-THEORIES port-theories-val
+      :THMS          thms-val
+      :PORT-THMS     port-thms-val
+    )
 
-)
   The first entry in the form will always be the [full-book-name] of
   the certified book, [47mBK[0m, possibly in [sysfile] format.
 
@@ -14589,7 +14580,10 @@ Subtopics
   Advanced users may, on occasion, see the need to do so.  Evaluating
   [47m(break$)[0m will have that effect.  (Exception: [47mbreak$[0m is disabled
   after evaluation of [47m(set-debugger-enable :never)[0m; see
-  [set-debugger-enable].)  [47mBreak$[0m returns [47mnil[0m.
+  [set-debugger-enable].)  [47mBreak$[0m returns [47mnil[0m.  Note that upon
+  returning to the ACL2 read-eval-print loop (for example, using [47m:q[0m
+  if the host Lisp is CCL), one will be at the top level even if one
+  had been inside a recursive call of [47m[ld][0m or a [wormhole].
 
   [31;1mFunction: [0m<break$>
 
@@ -14688,29 +14682,35 @@ Subtopics
     (break-on-error :all) ; same as above, but even when inside the prover
     (break-on-error nil)  ; uninstall any above trace
 
-  [47m(Break-on-error)[0m generates a suitable trace of error functions.
-  Evaluate [47m(trace$)[0m after [47m(break-on-error)[0m if you want to see the
-  specific trace forms (which you can modify and then submit directly
-  to [47mtrace$[0m, if you wish).  This [trace] should cause entry to the
-  Lisp debugger whenever ACL2 calls its error routines, except for
-  certain errors when inside the theorem prover, and also at those
-  times if option :all is supplied.
+  Evaluation of [47m(break-on-error :all)[0m generates a suitable [trace] of
+  error functions, so that the Lisp debugger is entered whenever ACL2
+  calls them.  You can then continue the interrupted computation by
+  suitable exit from the debugger (with a command that depends on the
+  host Lisp).  Evaluation of [47m(Break-on-error t)[0m, or equivalently,
+  [47m(break-on-error)[0m, is similar except that certain errors are ignored
+  when inside the theorem prover; this is probably preferable, in
+  general, to [47m(break-on-error :all)[0m.  Finally, evaluation of
+  [47m(break-on-error nil)[0m removes those traces.
 
-  NOTE: For technical reasons, you may see some error messages more
-  than once.
+  [31;1mRemarks[0m.
 
-  Finally, note that you are welcome to define your own version of
+    * The argument, if supplied, is evaluated and must evaluate to [47mt[0m, [47mnil[0m,
+      or [47m:all[0m.
+    * For technical reasons, you may see breaks or error messages more than
+      once.
+    * It is an error to call [47mbreak-on-error[0m while in [raw-mode].
+    * [47mBreak-on-error[0m is implemented using ACL2 [47m[trace!][0m, which is a version
+      of [47m[trace$][0m that uses a [ttag] and hence generates a ``[47mTTAG
+      NOTE[0m'' message.  You can use [47m:[0m[47m[trans1][0m to see the [47mtrace![0m call
+      generated by a given call of [47mbreak-on-error[0m.  Evaluate [47m(trace$)[0m
+      if you want to see the current trace specs.
+
+  You are of course welcome to define your own version of
   [47mbreak-on-error[0m by modifying a copy of the source definition (search
-  for ``[47m(defmacro break-on-error[0m'' in ACL2 source file
-  other-events.lisp).  Please feel free to send your version of
-  [47mbreak-on-error[0m to the ACL2 implementors, for possible inclusion
+  for ``[47m(defmacro break-on-error)[0m'' in ACL2 source file
+  [47mother-events.lisp[0m).  Please feel free to send your version of
+  [47mbreak-on-error[0m to the ACL2 implementors, to consider for inclusion
   into ACL2.
-
-  [47mBreak-on-error[0m is implemented using ACL2 [47m[trace$][0m.  See [trace!] if
-  you want an explanation of the ``[47mTTAG NOTE[0m'' that is printed.
-
-  The argument, if supplied, is evaluated and must evaluate to [47mt[0m, [47mnil[0m,
-  or [47m:all[0m.
 
   Also see [set-debugger-enable] for how to get raw-Lisp backtrace
   information when an error occurs as a result of [47mbreak-on-error[0m, or
@@ -14808,7 +14808,7 @@ Subtopics
   disabled upon exiting the break.  However, the association of
   values with iprint indices persists even after exiting the break;
   that is, you can still obtain their values, and if you re-enable
-  ipritning then indices will be generated from where they left off
+  iprinting then indices will be generated from where they left off
   rather than returning to index 1.  The other exception pertains to
   setting the [47m[brr-evisc-tuple][0m while inside break-rewrite: the
   effects persist.  See [47m[set-brr-evisc-tuple][0m.
@@ -15605,8 +15605,7 @@ Subtopics
   This is a system function that determine whether a failed match of a
   monitored rule constitutes a near miss.
 
-  [31;1mNote:[0mOur intention is to make this function attachable (see
-  [defattach]).
+  [31;1mNote:[0mThis function is attachable (see [defattach]).
 
     General Form:
     (brr-near-missp msgp lemma target rcnst criteria-alist)
@@ -33300,11 +33299,26 @@ Miscellaneous efficiency ideas
   function symbol in [47mthm1[0m.
 
   Remark on return value.  As with all [events], a call of [47mencapsulate[0m
-  returns an [error-triple], [47m(mv erp val state)[0m, where [47merp[0m is nil
-  when the event is successfully admitted.  In that case, [47mval[0m is [47mt[0m if
-  the list of signatures is [47mnil[0m; [47mval[0m is [47mfn[0m if there is a single
-  signature, which introduces the function symbol, [47mfn[0m; and otherwise
-  is the list of function symbols introduced in the signatures.
+  returns an [error-triple], [47m(mv erp val state)[0m, where [47merp[0m is [47mnil[0m
+  when the event is redundant or is successfully admitted.  When [47merp[0m
+  is [47mnil[0m, the value [47mval[0m, which is typically printed after a space, is
+  determined as follows.
+
+    * If the [47mencapsulate[0m event is [redundant], then [47mval[0m is [47m:redundant[0m.
+    * Otherwise, if no new events are introduced, then [47mval[0m is
+      [47m:empty-encapsulate[0m.
+    * Otherwise, if the last sub-event in the final pass of the [47mencapsulate[0m
+      form evaluates to [47m(mv nil '(:return-value x)[0m) for some [47mx[0m, [47mval[0m
+      is [47mx[0m.  Note that this can be accomplished by placing the form
+      [47m(value-triple '(:return-value x) :on-skip-proofs t)[0m as the
+      final form in the [47mencapsulate[0m, but since proofs are skipped
+      during that pass, the argument [47m:on-skip-proofs t[0m is necessary
+      for [47mval[0m to be [47mx[0m.
+    * Otherwise, if the list of [signature]s is [47mnil[0m then [47mval[0m is [47mt[0m.
+    * Otherwise, if there is a single signature introducing the function
+      symbol, [47mfn[0m, then [47mval[0m is [47mfn[0m.
+    * Otherwise, [47mval[0m is the list of function symbols introduced in the list
+      of signatures.
 
   Remark on implicit [constraint]s (unknown-constraints).  See
   [partial-encapsulate] for a related utility that allows some of the
@@ -33319,20 +33333,6 @@ Miscellaneous efficiency ideas
   (respectively, non-classical) [47m[local][0m witness functions.  A related
   requirement applies to functional instantiation; see
   [lemma-instance].
-
-  Remark on the value returned.  As with all [embedded-event-form]s, a
-  successful call of [47mencapsulate[0m returns an [error-triple] of the
-  form [47m(mv nil val state)[0m.  By default, you will therefore see [47mval[0m
-  printed, preceded by a space, before the next prompt is printed.
-  But what is that value returned, [47mval[0m?  If the value returned by the
-  final event [47mevent-k[0m in the second (or sole) pass through the
-  [47m[encapsulate][0m event is of the form [47m(:return-value name)[0m --- for
-  example, if [47mevent-k[0m is [47m(value-triple '(:return-value name)
-  :on-skip-proofs t)[0m --- then that [47mname[0m is the value returned for the
-  [47mencapsulate[0m.  Otherwise, if the [signature] list is non-empty, then
-  the value returned is the list of names introduced by the
-  signatures except when there is just one name, in which case the
-  value returned is that name.  Otherwise, the value returned is [47mT[0m.
 
 
 Subtopics
@@ -36500,10 +36500,7 @@ Subtopics
   [31;1mFunction: [0m<explode-atom>
 
     (defun explode-atom (x print-base)
-     (declare (xargs :guard (and (or (acl2-numberp x)
-                                     (characterp x)
-                                     (stringp x)
-                                     (symbolp x))
+     (declare (xargs :guard (and (atom x)
                                  (print-base-p print-base))))
      (cond
       ((rationalp x)
@@ -36528,7 +36525,9 @@ Subtopics
                                   '(#\\)))))))
       ((characterp x) (list x))
       ((stringp x) (coerce x 'list))
-      (t (coerce (symbol-name x) 'list))))")
+      ((symbolp x)
+       (coerce (symbol-name x) 'list))
+      (t (coerce \"SOME BAD ATOM\" 'list))))")
  (EXPLODE-NONNEGATIVE-INTEGER
   (CHARACTERS NUMBERS ACL2-BUILT-INS)
   "The list of [characters] in the radix-r form of a number
@@ -46049,26 +46048,6 @@ Subtopics
 
   [Clause-identifier]
       The internal form of a [goal-spec]")
- (GOOD-ATOM-LISTP
-  (ATOM LISTS ACL2-BUILT-INS)
-  "Recognizer for a true list of ``good'' [atom]s
-
-  The predicate [47mgood-atom-listp[0m tests whether its argument is a
-  [47m[true-listp][0m of ``good'' [atom]s, i.e., where each element is a
-  number, a symbol, a character, or a string.
-
-  Also see [atom-listp].
-
-  [31;1mFunction: [0m<good-atom-listp>
-
-    (defun good-atom-listp (lst)
-      (declare (xargs :guard t))
-      (cond ((atom lst) (eq lst nil))
-            (t (and (or (acl2-numberp (car lst))
-                        (symbolp (car lst))
-                        (characterp (car lst))
-                        (stringp (car lst)))
-                    (good-atom-listp (cdr lst))))))")
  (GOOD-BYE
   (BASICS ACL2-BUILT-INS)
   "Quit entirely out of Lisp
@@ -60221,10 +60200,13 @@ About Guard Verification of Lambda Objects
   (meaning [47m:[0m[47m[q][0m was read), [47m:eof[0m (meaning the input source was
   exhausted), [47m:error[0m (meaning an error occurred but has been
   suppressed), [47m:filter[0m (meaning the [47m[ld-pre-eval-filter][0m terminated
-  [47mld[0m), or a cons pair whose first component is the symbol [47m:STOP-LD[0m,
-  which typically indicates that an error occurred while the value of
-  variable [47m'[0m[47m[ld-error-action][0m was [47m:RETURN![0m.  See [ld-error-action]
-  for details of this last case.
+  [47mld[0m), [47m:missing-input[0m (meaning that the specified input file is
+  missing, in the case that keyword [47m:ld-missing-input-ok[0m has a
+  non-[47mnil[0m value so that an error is avoided), or a cons pair whose
+  first component is the symbol [47m:STOP-LD[0m, which typically indicates
+  that an error occurred while the value of variable
+  [47m'[0m[47m[ld-error-action][0m was [47m:RETURN![0m.  See [ld-error-action] for details
+  of this last case.
 
 
 Subtopics
@@ -62250,9 +62232,6 @@ Subtopics
 
   [Fix-true-list]
       Coerce to a true list
-
-  [Good-atom-listp]
-      Recognizer for a true list of ``good'' [atom]s
 
   [Improper-consp]
       Recognizer for improper (non-[47mnil[0m-terminated) non-empty lists
@@ -69225,20 +69204,17 @@ LP8: Challenge Problems about [47mFOR[0m [47mLoop$[0m in [47mDefun[0ms
   [31;1mLP8-3[0m The two recursive functions below are used in the ACL2 sources
   (thus, you won't have to define them in your session).  Define
   [47mpackn1-loop$[0m that is equivalent to [47mpackn1[0m but so that it uses
-  [47mloop$[0ms and does not mention [47mgood-atom-listp[0m.
+  [47mloop$[0ms and does not mention [47matom-listp[0m.
 
-    (defun good-atom-listp (lst)
+    (defun atom-listp (lst)
       (declare (xargs :guard t
                       :mode :logic))
       (cond ((atom lst) (eq lst nil))
-            (t (and (or (acl2-numberp (car lst))
-                        (symbolp (car lst))
-                        (characterp (car lst))
-                        (stringp (car lst)))
-                    (good-atom-listp (cdr lst))))))
+            (t (and (atom (car lst))
+                    (atom-listp (cdr lst))))))
 
     (defun packn1 (lst)
-      (declare (xargs :guard (good-atom-listp lst)))
+      (declare (xargs :guard (atom-listp lst)))
       (cond ((endp lst) nil)
             (t (append (explode-atom (car lst) 10)
                        (packn1 (cdr lst))))))
@@ -70008,7 +69984,7 @@ Subtopics
 
     * [47mFn[0m must be a function symbol of the current ACL2 [world] other than
       [47mif[0m, whose arity is equal to the length of the true-list,
-      [47marglist[0m.:
+      [47marglist[0m.
     * [47mFn[0m must not have any [47mstobj[0m inputs or be a stobj creator.
     * Calls of [47mfn[0m must not require a trust tag (see [defttag]).
     * [47mFn[0m must not be untouchable (see [push-untouchable]).
@@ -73253,7 +73229,7 @@ Detailed Documentation
   its final argument.
 
   Let us refer to each specified function as the ``total'' function.  A
-  succesful invocation admits a sequence of three definitions for
+  successful invocation admits a sequence of three definitions for
   each total function, which we call the ``changed'', ``stable'', and
   ``partial'' function.  Here are those three definitions, where
   ``[47m...[0m'' denotes the formals of the partial function (that is, the
@@ -99485,13 +99461,24 @@ Experimental Versions
   Each change is described in just one category, though of course
   many changes could be placed in more than one category.
 
+  [3mDARPA Note.[0m The following statement applies to items below that are
+  marked with ``See DARPA Note above'': Release was approved by DARPA
+  with ``DISTRIBUTION STATEMENT A. Approved for public release.
+  Distribution is unlimited.''
+
   Note that only ACL2 system changes are listed below.  See also
   [note-8-5-books] for a summary of changes made to the ACL2
   Community Books since ACL2 8.5, including the build system.  Also
   note that with each release, it is typical that the value of
   constant [47m[*ACL2-exports*][0m has been extended, and that some built-in
   functions that were formerly in [47m:[0m[47m[program][0m mode are now
-  [guard]-verified [47m:[0m[47m[logic][0m mode functions.
+  [guard]-verified [47m:[0m[47m[logic][0m mode functions.  For this release the
+  following are particularly significant.
+
+    * [47mOne-way-unify[0m (see [47mbooks/system/brr-near-missp.lisp[0m)
+    * [47m[Genvar][0m (see [47mbooks/system/brr-near-missp.lisp[0m)
+    * [47mEviscerate-top[0m, towards the [47m[fmt][0m family of functions (see
+      [47mbooks/system/eviscerate-top.lisp[0m) [See DARPA Note above.]
 
 
 Changes to Existing Features
@@ -99852,10 +99839,9 @@ Changes to Existing Features
   runes is locally bound by [47mbreak-rewrite[0m, so that while it can be
   changed in inferior breaks, when control returns to superior levels
   (and to the top-level) the list of monitored runes is unchanged.
-  Related changes are discussed in the following three items.  Note
-  that for this work, including the three items just below: Release
-  was approved by DARPA with ``DISTRIBUTION STATEMENT A. Approved for
-  public release. Distribution is unlimited.''
+  Related changes are discussed in the following three items.  [See
+  DARPA Note above for this work, including the following three
+  items.]
 
     * The [47m[brr][0m-command [47m:[0m[47m[p!][0m (see [brr-commands]) has been redefined so
       that in [break-rewrite] it is a no-op.  (Actually, it did not
@@ -99867,10 +99853,74 @@ Changes to Existing Features
     * The macro [47mshow-brr-evisc-tuple[0m has been eliminated, but
       [47m[brr-evisc-tuple][0m is available instead.
 
+  The definition of bounded-integer-alistp has been modified by adding
+  a guard [47m(posp n)[0m and removing the [47m(integerp n)[0m test from the body
+  of its [47m[defun][0m.  [See DARPA Note above.]
+
+  As before, when calling [47m[break$][0m from a [wormhole] --- for example
+  when inside [break-rewrite] --- one is left at a raw Lisp prompt.
+  However, when returning from that prompt (e.g., with [47m:q[0m if the host
+  Lisp is CCL), one no longer stays in the wormhole, as noted by a
+  message, ``Aborting to top level from a wormhole break (see :DOC
+  wormhole).'' [See DARPA Note above.]
+
+  The function [47miprint-oracle-updates[0m, which is called by [47m[read-object][0m,
+  is now [disable]d, because it was made more complicated to
+  accommodate the conversion of function [47meviscerate-top[0m into [47m:[0m[47m[logic][0m
+  mode.  [See DARPA Note above.]
+
   The utilities [47m:[0m[47m[pe][0m and [47m:[0m[47m[pr][0m now provide more useful output when
   applied to function symbols that are built into ACL2 without a
   defining event.  Thanks to Warren Hunt for discussions leading to
   this improvement.
+
+  The [47m[guard][0ms and bodies have changed slightly for some built-in
+  function definitions, as follows.
+
+    * For functions [47m[princ$][0m, [47mprin1$[0m, [47m[explode-atom][0m, and [47mexplode-atom+[0m,
+      the guard now requires of the first argument only that it be an
+      atom; it no longer must be a ``good atom'', i.e., a number, a
+      character, a string, or a symbolp.  As a result, the definition
+      bodies of [47m[princ$][0m, [47mprin1$[0m, and [47m[explode-atom][0m have been
+      tweaked slightly.
+    * The guards for [47mpackn1[0m, [47m[packn-pos][0m, [47mfind-first-non-cl-symbol[0m, and
+      [47m[packn][0m have similarly been weakened to require only
+      [47m[atom-listp][0m instead of [47mgood-atom-listp[0m, and the definition of
+      [47mgood-atom-listp[0m has been removed.
+    * The guard for [47m(prin1$ x channel state)[0m now requires [47m(symbolp
+      channel)[0m; it was a bug that this conjunct was formerly omitted.
+    * Several functions that take [47m[state][0m had guards requiring that
+      built-in [state] globals --- those bound in
+      [47minitial-global-table[0m --- are bound in the global-table of the
+      [state] (using [47mf-boundp-global[0m or [47mboundp-global[0m).  However, the
+      predicate [47mstate-p1[0m, which recognizes ACL2 [state]s, implies
+      that these conditions all hold; so, they have been removed from
+      those guards.  Such a test has also been removed from the
+      definition of [47mmain-timer[0m.
+
+  The utility, [47m[break-on-error][0m, now causes a much cleaner error when
+  invoked in [raw-mode].  The installation of breaks by
+  [47mbreak-on-error[0m works even in raw-mode --- it's just that evaluation
+  of a call of [47mbreak-on-error[0m must not take place in raw-mode.  Also,
+  the effect of [47mbreak-on-error[0m, to cause breaks on errors, works
+  better after entering raw-mode than it did previously, when
+  evaluation of a form [47m(er hard ....)[0m would fail to enter the
+  debugger: that has been fixed.  Evaluation of [47m(er soft ....)[0m
+  continues to invoke such breaks whether or not in raw-mode.  A new
+  aspect of [47mbreak-on-error[0m is that breaks occur not only for hard and
+  soft errors, but also when aborting to the top level (which is what
+  happens when [47m(er hard ...)[0m is called in raw-mode).  Thanks to Eric
+  McCarthy for reporting issues that led to these improvements.
+
+  When [47m[ld][0m is invoked with a non-[47mnil[0m value of keyword
+  [47m:ld-missing-input-ok[0m and the input file is missing, the value
+  returned is now [47m:missing-input[0m instead of [47m:eof[0m.
+
+  When [47m[defbadge][0m is applied to a function symbol that is built into
+  ACL2 with a [badge], such as [47m[nth][0m, the result is a no-op and an
+  [observation] is printed to that effect.  (Formerly the [47mbadge-table[0m
+  was needlessly extended and ACL2 reported that the function symbol
+  was being given a badge.)
 
 
 New Features
@@ -100014,7 +100064,17 @@ New Features
 
   New utilities allow one to explore what has changed when an event
   fails in a book that formerly certified.  See [saving-event-data].
-  Thanks to Eric Smith for requesting such a capability.
+  Thanks to Eric Smith for requesting such a capability and for
+  helpful bug reports for early versions of these utilities.
+
+  A new legal value for [47m[set-verify-guards-eagerness][0m, [47m3[0m, causes guard
+  verification even when [47m:verify-guards nil[0m has been [declare]d.
+  This can be helpful when a [47m[verify-termination][0m event in a book is
+  intended to verify [guard]s but a [local]ly included book declares
+  [47m:verify-guards nil[0m in the corresponding [47mverify-termination[0m event.
+  (Technical note: That issue occurs because [47mverify-termimnation[0m
+  invokes [47m[make-event][0m, and the expansion is saved when locally
+  including the sub-book.)
 
 
 Heuristic and Efficiency Improvements
@@ -100056,6 +100116,20 @@ Heuristic and Efficiency Improvements
   The utility [47m[set-cbd][0m is more efficient when setting to the current
   [47m[cbd][0m, including the common case of calls to [47mset-cbd[0m by [47m[ld][0m and
   (hence) [47m[wormhole][0m.
+
+  New built-in [rewrite] rules [47mall-boundp-initial-global-table-alt[0m and
+  [47mall-boundp-initial-global-table[0m may help with reasoning about
+  [47mstate-p1[0m.  Use [47m:[0m[47m[pe][0m to see their [events].  The latter is
+  [disable]d by default and may useful to [enable] when developing
+  proofs that rely on built-in [state] globals being bound.
+
+  ACL2 has a procedure for evaluating ground [term]s (terms without
+  free variables) that is used in the generation of [guard]
+  obligations as well as in [linear-arithmetic] and
+  [forward-chaining].  This procedure was not used on subterms of
+  bodies of [lambda] expressions, but now it is.  Thanks to Eric
+  Smith for requesting this enhancement (in particular for generation
+  of guard obligations).
 
 
 Bug Fixes
@@ -100284,6 +100358,29 @@ Bug Fixes
   t state)[0m but this was provably impossible according to the logical
   definition.  This has been fixed.
 
+  Fixed the [useless-runes] feature to work properly when reading a
+  useless-runes file while certifying a book in a package other than
+  the [47m\"ACL2\"[0m package.  The fix is to ensure that the useless-runes
+  file is read while in the [47m\"ACL2\"[0m package, which is the same package
+  used when the file was written.
+
+  Fixed a bug in handling of the [47m[ld][0m keyword [47m:ld-missing-input-ok[0m, by
+  eliminating an error in the case that the specified input file's
+  directory does not exist.  The fix avoids executing some of the [47mld[0m
+  code that was formerly executed.  Thanks to Alessandro Coglio and
+  Eric Smith for bringing this bug to our attention.
+
+  An error formerly occurred if one first evaluated [47m(defwarrant FN)[0m for
+  some [47mFN[0m and then attempted to include a certified book containing
+  [47m(defbadge FN)[0m.  That has been fixed.  Thanks to Mertcan Temel for
+  reporting this bug.  Such a [47m[defbadge][0m event is now a no-op, which
+  is reported by an [47m[observation][0m except during [47m[include-book][0m and
+  except during the second pass of an [47m[encapsulate][0m event.  Moreover,
+  the [47m[defwarrant][0m event now returns the value [47m:WARRANTED[0m instead of
+  [47mT[0m --- more precisely, it returns a [value-triple] whose value
+  component is [47m:WARRANTED[0m --- and similarly for [47m[defbadge][0m and
+  [47m:BADGED[0m.
+
 
 Changes at the System Level
 
@@ -100306,9 +100403,8 @@ Changes at the System Level
   enhancement.
 
   Significant new [documentation] topics, together with subtopics and
-  books supporting those topics, include the following.  Release was
-  approved by DARPA with ``DISTRIBUTION STATEMENT A. Approved for
-  public release. Distribution is unlimited.''
+  books supporting those topics, include the following.  [See DARPA
+  Note above.]
 
     * [Start-here] provides a guide for those getting started with ACL2.
     * [Recursion-and-induction] has been extensively modified from past,
@@ -100366,10 +100462,10 @@ Changes at the System Level
 
   The notion of ACL2 [state] is formalized in function [47mstate-p1[0m, which
   has implicitly changed because it depends on the constant
-  *initial-global-table*, whose value has changed.  That constant's
+  [47m*initial-global-table*[0m, whose value has changed.  That constant's
   value, which is still an alist, now includes additional pairs,
-  which are from the constant *initial-ld-special-bindings*; thus,
-  *initial-global-table* now specifies a value for each so-called
+  which are from the constant [47m*initial-ld-special-bindings*[0m; thus,
+  [47m*initial-global-table*[0m now specifies a value for each so-called
   ``[47m[ld][0m special''.
 
 
@@ -100377,9 +100473,7 @@ EMACS Support
 
   A set of tools for assisting in the conversion of certain HTML to
   [47m[xdoc][0m may be found, without much documentation, in
-  [47memacs/html-to-xdoc.el[0m.  Note that its release was approved by DARPA
-  with ``DISTRIBUTION STATEMENT A. Approved for public release.
-  Distribution is unlimited.''
+  [47memacs/html-to-xdoc.el[0m.  [See DARPA Note above.]
 
   When new [ACL2-doc] buffers are created by using the [47mG[0m or
   [47mShift-<Return>[0m commands, their name reflects the topic name, e.g.,
@@ -100417,6 +100511,10 @@ EMACS Support
   ``go to that topic with the cursor put immediately after the found
   text''.  But the cursor was at the end of the found text, not
   immediately after it.  That has been fixed.
+
+  For the [ACL2-doc] browser, the download ([47mD[0m) command now accesses, by
+  default, an [47mhttps[0m address instead of an [47mhttp[0m address.  Thanks to
+  Warren Hunt for suggesting this change.
 
 
 Experimental Versions
@@ -102844,9 +102942,9 @@ Subtopics
   "Build a symbol from a list
 
   The call [47m(packn lst)[0m returns a symbol whose name is a concatenation
-  of string representations of the atoms in the [47m[good-atom-listp][0m,
-  [47mlst[0m.  The symbol's package is the package of the first symbol in
-  [47mlst[0m whose package is not [47m\"COMMON-LISP\"[0m if any, else [47m\"ACL2\"[0m.")
+  of string representations of the atoms in the [47m[atom-listp][0m, [47mlst[0m.
+  The symbol's package is the package of the first symbol in [47mlst[0m
+  whose package is not [47m\"COMMON-LISP\"[0m if any, else [47m\"ACL2\"[0m.")
  (PACKN-POS
   (SYMBOLS ACL2-BUILT-INS)
   "Build a symbol in a specified package from a list
@@ -123799,10 +123897,10 @@ Finding [rune]s that were used only previously, or only now
   comment in file [47mtest1-input.lsp[0m.  It shows that a
   [type-prescription] rule, named [47mtrue-listp-append[0m, was used in the
   original proof but not the failed proof (which made the [47m[ld][0m call
-  of Step 2 above made without first performing Step 1, which would
-  have introduced that type-prescription rule.  This output also
-  shows that the new (failed) proof attempt used many runes not used
-  in the previous proof --- not surprisingly, since without the rule
+  of Step 2 above without first performing Step 1, which would have
+  introduced that type-prescription rule).  This output also shows
+  that the new (failed) proof attempt used many runes not used in the
+  previous proof --- not surprisingly, since without the rule
   [47mtrue-listp-reverse[0m the prover made a desperate attempt involving
   destructor elimination and induction.
 
@@ -127689,17 +127787,13 @@ Subtopics
   Typical benefits of raw mode are fast loading of source and compiled
   files and the capability to hack arbitrary Common Lisp code in an
   environment with the ACL2 sources loaded (and hence with ACL2
-  primitives available).  In addition, ACL2 hard errors will put you
-  into the Lisp debugger, rather than returning you to the ACL2 loop,
-  and this may be helpful for debugging; see [hard-error] and see
-  [illegal], but also see [break-on-error] and [break$].  However, it
-  probably is generally best to avoid raw mode unless these
-  advantages seem important.  We expect the main benefit of raw mode
-  to be in deployment of applications, where raw Lisp code may be
-  useful, and where load time is much faster than the time required
-  for a full-blown [47m[include-book][0m --- but not that the fast loading
-  of books and treatment of hard errors discussed above may be useful
-  during development.
+  primitives available).  However, it probably is generally best to
+  avoid raw mode unless these advantages seem important.  We expect
+  the main benefit of raw mode to be in deployment of applications,
+  where raw Lisp code may be useful, and where load time is much
+  faster than the time required for a full-blown [47m[include-book][0m ---
+  but not that the fast loading of books and treatment of hard errors
+  discussed above may be useful during development.
 
   Raw mode is also useful for those who want to build extensions of
   ACL2.  For example, the following form can be put into a
@@ -128664,6 +128758,7 @@ Subtopics
     (set-verify-guards-eagerness 0) ; no, unless :verify-guards t
     (set-verify-guards-eagerness 1) ; yes if :guard, type or :stobjs is supplied
     (set-verify-guards-eagerness 2) ; yes, unless :verify-guards nil
+    (set-verify-guards-eagerness 3) ; yes
 
   Note: This is an event!  It does not print the usual event [summary]
   but nevertheless changes the ACL2 logical [world] and is so
@@ -128672,8 +128767,8 @@ Subtopics
     General Form:
     (set-verify-guards-eagerness n)
 
-  where [47mn[0m is a variable-free term that evaluates to [47m0[0m, [47m1[0m, or [47m2[0m.  This
-  macro is essentially equivalent to
+  where [47mn[0m is a variable-free term that evaluates to [47m0[0m, [47m1[0m, [47m2[0m, or [47m3[0m.
+  This macro is essentially equivalent to
 
     (table acl2-defaults-table :verify-guards-eagerness n)
 
@@ -128683,22 +128778,23 @@ Subtopics
   output results from a [47mset-verify-guards-eagerness[0m event.
 
   [47mSet-verify-guards-eagerness[0m may be thought of as an event that merely
-  sets a flag to [47m0[0m, [47m1[0m, or [47m2[0m.  The flag is used by certain [47m[defun][0m
+  sets a flag to [47m0[0m, [47m1[0m, [47m2[0m, or [47m3[0m.  The flag is used by certain [47m[defun][0m
   [events] to determine whether [guard] verification is tried.  The
-  flag is irrelevant to those [47m[defun][0m [events] in [47m:[0m[47m[program][0m mode and
-  to those [47m[defun][0m [events] in which an explicit [47m:[0m[47m[verify-guards][0m
-  setting is provided among the [47m[xargs][0m.  In the former case, [guard]
+  flag is irrelevant to those [47m[defun][0m [events] in [47m:[0m[47m[program][0m mode.
+  It is also irrelevant to those [47m[defun][0m [events] in which an
+  explicit [47m:[0m[47m[verify-guards][0m setting is provided among the [47m[xargs][0m,
+  except when the flag is [47m3[0m.  In the [47m:[0m[47m[program][0m mode case, [guard]
   verification is not done because it can only be done when logical
-  functions are being defined.  In the latter case, the explicit
-  [47m:[0m[47m[verify-guards][0m setting determines whether [guard] verification is
-  tried.  So consider a [47m:[0m[47m[logic][0m mode [47m[defun][0m in which no
-  [47m:[0m[47m[verify-guards][0m setting is provided.  Is [guard] verification
-  tried?  The answer depends on the eagerness setting as follows.  If
-  the eagerness is [47m0[0m, [guard] verification is not tried.  If the
-  eagerness is [47m1[0m, it is tried if and only if a guard is explicitly
-  specified in the [47m[defun][0m, in the following sense: there is an [47mxargs[0m
-  keyword [47m:guard[0m or [47m:stobjs[0m or a [47m[type][0m declaration.  If the
-  eagerness is [47m2[0m, [guard] verification is tried.
+  functions are being defined.  Otherwise, unless the flag is [47m3[0m, the
+  explicit [47m:[0m[47m[verify-guards][0m setting determines whether [guard]
+  verification is tried.  So consider a [47m:[0m[47m[logic][0m mode [47m[defun][0m in
+  which no [47m:[0m[47m[verify-guards][0m setting is provided.  Is [guard]
+  verification tried?  The answer depends on the eagerness setting as
+  follows.  If the eagerness is [47m0[0m, [guard] verification is not tried.
+  If the eagerness is [47m1[0m, it is tried if and only if a guard is
+  explicitly specified in the [47m[defun][0m, in the following sense: there
+  is an [47mxargs[0m keyword [47m:guard[0m or [47m:stobjs[0m or a [47m[type][0m declaration.  If
+  the eagerness is [47m2[0m or [47m3[0m, [guard] verification is tried.
 
   The above remarks apply to [47m[verify-termination][0m [events], according
   to whether guards are explicitly specified in the existing,
