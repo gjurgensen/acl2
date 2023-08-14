@@ -4579,7 +4579,7 @@ Silent loading of ACL2 customization files
 
     :verify-guards-eagerness
 
-  an integer between 0 and 2 indicating how eager the system is to
+  an integer between 0 and 3 indicating how eager the system is to
   verify the [guard]s of a [defun] event.  See
   [set-verify-guards-eagerness].
 
@@ -15605,8 +15605,7 @@ Subtopics
   This is a system function that determine whether a failed match of a
   monitored rule constitutes a near miss.
 
-  [31;1mNote:[0mOur intention is to make this function attachable (see
-  [defattach]).
+  [31;1mNote:[0mThis function is attachable (see [defattach]).
 
     General Form:
     (brr-near-missp msgp lemma target rcnst criteria-alist)
@@ -33300,11 +33299,26 @@ Miscellaneous efficiency ideas
   function symbol in [47mthm1[0m.
 
   Remark on return value.  As with all [events], a call of [47mencapsulate[0m
-  returns an [error-triple], [47m(mv erp val state)[0m, where [47merp[0m is nil
-  when the event is successfully admitted.  In that case, [47mval[0m is [47mt[0m if
-  the list of signatures is [47mnil[0m; [47mval[0m is [47mfn[0m if there is a single
-  signature, which introduces the function symbol, [47mfn[0m; and otherwise
-  is the list of function symbols introduced in the signatures.
+  returns an [error-triple], [47m(mv erp val state)[0m, where [47merp[0m is [47mnil[0m
+  when the event is redundant or is successfully admitted.  When [47merp[0m
+  is [47mnil[0m, the value [47mval[0m, which is typically printed after a space, is
+  determined as follows.
+
+    * If the [47mencapsulate[0m event is [redundant], then [47mval[0m is [47m:redundant[0m.
+    * Otherwise, if no new events are introduced, then [47mval[0m is
+      [47m:empty-encapsulate[0m.
+    * Otherwise, if the last sub-event in the final pass of the [47mencapsulate[0m
+      form evaluates to [47m(mv nil '(:return-value x)[0m) for some [47mx[0m, [47mval[0m
+      is [47mx[0m.  Note that this can be accomplished by placing the form
+      [47m(value-triple '(:return-value x) :on-skip-proofs t)[0m as the
+      final form in the [47mencapsulate[0m, but since proofs are skipped
+      during that pass, the argument [47m:on-skip-proofs t[0m is necessary
+      for [47mval[0m to be [47mx[0m.
+    * Otherwise, if the list of [signature]s is [47mnil[0m then [47mval[0m is [47mt[0m.
+    * Otherwise, if there is a single signature introducing the function
+      symbol, [47mfn[0m, then [47mval[0m is [47mfn[0m.
+    * Otherwise, [47mval[0m is the list of function symbols introduced in the list
+      of signatures.
 
   Remark on implicit [constraint]s (unknown-constraints).  See
   [partial-encapsulate] for a related utility that allows some of the
@@ -33319,20 +33333,6 @@ Miscellaneous efficiency ideas
   (respectively, non-classical) [47m[local][0m witness functions.  A related
   requirement applies to functional instantiation; see
   [lemma-instance].
-
-  Remark on the value returned.  As with all [embedded-event-form]s, a
-  successful call of [47mencapsulate[0m returns an [error-triple] of the
-  form [47m(mv nil val state)[0m.  By default, you will therefore see [47mval[0m
-  printed, preceded by a space, before the next prompt is printed.
-  But what is that value returned, [47mval[0m?  If the value returned by the
-  final event [47mevent-k[0m in the second (or sole) pass through the
-  [47m[encapsulate][0m event is of the form [47m(:return-value name)[0m --- for
-  example, if [47mevent-k[0m is [47m(value-triple '(:return-value name)
-  :on-skip-proofs t)[0m --- then that [47mname[0m is the value returned for the
-  [47mencapsulate[0m.  Otherwise, if the [signature] list is non-empty, then
-  the value returned is the list of names introduced by the
-  signatures except when there is just one name, in which case the
-  value returned is that name.  Otherwise, the value returned is [47mT[0m.
 
 
 Subtopics
@@ -69984,7 +69984,7 @@ Subtopics
 
     * [47mFn[0m must be a function symbol of the current ACL2 [world] other than
       [47mif[0m, whose arity is equal to the length of the true-list,
-      [47marglist[0m.:
+      [47marglist[0m.
     * [47mFn[0m must not have any [47mstobj[0m inputs or be a stobj creator.
     * Calls of [47mfn[0m must not require a trust tag (see [defttag]).
     * [47mFn[0m must not be untouchable (see [push-untouchable]).
@@ -99916,6 +99916,12 @@ Changes to Existing Features
   [47m:ld-missing-input-ok[0m and the input file is missing, the value
   returned is now [47m:missing-input[0m instead of [47m:eof[0m.
 
+  When [47m[defbadge][0m is applied to a function symbol that is built into
+  ACL2 with a [badge], such as [47m[nth][0m, the result is a no-op and an
+  [observation] is printed to that effect.  (Formerly the [47mbadge-table[0m
+  was needlessly extended and ACL2 reported that the function symbol
+  was being given a badge.)
+
 
 New Features
 
@@ -100061,6 +100067,15 @@ New Features
   Thanks to Eric Smith for requesting such a capability and for
   helpful bug reports for early versions of these utilities.
 
+  A new legal value for [47m[set-verify-guards-eagerness][0m, [47m3[0m, causes guard
+  verification even when [47m:verify-guards nil[0m has been [declare]d.
+  This can be helpful when a [47m[verify-termination][0m event in a book is
+  intended to verify [guard]s but a [local]ly included book declares
+  [47m:verify-guards nil[0m in the corresponding [47mverify-termination[0m event.
+  (Technical note: That issue occurs because [47mverify-termimnation[0m
+  invokes [47m[make-event][0m, and the expansion is saved when locally
+  including the sub-book.)
+
 
 Heuristic and Efficiency Improvements
 
@@ -100107,6 +100122,14 @@ Heuristic and Efficiency Improvements
   [47mstate-p1[0m.  Use [47m:[0m[47m[pe][0m to see their [events].  The latter is
   [disable]d by default and may useful to [enable] when developing
   proofs that rely on built-in [state] globals being bound.
+
+  ACL2 has a procedure for evaluating ground [term]s (terms without
+  free variables) that is used in the generation of [guard]
+  obligations as well as in [linear-arithmetic] and
+  [forward-chaining].  This procedure was not used on subterms of
+  bodies of [lambda] expressions, but now it is.  Thanks to Eric
+  Smith for requesting this enhancement (in particular for generation
+  of guard obligations).
 
 
 Bug Fixes
@@ -128735,6 +128758,7 @@ Subtopics
     (set-verify-guards-eagerness 0) ; no, unless :verify-guards t
     (set-verify-guards-eagerness 1) ; yes if :guard, type or :stobjs is supplied
     (set-verify-guards-eagerness 2) ; yes, unless :verify-guards nil
+    (set-verify-guards-eagerness 3) ; yes
 
   Note: This is an event!  It does not print the usual event [summary]
   but nevertheless changes the ACL2 logical [world] and is so
@@ -128743,8 +128767,8 @@ Subtopics
     General Form:
     (set-verify-guards-eagerness n)
 
-  where [47mn[0m is a variable-free term that evaluates to [47m0[0m, [47m1[0m, or [47m2[0m.  This
-  macro is essentially equivalent to
+  where [47mn[0m is a variable-free term that evaluates to [47m0[0m, [47m1[0m, [47m2[0m, or [47m3[0m.
+  This macro is essentially equivalent to
 
     (table acl2-defaults-table :verify-guards-eagerness n)
 
@@ -128754,22 +128778,23 @@ Subtopics
   output results from a [47mset-verify-guards-eagerness[0m event.
 
   [47mSet-verify-guards-eagerness[0m may be thought of as an event that merely
-  sets a flag to [47m0[0m, [47m1[0m, or [47m2[0m.  The flag is used by certain [47m[defun][0m
+  sets a flag to [47m0[0m, [47m1[0m, [47m2[0m, or [47m3[0m.  The flag is used by certain [47m[defun][0m
   [events] to determine whether [guard] verification is tried.  The
-  flag is irrelevant to those [47m[defun][0m [events] in [47m:[0m[47m[program][0m mode and
-  to those [47m[defun][0m [events] in which an explicit [47m:[0m[47m[verify-guards][0m
-  setting is provided among the [47m[xargs][0m.  In the former case, [guard]
+  flag is irrelevant to those [47m[defun][0m [events] in [47m:[0m[47m[program][0m mode.
+  It is also irrelevant to those [47m[defun][0m [events] in which an
+  explicit [47m:[0m[47m[verify-guards][0m setting is provided among the [47m[xargs][0m,
+  except when the flag is [47m3[0m.  In the [47m:[0m[47m[program][0m mode case, [guard]
   verification is not done because it can only be done when logical
-  functions are being defined.  In the latter case, the explicit
-  [47m:[0m[47m[verify-guards][0m setting determines whether [guard] verification is
-  tried.  So consider a [47m:[0m[47m[logic][0m mode [47m[defun][0m in which no
-  [47m:[0m[47m[verify-guards][0m setting is provided.  Is [guard] verification
-  tried?  The answer depends on the eagerness setting as follows.  If
-  the eagerness is [47m0[0m, [guard] verification is not tried.  If the
-  eagerness is [47m1[0m, it is tried if and only if a guard is explicitly
-  specified in the [47m[defun][0m, in the following sense: there is an [47mxargs[0m
-  keyword [47m:guard[0m or [47m:stobjs[0m or a [47m[type][0m declaration.  If the
-  eagerness is [47m2[0m, [guard] verification is tried.
+  functions are being defined.  Otherwise, unless the flag is [47m3[0m, the
+  explicit [47m:[0m[47m[verify-guards][0m setting determines whether [guard]
+  verification is tried.  So consider a [47m:[0m[47m[logic][0m mode [47m[defun][0m in
+  which no [47m:[0m[47m[verify-guards][0m setting is provided.  Is [guard]
+  verification tried?  The answer depends on the eagerness setting as
+  follows.  If the eagerness is [47m0[0m, [guard] verification is not tried.
+  If the eagerness is [47m1[0m, it is tried if and only if a guard is
+  explicitly specified in the [47m[defun][0m, in the following sense: there
+  is an [47mxargs[0m keyword [47m:guard[0m or [47m:stobjs[0m or a [47m[type][0m declaration.  If
+  the eagerness is [47m2[0m or [47m3[0m, [guard] verification is tried.
 
   The above remarks apply to [47m[verify-termination][0m [events], according
   to whether guards are explicitly specified in the existing,

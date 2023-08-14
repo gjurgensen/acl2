@@ -2204,7 +2204,7 @@
   :verify-guards-eagerness
  })
 
- <p>an integer between 0 and 2 indicating how eager the system is to verify the
+ <p>an integer between 0 and 3 indicating how eager the system is to verify the
  @(see guard)s of a @(see defun) event.  See @(see
  set-verify-guards-eagerness).</p>
 
@@ -12624,8 +12624,7 @@ with any questions about building the community books.</p>")
   :long "<p>This is a system function that determine whether a failed match of
   a monitored rule constitutes a near miss.</p>
 
-  <p><b>Note:</b>Our intention is to make this function attachable (see @(see
-  defattach)).</p>
+  <p><b>Note:</b>This function is attachable (see @(see defattach)).</p>
 
   @({
   General Form:
@@ -30132,11 +30131,35 @@ ld) and @(tsee include-book)"
 
  <p>Remark on return value.  As with all @(see events), a call of
  @('encapsulate') returns an @(see error-triple), @('(mv erp val state)'),
- where @('erp') is nil when the event is successfully admitted.  In that case,
- @('val') is @('t') if the list of signatures is @('nil'); @('val') is @('fn')
- if there is a single signature, which introduces the function symbol, @('fn');
- and otherwise is the list of function symbols introduced in the
- signatures.</p>
+ where @('erp') is @('nil') when the event is redundant or is successfully
+ admitted.  When @('erp') is @('nil'), the value @('val'), which is typically
+ printed after a space, is determined as follows.</p>
+
+ <ul>
+
+ <li>If the @('encapsulate') event is @(see redundant), then @('val') is
+ @(':redundant').</li>
+
+ <li>Otherwise, if no new events are introduced, then @('val') is
+ @(':empty-encapsulate').</li>
+
+ <li>Otherwise, if the last sub-event in the final pass of the @('encapsulate')
+ form evaluates to @('(mv nil '(:return-value x)')) for some @('x'), @('val')
+ is @('x').  Note that this can be accomplished by placing the form
+ @('(value-triple '(:return-value x) :on-skip-proofs t)') as the final form in
+ the @('encapsulate'), but since proofs are skipped during that pass, the
+ argument @(':on-skip-proofs t') is necessary for @('val') to be @('x').</li>
+
+ <li>Otherwise, if the list of @(see signature)s is @('nil') then @('val') is
+ @('t').</li>
+
+ <li>Otherwise, if there is a single signature introducing the function symbol,
+ @('fn'), then @('val') is @('fn').</li>
+
+ <li>Otherwise, @('val') is the list of function symbols introduced in the list
+ of signatures.</li>
+
+ </ul>
 
  <p>Remark on implicit @(see constraint)s (unknown-constraints).  See @(see
  partial-encapsulate) for a related utility that allows some of the constraints
@@ -30149,21 +30172,7 @@ ld) and @(tsee include-book)"
  the signatures; see @(see signature).  Those marked as classical (respectively
  non-classical) must have classical (respectively, non-classical) @(tsee local)
  witness functions.  A related requirement applies to functional instantiation;
- see @(see lemma-instance).</p>
-
- <p>Remark on the value returned.  As with all @(see embedded-event-form)s, a
- successful call of @('encapsulate') returns an @(see error-triple) of the form
- @('(mv nil val state)').  By default, you will therefore see @('val') printed,
- preceded by a space, before the next prompt is printed.  But what is that
- value returned, @('val')?  If the value returned by the final event
- @('event-k') in the second (or sole) pass through the @(tsee encapsulate)
- event is of the form @('(:return-value name)') &mdash; for example, if
- @('event-k') is @('(value-triple '(:return-value name) :on-skip-proofs t)')
- &mdash; then that @('name') is the value returned for the @('encapsulate').
- Otherwise, if the @(see signature) list is non-empty, then the value returned
- is the list of names introduced by the signatures except when there is just
- one name, in which case the value returned is that name.  Otherwise, the value
- returned is @('T').</p>")
+ see @(see lemma-instance).</p>")
 
 (defxdoc endp
   :parents (lists acl2-built-ins)
@@ -66627,7 +66636,7 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
 
  <li>@('Fn') must be a function symbol of the current ACL2 @(see world) other
  than @('if'), whose arity is equal to the length of the true-list,
- @('arglist').:</li>
+ @('arglist').</li>
 
  <li>@('Fn') must not have any @('stobj') inputs or be a stobj creator.</li>
 
@@ -103086,6 +103095,12 @@ it."
  @(':ld-missing-input-ok') and the input file is missing, the value returned is
  now @(':missing-input') instead of @(':eof').</p>
 
+ <p>When @(tsee defbadge) is applied to a function symbol that is built into
+ ACL2 with a @(see badge), such as @(tsee nth), the result is a no-op and an
+ @(see observation) is printed to that effect.  (Formerly the @('badge-table')
+ was needlessly extended and ACL2 reported that the function symbol was being
+ given a badge.)</p>
+
  <h3>New Features</h3>
 
  <p>The new zero-ary attachable system function, @(tsee heavy-linear-p), allows
@@ -103225,6 +103240,15 @@ it."
  Smith for requesting such a capability and for helpful bug reports for early
  versions of these utilities.</p>
 
+ <p>A new legal value for @(tsee set-verify-guards-eagerness), @('3'), causes
+ guard verification even when @(':verify-guards nil') has been @(see declare)d.
+ This can be helpful when a @(tsee verify-termination) event in a book is
+ intended to verify @(see guard)s but a @(see local)ly included book declares
+ @(':verify-guards nil') in the corresponding @('verify-termination')
+ event.  (Technical note: That issue occurs because @('verify-termimnation')
+ invokes @(tsee make-event), and the expansion is saved when locally including
+ the sub-book.)</p>
+
  <h3>Heuristic and Efficiency Improvements</h3>
 
  <p>Added a &ldquo;desperation heuristic&rdquo; to compute a stronger context,
@@ -103267,6 +103291,13 @@ it."
  @('state-p1').  Use @(':')@(tsee pe) to see their @(see events).  The latter
  is @(see disable)d by default and may useful to @(see enable) when developing
  proofs that rely on built-in @(see state) globals being bound.</p>
+
+ <p>ACL2 has a procedure for evaluating ground @(see term)s (terms without free
+ variables) that is used in the generation of @(see guard) obligations as well
+ as in @(see linear-arithmetic) and @(see forward-chaining).  This procedure
+ was not used on subterms of bodies of @(see lambda) expressions, but now it
+ is.  Thanks to Eric Smith for requesting this enhancement (in particular for
+ generation of guard obligations).</p>
 
  <h3>Bug Fixes</h3>
 
@@ -130202,6 +130233,7 @@ work on <tt>(q x)</tt>.</p>
   (set-verify-guards-eagerness 0) ; no, unless :verify-guards t
   (set-verify-guards-eagerness 1) ; yes if :guard, type or :stobjs is supplied
   (set-verify-guards-eagerness 2) ; yes, unless :verify-guards nil
+  (set-verify-guards-eagerness 3) ; yes
  })
 
  <p>Note: This is an event!  It does not print the usual event @(see summary)
@@ -130212,8 +130244,8 @@ work on <tt>(q x)</tt>.</p>
   (set-verify-guards-eagerness n)
  })
 
- <p>where @('n') is a variable-free term that evaluates to @('0'), @('1'), or
- @('2').  This macro is essentially equivalent to</p>
+ <p>where @('n') is a variable-free term that evaluates to @('0'), @('1'),
+ @('2'), or @('3').  This macro is essentially equivalent to</p>
 
  @({
   (table acl2-defaults-table :verify-guards-eagerness n)
@@ -130225,22 +130257,24 @@ work on <tt>(q x)</tt>.</p>
  table)), no output results from a @('set-verify-guards-eagerness') event.</p>
 
  <p>@('Set-verify-guards-eagerness') may be thought of as an event that merely
- sets a flag to @('0'), @('1'), or @('2').  The flag is used by certain @(tsee
- defun) @(see events) to determine whether @(see guard) verification is tried.
- The flag is irrelevant to those @(tsee defun) @(see events) in @(':')@(tsee
- program) mode and to those @(tsee defun) @(see events) in which an explicit
- @(':')@(tsee verify-guards) setting is provided among the @(tsee xargs).  In
- the former case, @(see guard) verification is not done because it can only be
- done when logical functions are being defined.  In the latter case, the
- explicit @(':')@(tsee verify-guards) setting determines whether @(see guard)
- verification is tried.  So consider a @(':')@(tsee logic) mode @(tsee defun)
- in which no @(':')@(tsee verify-guards) setting is provided.  Is @(see guard)
- verification tried?  The answer depends on the eagerness setting as follows.
- If the eagerness is @('0'), @(see guard) verification is not tried.  If the
- eagerness is @('1'), it is tried if and only if a guard is explicitly
- specified in the @(tsee defun), in the following sense: there is an @('xargs')
- keyword @(':guard') or @(':stobjs') or a @(tsee type) declaration.  If the
- eagerness is @('2'), @(see guard) verification is tried.</p>
+ sets a flag to @('0'), @('1'), @('2'), or @('3').  The flag is used by certain
+ @(tsee defun) @(see events) to determine whether @(see guard) verification is
+ tried.  The flag is irrelevant to those @(tsee defun) @(see events) in
+ @(':')@(tsee program) mode.  It is also irrelevant to those @(tsee defun)
+ @(see events) in which an explicit @(':')@(tsee verify-guards) setting is
+ provided among the @(tsee xargs), except when the flag is @('3').  In the
+ @(':')@(tsee program) mode case, @(see guard) verification is not done because
+ it can only be done when logical functions are being defined.  Otherwise,
+ unless the flag is @('3'), the explicit @(':')@(tsee verify-guards) setting
+ determines whether @(see guard) verification is tried.  So consider a
+ @(':')@(tsee logic) mode @(tsee defun) in which no @(':')@(tsee verify-guards)
+ setting is provided.  Is @(see guard) verification tried?  The answer depends
+ on the eagerness setting as follows.  If the eagerness is @('0'), @(see guard)
+ verification is not tried.  If the eagerness is @('1'), it is tried if and
+ only if a guard is explicitly specified in the @(tsee defun), in the following
+ sense: there is an @('xargs') keyword @(':guard') or @(':stobjs') or a @(tsee
+ type) declaration.  If the eagerness is @('2') or @('3'), @(see guard)
+ verification is tried.</p>
 
  <p>The above remarks apply to @(tsee verify-termination) @(see events),
  according to whether guards are explicitly specified in the existing,
