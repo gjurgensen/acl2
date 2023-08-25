@@ -71657,9 +71657,10 @@ Subtopics
             (list 'quote otf-flg)))
 
   However, this version of [47mthm[0m did not permit calls of [47mthm[0m in [books]
-  or [47m[encapsulate][0m forms.  To remedy that deficiency, ACL2 now
-  defines [47mthm[0m as follows; below we explain components of this
-  definition.
+  or [47m[encapsulate][0m forms.  To remedy that deficiency, the definition
+  was changed to the following; below we explain components of this
+  definition.  (It has since been updated further, but that is not
+  relevant here so we don't comment here on further updates.)
 
     (defmacro thm (&whole event-form
                           term &key hints otf-flg)
@@ -100083,6 +100084,9 @@ New Features
   then files of the form [47m*__bookdata.out[0m will be written; see
   [bookdata] for explanation and an exception.  Thanks to Eric Smith
   for requesting this enhancement.
+
+  [47m[Thm][0m now takes an optional [47m:instructions[0m keyword argument, like
+  [47m[defthm][0m.  Thanks to Warren Hunt for requesting this enhancement.
 
 
 Heuristic and Efficiency Improvements
@@ -140730,15 +140734,13 @@ Subtopics
 
     General Form:
     (thm term
+         :instructions instructions
          :hints        hints
          :otf-flg      otf-flg)
 
-  where [47mterm[0m is a term alleged to be a theorem, and [47m[hints][0m and
-  [47m[otf-flg][0m are as described in the corresponding [documentation]
-  topics.  The keyword arguments above are both optional.  Unlike
-  [47mdefthm[0m, the [47m:instructions[0m keyword is not legal for [47mthm[0m; use an
-  [47m:instructions[0m hint instead, i.e., [47m:hints ((\"Goal\" :instructions
-  ...))[0m.
+  where [47mterm[0m is a term alleged to be a theorem, and [47m[instructions][0m,
+  [47m[hints][0m, and [47m[otf-flg][0m are as described in the corresponding
+  [documentation] topics.  The keyword arguments are optional.
 
   For information on how [47mthm[0m is implemented using [47m[make-event][0m, see
   [make-event-example-3].
