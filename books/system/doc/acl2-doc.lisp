@@ -68397,9 +68397,10 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
  })
 
  <p>However, this version of @('thm') did not permit calls of @('thm') in @(see
- books) or @(tsee encapsulate) forms.  To remedy that deficiency, ACL2 now
- defines @('thm') as follows; below we explain components of this
- definition.</p>
+ books) or @(tsee encapsulate) forms.  To remedy that deficiency, the
+ definition was changed to the following; below we explain components of this
+ definition.  (It has since been updated further, but that is not relevant here
+ so we don't comment here on further updates.)</p>
 
  @({
  (defmacro thm (&whole event-form
@@ -103258,6 +103259,9 @@ it."
  then files of the form @('*__bookdata.out') will be written; see @(see
  bookdata) for explanation and an exception.  Thanks to Eric Smith for
  requesting this enhancement.</p>
+
+ <p>@(tsee Thm) now takes an optional @(':instructions') keyword argument, like
+ @(tsee defthm).  Thanks to Warren Hunt for requesting this enhancement.</p>
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
@@ -141271,16 +141275,15 @@ work on <tt>(q x)</tt>.</p>
  @({
   General Form:
   (thm term
+       :instructions instructions
        :hints        hints
        :otf-flg      otf-flg)
  })
 
- <p>where @('term') is a term alleged to be a theorem, and @(tsee hints) and
- @(tsee otf-flg) are as described in the corresponding @(see documentation)
- topics.  The keyword arguments above are both optional.  Unlike @('defthm'),
- the @(':instructions') keyword is not legal for @('thm'); use an
- @(':instructions') hint instead, i.e., @(':hints ((\"Goal\" :instructions
- ...))').</p>
+ <p>where @('term') is a term alleged to be a theorem, and @(tsee
+ instructions), @(tsee hints), and @(tsee otf-flg) are as described in the
+ corresponding @(see documentation) topics.  The keyword arguments are
+ optional.</p>
 
  <p>For information on how @('thm') is implemented using @(tsee make-event),
  see @(see make-event-example-3).</p>")
