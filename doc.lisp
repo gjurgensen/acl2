@@ -99926,6 +99926,19 @@ Changes to Existing Features
   was needlessly extended and ACL2 reported that the function symbol
   was being given a badge.)
 
+  Suppose that a [47m[verify-guards][0m event for a defined function symbol,
+  [47mfn[0m, does not include a [47m:hints[0m keyword, but the existing definition
+  of [47mfn[0m includes a [47m:guard-hints[0m keyword in its [47m[xargs][0m [declaration].
+  Then, unlike previously, the value of that [47m:guard-hints[0m keyword is
+  now used as the value of [47m:hints[0m for that [47mverify-guards[0m event.  The
+  keywords [47m:guard-debug[0m and [47m:guard-simplify[0m of [47mverify-guards[0m
+  similarly now default to values of the corresponding [47mxargs[0m in the
+  old definition, if supplied there.  This change brings the behavior
+  of [47mverify-guards[0m in line with that of [47m[verify-termination][0m.  See
+  [verify-guards] for a discussion of the case of [47m[mutual-recursion][0m,
+  where only the definition of [47mfn[0m is relevant for keyword values, not
+  other definitions in its clique.
+
 
 New Features
 
@@ -148738,7 +148751,7 @@ Remarks
   must not be a macro-alias for a function symbol (see
   [macro-aliases-table]).  See [verify-guards+] for a utility that
   does not have this restriction.  (2) When the guards of a defined
-  function, [47mfn[0m, are verified [47mverify-guards[0m also includes the guards
+  function, [47mfn[0m, are verified, [47mverify-guards[0m also includes the guards
   of all the functions that are mutually recursive with [47mfn[0m, if any,
   plus the guards of all the quoted well-formed [47mLAMBDA[0m objects used
   by [47mfn[0m or any function in its mutually-recursive clique.  Guard
@@ -148865,14 +148878,35 @@ Remarks
     General Form:
     (verify-guards name
             :hints          hints
-            :guard-debug    gdbg   ; default is nil, but any value is legal
-            :guard-simplify gsmp ; default is t, may be set to :limited
+            :guard-debug    gdbg ; default generally nil; any value is legal
+            :guard-simplify gsmp ; default generally t; may be set to :limited
             :otf-flg        otf-flg)
 
-  In the General Form above, [47mname[0m is the name of a [47m:[0m[47m[logic][0m function
-  (see [defun-mode]) or of a theorem or axiom, or else is a [47m[lambda$][0m
-  expression or a well-formed [47mLAMBDA[0m object (not [3mquoted[0m).
-  [Mixed-mode-functions] cannot be guard verified.
+  In the General Form above, [47mname[0m may be the name of a [47m:[0m[47m[logic][0m mode
+  function (see [defun-mode]).  In that case, the first three
+  keywords may default to values in an existing definition as
+  discussed below.  Otherwise, [47mname[0m is the name of a theorem or
+  axiom, or it is a [47m[lambda$][0m expression or a well-formed [47mLAMBDA[0m
+  object (not [3mquoted[0m).  [Mixed-mode-functions] cannot be guard
+  verified.
+
+  In the most common case [47mname[0m is the name of a function that has not
+  yet had its [guard]s verified, each subroutine of which has had its
+  [guard]s verified.  The values [47m[hints][0m, [47m[otf-flg][0m, and
+  [47m[guard-debug][0m are as described in the corresponding [documentation]
+  entries, but [47mhints[0m and [47mguard-debug[0m can be taken from the existing
+  definition of [47mname[0m; we return to that point later.  The keyword
+  arguments above are all optional.  To admit this event, the
+  conjunction of the guard proof obligations must be proved.  If all
+  the guard obligations are proved, [47mname[0m is considered to have had
+  its [guard]s verified.  The [47m:guard-simplify[0m option controls certain
+  simplifications that may be applied to the guard conjecture while
+  generating the initial goal: its default is [47mt[0m, which doesn't
+  restrict such simplification, and the other legal value is
+  [47m:limited[0m, which skips all simplifications that depend on the set of
+  currently [enable]d rules; but as with [47mhints[0m and [47mguard-debug[0m, the
+  value can be taken from the existing definition of [47mname[0m, as
+  described further below.  See also [guard-simplification].
 
   If [47mname[0m is a [47mlambda$[0m expression it is translated (to a quoted
   well-formed [47mLAMBDA[0m object), the formals, declaration, and body are
@@ -148893,21 +148927,6 @@ Remarks
   and we expect you might grab the text of such an object and submit
   it to [47mverify-guards[0m.
 
-  In the most common case [47mname[0m is the name of a function that has not
-  yet had its [guard]s verified, each subroutine of which has had its
-  [guard]s verified.  The values [47m[hints][0m, [47m[otf-flg][0m, and
-  [47m[guard-debug][0m are as described in the corresponding [documentation]
-  entries.  The keyword arguments above are all optional.  To admit
-  this event, the conjunction of the guard proof obligations must be
-  proved.  If all the guard obligations are proved, [47mname[0m is
-  considered to have had its [guard]s verified.  The [47m:guard-simplify[0m
-  option controls certain simplifications that may be applied to the
-  guard conjecture while generating the initial goal: its default is
-  [47mt[0m, which doesn't restrict such simplification, and the other legal
-  value is [47m:limited[0m, which skips all simplifications that depend on
-  the set of currently [enable]d rules.  See also
-  [guard-simplification].
-
   See [guard-formula-utilities] for related utilities, including ones
   that let you view the formula to be proved by [47mverify-guards[0m, but
   without creating an event.
@@ -148915,6 +148934,46 @@ Remarks
   If [47mname[0m is one of several functions in a mutually recursive clique,
   [47mverify-guards[0m will attempt to verify the [guard]s of all of the
   functions.
+
+  As promised above, we now describe the case that [47mname[0m was defined
+  function symbol whose definition supplies the value of [47m:hints[0m,
+  [47m:guard-debug[0m, and/or [47m:guard-simplify[0m.  This happens when those
+  keywords are not supplied with the [47mverify-guards[0m event but the
+  existing definition specifies [47m:guard-hints[0m, [47m:guard-debug[0m, and/or
+  [47m:guard-simplify[0m, respectively, in its [47m[xargs][0m [declaration].  Note
+  that when [47mname[0m is defined as part of a [47m[mutual-recursion][0m event,
+  only declarations in the definition of [47mname[0m are relevant, but those
+  in definitions of other functions in the clique.  Consider the
+  following example.
+
+    (defun my-consp (x)
+      (declare (xargs :guard t))
+      (consp x))
+
+    (defun my-cdr (x)
+      (declare (xargs :guard (my-consp x)))
+      (cdr x))
+
+    (mutual-recursion
+     (defun evenlp (x)
+       (declare (xargs :verify-guards nil))
+       (if (consp x) (oddlp (my-cdr x)) t))
+     (defun oddlp (x)
+       (declare (xargs :guard-hints
+                       ((\"Goal\" :in-theory (disable my-consp (tau-system))))))
+       (if (consp x) (evenlp (my-cdr x)) nil)))
+
+  Each of the following succeeds or fails for the reason given.
+
+    ; Succeeds: :guard-hints for oddlp are ignored.
+    (verify-guards evenlp)
+
+    ; Fails: :guard-hints for oddlp defeat the proof attempt.
+    (verify-guards oddlp)
+
+    ; Succeeds: guard-hints for oddlp are ignored because :hints was supplied
+    ; explicitly (even though :hints is nil, which is the default).
+    (verify-guards oddlp :hints nil)
 
   If the guard or body of [47mname[0m include any quoted well-formed [47mLAMBDA[0m
   objects, [47mverify-guards[0m include their proof obligations in those
