@@ -13076,13 +13076,12 @@ Subtopics
   See [book-contents] to continue the guided tour.")
  (BOOKDATA
   (BOOKS)
-  "An optional tool for writing out small files with meta-data about the
-  books that are being certified.
+  "Write small files with meta-data about certified [books]
 
-  ACL2 provides a primitive capability for writing out a file of data
-  associated with a book.  This information might be useful, for
-  example, in building a database that allows you to search for name
-  conflicts.  See [community-books] directory
+  ACL2 provides a primitive capability for writing out a file of
+  metadata associated with a book.  This information might be useful,
+  for example, in building a database that allows you to search for
+  name conflicts.  See [community-books] directory
   [47mbooks/tools/book-conflicts/[0m for an application of this capability
   by Dave Greve.  If you use this capability and have ideas for
   enhancing it, please feel free to send them to the ACL2 developers.
@@ -13094,6 +13093,11 @@ Subtopics
 
     (assign write-bookdata t)
     (certify-book \"BK\" ...)
+
+  Alternatively, one may set environment variable [47mACL2_WRITE_BOOKDATA[0m
+  to any non-empty value to cause [47mBK__bookdata.out[0m to be written,
+  with one exception, namely: when the value of state global
+  [47mwrite-bookdata[0m is [47m:never[0m.
 
   The resulting file will contain a single form of the following shape,
   although not necessarily in the following order, according to the
@@ -13250,8 +13254,7 @@ Subtopics
       Assigning ``often unique'' fingerprints to [books]
 
   [Bookdata]
-      An optional tool for writing out small files with meta-data about
-      the books that are being certified.
+      Write small files with meta-data about certified [books]
 
   [Books-reference]
       Reference guide for ACL2 functionality related to books, e.g.,
@@ -17260,20 +17263,20 @@ Subtopics
                   :useless-runes          ; :write/:read/:read?/n/-n/nil
                                           ;   (-100 < n < 0 or 0 < n <= 100)
                                           ;   [default nil or from environment]
-                  :write-event-data       ; [default nil]
+                  :write-event-data       ; [default nil or from environment]
                   )
 
   where [47mbook-name[0m is a book filename, [47mk[0m is used to indicate your
   approval of the ``certification [world],'' and [47mcompile-flg[0m can
   control whether the book is to be compiled.  The defaults for
-  [47mcompile-flg[0m, [47mskip-proofs-okp[0m, [47macl2x[0m, [47mwrite-port[0m, [47mpcert[0m, and
-  [47m:useless-runes[0m can be affected by environment variables.  All of
-  these arguments are described in detail below, except for [47m:pcert[0m,
-  [47m:useless-runes[0m, and [47m:write-event-data[0m: see
-  [provisional-certification], [useless-runes], and
-  [saving-event-data], respectively, for the effects of these three
-  arguments and (for the first two) their corresponding environment
-  variables, as we ignore those effects in the present topic.
+  [47mcompile-flg[0m, [47mskip-proofs-okp[0m, [47macl2x[0m, [47mwrite-port[0m, [47mpcert[0m,
+  [47m:useless-runes[0m, and [47m:write-event-data[0m can be affected by
+  environment variables.  All of these arguments are described in
+  detail below, except for [47m:pcert[0m, [47m:useless-runes[0m, and
+  [47m:write-event-data[0m: see [provisional-certification],
+  [useless-runes], and [saving-event-data], respectively, for the
+  effects of these three arguments and related environment variables,
+  as we ignore those effects in the present topic.
 
   NOTE: If a given book includes some books (see [include-book]), then
   those included books need to be certified before the given book is
@@ -71654,9 +71657,10 @@ Subtopics
             (list 'quote otf-flg)))
 
   However, this version of [47mthm[0m did not permit calls of [47mthm[0m in [books]
-  or [47m[encapsulate][0m forms.  To remedy that deficiency, ACL2 now
-  defines [47mthm[0m as follows; below we explain components of this
-  definition.
+  or [47m[encapsulate][0m forms.  To remedy that deficiency, the definition
+  was changed to the following; below we explain components of this
+  definition.  (It has since been updated further, but that is not
+  relevant here so we don't comment here on further updates.)
 
     (defmacro thm (&whole event-form
                           term &key hints otf-flg)
@@ -99922,6 +99926,19 @@ Changes to Existing Features
   was needlessly extended and ACL2 reported that the function symbol
   was being given a badge.)
 
+  Suppose that a [47m[verify-guards][0m event for a defined function symbol,
+  [47mfn[0m, does not include a [47m:hints[0m keyword, but the existing definition
+  of [47mfn[0m includes a [47m:guard-hints[0m keyword in its [47m[xargs][0m [declaration].
+  Then, unlike previously, the value of that [47m:guard-hints[0m keyword is
+  now used as the value of [47m:hints[0m for that [47mverify-guards[0m event.  The
+  keywords [47m:guard-debug[0m and [47m:guard-simplify[0m of [47mverify-guards[0m
+  similarly now default to values of the corresponding [47mxargs[0m in the
+  old definition, if supplied there.  This change brings the behavior
+  of [47mverify-guards[0m in line with that of [47m[verify-termination][0m.  See
+  [verify-guards] for a discussion of the case of [47m[mutual-recursion][0m,
+  where only the definition of [47mfn[0m is relevant for keyword values, not
+  other definitions in its clique.
+
 
 New Features
 
@@ -100075,6 +100092,14 @@ New Features
   (Technical note: That issue occurs because [47mverify-termimnation[0m
   invokes [47m[make-event][0m, and the expansion is saved when locally
   including the sub-book.)
+
+  When environment variable [47mACL2_WRITE_BOOKDATA[0m has a non-empty value,
+  then files of the form [47m*__bookdata.out[0m will be written; see
+  [bookdata] for explanation and an exception.  Thanks to Eric Smith
+  for requesting this enhancement.
+
+  [47m[Thm][0m now takes an optional [47m:instructions[0m keyword argument, like
+  [47m[defthm][0m.  Thanks to Warren Hunt for requesting this enhancement.
 
 
 Heuristic and Efficiency Improvements
@@ -123843,8 +123868,8 @@ Finding [rune]s that were used only previously, or only now
 
   When [47mcertify-book[0m writes event-data under either condition above
   (keyword argument or environment variable), it writes it to
-  [47m.sys/BOOK@event-data.lsp[0m.  That file includes entries of the form
-  [47m(name . alist)[0m, where [47malist[0m is an [3mevent-data alist[0m --- see
+  [47mBOOK@event-data.lsp[0m.  That file includes entries of the form [47m(name
+  . alist)[0m, where [47malist[0m is an [3mevent-data alist[0m --- see
   [47m[get-event-data][0m --- where each entry corresponds to one of the
   following event types, possibly generated by a macro or
   [47m[make-event][0m call.
@@ -123859,20 +123884,19 @@ Finding [rune]s that were used only previously, or only now
   certification.  Normally [47mname[0m is the name of the event, but it is
   [47mnil[0m in the case of a [47m[thm][0m event.
 
-  Suppose that you have file [47m.sys/BOOK@event-data.lsp[0m as discussed
-  above, that is, from having previously certified [47mBOOK.lisp[0m when
-  writing event-data.  Also suppose that you now have a copy of
-  [47mBOOK.lisp[0m (maybe the same one, maybe not) for which certification
-  has failed, possibly using a different ACL2 version than the first,
-  and let [47mEV[0m be the event that caused the failure; assume that's
-  because of a proof failure.  Below are steps that allow you to see
-  which rules (actually, [rune]s) were used in the proof attempt for
-  the first event but not the second, or vice-versa.  That
-  information might help you to repair the proof, for example by
-  enabling or disabling a rule whose [enable]d status has changed
-  after the successful certification, or by proving a rule that was
-  in an included book during the successful certification but has
-  since been deleted.
+  Suppose that you have file [47mBOOK@event-data.lsp[0m as discussed above,
+  that is, from having previously certified [47mBOOK.lisp[0m when writing
+  event-data.  Also suppose that you now have a copy of [47mBOOK.lisp[0m
+  (maybe the same one, maybe not) for which certification has failed,
+  possibly using a different ACL2 version than the first, and let [47mEV[0m
+  be the event that caused the failure; assume that's because of a
+  proof failure.  Below are steps that allow you to see which rules
+  (actually, [rune]s) were used in the proof attempt for the first
+  event but not the second, or vice-versa.  That information might
+  help you to repair the proof, for example by enabling or disabling
+  a rule whose [enable]d status has changed after the successful
+  certification, or by proving a rule that was in an included book
+  during the successful certification but has since been deleted.
 
   [31;1mStep 1[0m.  Load the [portcullis] commands:
 
@@ -140723,15 +140747,13 @@ Subtopics
 
     General Form:
     (thm term
+         :instructions instructions
          :hints        hints
          :otf-flg      otf-flg)
 
-  where [47mterm[0m is a term alleged to be a theorem, and [47m[hints][0m and
-  [47m[otf-flg][0m are as described in the corresponding [documentation]
-  topics.  The keyword arguments above are both optional.  Unlike
-  [47mdefthm[0m, the [47m:instructions[0m keyword is not legal for [47mthm[0m; use an
-  [47m:instructions[0m hint instead, i.e., [47m:hints ((\"Goal\" :instructions
-  ...))[0m.
+  where [47mterm[0m is a term alleged to be a theorem, and [47m[instructions][0m,
+  [47m[hints][0m, and [47m[otf-flg][0m are as described in the corresponding
+  [documentation] topics.  The keyword arguments are optional.
 
   For information on how [47mthm[0m is implemented using [47m[make-event][0m, see
   [make-event-example-3].
@@ -148729,7 +148751,7 @@ Remarks
   must not be a macro-alias for a function symbol (see
   [macro-aliases-table]).  See [verify-guards+] for a utility that
   does not have this restriction.  (2) When the guards of a defined
-  function, [47mfn[0m, are verified [47mverify-guards[0m also includes the guards
+  function, [47mfn[0m, are verified, [47mverify-guards[0m also includes the guards
   of all the functions that are mutually recursive with [47mfn[0m, if any,
   plus the guards of all the quoted well-formed [47mLAMBDA[0m objects used
   by [47mfn[0m or any function in its mutually-recursive clique.  Guard
@@ -148856,14 +148878,35 @@ Remarks
     General Form:
     (verify-guards name
             :hints          hints
-            :guard-debug    gdbg   ; default is nil, but any value is legal
-            :guard-simplify gsmp ; default is t, may be set to :limited
+            :guard-debug    gdbg ; default generally nil; any value is legal
+            :guard-simplify gsmp ; default generally t; may be set to :limited
             :otf-flg        otf-flg)
 
-  In the General Form above, [47mname[0m is the name of a [47m:[0m[47m[logic][0m function
-  (see [defun-mode]) or of a theorem or axiom, or else is a [47m[lambda$][0m
-  expression or a well-formed [47mLAMBDA[0m object (not [3mquoted[0m).
-  [Mixed-mode-functions] cannot be guard verified.
+  In the General Form above, [47mname[0m may be the name of a [47m:[0m[47m[logic][0m mode
+  function (see [defun-mode]).  In that case, the first three
+  keywords may default to values in an existing definition as
+  discussed below.  Otherwise, [47mname[0m is the name of a theorem or
+  axiom, or it is a [47m[lambda$][0m expression or a well-formed [47mLAMBDA[0m
+  object (not [3mquoted[0m).  [Mixed-mode-functions] cannot be guard
+  verified.
+
+  In the most common case [47mname[0m is the name of a function that has not
+  yet had its [guard]s verified, each subroutine of which has had its
+  [guard]s verified.  The values [47m[hints][0m, [47m[otf-flg][0m, and
+  [47m[guard-debug][0m are as described in the corresponding [documentation]
+  entries, but [47mhints[0m and [47mguard-debug[0m can be taken from the existing
+  definition of [47mname[0m; we return to that point later.  The keyword
+  arguments above are all optional.  To admit this event, the
+  conjunction of the guard proof obligations must be proved.  If all
+  the guard obligations are proved, [47mname[0m is considered to have had
+  its [guard]s verified.  The [47m:guard-simplify[0m option controls certain
+  simplifications that may be applied to the guard conjecture while
+  generating the initial goal: its default is [47mt[0m, which doesn't
+  restrict such simplification, and the other legal value is
+  [47m:limited[0m, which skips all simplifications that depend on the set of
+  currently [enable]d rules; but as with [47mhints[0m and [47mguard-debug[0m, the
+  value can be taken from the existing definition of [47mname[0m, as
+  described further below.  See also [guard-simplification].
 
   If [47mname[0m is a [47mlambda$[0m expression it is translated (to a quoted
   well-formed [47mLAMBDA[0m object), the formals, declaration, and body are
@@ -148884,21 +148927,6 @@ Remarks
   and we expect you might grab the text of such an object and submit
   it to [47mverify-guards[0m.
 
-  In the most common case [47mname[0m is the name of a function that has not
-  yet had its [guard]s verified, each subroutine of which has had its
-  [guard]s verified.  The values [47m[hints][0m, [47m[otf-flg][0m, and
-  [47m[guard-debug][0m are as described in the corresponding [documentation]
-  entries.  The keyword arguments above are all optional.  To admit
-  this event, the conjunction of the guard proof obligations must be
-  proved.  If all the guard obligations are proved, [47mname[0m is
-  considered to have had its [guard]s verified.  The [47m:guard-simplify[0m
-  option controls certain simplifications that may be applied to the
-  guard conjecture while generating the initial goal: its default is
-  [47mt[0m, which doesn't restrict such simplification, and the other legal
-  value is [47m:limited[0m, which skips all simplifications that depend on
-  the set of currently [enable]d rules.  See also
-  [guard-simplification].
-
   See [guard-formula-utilities] for related utilities, including ones
   that let you view the formula to be proved by [47mverify-guards[0m, but
   without creating an event.
@@ -148906,6 +148934,46 @@ Remarks
   If [47mname[0m is one of several functions in a mutually recursive clique,
   [47mverify-guards[0m will attempt to verify the [guard]s of all of the
   functions.
+
+  As promised above, we now describe the case that [47mname[0m was defined
+  function symbol whose definition supplies the value of [47m:hints[0m,
+  [47m:guard-debug[0m, and/or [47m:guard-simplify[0m.  This happens when those
+  keywords are not supplied with the [47mverify-guards[0m event but the
+  existing definition specifies [47m:guard-hints[0m, [47m:guard-debug[0m, and/or
+  [47m:guard-simplify[0m, respectively, in its [47m[xargs][0m [declaration].  Note
+  that when [47mname[0m is defined as part of a [47m[mutual-recursion][0m event,
+  only declarations in the definition of [47mname[0m are relevant, but those
+  in definitions of other functions in the clique.  Consider the
+  following example.
+
+    (defun my-consp (x)
+      (declare (xargs :guard t))
+      (consp x))
+
+    (defun my-cdr (x)
+      (declare (xargs :guard (my-consp x)))
+      (cdr x))
+
+    (mutual-recursion
+     (defun evenlp (x)
+       (declare (xargs :verify-guards nil))
+       (if (consp x) (oddlp (my-cdr x)) t))
+     (defun oddlp (x)
+       (declare (xargs :guard-hints
+                       ((\"Goal\" :in-theory (disable my-consp (tau-system))))))
+       (if (consp x) (evenlp (my-cdr x)) nil)))
+
+  Each of the following succeeds or fails for the reason given.
+
+    ; Succeeds: :guard-hints for oddlp are ignored.
+    (verify-guards evenlp)
+
+    ; Fails: :guard-hints for oddlp defeat the proof attempt.
+    (verify-guards oddlp)
+
+    ; Succeeds: guard-hints for oddlp are ignored because :hints was supplied
+    ; explicitly (even though :hints is nil, which is the default).
+    (verify-guards oddlp :hints nil)
 
   If the guard or body of [47mname[0m include any quoted well-formed [47mLAMBDA[0m
   objects, [47mverify-guards[0m include their proof obligations in those

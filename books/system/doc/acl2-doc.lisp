@@ -10319,15 +10319,15 @@ and @(tsee include-book)"
 
 (defxdoc bookdata
   :parents (books)
-  :short "An optional tool for writing out small files with meta-data about
- the books that are being certified."
+  :short "Write small files with meta-data about certified @(see books)"
 
-  :long "<p>ACL2 provides a primitive capability for writing out a file of data
- associated with a book.  This information might be useful, for example, in
- building a database that allows you to search for name conflicts.  See @(see
- community-books) directory @('books/tools/book-conflicts/') for an application
- of this capability by Dave Greve.  If you use this capability and have ideas
- for enhancing it, please feel free to send them to the ACL2 developers.</p>
+  :long "<p>ACL2 provides a primitive capability for writing out a file of
+ metadata associated with a book.  This information might be useful, for
+ example, in building a database that allows you to search for name conflicts.
+ See @(see community-books) directory @('books/tools/book-conflicts/') for an
+ application of this capability by Dave Greve.  If you use this capability and
+ have ideas for enhancing it, please feel free to send them to the ACL2
+ developers.</p>
 
  <p>If the book has the name @('BK'), then the output file is named
  @('BK__bookdata.out').  That file is generated in the same directory as
@@ -10338,6 +10338,11 @@ and @(tsee include-book)"
   (assign write-bookdata t)
   (certify-book \"BK\" ...)
  })
+
+ <p>Alternatively, one may set environment variable @('ACL2_WRITE_BOOKDATA') to
+ any non-empty value to cause @('BK__bookdata.out') to be written, with one
+ exception, namely: when the value of state global @('write-bookdata') is
+ @(':never').</p>
 
  <p>The resulting file will contain a single form of the following shape,
  although not necessarily in the following order, according to the description
@@ -14434,7 +14439,7 @@ with any questions about building the community books.</p>")
                 :useless-runes          ; :write/:read/:read?/n/-n/nil
                                         ;   (-100 < n < 0 or 0 < n <= 100)
                                         ;   [default nil or from environment]
-                :write-event-data       ; [default nil]
+                :write-event-data       ; [default nil or from environment]
                 )
  })
 
@@ -14442,13 +14447,13 @@ with any questions about building the community books.</p>")
  approval of the ``certification @(see world),'' and @('compile-flg') can
  control whether the book is to be compiled.  The defaults for
  @('compile-flg'), @('skip-proofs-okp'), @('acl2x'), @('write-port'),
- @('pcert'), and @(':useless-runes') can be affected by environment variables.
- All of these arguments are described in detail below, except for @(':pcert'),
- @(':useless-runes'), and @(':write-event-data'): see @(see
- provisional-certification), @(see useless-runes), and @(see
+ @('pcert'), @(':useless-runes'), and @(':write-event-data') can be affected by
+ environment variables.  All of these arguments are described in detail below,
+ except for @(':pcert'), @(':useless-runes'), and @(':write-event-data'): see
+ @(see provisional-certification), @(see useless-runes), and @(see
  saving-event-data), respectively, for the effects of these three arguments and
- (for the first two) their corresponding environment variables, as we ignore
- those effects in the present topic.</p>
+ related environment variables, as we ignore those effects in the present
+ topic.</p>
 
  <p>NOTE: If a given book includes some books (see @(see include-book)), then
  those included books need to be certified before the given book is certified.
@@ -68392,9 +68397,10 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
  })
 
  <p>However, this version of @('thm') did not permit calls of @('thm') in @(see
- books) or @(tsee encapsulate) forms.  To remedy that deficiency, ACL2 now
- defines @('thm') as follows; below we explain components of this
- definition.</p>
+ books) or @(tsee encapsulate) forms.  To remedy that deficiency, the
+ definition was changed to the following; below we explain components of this
+ definition.  (It has since been updated further, but that is not relevant here
+ so we don't comment here on further updates.)</p>
 
  @({
  (defmacro thm (&whole event-form
@@ -103101,6 +103107,19 @@ it."
  was needlessly extended and ACL2 reported that the function symbol was being
  given a badge.)</p>
 
+ <p>Suppose that a @(tsee verify-guards) event for a defined function symbol,
+ @('fn'), does not include a @(':hints') keyword, but the existing definition
+ of @('fn') includes a @(':guard-hints') keyword in its @(tsee xargs) @(see
+ declaration).  Then, unlike previously, the value of that @(':guard-hints')
+ keyword is now used as the value of @(':hints') for that @('verify-guards')
+ event.  The keywords @(':guard-debug') and @(':guard-simplify') of
+ @('verify-guards') similarly now default to values of the corresponding
+ @('xargs') in the old definition, if supplied there.  This change brings the
+ behavior of @('verify-guards') in line with that of @(tsee
+ verify-termination).  See @(see verify-guards) for a discussion of the case of
+ @(tsee mutual-recursion), where only the definition of @('fn') is relevant for
+ keyword values, not other definitions in its clique.</p>
+
  <h3>New Features</h3>
 
  <p>The new zero-ary attachable system function, @(tsee heavy-linear-p), allows
@@ -103248,6 +103267,14 @@ it."
  event.  (Technical note: That issue occurs because @('verify-termimnation')
  invokes @(tsee make-event), and the expansion is saved when locally including
  the sub-book.)</p>
+
+ <p>When environment variable @('ACL2_WRITE_BOOKDATA') has a non-empty value,
+ then files of the form @('*__bookdata.out') will be written; see @(see
+ bookdata) for explanation and an exception.  Thanks to Eric Smith for
+ requesting this enhancement.</p>
+
+ <p>@(tsee Thm) now takes an optional @(':instructions') keyword argument, like
+ @(tsee defthm).  Thanks to Warren Hunt for requesting this enhancement.</p>
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
@@ -125127,11 +125154,10 @@ work on <tt>(q x)</tt>.</p>
 
  <p>When @('certify-book') writes event-data under either condition above
  (keyword argument or environment variable), it writes it to
- @('.sys/BOOK@event-data.lsp').  That file includes entries of the form
- @('(name . alist)'), where @('alist') is an <i>event-data alist</i> &mdash;
- see @(tsee get-event-data) &mdash; where each entry corresponds to one of the
- following event types, possibly generated by a macro or @(tsee make-event)
- call.</p>
+ @('BOOK@event-data.lsp').  That file includes entries of the form @('(name
+ . alist)'), where @('alist') is an <i>event-data alist</i> &mdash; see @(tsee
+ get-event-data) &mdash; where each entry corresponds to one of the following
+ event types, possibly generated by a macro or @(tsee make-event) call.</p>
 
  <ul>
  <li>defthm</li>
@@ -125145,8 +125171,8 @@ work on <tt>(q x)</tt>.</p>
  Normally @('name') is the name of the event, but it is @('nil') in the case of
  a @(tsee thm) event.</p>
 
- <p>Suppose that you have file @('.sys/BOOK@event-data.lsp') as discussed
- above, that is, from having previously certified @('BOOK.lisp') when writing
+ <p>Suppose that you have file @('BOOK@event-data.lsp') as discussed above,
+ that is, from having previously certified @('BOOK.lisp') when writing
  event-data.  Also suppose that you now have a copy of @('BOOK.lisp') (maybe
  the same one, maybe not) for which certification has failed, possibly using a
  different ACL2 version than the first, and let @('EV') be the event that
@@ -141262,16 +141288,15 @@ work on <tt>(q x)</tt>.</p>
  @({
   General Form:
   (thm term
+       :instructions instructions
        :hints        hints
        :otf-flg      otf-flg)
  })
 
- <p>where @('term') is a term alleged to be a theorem, and @(tsee hints) and
- @(tsee otf-flg) are as described in the corresponding @(see documentation)
- topics.  The keyword arguments above are both optional.  Unlike @('defthm'),
- the @(':instructions') keyword is not legal for @('thm'); use an
- @(':instructions') hint instead, i.e., @(':hints ((\"Goal\" :instructions
- ...))').</p>
+ <p>where @('term') is a term alleged to be a theorem, and @(tsee
+ instructions), @(tsee hints), and @(tsee otf-flg) are as described in the
+ corresponding @(see documentation) topics.  The keyword arguments are
+ optional.</p>
 
  <p>For information on how @('thm') is implemented using @(tsee make-event),
  see @(see make-event-example-3).</p>")
@@ -150410,7 +150435,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  must not be a macro-alias for a function symbol (see @(see
  macro-aliases-table)).  See @(see verify-guards+) for a utility that does not
  have this restriction.  (2) When the guards of a defined function, @('fn'),
- are verified @('verify-guards') also includes the guards of all the functions
+ are verified, @('verify-guards') also includes the guards of all the functions
  that are mutually recursive with @('fn'), if any, plus the guards of all the
  quoted well-formed @('LAMBDA') objects used by @('fn') or any function in its
  mutually-recursive clique.  Guard obligations for @('lambda$') and @('LAMBDA')
@@ -150542,15 +150567,35 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   General Form:
   (verify-guards name
           :hints          hints
-          :guard-debug    gdbg   ; default is nil, but any value is legal
-          :guard-simplify gsmp ; default is t, may be set to :limited
+          :guard-debug    gdbg ; default generally nil; any value is legal
+          :guard-simplify gsmp ; default generally t; may be set to :limited
           :otf-flg        otf-flg)
  })
 
- <p>In the General Form above, @('name') is the name of a @(':')@(tsee logic)
- function (see @(see defun-mode)) or of a theorem or axiom, or else is a @(tsee
+ <p>In the General Form above, @('name') may be the name of a @(':')@(tsee
+ logic) mode function (see @(see defun-mode)).  In that case, the first three
+ keywords may default to values in an existing definition as discussed below.
+ Otherwise, @('name') is the name of a theorem or axiom, or it is a @(tsee
  lambda$) expression or a well-formed @('LAMBDA') object (not <i>quoted</i>).
  @(see Mixed-mode-functions) cannot be guard verified.</p>
+
+ <p>In the most common case @('name') is the name of a function that has not
+ yet had its @(see guard)s verified, each subroutine of which has had its @(see
+ guard)s verified.  The values @(tsee hints), @(tsee otf-flg), and @(tsee
+ guard-debug) are as described in the corresponding @(see documentation)
+ entries, but @('hints') and @('guard-debug') can be taken from the existing
+ definition of @('name'); we return to that point later.  The keyword arguments
+ above are all optional.  To admit this event, the conjunction of the guard
+ proof obligations must be proved.  If all the guard obligations are proved,
+ @('name') is considered to have had its @(see guard)s verified.  The
+ @(':guard-simplify') option controls certain simplifications that may be
+ applied to the guard conjecture while generating the initial goal: its default
+ is @('t'), which doesn't restrict such simplification, and the other legal
+ value is @(':limited'), which skips all simplifications that depend on the set
+ of currently @(see enable)d rules; but as with @('hints') and
+ @('guard-debug'), the value can be taken from the existing definition of
+ @('name'), as described further below.  See also @(see
+ guard-simplification).</p>
 
  <p>If @('name') is a @('lambda$') expression it is translated (to a quoted
  well-formed @('LAMBDA') object), the formals, declaration, and body are
@@ -150571,20 +150616,6 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  expect you might grab the text of such an object and submit it to
  @('verify-guards').</p>
 
- <p>In the most common case @('name') is the name of a function that has not
- yet had its @(see guard)s verified, each subroutine of which has had its @(see
- guard)s verified.  The values @(tsee hints), @(tsee otf-flg), and @(tsee
- guard-debug) are as described in the corresponding @(see documentation)
- entries.  The keyword arguments above are all optional.  To admit this event,
- the conjunction of the guard proof obligations must be proved.  If all the
- guard obligations are proved, @('name') is considered to have had its @(see
- guard)s verified.  The @(':guard-simplify') option controls certain
- simplifications that may be applied to the guard conjecture while generating
- the initial goal: its default is @('t'), which doesn't restrict such
- simplification, and the other legal value is @(':limited'), which skips all
- simplifications that depend on the set of currently @(see enable)d rules.  See
- also @(see guard-simplification).</p>
-
  <p>See @(see guard-formula-utilities) for related utilities, including ones
  that let you view the formula to be proved by @('verify-guards'), but without
  creating an event.</p>
@@ -150592,6 +150623,50 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  <p>If @('name') is one of several functions in a mutually recursive clique,
  @('verify-guards') will attempt to verify the @(see guard)s of all of the
  functions.</p>
+
+ <p>As promised above, we now describe the case that @('name') was defined
+ function symbol whose definition supplies the value of @(':hints'),
+ @(':guard-debug'), and/or @(':guard-simplify').  This happens when those
+ keywords are not supplied with the @('verify-guards') event but the existing
+ definition specifies @(':guard-hints'), @(':guard-debug'), and/or
+ @(':guard-simplify'), respectively, in its @(tsee xargs) @(see declaration).
+ Note that when @('name') is defined as part of a @(tsee mutual-recursion)
+ event, only declarations in the definition of @('name') are relevant, but
+ those in definitions of other functions in the clique.  Consider the following
+ example.</p>
+
+ @({
+ (defun my-consp (x)
+   (declare (xargs :guard t))
+   (consp x))
+
+ (defun my-cdr (x)
+   (declare (xargs :guard (my-consp x)))
+   (cdr x))
+
+ (mutual-recursion
+  (defun evenlp (x)
+    (declare (xargs :verify-guards nil))
+    (if (consp x) (oddlp (my-cdr x)) t))
+  (defun oddlp (x)
+    (declare (xargs :guard-hints
+                    ((\"Goal\" :in-theory (disable my-consp (tau-system))))))
+    (if (consp x) (evenlp (my-cdr x)) nil)))
+ }) 
+
+ <p>Each of the following succeeds or fails for the reason given.</p>
+
+ @({
+ ; Succeeds: :guard-hints for oddlp are ignored.
+ (verify-guards evenlp)
+
+ ; Fails: :guard-hints for oddlp defeat the proof attempt.
+ (verify-guards oddlp)
+
+ ; Succeeds: guard-hints for oddlp are ignored because :hints was supplied
+ ; explicitly (even though :hints is nil, which is the default).
+ (verify-guards oddlp :hints nil)
+ })
 
  <p>If the guard or body of @('name') include any quoted well-formed
  @('LAMBDA') objects, @('verify-guards') include their proof obligations in
