@@ -47637,7 +47637,7 @@ current fast alists."
 
  <dd><p>@('Value') is any object and is irrelevant.  This hint has no effect,
  although unlike an empty hint such as @('(\"Goal\")'), it is not dropped.
- Thus, @('(\"Goal\") :do-not t') will shadow any later (or default) hint on
+ Thus, @('(\"Goal\" :no-op t)') will shadow any later (or default) hint on
  @('\"Goal\"'), but @('(\"Goal\")') will not.  Unlike other hint keywords,
  multiple occurrences of the keyword @(':no-op') are tolerated.</p></dd>
 
@@ -150652,7 +150652,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
     (declare (xargs :guard-hints
                     ((\"Goal\" :in-theory (disable my-consp (tau-system))))))
     (if (consp x) (evenlp (my-cdr x)) nil)))
- }) 
+ })
 
  <p>Each of the following succeeds or fails for the reason given.</p>
 
