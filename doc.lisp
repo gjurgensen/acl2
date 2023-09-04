@@ -50612,17 +50612,16 @@ Subtopics
 
     [47m:induct[0m
 
-        [47mValue[0m is either [47mt[0m or a term containing at least one recursively
-        defined function symbol; if [47mt[0m, this hint indicates that the
-        system should proceed to apply its induction heuristic to the
-        specified goal produced (without trying simplification,
-        etc.); if [47mvalue[0m is a term other than [47mt[0m, then not only should
-        the system apply induction immediately, but it should analyze
-        [47mvalue[0m rather than the goal to generate its [induction]
-        scheme.  Merging and the other [induction] heuristics are
-        applied.  Thus, if [47mvalue[0m contains several mergeable
-        [induction]s, the ``best'' will be created and chosen.  E.g.,
-        the [47m:induct[0m hint
+        [47mValue[0m is either [47mt[0m or a term that is not an atom or a quoted constant.
+        The value [47mt[0m indicates that the system use induction
+        immediately by applying its induction heuristic to the
+        specified goal (without trying simplification, etc.).
+        Otherwise, the system should apply induction immediately, but
+        it should analyze [47mvalue[0m rather than the goal to generate its
+        [induction] scheme.  Either way (i.e., for value [47mt[0m or not),
+        merging and the other [induction] heuristics are applied.
+        Thus, if [47mvalue[0m contains several mergeable [induction]s, the
+        ``best'' will be created and chosen.  E.g., the [47m:induct[0m hint
 
           (and (nth i a) (nth j a))
 
@@ -50645,7 +50644,7 @@ Subtopics
 
         [47mValue[0m is any object and is irrelevant.  This hint has no effect,
         although unlike an empty hint such as [47m(\"Goal\")[0m, it is not
-        dropped.  Thus, [47m(\"Goal\") :do-not t[0m will shadow any later (or
+        dropped.  Thus, [47m(\"Goal\" :no-op t)[0m will shadow any later (or
         default) hint on [47m\"Goal\"[0m, but [47m(\"Goal\")[0m will not.  Unlike other
         hint keywords, multiple occurrences of the keyword [47m:no-op[0m are
         tolerated.
@@ -99938,6 +99937,26 @@ Changes to Existing Features
   [verify-guards] for a discussion of the case of [47m[mutual-recursion][0m,
   where only the definition of [47mfn[0m is relevant for keyword values, not
   other definitions in its clique.
+
+  A hint of the form [47m:induct X[0m is now an error if [47mX[0m is an atom other
+  than [47mt[0m or a quoted constant, since those do not suggest any
+  induction scheme.  Thanks to Eric Smith for raising the question of
+  what [47m:induct nil[0m should do and helping with examples showing that
+  the current behavior is not really consistent.  Thanks to
+  Alessandro Coglio for suggesting that [47m:induct nil[0m cause an error
+  since it serves no purpose and could be confused with
+  [47m:do-not-induct t[0m, which is quite different.
+
+  The built-in [47m[defaxiom][0m events [47mcode-char-char-code-is-identity[0m and
+  [47mchar-code-code-char-is-identity[0m no longer have [47m[force][0md hypotheses.
+  Thanks to Alessandro Coglio for pointing out that these [rewrite]
+  rules were rather unique as built-in rewrite rules that force
+  hypotheses.  Note that the original versions of these two rules,
+  stated as [47m[defthm][0m events with suffix [47m\"-FORCED\"[0m added to the names,
+  may be found in community book
+  [47mbooks/std/basic/code-char-char-code-with-force.lisp[0m; including this
+  books (perhaps [local]ly) may rescue a proof that now fails because
+  of the change.
 
 
 New Features
