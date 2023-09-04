@@ -103128,6 +103128,17 @@ it."
  that @(':induct nil') cause an error since it serves no purpose and could be
  confused with @(':do-not-induct t'), which is quite different.</p>
 
+ <p>The built-in @(tsee defaxiom) events @('code-char-char-code-is-identity')
+ and @('char-code-code-char-is-identity') no longer have @(tsee force)d
+ hypotheses.  Thanks to Alessandro Coglio for pointing out that these @(see
+ rewrite) rules were rather unique as built-in rewrite rules that force
+ hypotheses.  Note that the original versions of these two rules, stated as
+ @(tsee defthm) events with suffix @('\"-FORCED\"') added to the names, may be
+ found in community book
+ @('books/std/basic/code-char-char-code-with-force.lisp'); including this books
+ (perhaps @(see local)ly) may rescue a proof that now fails because of the
+ change.</p>
+
  <h3>New Features</h3>
 
  <p>The new zero-ary attachable system function, @(tsee heavy-linear-p), allows

@@ -99947,6 +99947,17 @@ Changes to Existing Features
   since it serves no purpose and could be confused with
   [47m:do-not-induct t[0m, which is quite different.
 
+  The built-in [47m[defaxiom][0m events [47mcode-char-char-code-is-identity[0m and
+  [47mchar-code-code-char-is-identity[0m no longer have [47m[force][0md hypotheses.
+  Thanks to Alessandro Coglio for pointing out that these [rewrite]
+  rules were rather unique as built-in rewrite rules that force
+  hypotheses.  Note that the original versions of these two rules,
+  stated as [47m[defthm][0m events with suffix [47m\"-FORCED\"[0m added to the names,
+  may be found in community book
+  [47mbooks/std/basic/code-char-char-code-with-force.lisp[0m; including this
+  books (perhaps [local]ly) may rescue a proof that now fails because
+  of the change.
+
 
 New Features
 
