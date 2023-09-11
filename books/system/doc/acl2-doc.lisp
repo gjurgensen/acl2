@@ -47606,15 +47606,15 @@ current fast alists."
 
  <dt>@(':induct')</dt><p/>
 
- <dd><p>@('Value') is either @('t') or a term containing at least one
- recursively defined function symbol; if @('t'), this hint indicates that the
- system should proceed to apply its induction heuristic to the specified goal
- produced (without trying simplification, etc.); if @('value') is a term other
- than @('t'), then not only should the system apply induction immediately, but
- it should analyze @('value') rather than the goal to generate its @(see
- induction) scheme.  Merging and the other @(see induction) heuristics are
- applied.  Thus, if @('value') contains several mergeable @(see induction)s,
- the ``best'' will be created and chosen.  E.g., the @(':induct') hint</p>
+ <dd><p>@('Value') is either @('t') or a term that is not an atom or a quoted
+ constant.  The value @('t') indicates that the system use induction
+ immediately by applying its induction heuristic to the specified goal
+ (without trying simplification, etc.).  Otherwise, the system should apply
+ induction immediately, but it should analyze @('value') rather than the goal
+ to generate its @(see induction) scheme.  Either way (i.e., for value @('t')
+ or not), merging and the other @(see induction) heuristics are applied.  Thus,
+ if @('value') contains several mergeable @(see induction)s, the ``best'' will
+ be created and chosen.  E.g., the @(':induct') hint</p>
 
  @({
    (and (nth i a) (nth j a))
@@ -47637,7 +47637,7 @@ current fast alists."
 
  <dd><p>@('Value') is any object and is irrelevant.  This hint has no effect,
  although unlike an empty hint such as @('(\"Goal\")'), it is not dropped.
- Thus, @('(\"Goal\") :do-not t') will shadow any later (or default) hint on
+ Thus, @('(\"Goal\" :no-op t)') will shadow any later (or default) hint on
  @('\"Goal\"'), but @('(\"Goal\")') will not.  Unlike other hint keywords,
  multiple occurrences of the keyword @(':no-op') are tolerated.</p></dd>
 
@@ -103120,6 +103120,25 @@ it."
  @(tsee mutual-recursion), where only the definition of @('fn') is relevant for
  keyword values, not other definitions in its clique.</p>
 
+ <p>A hint of the form @(':induct X') is now an error if @('X') is an atom
+ other than @('t') or a quoted constant, since those do not suggest any
+ induction scheme.  Thanks to Eric Smith for raising the question of what
+ @(':induct nil') should do and helping with examples showing that the current
+ behavior is not really consistent.  Thanks to Alessandro Coglio for suggesting
+ that @(':induct nil') cause an error since it serves no purpose and could be
+ confused with @(':do-not-induct t'), which is quite different.</p>
+
+ <p>The built-in @(tsee defaxiom) events @('code-char-char-code-is-identity')
+ and @('char-code-code-char-is-identity') no longer have @(tsee force)d
+ hypotheses.  Thanks to Alessandro Coglio for pointing out that these @(see
+ rewrite) rules were rather unique as built-in rewrite rules that force
+ hypotheses.  Note that the original versions of these two rules, stated as
+ @(tsee defthm) events with suffix @('\"-FORCED\"') added to the names, may be
+ found in community book
+ @('books/std/basic/code-char-char-code-with-force.lisp'); including this books
+ (perhaps @(see local)ly) may rescue a proof that now fails because of the
+ change.</p>
+
  <h3>New Features</h3>
 
  <p>The new zero-ary attachable system function, @(tsee heavy-linear-p), allows
@@ -150652,7 +150671,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
     (declare (xargs :guard-hints
                     ((\"Goal\" :in-theory (disable my-consp (tau-system))))))
     (if (consp x) (evenlp (my-cdr x)) nil)))
- }) 
+ })
 
  <p>Each of the following succeeds or fails for the reason given.</p>
 
