@@ -97,7 +97,6 @@
     (DO-NOT-HINT "[books]/tools/do-not.lisp")
     (EASY-SIMPLIFY-TERM "[books]/tools/easy-simplify.lisp")
     (ER-SOFT+ "[books]/kestrel/utilities/er-soft-plus.lisp")
-    (ER-SOFT-LOGIC "[books]/tools/er-soft-logic.lisp")
     (FINAL-CDR "[books]/std/lists/final-cdr.lisp")
     (FTY "[books]/centaur/fty/top.lisp")
     (GETOPT "[books]/centaur/getopt/top.lisp")
@@ -31098,10 +31097,7 @@ ld) and @(tsee include-book)"
  function, @(tsee hard-error), which has a @(see guard) of @('T'), while the
  @('hard')/@('hard!') forms have expansions that call the function, @(tsee
  illegal), which has a guard that is logically @('NIL').  Those generate code
- that is in @(':')@(tsee logic) mode, in contrast to variants of @('(er soft
- ...)'), which generate calls of the @(':')@(tsee program) mode function,
- @(tsee error1).  For variants of @('(er soft ...)') that generate @(':')@(tsee
- logic) mode code, see @(see er-soft-logic) and @(see er-soft+).</p>
+ that is in @(':')@(tsee logic) mode, as do variants of @('(er soft ...)').</p>
 
  <p>The general forms of the macros are as follows.  Their macroexpansions
  include code that avoids the printing of error messages when error output is
@@ -102631,10 +102627,15 @@ it."
 
  <li>@(tsee Genvar) (see @('books/system/brr-near-missp.lisp'))</li>
 
- <li>@('Eviscerate-top'), towards the @(tsee fmt) family of functions (see
- @('books/system/eviscerate-top.lisp'))  [See DARPA Note above.]</li>
+ <li>@(tsee Fmt), @(tsee error1) (which supports macros @('(er soft ...)') and
+ @(tsee er-soft)), and related printing utilities &mdash; and some code was
+ modified to support their conversion to @(':')@(tsee logic) mode [See DARPA
+ Note above.]</li>
 
  </ul>
+
+ <p>Note that because of the @(tsee error1) change noted above, @('(er soft
+ ...)') can now be used in @(':logic') mode code.</p>
 
  <h3>Changes to Existing Features</h3>
 
