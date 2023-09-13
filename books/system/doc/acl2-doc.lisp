@@ -103295,6 +103295,11 @@ it."
  <p>@(tsee Thm) now takes an optional @(':instructions') keyword argument, like
  @(tsee defthm).  Thanks to Warren Hunt for requesting this enhancement.</p>
 
+ <p>New utilities @(tsee trans*) and @(tsee trans*-) can show repeated
+ macroexpansions of a form leading to its final translation, where @('trans*')
+ also shows @(tsee make-event) expansions.  Thanks to Warren Hunt for
+ requesting a utility that does repeated macroexpansion.</p>
+
  <h3>Heuristic and Efficiency Improvements</h3>
 
  <p>Added a &ldquo;desperation heuristic&rdquo; to compute a stronger context,
@@ -124495,6 +124500,18 @@ work on <tt>(q x)</tt>.</p>
  corollary) formulas.  In short, despite the fact that the user may sometimes
  see fake runes printed, they should never be typed.</p>")
 
+(defxdoc rw-cache-state
+  :parents (rewrite)
+  :short "The current rw-cache-state"
+  :long "<p>See @(tsee set-rw-cache-state) for background on the
+ <i>rw-cache</i>, which saves failed attempts to apply conditional @(see
+ rewrite) rules.  To get the current rw-cache-state, evaluate the following
+ form.</p>
+
+ @({
+ (rw-cache-state (w state))
+ })")
+
 (defxdoc |Revisiting the Admission of App|
   :parents (|Pages Written Especially for the Tours|)
   :short "Revisiting the Admission of App"
@@ -129596,7 +129613,8 @@ work on <tt>(q x)</tt>.</p>
  rw-cache (rewriter cache), to save failed attempts to apply conditional @(see
  rewrite) rules.  The regression suite has taken approximately 11% less time
  with this mechanism.  The rw-cache is active by default but this event allows
- it to be turned off or modified.  Note that this event is @(see local) to its
+ its behavior to be modified or even disabled by changing the so-called
+ <i>rw-cache-state</i>.  Note that this event is @(see local) to its
  context (from @(tsee encapsulate) or @(tsee include-book)).  For a non-local
  version, use @(see set-rw-cache-state!).</p>
 
@@ -129623,6 +129641,9 @@ work on <tt>(q x)</tt>.</p>
  becomes active when some simplification has taken place.  We have seen a few
  cases where value @('t') will make a proof fail but @(':disabled') does
  not.</p>
+
+ <p>To obtain the current rw-cache-state, evaluate the form
+ @('(rw-cache-state (w state))').</p>
 
  <p>The following example illustrates the rw-cache in action.  You will see a
  break during evaluation of the @(tsee thm) form.  Type @(':eval') and you will
@@ -143354,7 +143375,7 @@ work on <tt>(q x)</tt>.</p>
 
 (defxdoc trans
   :parents (macros)
-  :short "Print the macroexpansion of a form"
+  :short "Print the translation of a form"
   :long "@({
   Examples:
   :trans (list a b c)
@@ -143362,13 +143383,19 @@ work on <tt>(q x)</tt>.</p>
   :trans (cond (p q) (r))
  })
 
- <p>This function takes one argument, an alleged term, and translates it,
- expanding the macros in it completely.  Either an error is caused or the
- formal meaning of the term is printed.  We also print the ``output signature''
- which indicates how many results are returned and which are single-threaded
- objects.  For example, a term that returns one ordinary object (e.g., an
- object other than @(tsee STATE) or a user-defined single-threaded object (see
- @(see defstobj))) has the output signature</p>
+ <p>ACL2 accepts user-level syntax as input, but <i>translates</i> it to an
+ internal syntax.  This translation includes macroexpansion, replacing @(tsee
+ let) forms by @(tsee lambda) expressions, quoting constants, and so on.  See
+ @(see term) for relevant background.</p>
+
+ <p>@('Trans') takes one argument, an alleged term in user syntax, and
+ translates it, expanding the macros in it completely.  Either an error is
+ caused or the internal syntax for the term (representing its formal meaning)
+ is printed.  We also print the ``output signature'' which indicates how many
+ results are returned and which are single-threaded objects.  For example, a
+ term that returns one ordinary object (e.g., an object other than @(tsee
+ STATE) or a user-defined single-threaded object (see @(see defstobj))) has the
+ output signature</p>
 
  @({
   => *
@@ -143392,7 +143419,8 @@ work on <tt>(q x)</tt>.</p>
  that the last result is @('STATE').</p>
 
  <p>See @(see trans!) for a corresponding command that does not enforce
- restrictions of single-threaded objects.</p>
+ restrictions of single-threaded objects.  See @(see trans*) for a command that
+ can show intermediate expansion results.</p>
 
  <p>It is sometimes more convenient to use @(tsee trans1) which is like trans
  but which only does top-level macroexpansion.</p>
@@ -143401,17 +143429,287 @@ work on <tt>(q x)</tt>.</p>
 
 (defxdoc trans!
   :parents (macros)
-  :short "Print the macroexpansion of a form without single-threadedness concerns"
+  :short "Print the translation of a form without code restrictions"
   :long "@({
   Examples:
   :trans! (list a b c)
   :trans! (append x state)
+  :trans! (cons (mv 3 4) x)
  })
 
- <p>@(':Trans!') is identical to @(':')@(tsee trans), except that unlike
- @(':trans'), @(':trans!') ignores single-threadedness restrictions.  Thus, the
- second form above is legal for @(':trans!').  Also see @(see trans) and see
- @(see trans1).</p>")
+ <p>@(':Trans!') is identical to @(':')@(tsee trans), except that @(':trans!')
+ is more permissive: it allows expressions that may occur in theorems but are
+ illegal in code.  In particular, @(':trans!') allows violations of
+ single-threadedness and multiple-value restrictions.  Thus, the second and
+ third forms above are legal for @(':trans!') even though they are illegal for
+ @(':trans').  Also see @(see trans), see @(see trans1), and see @(see
+ trans*).</p>")
+
+(defxdoc trans*
+  :parents (macros)
+  :short "Show intermediate expansion results for the translation of a form"
+  :long "<p>See @(see term) for background on translated and untranslated
+ terms.  See @(see trans), @(see trans!), and @(tsee trans1) for other
+ utilities that expand and translate their input.</p>
+
+ <p>Unlike @('trans'), the @('trans*') command can show not only the
+ translation of a given expression but also the intermediate expansions leading
+ to that translation, and @('trans*') can also show @(tsee make-event)
+ expansions.  Another difference between @('trans*') and @('trans') is that
+ @('trans*') does not enforce code restrictions; thus, multiple-value
+ mismatches and violations of single-threadedness are permitted by @('trans*').
+ That is: when @('trans*') takes steps to convert an untranslated term to a
+ translated term, it does so as though one is translating a theorem statement,
+ not a definition body.</p>
+
+ <p>For discussion of how one may use a keyword command like @(':trans*') in
+ place of calling the corresponding utility, in this case @('trans*'), see
+ @(see keyword-commands).  Below we focus on the use of the keyword command,
+ @(':trans*').</p>
+
+ <p>We begin with some simple examples that may suffice to explain how to use
+ @('trans*').  We then document this utility before concluding with further
+ details.</p>
+
+ <h3>Introductory Examples</h3>
+
+ <p>The examples below assume that the following definition has been
+ submitted.</p>
+
+ @({
+ (defmacro mac (x y) `(append ,y (rest ,x)))
+ })
+
+ <p>Here is a log showing a typical use of @(':trans*'); comments are
+ below.</p>
+
+ @({
+ ACL2 !>:trans* t (mac u v)
+
+ Iteration 1 produces (by expansion):
+ (APPEND V (REST U))
+ ----------
+
+ Iteration 2 produces (by expansion):
+ (BINARY-APPEND V (REST U))
+ ----------
+
+ Iteration 3 produces (by translation):
+ (BINARY-APPEND V (CDR U))
+ ----------
+ ACL2 !>
+ })
+
+ <p>We see that Iteration 1 expands away the call of the macro, @('mac').  The
+ next iteration expands away the resulting call of the macro, @('append').
+ Those two steps are labeled with &ldquo;(by expansion)&rdquo; because they are
+ removing top-level macro calls.  The result of the second iteration is not a
+ macro call, so @(':trans*') finishes up by translating that result to obtain
+ the final result; notice translation of the second argument of the
+ @('binary-append') call by expanding @(tsee rest) to @(tsee cdr).</p>
+
+ <p>The example above illustrates a couple of aspects of @(':trans*').</p>
+
+ <ul>
+
+ <li>An expansion step occurs only with a top-level macro call.</li>
+
+ <li>A translation step is always last.</li>
+
+ </ul>
+
+ <p>The result is the same for input @(':trans* 3 (mac u v)'), i.e., if first
+ argument @('t') is replaced by @('3') or, in fact, any integer that is at
+ least the total number of iterations produced with argument @('t').  But we
+ can specify that we want to stop before the final step.  One way is to specify
+ a number less than the number of iterations.  Here is what we get when we
+ specify that we should stop after 1 iteration.</p>
+
+ @({
+ ACL2 !>:trans* 1 (mac u v)
+
+ Iteration 1 produces (by expansion):
+ (APPEND V (REST U))
+ ----------
+ ACL2 !>
+ })
+
+ <p>Another way to stop early is to rule out the final translation step.  Here
+ is an example by using @('nil') or a negative integer as the first
+ argument.</p>
+
+ @({
+ ACL2 !>:trans* -5 (mac u v) ; same for nil, -2, -3, -4, etc. instead of -5
+
+ Iteration 1 produces (by expansion):
+ (APPEND V (REST U))
+ ----------
+
+ Iteration 2 produces (by expansion):
+ (BINARY-APPEND V (REST U))
+ ----------
+ ACL2 !>
+ })
+
+ <p>If you are only interested in obtaining the final result, with no
+ intermediate printing, put parentheses around the first argument.  Here is
+ what happens when we make that modification to the example immediately
+ above.</p>
+
+ @({
+ ACL2 !>:trans* (-5) (mac u v) ; same answer for nil, -2, -3, etc instead of -5
+  (BINARY-APPEND V (REST U))
+ ACL2 !>
+ })
+
+ <p>Note the single space of indentation in the result above.  That indicates
+ that what is actually returned is multiple values, @('(mv nil (BINARY-APPEND V
+ (REST U)) state)').  Without the parentheses, @('(mv nil :invisible state)')
+ is returned.  See @(see error-triple).</p>
+
+ <h3>Documentation</h3>
+
+ @({
+  General Forms:
+  :trans t form
+  :trans nil form
+  :trans n form
+  :trans -n form
+  :trans (x) form ; for x = t, nil, n, or -n
+ })
+
+ <p>where @('n') is a positive integer and @('form') is any ACL2 expression
+ (i.e., any untranslated term; see @(see term)).  These commands repeat
+ translation steps as described later below, according to the value of the
+ first argument, as follows.</p>
+
+ <ul>
+
+ <li>@('t'): iterate to completion, printing intermediate results</li>
+
+ <li>@('nil'): iterate to completion except for skipping the final translation
+ step, printing intermediate results</li>
+
+ <li>@('n'): iterate at most @('n') steps, printing intermediate results</li>
+
+ <li>@('-n'): iterate at most @('n') steps except for skipping a final
+ translation step, printing intermediate results</li>
+
+ <li>@('(x)'): same as @('x') but without printing intermediate results, and
+ returning an @(see error-triple) @('(mv nil val state)') where @('val') is the
+ final result,</li>
+
+ </ul>
+
+ <p>It is reasonable to think of a first argument of @('t') as
+ &ldquo;infinity&rdquo; and of @('nil') as &ldquo;minus infinity&rdquo;.
+ Although a first argument of @('(t)') is much like using @(tsee trans), key
+ differences besides enforcement of code restrictions (as discussed above) are
+ that @('trans*') performs @(tsee make-event) expansion and discards certain
+ &ldquo;wrappers&rdquo; like @(tsee with-output), as described below.  The
+ related utility @(tsee trans*-) differs from @('trans*') in only one way:
+ @('trans*-') does not perform @('make-event') expansion.</p>
+
+ <p>Here is a specification of the iteration step performed on a given form,
+ which is initially the second argument of @('trans*') and is updated by each
+ iteration.  If the form is not a true-list then iteration halts without any
+ further result.  Otherwise the form may be written as a call @('(caller arg1
+ ... argk)'), and the next step's result, if any, depends on @('caller') as
+ follows.</p>
+
+ <ul>
+
+ <li>If @('caller') is in the list of &ldquo;event wrappers&rdquo;,
+ @(`*destructure-expansion-wrappers*`), then the next step's result is the last
+ argument of the call, denoted @('argk') above.</li>
+
+ <li>Else if @('caller') is @(tsee make-event), the result is the form's
+ @('make-event') expansion.  (This step is skipped when @(tsee trans*-) is used
+ rather than @('trans*').)</li>
+
+ <li>Else if @('caller') is a built-in event constructor such as @(tsee defun)
+ or @(tsee defthm), or one of @(tsee certify-book), @(tsee defpkg), or @(tsee
+ in-package), then iteration is halted.
+ (Technical note: The actual test used here is whether @('caller') is a key of
+ the alist value of the constant, @('*syms-not-callable-in-code-fal*').)</li>
+
+ <li>Else if @('caller') is a macro, expand the macro call.</li>
+
+ <li>Otherwise translate the form, except that as noted above, if the first
+ argument of @('trans*') is @('nil') or a negative integer, then this step is
+ skipped and instead iteration is halted.</li>
+
+ </ul>
+
+ <h3>Further Details</h3>
+
+ <p>While @('trans*') will almost always determine accurately how the given
+ input expands and is ultimately translated, it is not quite 100% reliable for
+ that purpose.  In particular, @('make-event') expansion isn't guaranteed to
+ check that the expansion is an embedded event form, as is required for @(tsee
+ make-event).  Another limitation for @('make-event') expansion is that when an
+ iteration reaches the form @('(:OR ev1 ... evk)'), the iteration concludes
+ rather than evaluating the events @('evi') (see @(see make-event)).</p>
+
+ <p>A similar utility, @(tsee trans*-), stops iteration at a call of
+ @('make-event') without continuing with its @('make-event') expansion.  That
+ is, in fact, the only difference between @('trans*') and @('trans*-').</p>
+
+ <p>We conclude by adding emphasis to an aspect of @('trans*') that is already
+ noted above: expansion (whether macroexpansion or @('make-event') expansion)
+ and elimination of event wrappers only take place for the top-level call, not
+ calls occurring in subterms.  Of course, one can call @('trans*') on subterms.
+ Consider the following example.</p>
+
+ @({
+ ACL2 !>:trans* t (defund-nx f (x) x)
+
+ Iteration 1 produces (by expansion):
+ (WITH-OUTPUT
+      :STACK
+      :PUSH :OFF
+      :ALL
+      (PROGN (ENCAPSULATE NIL
+               (LOGIC)
+               (SET-STATE-OK T)
+               (WITH-OUTPUT :STACK :POP
+                            (DEFUND F (X)
+                              (DECLARE (XARGS :NON-EXECUTABLE T :MODE :LOGIC))
+                              (PROG2$ (THROW-NONEXEC-ERROR 'F (LIST X))
+                                      X)))
+               (WITH-OUTPUT :STACK :POP :OFF
+                            SUMMARY (IN-THEORY (DISABLE (:E F)))))
+             (WITH-OUTPUT :STACK :POP :OFF SUMMARY
+                          (VALUE-TRIPLE '(:DEFUND-NX F)))))
+ ----------
+
+ Iteration 2 is dropping the WITH-OUTPUT wrapper:
+ (PROGN (ENCAPSULATE NIL
+          (LOGIC)
+          (SET-STATE-OK T)
+          (WITH-OUTPUT :STACK :POP
+                       (DEFUND F (X)
+                         (DECLARE (XARGS :NON-EXECUTABLE T :MODE :LOGIC))
+                         (PROG2$ (THROW-NONEXEC-ERROR 'F (LIST X))
+                                 X)))
+          (WITH-OUTPUT :STACK :POP :OFF
+                       SUMMARY (IN-THEORY (DISABLE (:E F)))))
+        (WITH-OUTPUT :STACK :POP :OFF
+                     SUMMARY (VALUE-TRIPLE '(:DEFUND-NX F))))
+ ----------
+ ACL2 !>
+ })
+
+ <p>One can then call @('trans*') on the @(tsee defund) subterm to see its
+ expansion.</p>")
+
+(defxdoc trans*-
+  :parents (macros)
+  :short "Variant of @(tsee trans*) the skips @(tsee make-event) expansion"
+  :long "<p>See @(see trans*).  The only difference between @('trans*') and
+  @('trans*-') is that the latter does not do @(tsee make-event) expansion, but
+  rather, stops the iterations when reaching a form that is a call of
+  @('make-event').</p>")
 
 (defxdoc trans-eval
   :parents (system-utilities)
@@ -161539,7 +161837,6 @@ expand function call at the current subterm, without simplifying"
 (defpointer ruler rulers)
 (defpointer runes-diff saving-event-data)
 (defpointer rw-cache set-rw-cache-state)
-(defpointer rw-cache-state hints t)
 (defpointer saving-and-restoring save-exec)
 (defpointer set-accumulated-persistence accumulated-persistence)
 (defpointer set-difference-eq set-difference$)

@@ -69914,11 +69914,16 @@ Subtopics
       translate a form and clean it up into a pretty term
 
   [Trans]
-      Print the macroexpansion of a form
+      Print the translation of a form
 
   [Trans!]
-      Print the macroexpansion of a form without single-threadedness
-      concerns
+      Print the translation of a form without code restrictions
+
+  [Trans*]
+      Show intermediate expansion results for the translation of a form
+
+  [Trans*-]
+      Variant of [47m[trans*][0m the skips [47m[make-event][0m expansion
 
   [Trans1]
       Print the one-step macroexpansion of a form
@@ -100120,6 +100125,11 @@ New Features
   [47m[Thm][0m now takes an optional [47m:instructions[0m keyword argument, like
   [47m[defthm][0m.  Thanks to Warren Hunt for requesting this enhancement.
 
+  New utilities [47m[trans*][0m and [47m[trans*-][0m can show repeated
+  macroexpansions of a form leading to its final translation, where
+  [47mtrans*[0m also shows [47m[make-event][0m expansions.  Thanks to Warren Hunt
+  for requesting a utility that does repeated macroexpansion.
+
 
 Heuristic and Efficiency Improvements
 
@@ -105953,9 +105963,6 @@ Subtopics
 
   [Rw-cache]
       See [set-rw-cache-state].
-
-  [Rw-cache-state]
-      See [hints] for information about the keyword [47m:rw-cache-state[0m.
 
   [Saving-and-restoring]
       See [save-exec].
@@ -120692,6 +120699,9 @@ Subtopics
   [Rewriting-versus-cleaning-up-lambda-objects]
       why change the default action on rewriting [47mlambda[0m objects
 
+  [Rw-cache-state]
+      The current rw-cache-state
+
   [Set-rw-cache-state]
       Set the default rw-cache-state
 
@@ -123353,8 +123363,14 @@ Subtopics
  (RW-CACHE (POINTERS)
            "See [set-rw-cache-state].")
  (RW-CACHE-STATE
-   (POINTERS)
-   "See [hints] for information about the keyword [47m:rw-cache-state[0m.")
+  (REWRITE)
+  "The current rw-cache-state
+
+  See [47m[set-rw-cache-state][0m for background on the [3mrw-cache[0m, which saves
+  failed attempts to apply conditional [rewrite] rules.  To get the
+  current rw-cache-state, evaluate the following form.
+
+    (rw-cache-state (w state))")
  (SAFE-MODE
   (GUARD MACROS)
   "A mode that avoids [guard] violations on [primitive]s
@@ -128154,10 +128170,10 @@ Subtopics
   (rewriter cache), to save failed attempts to apply conditional
   [rewrite] rules.  The regression suite has taken approximately 11%
   less time with this mechanism.  The rw-cache is active by default
-  but this event allows it to be turned off or modified.  Note that
-  this event is [local] to its context (from [47m[encapsulate][0m or
-  [47m[include-book][0m).  For a non-local version, use
-  [set-rw-cache-state!].
+  but this event allows its behavior to be modified or even disabled
+  by changing the so-called [3mrw-cache-state[0m.  Note that this event is
+  [local] to its context (from [47m[encapsulate][0m or [47m[include-book][0m).  For
+  a non-local version, use [set-rw-cache-state!].
 
     Example forms:
     (set-rw-cache-state :atom)     ; default: rw-cache cleared for each literal
@@ -128180,6 +128196,9 @@ Subtopics
   initially inactive and only becomes active when some simplification
   has taken place.  We have seen a few cases where value [47mt[0m will make
   a proof fail but [47m:disabled[0m does not.
+
+  To obtain the current rw-cache-state, evaluate the form
+  [47m(rw-cache-state (w state))[0m.
 
   The following example illustrates the rw-cache in action.  You will
   see a break during evaluation of the [47m[thm][0m form.  Type [47m:eval[0m and
@@ -142782,20 +142801,26 @@ Remarks
   [47m:eval[0m or [47m:go[0m.")
  (TRANS
   (MACROS)
-  "Print the macroexpansion of a form
+  "Print the translation of a form
 
     Examples:
     :trans (list a b c)
     :trans (caddr x)
     :trans (cond (p q) (r))
 
-  This function takes one argument, an alleged term, and translates it,
-  expanding the macros in it completely.  Either an error is caused
-  or the formal meaning of the term is printed.  We also print the
-  ``output signature'' which indicates how many results are returned
-  and which are single-threaded objects.  For example, a term that
-  returns one ordinary object (e.g., an object other than [47m[state][0m or
-  a user-defined single-threaded object (see [defstobj])) has the
+  ACL2 accepts user-level syntax as input, but [3mtranslates[0m it to an
+  internal syntax.  This translation includes macroexpansion,
+  replacing [47m[let][0m forms by [47m[lambda][0m expressions, quoting constants,
+  and so on.  See [term] for relevant background.
+
+  [47mTrans[0m takes one argument, an alleged term in user syntax, and
+  translates it, expanding the macros in it completely.  Either an
+  error is caused or the internal syntax for the term (representing
+  its formal meaning) is printed.  We also print the ``output
+  signature'' which indicates how many results are returned and which
+  are single-threaded objects.  For example, a term that returns one
+  ordinary object (e.g., an object other than [47m[state][0m or a
+  user-defined single-threaded object (see [defstobj])) has the
   output signature
 
     => *
@@ -142814,7 +142839,8 @@ Remarks
   ordinary, and that the last result is [47mSTATE[0m.
 
   See [trans!] for a corresponding command that does not enforce
-  restrictions of single-threaded objects.
+  restrictions of single-threaded objects.  See [trans*] for a
+  command that can show intermediate expansion results.
 
   It is sometimes more convenient to use [47m[trans1][0m which is like trans
   but which only does top-level macroexpansion.
@@ -142822,16 +142848,256 @@ Remarks
   For more, see [term].")
  (TRANS!
   (MACROS)
-  "Print the macroexpansion of a form without single-threadedness
-  concerns
+  "Print the translation of a form without code restrictions
 
     Examples:
     :trans! (list a b c)
     :trans! (append x state)
+    :trans! (cons (mv 3 4) x)
 
-  [47m:Trans![0m is identical to [47m:[0m[47m[trans][0m, except that unlike [47m:trans[0m, [47m:trans![0m
-  ignores single-threadedness restrictions.  Thus, the second form
-  above is legal for [47m:trans![0m.  Also see [trans] and see [trans1].")
+  [47m:Trans![0m is identical to [47m:[0m[47m[trans][0m, except that [47m:trans![0m is more
+  permissive: it allows expressions that may occur in theorems but
+  are illegal in code.  In particular, [47m:trans![0m allows violations of
+  single-threadedness and multiple-value restrictions.  Thus, the
+  second and third forms above are legal for [47m:trans![0m even though they
+  are illegal for [47m:trans[0m.  Also see [trans], see [trans1], and see
+  [trans*].")
+ (TRANS*
+  (MACROS)
+  "Show intermediate expansion results for the translation of a form
+
+  See [term] for background on translated and untranslated terms.  See
+  [trans], [trans!], and [47m[trans1][0m for other utilities that expand and
+  translate their input.
+
+  Unlike [47mtrans[0m, the [47mtrans*[0m command can show not only the translation of
+  a given expression but also the intermediate expansions leading to
+  that translation, and [47mtrans*[0m can also show [47m[make-event][0m expansions.
+  Another difference between [47mtrans*[0m and [47mtrans[0m is that [47mtrans*[0m does not
+  enforce code restrictions; thus, multiple-value mismatches and
+  violations of single-threadedness are permitted by [47mtrans*[0m.  That
+  is: when [47mtrans*[0m takes steps to convert an untranslated term to a
+  translated term, it does so as though one is translating a theorem
+  statement, not a definition body.
+
+  For discussion of how one may use a keyword command like [47m:trans*[0m in
+  place of calling the corresponding utility, in this case [47mtrans*[0m,
+  see [keyword-commands].  Below we focus on the use of the keyword
+  command, [47m:trans*[0m.
+
+  We begin with some simple examples that may suffice to explain how to
+  use [47mtrans*[0m.  We then document this utility before concluding with
+  further details.
+
+
+Introductory Examples
+
+  The examples below assume that the following definition has been
+  submitted.
+
+    (defmacro mac (x y) `(append ,y (rest ,x)))
+
+  Here is a log showing a typical use of [47m:trans*[0m; comments are below.
+
+    ACL2 !>:trans* t (mac u v)
+
+    Iteration 1 produces (by expansion):
+    (APPEND V (REST U))
+    ----------
+
+    Iteration 2 produces (by expansion):
+    (BINARY-APPEND V (REST U))
+    ----------
+
+    Iteration 3 produces (by translation):
+    (BINARY-APPEND V (CDR U))
+    ----------
+    ACL2 !>
+
+  We see that Iteration 1 expands away the call of the macro, [47mmac[0m.  The
+  next iteration expands away the resulting call of the macro,
+  [47mappend[0m.  Those two steps are labeled with ``(by expansion)''
+  because they are removing top-level macro calls.  The result of the
+  second iteration is not a macro call, so [47m:trans*[0m finishes up by
+  translating that result to obtain the final result; notice
+  translation of the second argument of the [47mbinary-append[0m call by
+  expanding [47m[rest][0m to [47m[cdr][0m.
+
+  The example above illustrates a couple of aspects of [47m:trans*[0m.
+
+    * An expansion step occurs only with a top-level macro call.
+    * A translation step is always last.
+
+  The result is the same for input [47m:trans* 3 (mac u v)[0m, i.e., if first
+  argument [47mt[0m is replaced by [47m3[0m or, in fact, any integer that is at
+  least the total number of iterations produced with argument [47mt[0m.  But
+  we can specify that we want to stop before the final step.  One way
+  is to specify a number less than the number of iterations.  Here is
+  what we get when we specify that we should stop after 1 iteration.
+
+    ACL2 !>:trans* 1 (mac u v)
+
+    Iteration 1 produces (by expansion):
+    (APPEND V (REST U))
+    ----------
+    ACL2 !>
+
+  Another way to stop early is to rule out the final translation step.
+  Here is an example by using [47mnil[0m or a negative integer as the first
+  argument.
+
+    ACL2 !>:trans* -5 (mac u v) ; same for nil, -2, -3, -4, etc. instead of -5
+
+    Iteration 1 produces (by expansion):
+    (APPEND V (REST U))
+    ----------
+
+    Iteration 2 produces (by expansion):
+    (BINARY-APPEND V (REST U))
+    ----------
+    ACL2 !>
+
+  If you are only interested in obtaining the final result, with no
+  intermediate printing, put parentheses around the first argument.
+  Here is what happens when we make that modification to the example
+  immediately above.
+
+    ACL2 !>:trans* (-5) (mac u v) ; same answer for nil, -2, -3, etc instead of -5
+     (BINARY-APPEND V (REST U))
+    ACL2 !>
+
+  Note the single space of indentation in the result above.  That
+  indicates that what is actually returned is multiple values, [47m(mv
+  nil (BINARY-APPEND V (REST U)) state)[0m.  Without the parentheses,
+  [47m(mv nil :invisible state)[0m is returned.  See [error-triple].
+
+
+Documentation
+
+    General Forms:
+    :trans t form
+    :trans nil form
+    :trans n form
+    :trans -n form
+    :trans (x) form ; for x = t, nil, n, or -n
+
+  where [47mn[0m is a positive integer and [47mform[0m is any ACL2 expression (i.e.,
+  any untranslated term; see [term]).  These commands repeat
+  translation steps as described later below, according to the value
+  of the first argument, as follows.
+
+    * [47mt[0m: iterate to completion, printing intermediate results
+    * [47mnil[0m: iterate to completion except for skipping the final translation
+      step, printing intermediate results
+    * [47mn[0m: iterate at most [47mn[0m steps, printing intermediate results
+    * [47m-n[0m: iterate at most [47mn[0m steps except for skipping a final translation
+      step, printing intermediate results
+    * [47m(x)[0m: same as [47mx[0m but without printing intermediate results, and
+      returning an [error-triple] [47m(mv nil val state)[0m where [47mval[0m is the
+      final result,
+
+  It is reasonable to think of a first argument of [47mt[0m as ``infinity''
+  and of [47mnil[0m as ``minus infinity''.  Although a first argument of [47m(t)[0m
+  is much like using [47m[trans][0m, key differences besides enforcement of
+  code restrictions (as discussed above) are that [47mtrans*[0m performs
+  [47m[make-event][0m expansion and discards certain ``wrappers'' like
+  [47m[with-output][0m, as described below.  The related utility [47m[trans*-][0m
+  differs from [47mtrans*[0m in only one way: [47mtrans*-[0m does not perform
+  [47mmake-event[0m expansion.
+
+  Here is a specification of the iteration step performed on a given
+  form, which is initially the second argument of [47mtrans*[0m and is
+  updated by each iteration.  If the form is not a true-list then
+  iteration halts without any further result.  Otherwise the form may
+  be written as a call [47m(caller arg1 ... argk)[0m, and the next step's
+  result, if any, depends on [47mcaller[0m as follows.
+
+    * If [47mcaller[0m is in the list of ``event wrappers'', [47m(local skip-proofs
+      with-cbd with-current-package with-guard-checking-event
+      with-output with-prover-step-limit with-prover-time-limit)[0m,
+      then the next step's result is the last argument of the call,
+      denoted [47margk[0m above.
+    * Else if [47mcaller[0m is [47m[make-event][0m, the result is the form's [47mmake-event[0m
+      expansion.  (This step is skipped when [47m[trans*-][0m is used rather
+      than [47mtrans*[0m.)
+    * Else if [47mcaller[0m is a built-in event constructor such as [47m[defun][0m or
+      [47m[defthm][0m, or one of [47m[certify-book][0m, [47m[defpkg][0m, or [47m[in-package][0m,
+      then iteration is halted.  (Technical note: The actual test
+      used here is whether [47mcaller[0m is a key of the alist value of the
+      constant, [47m*syms-not-callable-in-code-fal*[0m.)
+    * Else if [47mcaller[0m is a macro, expand the macro call.
+    * Otherwise translate the form, except that as noted above, if the
+      first argument of [47mtrans*[0m is [47mnil[0m or a negative integer, then
+      this step is skipped and instead iteration is halted.
+
+
+Further Details
+
+  While [47mtrans*[0m will almost always determine accurately how the given
+  input expands and is ultimately translated, it is not quite 100%
+  reliable for that purpose.  In particular, [47mmake-event[0m expansion
+  isn't guaranteed to check that the expansion is an embedded event
+  form, as is required for [47m[make-event][0m.  Another limitation for
+  [47mmake-event[0m expansion is that when an iteration reaches the form
+  [47m(:OR ev1 ... evk)[0m, the iteration concludes rather than evaluating
+  the events [47mevi[0m (see [make-event]).
+
+  A similar utility, [47m[trans*-][0m, stops iteration at a call of [47mmake-event[0m
+  without continuing with its [47mmake-event[0m expansion.  That is, in
+  fact, the only difference between [47mtrans*[0m and [47mtrans*-[0m.
+
+  We conclude by adding emphasis to an aspect of [47mtrans*[0m that is already
+  noted above: expansion (whether macroexpansion or [47mmake-event[0m
+  expansion) and elimination of event wrappers only take place for
+  the top-level call, not calls occurring in subterms.  Of course,
+  one can call [47mtrans*[0m on subterms.  Consider the following example.
+
+    ACL2 !>:trans* t (defund-nx f (x) x)
+
+    Iteration 1 produces (by expansion):
+    (WITH-OUTPUT
+         :STACK
+         :PUSH :OFF
+         :ALL
+         (PROGN (ENCAPSULATE NIL
+                  (LOGIC)
+                  (SET-STATE-OK T)
+                  (WITH-OUTPUT :STACK :POP
+                               (DEFUND F (X)
+                                 (DECLARE (XARGS :NON-EXECUTABLE T :MODE :LOGIC))
+                                 (PROG2$ (THROW-NONEXEC-ERROR 'F (LIST X))
+                                         X)))
+                  (WITH-OUTPUT :STACK :POP :OFF
+                               SUMMARY (IN-THEORY (DISABLE (:E F)))))
+                (WITH-OUTPUT :STACK :POP :OFF SUMMARY
+                             (VALUE-TRIPLE '(:DEFUND-NX F)))))
+    ----------
+
+    Iteration 2 is dropping the WITH-OUTPUT wrapper:
+    (PROGN (ENCAPSULATE NIL
+             (LOGIC)
+             (SET-STATE-OK T)
+             (WITH-OUTPUT :STACK :POP
+                          (DEFUND F (X)
+                            (DECLARE (XARGS :NON-EXECUTABLE T :MODE :LOGIC))
+                            (PROG2$ (THROW-NONEXEC-ERROR 'F (LIST X))
+                                    X)))
+             (WITH-OUTPUT :STACK :POP :OFF
+                          SUMMARY (IN-THEORY (DISABLE (:E F)))))
+           (WITH-OUTPUT :STACK :POP :OFF
+                        SUMMARY (VALUE-TRIPLE '(:DEFUND-NX F))))
+    ----------
+    ACL2 !>
+
+  One can then call [47mtrans*[0m on the [47m[defund][0m subterm to see its
+  expansion.")
+ (TRANS*-
+  (MACROS)
+  "Variant of [47m[trans*][0m the skips [47m[make-event][0m expansion
+
+  See [trans*].  The only difference between [47mtrans*[0m and [47mtrans*-[0m is that
+  the latter does not do [47m[make-event][0m expansion, but rather, stops
+  the iterations when reaching a form that is a call of [47mmake-event[0m.")
  (TRANS-EVAL
   (SYSTEM-UTILITIES)
   "Evaluate a form
