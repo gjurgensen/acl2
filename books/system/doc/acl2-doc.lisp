@@ -124003,17 +124003,34 @@ work on <tt>(q x)</tt>.</p>
  @('IF') (it continues through the true and false branches of these calls even
  without @('IF') being among the ruler-extenders).</p>
 
- <p>IMPORTANT REMARKS.  (1) Notice that the argument to
- @('set-ruler-extenders') is evaluated, but the argument to
- @(':RULER-EXTENDERS') in @('XARGS') is not evaluated.  (2) Do not put macro
- names in your list of ruler-extenders.  For example, if you intend that @('+')
- should not block the termination analysis, in analogy to @('cons') in the
- example above, then the list of ruler-extenders should include @('binary-+'),
- not @('+').  Of course, if you use @(':all') then this is not an issue, but
- see the next remark.  (3) Also please note that by taking advantage of the
- ruler-extenders, you may be complicating the induction scheme stored for the
- function, whose computation takes similar advantage of the additional @('IF')
- structure that you are specifying.</p>
+ <p>IMPORTANT REMARKS.</p>
+
+ <ol>
+
+ <li>Notice that the argument to @('set-ruler-extenders') is evaluated, but the
+ argument to @(':RULER-EXTENDERS') in @('XARGS') is not evaluated.</li>
+
+ <li>Do not put macro names in your list of ruler-extenders.  For example, if
+ you intend that @('+') should not block the termination analysis, in analogy
+ to @('cons') in the example above, then the list of ruler-extenders should
+ include @('binary-+'), not @('+').  Of course, if you use @(':all') then this
+ is not an issue, but see the next remark.</li>
+
+ <li>Also please note that by taking advantage of the ruler-extenders, you may
+ change the induction scheme computed for the function.  This is especially
+ worth remembering for functions containing @(tsee let) or @(tsee let*)
+ expressions (which translate to @(tsee lambda) applications; see @(see term)).
+ If the induction scheme suggested by such a function seems to provide more
+ induction hypotheses than appear necessary, it might help to admit the
+ function with @(':lambdas') included among the ruler extenders even if that is
+ not necessary for the termination proof.  This can cause the induction scheme
+ to have a richer case analysis with fewer induction hypotheses on any given
+ induction step.  While this can make it more difficult for the system to merge
+ induction schemes to get an appropriate induction, it can also make the proof
+ of each induction step easier.  Unfortunately, we have no more precise advice
+ as to exactly when adding @(':lambdas') will help.</li>
+
+ </ol>
 
  <p>To see the ruler-extenders of an existing function symbol, @('fn'), in a
  logical @(see world), @('wrld'), evaluate @('(ruler-extenders 'fn wrld)')

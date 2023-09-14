@@ -122869,18 +122869,32 @@ Subtopics
   false branches of these calls even without [47mIF[0m being among the
   ruler-extenders).
 
-  IMPORTANT REMARKS.  (1) Notice that the argument to
-  [47mset-ruler-extenders[0m is evaluated, but the argument to
-  [47m:RULER-EXTENDERS[0m in [47mXARGS[0m is not evaluated.  (2) Do not put macro
-  names in your list of ruler-extenders.  For example, if you intend
-  that [47m+[0m should not block the termination analysis, in analogy to
-  [47mcons[0m in the example above, then the list of ruler-extenders should
-  include [47mbinary-+[0m, not [47m+[0m.  Of course, if you use [47m:all[0m then this is
-  not an issue, but see the next remark.  (3) Also please note that
-  by taking advantage of the ruler-extenders, you may be complicating
-  the induction scheme stored for the function, whose computation
-  takes similar advantage of the additional [47mIF[0m structure that you are
-  specifying.
+  IMPORTANT REMARKS.
+
+   1. Notice that the argument to [47mset-ruler-extenders[0m is evaluated, but the
+      argument to [47m:RULER-EXTENDERS[0m in [47mXARGS[0m is not evaluated.
+   2. Do not put macro names in your list of ruler-extenders.  For example,
+      if you intend that [47m+[0m should not block the termination analysis,
+      in analogy to [47mcons[0m in the example above, then the list of
+      ruler-extenders should include [47mbinary-+[0m, not [47m+[0m.  Of course, if
+      you use [47m:all[0m then this is not an issue, but see the next
+      remark.
+   3. Also please note that by taking advantage of the ruler-extenders, you
+      may change the induction scheme computed for the function.
+      This is especially worth remembering for functions containing
+      [47m[let][0m or [47m[let*][0m expressions (which translate to [47m[lambda][0m
+      applications; see [term]).  If the induction scheme suggested
+      by such a function seems to provide more induction hypotheses
+      than appear necessary, it might help to admit the function with
+      [47m:lambdas[0m included among the ruler extenders even if that is not
+      necessary for the termination proof.  This can cause the
+      induction scheme to have a richer case analysis with fewer
+      induction hypotheses on any given induction step.  While this
+      can make it more difficult for the system to merge induction
+      schemes to get an appropriate induction, it can also make the
+      proof of each induction step easier.  Unfortunately, we have no
+      more precise advice as to exactly when adding [47m:lambdas[0m will
+      help.
 
   To see the ruler-extenders of an existing function symbol, [47mfn[0m, in a
   logical [world], [47mwrld[0m, evaluate [47m(ruler-extenders 'fn wrld)[0m after
