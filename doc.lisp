@@ -15238,7 +15238,6 @@ Subtopics
        (do-not-hint \"[books]/tools/do-not.lisp\")
        (easy-simplify-term \"[books]/tools/easy-simplify.lisp\")
        (er-soft+ \"[books]/kestrel/utilities/er-soft-plus.lisp\")
-       (er-soft-logic \"[books]/tools/er-soft-logic.lisp\")
        (final-cdr \"[books]/std/lists/final-cdr.lisp\")
        (fty \"[books]/centaur/fty/top.lisp\")
        (getopt \"[books]/centaur/getopt/top.lisp\")
@@ -17666,7 +17665,7 @@ Subtopics
                            (#\\Z . #\\z)))))
         (cond (pair (cdr pair))
               ((characterp x) x)
-              (t (code-char 0)))))")
+              (t *null-char*))))")
  (CHAR-EQUAL
   (CHARACTERS ACL2-BUILT-INS)
   "Character equality without regard to case
@@ -17736,7 +17735,7 @@ Subtopics
                            (#\\z . #\\Z)))))
         (cond (pair (cdr pair))
               ((characterp x) x)
-              (t (code-char 0)))))")
+              (t *null-char*))))")
  (CHAR<
   (CHARACTERS ACL2-BUILT-INS)
   "Less-than test for [characters]
@@ -34289,10 +34288,7 @@ Subtopics
   function, [47m[hard-error][0m, which has a [guard] of [47mT[0m, while the
   [47mhard[0m/[47mhard![0m forms have expansions that call the function, [47m[illegal][0m,
   which has a guard that is logically [47mNIL[0m.  Those generate code that
-  is in [47m:[0m[47m[logic][0m mode, in contrast to variants of [47m(er soft ...)[0m,
-  which generate calls of the [47m:[0m[47m[program][0m mode function, [47m[error1][0m.
-  For variants of [47m(er soft ...)[0m that generate [47m:[0m[47m[logic][0m mode code, see
-  [er-soft-logic] and [er-soft+].
+  is in [47m:[0m[47m[logic][0m mode, as do variants of [47m(er soft ...)[0m.
 
   The general forms of the macros are as follows.  Their
   macroexpansions include code that avoids the printing of error
@@ -70055,7 +70051,7 @@ Subtopics
             ((characterp (car x))
              (cons (car x)
                    (make-character-list (cdr x))))
-            (t (cons (code-char 0)
+            (t (cons *null-char*
                      (make-character-list (cdr x))))))")
  (MAKE-EVENT
   (EVENTS MACROS)
@@ -77180,8 +77176,7 @@ Subtopics
 
     (defun newline (channel state)
      (declare
-          (xargs :guard (and (state-p state)
-                             (symbolp channel)
+          (xargs :guard (and (symbolp channel)
                              (open-output-channel-p channel
                                                     :character state))))
      (princ$ #\\Newline channel state))")
@@ -99485,8 +99480,13 @@ Experimental Versions
 
     * [47mOne-way-unify[0m (see [47mbooks/system/brr-near-missp.lisp[0m)
     * [47m[Genvar][0m (see [47mbooks/system/brr-near-missp.lisp[0m)
-    * [47mEviscerate-top[0m, towards the [47m[fmt][0m family of functions (see
-      [47mbooks/system/eviscerate-top.lisp[0m) [See DARPA Note above.]
+    * [47m[Fmt][0m, [47m[error1][0m (which supports macros [47m(er soft ...)[0m and [47m[er-soft][0m),
+      and related printing utilities --- and some code was modified
+      to support their conversion to [47m:[0m[47m[logic][0m mode [See DARPA Note
+      above.]
+
+  Note that because of the [47m[error1][0m change noted above, [47m(er soft ...)[0m
+  can now be used in [47m:logic[0m mode code.
 
 
 Changes to Existing Features
