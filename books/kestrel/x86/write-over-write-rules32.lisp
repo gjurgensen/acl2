@@ -1,7 +1,7 @@
-; "Write over write" rules for our x86 state writers
+; "Write over write" rules for our 32-bit x86 state writers
 ;
 ; Copyright (C) 2016-2019 Kestrel Technology, LLC
-; Copyright (C) 2020-2021 Kestrel Institute
+; Copyright (C) 2020-2023 Kestrel Institute
 ;
 ; License: A 3-clause BSD license. See the file books/3BSD-mod.txt.
 ;
@@ -30,7 +30,7 @@
 (defthm set-flag-of-write-byte-to-segment
   (equal (set-flag flag fval (write-byte-to-segment eff-addr seg-reg val x86))
          (write-byte-to-segment eff-addr seg-reg val (set-flag flag fval x86)))
-  :hints (("Goal" :in-theory (enable write-byte-to-segment))))
+  :hints (("Goal" :in-theory (enable write-byte-to-segment set-flag))))
 
 (defthm set-flag-of-write-to-segment
   (equal (set-flag flag fval (write-to-segment n eff-addr seg-reg val x86))
