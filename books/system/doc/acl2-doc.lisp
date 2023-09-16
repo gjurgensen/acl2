@@ -103140,6 +103140,11 @@ it."
  (perhaps @(see local)ly) may rescue a proof that now fails because of the
  change.</p>
 
+ <p>Fixed an induction message when limiting the number of cases, in
+ particular, replacing &ldquo;we had to fold ... into a single
+ IF-expression&rdquo; by &ldquo;we had to termify ... (see :DOC termify)&rdquo;
+ and explaining in the new @(see documentation) topic, @(see termify).</p>
+
  <h3>New Features</h3>
 
  <p>The new zero-ary attachable system function, @(tsee heavy-linear-p), allows
@@ -140259,6 +140264,29 @@ work on <tt>(q x)</tt>.</p>
  that it will always succeed (see @(see well-formedness-guarantee)) or by
  telling ACL2 to skip the test at the risk of soundness (see @(tsee
  set-skip-meta-termp-checks)).</p>")
+
+(defxdoc termify
+  :parents (term)
+  :short "the process of converting a clause to a term"
+  :long "<p>The ACL2 prover represents its goals and subgoals as @(see
+  clause)s, e.g., lists of @(see term)s treated as disjunctions.  The
+  individual elements of a clause are called <i>literals</i>.  For example a
+  goal printed as @('(IMPLIES (AND p q) r)') is internally represented as the
+  3-literal clause @('((NOT p) (NOT q) r)').  A clause containing just one
+  literal is called a <i>unit clause</i>.</p>
+
+  <p>To <i>termify</i> a clause containing multiple literals, we convert the
+  clause to a unit clause using @('IF') to express the disjunction.  For
+  example, the 3-literal clause @('((NOT p) (NOT q) r)') is propositionally
+  equivalent to the term @('(IF (NOT P) 'T (IF (NOT Q) 'T R))').  By embedding
+  that @('IF')-term in a singleton list we obtain a unit clause equivalent to
+  the original 3-literal clause.</p>
+
+  <p>Applying an induction scheme to a clause containing multiple literals can
+  produce an exponential number of cases.  This does not happen if the clause
+  is a unit clause.  So the ACL2 induction mechanism sometimes termifies its
+  goal clause before applying the induction scheme to shift the case-analysis
+  burden to the rest of the prover.</p>")
 
 (defxdoc termination-theorem
   :parents (lemma-instance measure hints)
