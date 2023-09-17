@@ -99963,6 +99963,11 @@ Changes to Existing Features
   books (perhaps [local]ly) may rescue a proof that now fails because
   of the change.
 
+  Fixed an induction message when limiting the number of cases, in
+  particular, replacing ``we had to fold ... into a single
+  IF-expression'' by ``we had to termify ... (see :DOC termify)'' and
+  explaining in the new [documentation] topic, [termify].
+
 
 New Features
 
@@ -138467,6 +138472,9 @@ Subtopics
   [Term-order]
       The ordering relation on terms used by ACL2
 
+  [Termify]
+      the process of converting a clause to a term
+
   [Termp]
       recognizer for the quotation of a [term]")
  (TERM-LIST-LISTP
@@ -138723,6 +138731,29 @@ Subtopics
   proving that it will always succeed (see
   [well-formedness-guarantee]) or by telling ACL2 to skip the test at
   the risk of soundness (see [47m[set-skip-meta-termp-checks][0m).")
+ (TERMIFY
+  (TERM)
+  "the process of converting a clause to a term
+
+  The ACL2 prover represents its goals and subgoals as [clause]s, e.g.,
+  lists of [term]s treated as disjunctions.  The individual elements
+  of a clause are called [3mliterals[0m.  For example a goal printed as
+  [47m(IMPLIES (AND p q) r)[0m is internally represented as the 3-literal
+  clause [47m((NOT p) (NOT q) r)[0m.  A clause containing just one literal
+  is called a [3munit clause[0m.
+
+  To [3mtermify[0m a clause containing multiple literals, we convert the
+  clause to a unit clause using [47mIF[0m to express the disjunction.  For
+  example, the 3-literal clause [47m((NOT p) (NOT q) r)[0m is
+  propositionally equivalent to the term [47m(IF (NOT P) 'T (IF (NOT Q)
+  'T R))[0m.  By embedding that [47mIF[0m-term in a singleton list we obtain a
+  unit clause equivalent to the original 3-literal clause.
+
+  Applying an induction scheme to a clause containing multiple literals
+  can produce an exponential number of cases.  This does not happen
+  if the clause is a unit clause.  So the ACL2 induction mechanism
+  sometimes termifies its goal clause before applying the induction
+  scheme to shift the case-analysis burden to the rest of the prover.")
  (TERMINATION-THEOREM
   (LEMMA-INSTANCE MEASURE HINTS)
   "Use a (functional instance of a) previously-proved measure theorem
