@@ -103306,6 +103306,10 @@ it."
  also shows @(tsee make-event) expansions.  Thanks to Warren Hunt for
  requesting a utility that does repeated macroexpansion.</p>
 
+ <p>A new command has been added to the @(see proof-builder-commands), to
+ display the linear arithmetic database.  See @(see acl2-pc::pot-lst).  Thanks
+ to Dave Greve for bringing forward the idea of such a command.</p>
+
  <h3>Heuristic and Efficiency Improvements</h3>
 
  <p>Added a &ldquo;desperation heuristic&rdquo; to compute a stronger context,
@@ -160079,6 +160083,102 @@ print the rules for a given name"
  <p>If you want information about applying rewrite rules to the current
  subterm, consider the @('show-rewrites') (or equivalently, @('sr'))
  command.</p>")
+
+(defxdoc acl2-pc::pot-lst
+  :parents (proof-builder-commands)
+  :short "(macro)
+display the linear arithmetic database based on the current context"
+  :long "<p>This is a relatively advanced command.  For discusion of a related
+ but more elementary command, including remarks about the utility of such a
+ command, see @(see acl2-pc::type-alist).  See @(see acl2::linear-arithmetic)
+ for a description of the ACL2 linear arithmetic decision procedure</p>
+
+ @({
+  Examples:
+  (pot-lst nil t)   ; display linear pot-lst based on governors only (default)
+  pot-lst           ; same as (pot-lst nil t) -- governors only (default)
+  (pot-lst nil)     ; same as (pot-lst nil t) -- governors only (default)
+  (pot-lst nil t nil nil) ; same as above
+  (pot-lst nil t nil t)   ; same as above, except: raw format
+  (pot-lst t t)     ; display pot-lst based on conclusion and governors
+  (pot-lst t)       ; same as (pot-lst t nil) -- conclusion only
+  (pot-lst nil nil) ; based on neither conclusion nor governors
+
+  General Form:
+  (pot-lst &optional concl-flg govs-flg rawp)
+ })
+
+ <p>where if @('govs-flg') is omitted then it defaults to @('(not concl-flg)'),
+ and each of the other optional arguments defaults to @('nil').</p>
+
+ <p>This command displays the linear database, also known as the linear
+ <i>pot-lst</i>, that is computed from a suitable set of assumptions.  That set
+ of assumptions always includes all top-level hypotheses.  By default, and when
+ @('govs-flg') is supplied a non-@('nil') value, the set of assumptions
+ includes all governors (which are based on surrounding if-expressions that
+ must be true or false).  The negation of the current goal's top-level
+ conclusion is also included in the assumptions when @('concl-flg') is supplied
+ a non-@('nil') value.</p>
+
+ <p>The computed pot-lst is based on the result of forward chaining from the
+ set of assumptions as described above.  By default, that pot-lst is displayed
+ in a self-explanatory way.  Here is an (admittedly contrived) example.</p>
+
+ @({
+ ACL2 !>(verify (implies (and (>= (- (nth 3 x) a) 7)
+                              (< (nth 3 x) b)
+                              (< c b))
+                         (< (nth 3 x) d)))
+ ->: promote
+ ->: th
+ *** Top-level hypotheses:
+ 1. (<= 7 (+ (NTH 3 X) (- A)))
+ 2. (< (NTH 3 X) B)
+ 3. (< C B)
+
+ The current subterm is:
+ (< (NTH 3 X) D)
+ ->: pot-lst
+ Current pot-lst:
+ -----
+ For maximal term B
+ the list of polynomials is:
+ ((A + 7 < B))
+ -----
+ For maximal term C
+ the list of polynomials is:
+ ((C < B))
+ -----
+ For maximal term (NTH '3 X)
+ the list of polynomials is:
+ (((NTH '3 X) < B) (A + 7 <= (NTH '3 X)))
+
+ NIL
+ ->: (pot-lst t t)
+ Current pot-lst:
+ -----
+ For maximal term B
+ the list of polynomials is:
+ ((A + 7 < B))
+ -----
+ For maximal term C
+ the list of polynomials is:
+ ((C < B))
+ -----
+ For maximal term D
+ the list of polynomials is:
+ ((D < B))
+ -----
+ For maximal term (NTH '3 X)
+ the list of polynomials is:
+ (((NTH '3 X) < B) (A + 7 <= (NTH '3 X)) (D <= (NTH '3 X)))
+
+ NIL
+ ->:
+ })
+
+ <p>You can get the internal form of the pot-lst by supplying all optional
+ arguments including a non-@('nil') value for @('rawp').</p>")
 
 (defxdoc acl2-pc::pp
   :parents (proof-builder-commands)
