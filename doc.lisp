@@ -100135,6 +100135,11 @@ New Features
   [47mtrans*[0m also shows [47m[make-event][0m expansions.  Thanks to Warren Hunt
   for requesting a utility that does repeated macroexpansion.
 
+  A new command has been added to the [proof-builder-commands], to
+  display the linear arithmetic database.  See [ACL2-pc::pot-lst].
+  Thanks to Dave Greve for bringing forward the idea of such a
+  command.
+
 
 Heuristic and Efficiency Improvements
 
@@ -110405,6 +110410,10 @@ Subtopics
 
   [ACL2-pc::pl]
       (macro) print the rules for a given name
+
+  [ACL2-pc::pot-lst]
+      (macro) display the linear arithmetic database based on the current
+      context
 
   [ACL2-pc::pp]
       (macro) prettyprint the current term in internal (translated) form
@@ -157896,6 +157905,99 @@ Subtopics
 
   If you want information about applying rewrite rules to the current
   subterm, consider the [47mshow-rewrites[0m (or equivalently, [47msr[0m) command.")
+ (ACL2-PC::POT-LST
+  (PROOF-BUILDER-COMMANDS)
+  "(macro) display the linear arithmetic database based on the current
+  context
+
+  This is a relatively advanced command.  For discusion of a related
+  but more elementary command, including remarks about the utility of
+  such a command, see [ACL2-pc::type-alist].  See [linear-arithmetic]
+  for a description of the ACL2 linear arithmetic decision procedure
+
+    Examples:
+    (pot-lst nil t)   ; display linear pot-lst based on governors only (default)
+    pot-lst           ; same as (pot-lst nil t) -- governors only (default)
+    (pot-lst nil)     ; same as (pot-lst nil t) -- governors only (default)
+    (pot-lst nil t nil nil) ; same as above
+    (pot-lst nil t nil t)   ; same as above, except: raw format
+    (pot-lst t t)     ; display pot-lst based on conclusion and governors
+    (pot-lst t)       ; same as (pot-lst t nil) -- conclusion only
+    (pot-lst nil nil) ; based on neither conclusion nor governors
+
+    General Form:
+    (pot-lst &optional concl-flg govs-flg rawp)
+
+  where if [47mgovs-flg[0m is omitted then it defaults to [47m(not concl-flg)[0m, and
+  each of the other optional arguments defaults to [47mnil[0m.
+
+  This command displays the linear database, also known as the linear
+  [3mpot-lst[0m, that is computed from a suitable set of assumptions.  That
+  set of assumptions always includes all top-level hypotheses.  By
+  default, and when [47mgovs-flg[0m is supplied a non-[47mnil[0m value, the set of
+  assumptions includes all governors (which are based on surrounding
+  if-expressions that must be true or false).  The negation of the
+  current goal's top-level conclusion is also included in the
+  assumptions when [47mconcl-flg[0m is supplied a non-[47mnil[0m value.
+
+  The computed pot-lst is based on the result of forward chaining from
+  the set of assumptions as described above.  By default, that
+  pot-lst is displayed in a self-explanatory way.  Here is an
+  (admittedly contrived) example.
+
+    ACL2 !>(verify (implies (and (>= (- (nth 3 x) a) 7)
+                                 (< (nth 3 x) b)
+                                 (< c b))
+                            (< (nth 3 x) d)))
+    ->: promote
+    ->: th
+    *** Top-level hypotheses:
+    1. (<= 7 (+ (NTH 3 X) (- A)))
+    2. (< (NTH 3 X) B)
+    3. (< C B)
+
+    The current subterm is:
+    (< (NTH 3 X) D)
+    ->: pot-lst
+    Current pot-lst:
+    -----
+    For maximal term B
+    the list of polynomials is:
+    ((A + 7 < B))
+    -----
+    For maximal term C
+    the list of polynomials is:
+    ((C < B))
+    -----
+    For maximal term (NTH '3 X)
+    the list of polynomials is:
+    (((NTH '3 X) < B) (A + 7 <= (NTH '3 X)))
+
+    NIL
+    ->: (pot-lst t t)
+    Current pot-lst:
+    -----
+    For maximal term B
+    the list of polynomials is:
+    ((A + 7 < B))
+    -----
+    For maximal term C
+    the list of polynomials is:
+    ((C < B))
+    -----
+    For maximal term D
+    the list of polynomials is:
+    ((D < B))
+    -----
+    For maximal term (NTH '3 X)
+    the list of polynomials is:
+    (((NTH '3 X) < B) (A + 7 <= (NTH '3 X)) (D <= (NTH '3 X)))
+
+    NIL
+    ->:
+
+  You can get the internal form of the pot-lst by supplying all
+  optional arguments including a non-[47mnil[0m value for [47mrawp[0m.")
  (ACL2-PC::PP
   (PROOF-BUILDER-COMMANDS)
   "(macro) prettyprint the current term in internal (translated) form
