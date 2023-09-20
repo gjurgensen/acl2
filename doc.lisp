@@ -15238,7 +15238,6 @@ Subtopics
        (do-not-hint \"[books]/tools/do-not.lisp\")
        (easy-simplify-term \"[books]/tools/easy-simplify.lisp\")
        (er-soft+ \"[books]/kestrel/utilities/er-soft-plus.lisp\")
-       (er-soft-logic \"[books]/tools/er-soft-logic.lisp\")
        (final-cdr \"[books]/std/lists/final-cdr.lisp\")
        (fty \"[books]/centaur/fty/top.lisp\")
        (getopt \"[books]/centaur/getopt/top.lisp\")
@@ -17666,7 +17665,7 @@ Subtopics
                            (#\\Z . #\\z)))))
         (cond (pair (cdr pair))
               ((characterp x) x)
-              (t (code-char 0)))))")
+              (t *null-char*))))")
  (CHAR-EQUAL
   (CHARACTERS ACL2-BUILT-INS)
   "Character equality without regard to case
@@ -17736,7 +17735,7 @@ Subtopics
                            (#\\z . #\\Z)))))
         (cond (pair (cdr pair))
               ((characterp x) x)
-              (t (code-char 0)))))")
+              (t *null-char*))))")
  (CHAR<
   (CHARACTERS ACL2-BUILT-INS)
   "Less-than test for [characters]
@@ -34289,10 +34288,7 @@ Subtopics
   function, [47m[hard-error][0m, which has a [guard] of [47mT[0m, while the
   [47mhard[0m/[47mhard![0m forms have expansions that call the function, [47m[illegal][0m,
   which has a guard that is logically [47mNIL[0m.  Those generate code that
-  is in [47m:[0m[47m[logic][0m mode, in contrast to variants of [47m(er soft ...)[0m,
-  which generate calls of the [47m:[0m[47m[program][0m mode function, [47m[error1][0m.
-  For variants of [47m(er soft ...)[0m that generate [47m:[0m[47m[logic][0m mode code, see
-  [er-soft-logic] and [er-soft+].
+  is in [47m:[0m[47m[logic][0m mode, as do variants of [47m(er soft ...)[0m.
 
   The general forms of the macros are as follows.  Their
   macroexpansions include code that avoids the printing of error
@@ -70055,7 +70051,7 @@ Subtopics
             ((characterp (car x))
              (cons (car x)
                    (make-character-list (cdr x))))
-            (t (cons (code-char 0)
+            (t (cons *null-char*
                      (make-character-list (cdr x))))))")
  (MAKE-EVENT
   (EVENTS MACROS)
@@ -77180,8 +77176,7 @@ Subtopics
 
     (defun newline (channel state)
      (declare
-          (xargs :guard (and (state-p state)
-                             (symbolp channel)
+          (xargs :guard (and (symbolp channel)
                              (open-output-channel-p channel
                                                     :character state))))
      (princ$ #\\Newline channel state))")
@@ -99485,8 +99480,13 @@ Experimental Versions
 
     * [47mOne-way-unify[0m (see [47mbooks/system/brr-near-missp.lisp[0m)
     * [47m[Genvar][0m (see [47mbooks/system/brr-near-missp.lisp[0m)
-    * [47mEviscerate-top[0m, towards the [47m[fmt][0m family of functions (see
-      [47mbooks/system/eviscerate-top.lisp[0m) [See DARPA Note above.]
+    * [47m[Fmt][0m, [47m[error1][0m (which supports macros [47m(er soft ...)[0m and [47m[er-soft][0m),
+      and related printing utilities --- and some code was modified
+      to support their conversion to [47m:[0m[47m[logic][0m mode [See DARPA Note
+      above.]
+
+  Note that because of the [47m[error1][0m change noted above, [47m(er soft ...)[0m
+  can now be used in [47m:logic[0m mode code.
 
 
 Changes to Existing Features
@@ -99963,6 +99963,11 @@ Changes to Existing Features
   books (perhaps [local]ly) may rescue a proof that now fails because
   of the change.
 
+  Fixed an induction message when limiting the number of cases, in
+  particular, replacing ``we had to fold ... into a single
+  IF-expression'' by ``we had to termify ... (see :DOC termify)'' and
+  explaining in the new [documentation] topic, [termify].
+
 
 New Features
 
@@ -100129,6 +100134,11 @@ New Features
   macroexpansions of a form leading to its final translation, where
   [47mtrans*[0m also shows [47m[make-event][0m expansions.  Thanks to Warren Hunt
   for requesting a utility that does repeated macroexpansion.
+
+  A new command has been added to the [proof-builder-commands], to
+  display the linear arithmetic database.  See [ACL2-pc::pot-lst].
+  Thanks to Dave Greve for bringing forward the idea of such a
+  command.
 
 
 Heuristic and Efficiency Improvements
@@ -110400,6 +110410,10 @@ Subtopics
 
   [ACL2-pc::pl]
       (macro) print the rules for a given name
+
+  [ACL2-pc::pot-lst]
+      (macro) display the linear arithmetic database based on the current
+      context
 
   [ACL2-pc::pp]
       (macro) prettyprint the current term in internal (translated) form
@@ -122869,18 +122883,32 @@ Subtopics
   false branches of these calls even without [47mIF[0m being among the
   ruler-extenders).
 
-  IMPORTANT REMARKS.  (1) Notice that the argument to
-  [47mset-ruler-extenders[0m is evaluated, but the argument to
-  [47m:RULER-EXTENDERS[0m in [47mXARGS[0m is not evaluated.  (2) Do not put macro
-  names in your list of ruler-extenders.  For example, if you intend
-  that [47m+[0m should not block the termination analysis, in analogy to
-  [47mcons[0m in the example above, then the list of ruler-extenders should
-  include [47mbinary-+[0m, not [47m+[0m.  Of course, if you use [47m:all[0m then this is
-  not an issue, but see the next remark.  (3) Also please note that
-  by taking advantage of the ruler-extenders, you may be complicating
-  the induction scheme stored for the function, whose computation
-  takes similar advantage of the additional [47mIF[0m structure that you are
-  specifying.
+  IMPORTANT REMARKS.
+
+   1. Notice that the argument to [47mset-ruler-extenders[0m is evaluated, but the
+      argument to [47m:RULER-EXTENDERS[0m in [47mXARGS[0m is not evaluated.
+   2. Do not put macro names in your list of ruler-extenders.  For example,
+      if you intend that [47m+[0m should not block the termination analysis,
+      in analogy to [47mcons[0m in the example above, then the list of
+      ruler-extenders should include [47mbinary-+[0m, not [47m+[0m.  Of course, if
+      you use [47m:all[0m then this is not an issue, but see the next
+      remark.
+   3. Also please note that by taking advantage of the ruler-extenders, you
+      may change the induction scheme computed for the function.
+      This is especially worth remembering for functions containing
+      [47m[let][0m or [47m[let*][0m expressions (which translate to [47m[lambda][0m
+      applications; see [term]).  If the induction scheme suggested
+      by such a function seems to provide more induction hypotheses
+      than appear necessary, it might help to admit the function with
+      [47m:lambdas[0m included among the ruler extenders even if that is not
+      necessary for the termination proof.  This can cause the
+      induction scheme to have a richer case analysis with fewer
+      induction hypotheses on any given induction step.  While this
+      can make it more difficult for the system to merge induction
+      schemes to get an appropriate induction, it can also make the
+      proof of each induction step easier.  Unfortunately, we have no
+      more precise advice as to exactly when adding [47m:lambdas[0m will
+      help.
 
   To see the ruler-extenders of an existing function symbol, [47mfn[0m, in a
   logical [world], [47mwrld[0m, evaluate [47m(ruler-extenders 'fn wrld)[0m after
@@ -138453,6 +138481,9 @@ Subtopics
   [Term-order]
       The ordering relation on terms used by ACL2
 
+  [Termify]
+      the process of converting a clause to a term
+
   [Termp]
       recognizer for the quotation of a [term]")
  (TERM-LIST-LISTP
@@ -138709,6 +138740,29 @@ Subtopics
   proving that it will always succeed (see
   [well-formedness-guarantee]) or by telling ACL2 to skip the test at
   the risk of soundness (see [47m[set-skip-meta-termp-checks][0m).")
+ (TERMIFY
+  (TERM)
+  "the process of converting a clause to a term
+
+  The ACL2 prover represents its goals and subgoals as [clause]s, e.g.,
+  lists of [term]s treated as disjunctions.  The individual elements
+  of a clause are called [3mliterals[0m.  For example a goal printed as
+  [47m(IMPLIES (AND p q) r)[0m is internally represented as the 3-literal
+  clause [47m((NOT p) (NOT q) r)[0m.  A clause containing just one literal
+  is called a [3munit clause[0m.
+
+  To [3mtermify[0m a clause containing multiple literals, we convert the
+  clause to a unit clause using [47mIF[0m to express the disjunction.  For
+  example, the 3-literal clause [47m((NOT p) (NOT q) r)[0m is
+  propositionally equivalent to the term [47m(IF (NOT P) 'T (IF (NOT Q)
+  'T R))[0m.  By embedding that [47mIF[0m-term in a singleton list we obtain a
+  unit clause equivalent to the original 3-literal clause.
+
+  Applying an induction scheme to a clause containing multiple literals
+  can produce an exponential number of cases.  This does not happen
+  if the clause is a unit clause.  So the ACL2 induction mechanism
+  sometimes termifies its goal clause before applying the induction
+  scheme to shift the case-analysis burden to the rest of the prover.")
  (TERMINATION-THEOREM
   (LEMMA-INSTANCE MEASURE HINTS)
   "Use a (functional instance of a) previously-proved measure theorem
@@ -157851,6 +157905,99 @@ Subtopics
 
   If you want information about applying rewrite rules to the current
   subterm, consider the [47mshow-rewrites[0m (or equivalently, [47msr[0m) command.")
+ (ACL2-PC::POT-LST
+  (PROOF-BUILDER-COMMANDS)
+  "(macro) display the linear arithmetic database based on the current
+  context
+
+  This is a relatively advanced command.  For discusion of a related
+  but more elementary command, including remarks about the utility of
+  such a command, see [ACL2-pc::type-alist].  See [linear-arithmetic]
+  for a description of the ACL2 linear arithmetic decision procedure
+
+    Examples:
+    (pot-lst nil t)   ; display linear pot-lst based on governors only (default)
+    pot-lst           ; same as (pot-lst nil t) -- governors only (default)
+    (pot-lst nil)     ; same as (pot-lst nil t) -- governors only (default)
+    (pot-lst nil t nil nil) ; same as above
+    (pot-lst nil t nil t)   ; same as above, except: raw format
+    (pot-lst t t)     ; display pot-lst based on conclusion and governors
+    (pot-lst t)       ; same as (pot-lst t nil) -- conclusion only
+    (pot-lst nil nil) ; based on neither conclusion nor governors
+
+    General Form:
+    (pot-lst &optional concl-flg govs-flg rawp)
+
+  where if [47mgovs-flg[0m is omitted then it defaults to [47m(not concl-flg)[0m, and
+  each of the other optional arguments defaults to [47mnil[0m.
+
+  This command displays the linear database, also known as the linear
+  [3mpot-lst[0m, that is computed from a suitable set of assumptions.  That
+  set of assumptions always includes all top-level hypotheses.  By
+  default, and when [47mgovs-flg[0m is supplied a non-[47mnil[0m value, the set of
+  assumptions includes all governors (which are based on surrounding
+  if-expressions that must be true or false).  The negation of the
+  current goal's top-level conclusion is also included in the
+  assumptions when [47mconcl-flg[0m is supplied a non-[47mnil[0m value.
+
+  The computed pot-lst is based on the result of forward chaining from
+  the set of assumptions as described above.  By default, that
+  pot-lst is displayed in a self-explanatory way.  Here is an
+  (admittedly contrived) example.
+
+    ACL2 !>(verify (implies (and (>= (- (nth 3 x) a) 7)
+                                 (< (nth 3 x) b)
+                                 (< c b))
+                            (< (nth 3 x) d)))
+    ->: promote
+    ->: th
+    *** Top-level hypotheses:
+    1. (<= 7 (+ (NTH 3 X) (- A)))
+    2. (< (NTH 3 X) B)
+    3. (< C B)
+
+    The current subterm is:
+    (< (NTH 3 X) D)
+    ->: pot-lst
+    Current pot-lst:
+    -----
+    For maximal term B
+    the list of polynomials is:
+    ((A + 7 < B))
+    -----
+    For maximal term C
+    the list of polynomials is:
+    ((C < B))
+    -----
+    For maximal term (NTH '3 X)
+    the list of polynomials is:
+    (((NTH '3 X) < B) (A + 7 <= (NTH '3 X)))
+
+    NIL
+    ->: (pot-lst t t)
+    Current pot-lst:
+    -----
+    For maximal term B
+    the list of polynomials is:
+    ((A + 7 < B))
+    -----
+    For maximal term C
+    the list of polynomials is:
+    ((C < B))
+    -----
+    For maximal term D
+    the list of polynomials is:
+    ((D < B))
+    -----
+    For maximal term (NTH '3 X)
+    the list of polynomials is:
+    (((NTH '3 X) < B) (A + 7 <= (NTH '3 X)) (D <= (NTH '3 X)))
+
+    NIL
+    ->:
+
+  You can get the internal form of the pot-lst by supplying all
+  optional arguments including a non-[47mnil[0m value for [47mrawp[0m.")
  (ACL2-PC::PP
   (PROOF-BUILDER-COMMANDS)
   "(macro) prettyprint the current term in internal (translated) form

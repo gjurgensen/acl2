@@ -97,7 +97,6 @@
     (DO-NOT-HINT "[books]/tools/do-not.lisp")
     (EASY-SIMPLIFY-TERM "[books]/tools/easy-simplify.lisp")
     (ER-SOFT+ "[books]/kestrel/utilities/er-soft-plus.lisp")
-    (ER-SOFT-LOGIC "[books]/tools/er-soft-logic.lisp")
     (FINAL-CDR "[books]/std/lists/final-cdr.lisp")
     (FTY "[books]/centaur/fty/top.lisp")
     (GETOPT "[books]/centaur/getopt/top.lisp")
@@ -31098,10 +31097,7 @@ ld) and @(tsee include-book)"
  function, @(tsee hard-error), which has a @(see guard) of @('T'), while the
  @('hard')/@('hard!') forms have expansions that call the function, @(tsee
  illegal), which has a guard that is logically @('NIL').  Those generate code
- that is in @(':')@(tsee logic) mode, in contrast to variants of @('(er soft
- ...)'), which generate calls of the @(':')@(tsee program) mode function,
- @(tsee error1).  For variants of @('(er soft ...)') that generate @(':')@(tsee
- logic) mode code, see @(see er-soft-logic) and @(see er-soft+).</p>
+ that is in @(':')@(tsee logic) mode, as do variants of @('(er soft ...)').</p>
 
  <p>The general forms of the macros are as follows.  Their macroexpansions
  include code that avoids the printing of error messages when error output is
@@ -102631,10 +102627,15 @@ it."
 
  <li>@(tsee Genvar) (see @('books/system/brr-near-missp.lisp'))</li>
 
- <li>@('Eviscerate-top'), towards the @(tsee fmt) family of functions (see
- @('books/system/eviscerate-top.lisp'))  [See DARPA Note above.]</li>
+ <li>@(tsee Fmt), @(tsee error1) (which supports macros @('(er soft ...)') and
+ @(tsee er-soft)), and related printing utilities &mdash; and some code was
+ modified to support their conversion to @(':')@(tsee logic) mode [See DARPA
+ Note above.]</li>
 
  </ul>
+
+ <p>Note that because of the @(tsee error1) change noted above, @('(er soft
+ ...)') can now be used in @(':logic') mode code.</p>
 
  <h3>Changes to Existing Features</h3>
 
@@ -103139,6 +103140,11 @@ it."
  (perhaps @(see local)ly) may rescue a proof that now fails because of the
  change.</p>
 
+ <p>Fixed an induction message when limiting the number of cases, in
+ particular, replacing &ldquo;we had to fold ... into a single
+ IF-expression&rdquo; by &ldquo;we had to termify ... (see :DOC termify)&rdquo;
+ and explaining in the new @(see documentation) topic, @(see termify).</p>
+
  <h3>New Features</h3>
 
  <p>The new zero-ary attachable system function, @(tsee heavy-linear-p), allows
@@ -103299,6 +103305,10 @@ it."
  macroexpansions of a form leading to its final translation, where @('trans*')
  also shows @(tsee make-event) expansions.  Thanks to Warren Hunt for
  requesting a utility that does repeated macroexpansion.</p>
+
+ <p>A new command has been added to the @(see proof-builder-commands), to
+ display the linear arithmetic database.  See @(see acl2-pc::pot-lst).  Thanks
+ to Dave Greve for bringing forward the idea of such a command.</p>
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
@@ -124002,17 +124012,34 @@ work on <tt>(q x)</tt>.</p>
  @('IF') (it continues through the true and false branches of these calls even
  without @('IF') being among the ruler-extenders).</p>
 
- <p>IMPORTANT REMARKS.  (1) Notice that the argument to
- @('set-ruler-extenders') is evaluated, but the argument to
- @(':RULER-EXTENDERS') in @('XARGS') is not evaluated.  (2) Do not put macro
- names in your list of ruler-extenders.  For example, if you intend that @('+')
- should not block the termination analysis, in analogy to @('cons') in the
- example above, then the list of ruler-extenders should include @('binary-+'),
- not @('+').  Of course, if you use @(':all') then this is not an issue, but
- see the next remark.  (3) Also please note that by taking advantage of the
- ruler-extenders, you may be complicating the induction scheme stored for the
- function, whose computation takes similar advantage of the additional @('IF')
- structure that you are specifying.</p>
+ <p>IMPORTANT REMARKS.</p>
+
+ <ol>
+
+ <li>Notice that the argument to @('set-ruler-extenders') is evaluated, but the
+ argument to @(':RULER-EXTENDERS') in @('XARGS') is not evaluated.</li>
+
+ <li>Do not put macro names in your list of ruler-extenders.  For example, if
+ you intend that @('+') should not block the termination analysis, in analogy
+ to @('cons') in the example above, then the list of ruler-extenders should
+ include @('binary-+'), not @('+').  Of course, if you use @(':all') then this
+ is not an issue, but see the next remark.</li>
+
+ <li>Also please note that by taking advantage of the ruler-extenders, you may
+ change the induction scheme computed for the function.  This is especially
+ worth remembering for functions containing @(tsee let) or @(tsee let*)
+ expressions (which translate to @(tsee lambda) applications; see @(see term)).
+ If the induction scheme suggested by such a function seems to provide more
+ induction hypotheses than appear necessary, it might help to admit the
+ function with @(':lambdas') included among the ruler extenders even if that is
+ not necessary for the termination proof.  This can cause the induction scheme
+ to have a richer case analysis with fewer induction hypotheses on any given
+ induction step.  While this can make it more difficult for the system to merge
+ induction schemes to get an appropriate induction, it can also make the proof
+ of each induction step easier.  Unfortunately, we have no more precise advice
+ as to exactly when adding @(':lambdas') will help.</li>
+
+ </ol>
 
  <p>To see the ruler-extenders of an existing function symbol, @('fn'), in a
  logical @(see world), @('wrld'), evaluate @('(ruler-extenders 'fn wrld)')
@@ -140241,6 +140268,29 @@ work on <tt>(q x)</tt>.</p>
  that it will always succeed (see @(see well-formedness-guarantee)) or by
  telling ACL2 to skip the test at the risk of soundness (see @(tsee
  set-skip-meta-termp-checks)).</p>")
+
+(defxdoc termify
+  :parents (term)
+  :short "the process of converting a clause to a term"
+  :long "<p>The ACL2 prover represents its goals and subgoals as @(see
+  clause)s, e.g., lists of @(see term)s treated as disjunctions.  The
+  individual elements of a clause are called <i>literals</i>.  For example a
+  goal printed as @('(IMPLIES (AND p q) r)') is internally represented as the
+  3-literal clause @('((NOT p) (NOT q) r)').  A clause containing just one
+  literal is called a <i>unit clause</i>.</p>
+
+  <p>To <i>termify</i> a clause containing multiple literals, we convert the
+  clause to a unit clause using @('IF') to express the disjunction.  For
+  example, the 3-literal clause @('((NOT p) (NOT q) r)') is propositionally
+  equivalent to the term @('(IF (NOT P) 'T (IF (NOT Q) 'T R))').  By embedding
+  that @('IF')-term in a singleton list we obtain a unit clause equivalent to
+  the original 3-literal clause.</p>
+
+  <p>Applying an induction scheme to a clause containing multiple literals can
+  produce an exponential number of cases.  This does not happen if the clause
+  is a unit clause.  So the ACL2 induction mechanism sometimes termifies its
+  goal clause before applying the induction scheme to shift the case-analysis
+  burden to the rest of the prover.</p>")
 
 (defxdoc termination-theorem
   :parents (lemma-instance measure hints)
@@ -160033,6 +160083,102 @@ print the rules for a given name"
  <p>If you want information about applying rewrite rules to the current
  subterm, consider the @('show-rewrites') (or equivalently, @('sr'))
  command.</p>")
+
+(defxdoc acl2-pc::pot-lst
+  :parents (proof-builder-commands)
+  :short "(macro)
+display the linear arithmetic database based on the current context"
+  :long "<p>This is a relatively advanced command.  For discusion of a related
+ but more elementary command, including remarks about the utility of such a
+ command, see @(see acl2-pc::type-alist).  See @(see acl2::linear-arithmetic)
+ for a description of the ACL2 linear arithmetic decision procedure</p>
+
+ @({
+  Examples:
+  (pot-lst nil t)   ; display linear pot-lst based on governors only (default)
+  pot-lst           ; same as (pot-lst nil t) -- governors only (default)
+  (pot-lst nil)     ; same as (pot-lst nil t) -- governors only (default)
+  (pot-lst nil t nil nil) ; same as above
+  (pot-lst nil t nil t)   ; same as above, except: raw format
+  (pot-lst t t)     ; display pot-lst based on conclusion and governors
+  (pot-lst t)       ; same as (pot-lst t nil) -- conclusion only
+  (pot-lst nil nil) ; based on neither conclusion nor governors
+
+  General Form:
+  (pot-lst &optional concl-flg govs-flg rawp)
+ })
+
+ <p>where if @('govs-flg') is omitted then it defaults to @('(not concl-flg)'),
+ and each of the other optional arguments defaults to @('nil').</p>
+
+ <p>This command displays the linear database, also known as the linear
+ <i>pot-lst</i>, that is computed from a suitable set of assumptions.  That set
+ of assumptions always includes all top-level hypotheses.  By default, and when
+ @('govs-flg') is supplied a non-@('nil') value, the set of assumptions
+ includes all governors (which are based on surrounding if-expressions that
+ must be true or false).  The negation of the current goal's top-level
+ conclusion is also included in the assumptions when @('concl-flg') is supplied
+ a non-@('nil') value.</p>
+
+ <p>The computed pot-lst is based on the result of forward chaining from the
+ set of assumptions as described above.  By default, that pot-lst is displayed
+ in a self-explanatory way.  Here is an (admittedly contrived) example.</p>
+
+ @({
+ ACL2 !>(verify (implies (and (>= (- (nth 3 x) a) 7)
+                              (< (nth 3 x) b)
+                              (< c b))
+                         (< (nth 3 x) d)))
+ ->: promote
+ ->: th
+ *** Top-level hypotheses:
+ 1. (<= 7 (+ (NTH 3 X) (- A)))
+ 2. (< (NTH 3 X) B)
+ 3. (< C B)
+
+ The current subterm is:
+ (< (NTH 3 X) D)
+ ->: pot-lst
+ Current pot-lst:
+ -----
+ For maximal term B
+ the list of polynomials is:
+ ((A + 7 < B))
+ -----
+ For maximal term C
+ the list of polynomials is:
+ ((C < B))
+ -----
+ For maximal term (NTH '3 X)
+ the list of polynomials is:
+ (((NTH '3 X) < B) (A + 7 <= (NTH '3 X)))
+
+ NIL
+ ->: (pot-lst t t)
+ Current pot-lst:
+ -----
+ For maximal term B
+ the list of polynomials is:
+ ((A + 7 < B))
+ -----
+ For maximal term C
+ the list of polynomials is:
+ ((C < B))
+ -----
+ For maximal term D
+ the list of polynomials is:
+ ((D < B))
+ -----
+ For maximal term (NTH '3 X)
+ the list of polynomials is:
+ (((NTH '3 X) < B) (A + 7 <= (NTH '3 X)) (D <= (NTH '3 X)))
+
+ NIL
+ ->:
+ })
+
+ <p>You can get the internal form of the pot-lst by supplying all optional
+ arguments including a non-@('nil') value for @('rawp').</p>")
 
 (defxdoc acl2-pc::pp
   :parents (proof-builder-commands)
