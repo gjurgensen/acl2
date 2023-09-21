@@ -99464,19 +99464,21 @@ Experimental Versions
   Each change is described in just one category, though of course
   many changes could be placed in more than one category.
 
+  Note that only ACL2 system changes are listed below.  See also
+  [note-8-6-books] for a summary of changes made to the ACL2
+  Community Books since ACL2 8.5, including the build system.
+
   [3mDARPA Note.[0m The following statement applies to items below that are
   marked with ``See DARPA Note above'': Release was approved by DARPA
   with ``DISTRIBUTION STATEMENT A. Approved for public release.
   Distribution is unlimited.''
 
-  Note that only ACL2 system changes are listed below.  See also
-  [note-8-5-books] for a summary of changes made to the ACL2
-  Community Books since ACL2 8.5, including the build system.  Also
-  note that with each release, it is typical that the value of
-  constant [47m[*ACL2-exports*][0m has been extended, and that some built-in
-  functions that were formerly in [47m:[0m[47m[program][0m mode are now
-  [guard]-verified [47m:[0m[47m[logic][0m mode functions.  For this release the
-  following are particularly significant.
+
+Changes to Existing Features
+
+  Some built-in functions that were formerly in [47m:[0m[47m[program][0m mode are now
+  [guard]-verified [47m:[0m[47m[logic][0m mode functions.  Among the most
+  significant such built-in functions are the following.
 
     * [47mOne-way-unify[0m (see [47mbooks/system/brr-near-missp.lisp[0m)
     * [47m[Genvar][0m (see [47mbooks/system/brr-near-missp.lisp[0m)
@@ -99487,9 +99489,6 @@ Experimental Versions
 
   Note that because of the [47m[error1][0m change noted above, [47m(er soft ...)[0m
   can now be used in [47m:logic[0m mode code.
-
-
-Changes to Existing Features
 
   The connected book directory (that is, the [cbd]) now elaborates
   relative [pathname]s to absolute pathnames not only for book
@@ -99623,7 +99622,7 @@ Changes to Existing Features
   functions.  We are also grateful to Sol for providing a very
   helpful sketch of a correctness proof.
 
-  When there an attachment to a common ancestor of the evaluator and
+  When there is an attachment to a common ancestor of the evaluator and
   meta function of a proposed rule of class [47m:[0m[47m[meta][0m or
   [47m:[0m[47m[clause-processor][0m, the resulting error message now includes
   ancestor paths leading from the evaluator or meta function to a
@@ -99801,11 +99800,11 @@ Changes to Existing Features
   [induction-depth-limit] being exceeded).  Thanks to Eric Smith for
   a chat that helped lead to this improvement.
 
-  For most built-in [table]s, improved error messages for guard
-  failures.  This improvement was made by using a new macro that is
-  also available to ACL2 users, [47m[set-table-guard][0m, which adds a
-  [table] guard that produces a user-friendly error message when the
-  guard fails.
+  For most built-in [table]s, error messages for guard failures have
+  been improved, by use of a new macro that is also available to ACL2
+  users: [47m[set-table-guard][0m.  That utility may be used to set a
+  [table] guard in a way that produces a user-friendly error message
+  when the guard fails.
 
   The prover may now print a parenthetical remark about ``dropping
   false conclusion''.  That remark points to a new documentation
@@ -99861,7 +99860,7 @@ Changes to Existing Features
     * The macro [47mshow-brr-evisc-tuple[0m has been eliminated, but
       [47m[brr-evisc-tuple][0m is available instead.
 
-  The definition of bounded-integer-alistp has been modified by adding
+  The definition of [47mbounded-integer-alistp[0m has been modified by adding
   a guard [47m(posp n)[0m and removing the [47m(integerp n)[0m test from the body
   of its [47m[defun][0m.  [See DARPA Note above.]
 
