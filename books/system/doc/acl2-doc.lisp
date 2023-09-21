@@ -101486,7 +101486,7 @@ it."
 
 (defxdoc note-8-5
 
-; Total number of release note items: 131, as follows.
+; Total number of release note items: 78, as follows.
 ;   20 ; Changes to Existing Features
 ;   17 ; New Features
 ;    6 ; Heuristic and Efficiency Improvements
@@ -102273,6 +102273,20 @@ it."
 
 (defxdoc note-8-6
 
+; Total number of release note items: 157, as follows -- not including the
+; conversion of fmt, (er soft ...), one-way-unify, and genvar, and related
+; utilities to guard-verified :logic mode.
+
+;   69 ; Changes to Existing Features
+;   29 ; New Features
+;    8 ; Heuristic and Efficiency Improvements
+;   27 ; Bug Fixes
+;   16 ; Changes at the System Level
+;    7 ; EMACS Support
+;    1 ; Experimental Versions
+
+; Not discussed below are exensions to the constant, *acl2-exports*.
+
 ; Fixed error when attempting to use #@ reader in a book being certified.
 
 ; Fixed a bug in the error message when using #@ in a book being certified.
@@ -102608,18 +102622,20 @@ it."
  category, though of course many changes could be placed in more than one
  category.</p>
 
+ <p>Note that only ACL2 system changes are listed below.  See also @(see
+ note-8-6-books) for a summary of changes made to the ACL2 Community Books
+ since ACL2 8.5, including the build system.</p>
+
  <p><i>DARPA Note.</i>  The following statement applies to items below that are
  marked with &ldquo;See DARPA Note above&rdquo;: Release was approved by
  DARPA with &ldquo;DISTRIBUTION STATEMENT A. Approved for public
  release. Distribution is unlimited.&rdquo;</p>
 
- <p>Note that only ACL2 system changes are listed below.  See also @(see
- note-8-5-books) for a summary of changes made to the ACL2 Community Books
- since ACL2 8.5, including the build system.  Also note that with each release,
- it is typical that the value of constant @(tsee *acl2-exports*) has been
- extended, and that some built-in functions that were formerly in @(':')@(tsee
- program) mode are now @(see guard)-verified @(':')@(tsee logic) mode
- functions.  For this release the following are particularly significant.</p>
+ <h3>Changes to Existing Features</h3>
+
+ <p>Some built-in functions that were formerly in @(':')@(tsee program) mode
+ are now @(see guard)-verified @(':')@(tsee logic) mode functions.  Among the
+ most significant such built-in functions are the following.</p>
 
  <ul>
 
@@ -102636,8 +102652,6 @@ it."
 
  <p>Note that because of the @(tsee error1) change noted above, @('(er soft
  ...)') can now be used in @(':logic') mode code.</p>
-
- <h3>Changes to Existing Features</h3>
 
  <p>The connected book directory (that is, the @(see cbd)) now elaborates
  relative @(see pathname)s to absolute pathnames not only for book operations,
@@ -102783,7 +102797,7 @@ it."
  We are also grateful to Sol for providing a very helpful sketch of a
  correctness proof.</p>
 
- <p>When there an attachment to a common ancestor of the evaluator and meta
+ <p>When there is an attachment to a common ancestor of the evaluator and meta
  function of a proposed rule of class @(':')@(tsee meta) or @(':')@(tsee
  clause-processor), the resulting error message now includes ancestor paths
  leading from the evaluator or meta function to a common ancestor.</p>
@@ -102971,10 +102985,10 @@ it."
  @(':DO-NOT-INDUCT') hint or an @(see induction-depth-limit) being exceeded).
  Thanks to Eric Smith for a chat that helped lead to this improvement.</p>
 
- <p>For most built-in @(see table)s, improved error messages for guard
- failures.  This improvement was made by using a new macro that is also
- available to ACL2 users, @(tsee set-table-guard), which adds a @(see table)
- guard that produces a user-friendly error message when the guard fails.</p>
+ <p>For most built-in @(see table)s, error messages for guard failures have
+ been improved, by use of a new macro that is also available to ACL2 users:
+ @(tsee set-table-guard).  That utility may be used to set a @(see table) guard
+ in a way that produces a user-friendly error message when the guard fails.</p>
 
  <p>The prover may now print a parenthetical remark about &ldquo;dropping false
  conclusion&rdquo;.  That remark points to a new documentation topic, which
@@ -103034,7 +103048,7 @@ it."
 
  </ul>
 
- <p>The definition of bounded-integer-alistp has been modified by adding a
+ <p>The definition of @('bounded-integer-alistp') has been modified by adding a
  guard @('(posp n)') and removing the @('(integerp n)') test from the body of
  its @(tsee defun).  [See DARPA Note above.]</p>
 
