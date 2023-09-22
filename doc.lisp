@@ -6613,7 +6613,7 @@ Proof debugging and output control:
       [set-inhibit-er], and see [set-inhibited-summary-types] to
       inhibit various types of output.
     * See [set-raw-proof-format] to make proof output display lists of
-      [rune]s.
+      [rune]s and, optionally, clausal form for goals.
     * See [set-raw-warning-format] to make some warnings display in a
       ``raw'' s-expression format.
     * See [skip-proofs] to skip proofs for a given form.
@@ -100139,6 +100139,12 @@ New Features
   Thanks to Dave Greve for bringing forward the idea of such a
   command.
 
+  The utility [47m[set-raw-proof-format][0m now takes a new legal value,
+  [47m:clause[0m, which is like [47mt[0m except that in addition to printing
+  [rune]s as lists in output from the simplifier, it prints all goals
+  as [clause]s.  Thanks to Eric Smith for encouraging such an
+  enhancement.
+
 
 Heuristic and Efficiency Improvements
 
@@ -102475,7 +102481,7 @@ Subtopics
       Cause subgoal numbers to be printed when [47m'prove[0m output is inhibited
 
   [Set-raw-proof-format]
-      Print runes as lists in proof output from simplification
+      Proof output with [rune]s as lists and maybe clausal goals
 
   [Set-raw-warning-format]
       Print some warnings in a ``raw'', s-expression format
@@ -128048,26 +128054,36 @@ Subtopics
   [set-raw-mode] for a discussion of raw-mode.")
  (SET-RAW-PROOF-FORMAT
   (OUTPUT-CONTROLS)
-  "Print runes as lists in proof output from simplification
+  "Proof output with [rune]s as lists and maybe clausal goals
 
     General Forms:
     (set-raw-proof-format t)
     :set-raw-proof-format t
     (set-raw-proof-format nil)
     :set-raw-proof-format nil
+    (set-raw-proof-format :clause)
+    :set-raw-proof-format :clause
 
   This command affects output from the theorem prover only when [47m'prove[0m
   output is not inhibited (see [set-inhibit-output-lst]) and gag-mode
-  is off (see [set-gag-mode]).  Calling this macro with value [47mt[0m as
-  shown above will cause simplification steps from proof output,
-  including steps from preprocess (see [simple]), to print the list
-  of runes used in a list format, rather than in the English proof
-  commentary.  This ``raw'' format can be handy when you want to use
-  that list as a basis for [47m[hints][0m that you construct for a
-  subsequent proof attempt.
+  is off (see [set-gag-mode]).  The default behavior is obtained with
+  argument [47mnil[0m.
 
-  To obtain the current raw-proof-format ([47mt[0m if that format is active,
-  [47mnil[0m if not), evaluate [47m(@ raw-proof-format)[0m.")
+  Calling this macro with argument [47mt[0m will cause simplification steps
+  from proof output, including steps from preprocess (see [simple]),
+  to print the list of runes used in a list format, rather than in
+  the English proof commentary.  This ``raw'' format can be handy
+  when you want to use that list as a basis for [47m[hints][0m that you
+  construct for a subsequent proof attempt.
+
+  Calling this macro with argument [47m:clause[0m provides not only the
+  behavior described above for argument [47mt[0m, but also causes goals to
+  be printed using their internal clausal format: each goal is a
+  list, implicitly disjoined, of translated [term]s.  See [clause].
+
+  To obtain the current raw proof format value of [47mt[0m, [47m:clause[0m or [47mnil[0m,
+  corresponding to the descriptions above, evaluate [47m(@
+  raw-proof-format)[0m.")
  (SET-RAW-WARNING-FORMAT
   (OUTPUT-CONTROLS)
   "Print some warnings in a ``raw'', s-expression format
