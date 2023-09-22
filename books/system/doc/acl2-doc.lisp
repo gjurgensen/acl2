@@ -4202,7 +4202,7 @@ and @(tsee include-book)"
  inhibit various types of output.</li>
 
  <li>See @(see SET-RAW-PROOF-FORMAT) to make proof output display lists of
- @(see rune)s.</li>
+ @(see rune)s and, optionally, clausal form for goals.</li>
 
  <li>See @(see SET-RAW-WARNING-FORMAT) to make some warnings display in a
  ``raw'' s-expression format.</li>
@@ -102273,12 +102273,12 @@ it."
 
 (defxdoc note-8-6
 
-; Total number of release note items: 157, as follows -- not including the
+; Total number of release note items: 158, as follows -- not including the
 ; conversion of fmt, (er soft ...), one-way-unify, and genvar, and related
 ; utilities to guard-verified :logic mode.
 
 ;   69 ; Changes to Existing Features
-;   29 ; New Features
+;   30 ; New Features
 ;    8 ; Heuristic and Efficiency Improvements
 ;   27 ; Bug Fixes
 ;   16 ; Changes at the System Level
@@ -102608,6 +102608,22 @@ it."
 ; modifications were made to our-abort and break$.  Release was approved by
 ; DARPA with "DISTRIBUTION STATEMENT A. Approved for public
 ; release. Distribution is unlimited."
+
+; Much of the code and comments in the definition of simplify-clause was moved
+; to a new function, simplify-clause-rcnst, which is now called by
+; simplify-clause.  This change clarifies the commonality in how
+; simplify-clause calls simplify-clause1 regardless of the rewrite-constant
+; used by simplify-clause1 (moving the computation of that rewrite-constant
+; into simplify-clause-rcnst).  It also avoids having to keep simplify-clause
+; in sync with a definition of simplify-clause-rcnst formerly residing in
+; community book books/misc/computed-hint-rewrite.lisp; the new source function
+; simplify-clause-rcnst s now used in that book.  In fact the definition of
+; simplify-clause-rcnst formerly in that book wasn't quite in sync with
+; simplify-clause, so that book has in essence been updated to match the
+; current behavior of simplify-clause.
+
+; Modified set-cert-replay-p to treat illegal values of guard-checking-on as
+; :nowarn, as documented in :DOC guard-evaluation-table.
 
   :parents (release-notes)
   :short "ACL2 Version  8.6 (xxx, 20xx) Notes"
@@ -103323,6 +103339,11 @@ it."
  <p>A new command has been added to the @(see proof-builder-commands), to
  display the linear arithmetic database.  See @(see acl2-pc::pot-lst).  Thanks
  to Dave Greve for bringing forward the idea of such a command.</p>
+
+ <p>The utility @(tsee set-raw-proof-format) now takes a new legal value,
+ @(':clause'), which is like @('t') except that in addition to printing @(see
+ rune)s as lists in output from the simplifier, it prints all goals as @(see
+ clause)s.  Thanks to Eric Smith for encouraging such an enhancement.</p>
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
@@ -129501,26 +129522,38 @@ work on <tt>(q x)</tt>.</p>
 
 (defxdoc set-raw-proof-format
   :parents (output-controls)
-  :short "Print runes as lists in proof output from simplification"
+  :short "Proof output with @(see rune)s as lists and maybe clausal goals"
   :long "@({
   General Forms:
   (set-raw-proof-format t)
   :set-raw-proof-format t
   (set-raw-proof-format nil)
   :set-raw-proof-format nil
+  (set-raw-proof-format :clause)
+  :set-raw-proof-format :clause
+
  })
 
  <p>This command affects output from the theorem prover only when @(''prove')
  output is not inhibited (see @(see set-inhibit-output-lst)) and gag-mode is
- off (see @(see set-gag-mode)).  Calling this macro with value @('t') as shown
- above will cause simplification steps from proof output, including steps from
- preprocess (see @(see simple)), to print the list of runes used in a list
- format, rather than in the English proof commentary.  This ``raw'' format can
- be handy when you want to use that list as a basis for @(tsee hints) that you
- construct for a subsequent proof attempt.</p>
+ off (see @(see set-gag-mode)).  The default behavior is obtained with argument
+ @('nil').</p>
 
- <p>To obtain the current raw-proof-format (@('t') if that format is active,
- @('nil') if not), evaluate @('(@ raw-proof-format)').</p>")
+ <p>Calling this macro with argument @('t') will cause simplification steps
+ from proof output, including steps from preprocess (see @(see simple)), to
+ print the list of runes used in a list format, rather than in the English
+ proof commentary.  This ``raw'' format can be handy when you want to use that
+ list as a basis for @(tsee hints) that you construct for a subsequent proof
+ attempt.</p>
+
+ <p>Calling this macro with argument @(':clause') provides not only the
+ behavior described above for argument @('t'), but also causes goals to be
+ printed using their internal clausal format: each goal is a list, implicitly
+ disjoined, of translated @(see term)s.  See @(see clause).</p>
+
+ <p>To obtain the current raw proof format value of @('t'), @(':clause') or
+ @('nil'), corresponding to the descriptions above, evaluate @('(@
+ raw-proof-format)').</p>")
 
 (defxdoc set-raw-warning-format
   :parents (output-controls)
