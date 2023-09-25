@@ -140969,9 +140969,9 @@ work on <tt>(q x)</tt>.</p>
 
  <p>We now precisely define the runic designators and the set of @(see rune)s
  denoted by each.  When we refer below to the ``macro-aliases dereference of''
- a symbol, @('symb'), we mean the (function) symbol corresponding @('symb') in
- the macro-aliases-table if there is such a symbol, else @('symb') itself; see
- @(see macro-aliases-table).  For example, the macro-aliases dereference of
+ a symbol, @('symb'), we mean the (function) symbol corresponding to @('symb')
+ in the macro-aliases-table if there is such a symbol, else @('symb') itself;
+ see @(see macro-aliases-table).  For example, the macro-aliases dereference of
  @(tsee append) is @(tsee binary-append), and the macro-aliases dereference of
  @(tsee nth) is @('nth').</p>
 
