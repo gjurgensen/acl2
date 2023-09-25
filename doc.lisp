@@ -139443,7 +139443,7 @@ Subtopics
   We now precisely define the runic designators and the set of [rune]s
   denoted by each.  When we refer below to the ``macro-aliases
   dereference of'' a symbol, [47msymb[0m, we mean the (function) symbol
-  corresponding [47msymb[0m in the macro-aliases-table if there is such a
+  corresponding to [47msymb[0m in the macro-aliases-table if there is such a
   symbol, else [47msymb[0m itself; see [macro-aliases-table].  For example,
   the macro-aliases dereference of [47m[append][0m is [47m[binary-append][0m, and
   the macro-aliases dereference of [47m[nth][0m is [47mnth[0m.
