@@ -102617,7 +102617,7 @@ it."
 ; into simplify-clause-rcnst).  It also avoids having to keep simplify-clause
 ; in sync with a definition of simplify-clause-rcnst formerly residing in
 ; community book books/misc/computed-hint-rewrite.lisp; the new source function
-; simplify-clause-rcnst s now used in that book.  In fact the definition of
+; simplify-clause-rcnst is now used in that book.  In fact the definition of
 ; simplify-clause-rcnst formerly in that book wasn't quite in sync with
 ; simplify-clause, so that book has in essence been updated to match the
 ; current behavior of simplify-clause.
