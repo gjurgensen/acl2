@@ -102617,7 +102617,7 @@ it."
 ; into simplify-clause-rcnst).  It also avoids having to keep simplify-clause
 ; in sync with a definition of simplify-clause-rcnst formerly residing in
 ; community book books/misc/computed-hint-rewrite.lisp; the new source function
-; simplify-clause-rcnst s now used in that book.  In fact the definition of
+; simplify-clause-rcnst is now used in that book.  In fact the definition of
 ; simplify-clause-rcnst formerly in that book wasn't quite in sync with
 ; simplify-clause, so that book has in essence been updated to match the
 ; current behavior of simplify-clause.
@@ -140969,9 +140969,9 @@ work on <tt>(q x)</tt>.</p>
 
  <p>We now precisely define the runic designators and the set of @(see rune)s
  denoted by each.  When we refer below to the ``macro-aliases dereference of''
- a symbol, @('symb'), we mean the (function) symbol corresponding @('symb') in
- the macro-aliases-table if there is such a symbol, else @('symb') itself; see
- @(see macro-aliases-table).  For example, the macro-aliases dereference of
+ a symbol, @('symb'), we mean the (function) symbol corresponding to @('symb')
+ in the macro-aliases-table if there is such a symbol, else @('symb') itself;
+ see @(see macro-aliases-table).  For example, the macro-aliases dereference of
  @(tsee append) is @(tsee binary-append), and the macro-aliases dereference of
  @(tsee nth) is @('nth').</p>
 
