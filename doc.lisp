@@ -100145,6 +100145,10 @@ New Features
   as [clause]s.  Thanks to Eric Smith for encouraging such an
   enhancement.
 
+  It is possible to cause ACL2 to increase its effort in
+  [type-reasoning].  See [set-dwp].  Thanks to Eric Smith for
+  correspondence leading to this feature.
+
 
 Heuristic and Efficiency Improvements
 
@@ -100536,6 +100540,15 @@ Changes at the System Level
   which are from the constant [47m*initial-ld-special-bindings*[0m; thus,
   [47m*initial-global-table*[0m now specifies a value for each so-called
   ``[47m[ld][0m special''.
+
+  The previous ACL2 release (Version_8.5) arranged that when a raw Lisp
+  error is encountered, any available input is cleared from the input
+  channel.  However, this can lead to discarding of valid input or an
+  attempt to read values from within a comment; see [community-books]
+  files [47mclear-input-1.lsp[0m and [47mclear-input-2.lsp[0m, respectively, in
+  directory [47mbooks/system/tests/[0m.  So now, input is cleared on error
+  only when reading from the terminal (technically, from
+  [47m[*standard-oi*][0m).
 
 
 EMACS Support
@@ -125555,6 +125568,54 @@ Subtopics
   [set-duplicate-keys-action] is to be preferred unless you have a
   good reason for wanting to export the effect of this event outside
   the enclosing [47m[encapsulate][0m or book.")
+ (SET-DWP
+  (TYPE-REASONING)
+  "Affect the effort made in [type-reasoning]
+
+  This is a relatively advanced event that affects the [type-reasoning]
+  heuristics.  (The name ``dwp'' stands for ``double-whammy
+  property'' because the effect pertains to making a second attempt.)
+  The default behavior is obtained with [47m(set-dwp nil)[0m, but type
+  reasoning makes an extra effort after evaluation of [47m(set-dwp t)[0m.
+
+  Note: This is an event!  It does not print the usual event [summary]
+  but nevertheless changes the ACL2 logical [world] and is so
+  recorded.  It is [47m[local][0m to the book or [47m[encapsulate][0m form in which
+  it occurs; see [set-dwp!] for a corresponding non-[47m[local][0m event.
+
+    General Form:
+    (set-dwp val)
+
+  where [47mval[0m is arbitrary but is typically [47mt[0m or [47mnil[0m, since every non-[47mnil[0m
+  value is treated the same as [47mt[0m.
+
+  The following example, from Eric Smith, proves after evaluating
+  [47m(set-dwp t)[0m but otherwise fails.
+
+    (thm
+     (implies (and (<= 0 (* 2 k)) ; extra hyp ;
+                   (unsigned-byte-p 4 k)
+                   (integerp x)
+                   (< x (+ 4 (* 2 k))))
+              (<= x (+ 3 (* 2 k))))
+     :hints ((\"Goal\" :in-theory (disable unsigned-byte-p))))
+
+  So why not always evaluate [47m(set-dwp t)[0m at the beginning of an ACL2
+  session?  Such a change added 3.9% to the certification of the ACL2
+  community books, and at least one book took almost twice as long to
+  certify.  That isn't a huge penalty, but on the other hand it seems
+  likely that [47m(set-dwp t)[0m is helpful only in rare instances.
+
+  To get the current value of [47mdwp[0m, evaluate [47m(get-dwp (w state))[0m.")
+ (SET-DWP!
+  (TYPE-REASONING)
+  "Affect the effort made in [type-reasoning], non-[47m[local][0mly
+
+  Please see [set-dwp], which is the same as [47mset-dwp![0m except that the
+  latter is not [47m[local][0m to the [47m[encapsulate][0m or the book in which it
+  occurs.  Probably [set-dwp] is to be preferred unless you have a
+  good reason for wanting to export the effect of this event outside
+  the enclosing [47m[encapsulate][0m or book.")
  (SET-ENFORCE-REDUNDANCY
   (REDUNDANT-EVENTS)
   "Require most events to be redundant
@@ -145573,7 +145634,16 @@ Subtopics
   The instantiated hypothesis above was relieved because it was in the
   context, so no rewriting was necessary to establish it.  See
   [force] for how to involve the ACL2 rewriter to establish
-  hypotheses of type-prescription rules.")
+  hypotheses of type-prescription rules.
+
+
+Subtopics
+
+  [Set-dwp]
+      Affect the effort made in [type-reasoning]
+
+  [Set-dwp!]
+      Affect the effort made in [type-reasoning], non-[47m[local][0mly")
  (TYPE-SET
   (MISCELLANEOUS)
   "How type information is encoded in ACL2
