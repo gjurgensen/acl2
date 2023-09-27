@@ -102278,10 +102278,10 @@ it."
 ; utilities to guard-verified :logic mode.
 
 ;   69 ; Changes to Existing Features
-;   30 ; New Features
+;   31 ; New Features
 ;    8 ; Heuristic and Efficiency Improvements
 ;   27 ; Bug Fixes
-;   16 ; Changes at the System Level
+;   17 ; Changes at the System Level
 ;    7 ; EMACS Support
 ;    1 ; Experimental Versions
 
@@ -103345,6 +103345,10 @@ it."
  rune)s as lists in output from the simplifier, it prints all goals as @(see
  clause)s.  Thanks to Eric Smith for encouraging such an enhancement.</p>
 
+ <p>It is possible to cause ACL2 to increase its effort in @(see
+ type-reasoning).  See @(see set-dwp).  Thanks to Eric Smith for correspondence
+ leading to this feature.</p>
+
  <h3>Heuristic and Efficiency Improvements</h3>
 
  <p>Added a &ldquo;desperation heuristic&rdquo; to compute a stronger context,
@@ -103763,6 +103767,14 @@ it."
  which is still an alist, now includes additional pairs, which are from the
  constant @('*initial-ld-special-bindings*'); thus, @('*initial-global-table*')
  now specifies a value for each so-called &ldquo;@(tsee ld) special&rdquo;.</p>
+
+ <p>The previous ACL2 release (Version_8.5) arranged that when a raw Lisp error
+ is encountered, any available input is cleared from the input channel.
+ However, this can lead to discarding of valid input or an attempt to read
+ values from within a comment; see @(see community-books) files
+ @('clear-input-1.lsp') and @('clear-input-2.lsp'), respectively, in directory
+ @('books/system/tests/').  So now, input is cleared on error only when reading
+ from the terminal (technically, from @(tsee *standard-oi*)).</p>
 
  <h3>EMACS Support</h3>
 
@@ -126937,6 +126949,62 @@ work on <tt>(q x)</tt>.</p>
  set-duplicate-keys-action) is to be preferred unless you have a good reason
  for wanting to export the effect of this event outside the enclosing @(tsee
  encapsulate) or book.</p>")
+
+(defxdoc set-dwp
+  :parents (type-reasoning)
+  :short "Affect the effort made in @(see type-reasoning)"
+  :long "@({
+ })
+
+ <p>This is a relatively advanced event that affects the @(see type-reasoning)
+ heuristics.  (The name &ldquo;dwp&rdquo; stands for &ldquo;double-whammy
+ property&rdquo; because the effect pertains to making a second attempt.)  The
+ default behavior is obtained with @('(set-dwp nil)'), but type reasoning makes
+ an extra effort after evaluation of @('(set-dwp t)').</p>
+
+ <p>Note: This is an event!  It does not print the usual event @(see summary)
+ but nevertheless changes the ACL2 logical @(see world) and is so recorded.  It
+ is @(tsee local) to the book or @(tsee encapsulate) form in which it occurs;
+ see @(see set-dwp!) for a corresponding non-@(tsee local) event.</p>
+
+ @({
+  General Form:
+  (set-dwp val)
+ })
+
+ <p>where @('val') is arbitrary but is typically @('t') or @('nil'), since
+ every non-@('nil') value is treated the same as @('t').</p>
+
+ <p>The following example, from Eric Smith, proves after evaluating @('(set-dwp
+ t)') but otherwise fails.</p>
+
+ @({
+ (thm
+  (implies (and (<= 0 (* 2 k)) ; extra hyp ;
+                (unsigned-byte-p 4 k)
+                (integerp x)
+                (< x (+ 4 (* 2 k))))
+           (<= x (+ 3 (* 2 k))))
+  :hints ((\"Goal\" :in-theory (disable unsigned-byte-p))))
+ })
+
+ <p>So why not always evaluate @('(set-dwp t)') at the beginning of an ACL2
+ session?  Such a change added 3.9% to the certification of the ACL2 community
+ books, and at least one book took almost twice as long to certify.  That isn't
+ a huge penalty, but on the other hand it seems likely that @('(set-dwp t)') is
+ helpful only in rare instances.</p>
+
+ <p>To get the current value of @('dwp'), evaluate @('(get-dwp (w
+ state))').</p>")
+
+(defxdoc set-dwp!
+  :parents (type-reasoning)
+  :short "Affect the effort made in @(see type-reasoning), non-@(tsee local)ly"
+  :long "<p>Please see @(see set-dwp), which is the same as @('set-dwp!')
+ except that the latter is not @(tsee local) to the @(tsee encapsulate) or the
+ book in which it occurs.  Probably @(see set-dwp) is to be preferred unless
+ you have a good reason for wanting to export the effect of this event outside
+ the enclosing @(tsee encapsulate) or book.</p>")
 
 (defxdoc set-enforce-redundancy
   :parents (redundant-events)
