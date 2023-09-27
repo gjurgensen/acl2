@@ -126953,10 +126953,7 @@ work on <tt>(q x)</tt>.</p>
 (defxdoc set-dwp
   :parents (type-reasoning)
   :short "Affect the effort made in @(see type-reasoning)"
-  :long "@({
- })
-
- <p>This is a relatively advanced event that affects the @(see type-reasoning)
+  :long "<p>This is a relatively advanced event that affects the @(see type-reasoning)
  heuristics.  (The name &ldquo;dwp&rdquo; stands for &ldquo;double-whammy
  property&rdquo; because the effect pertains to making a second attempt.)  The
  default behavior is obtained with @('(set-dwp nil)'), but type reasoning makes
