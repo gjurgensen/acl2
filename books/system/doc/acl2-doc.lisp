@@ -161816,6 +161816,8 @@ expand function call at the current subterm, without simplifying"
 (defpointer abstract-stobj defabsstobj)
 (defpointer accumulated-persistence-oops accumulated-persistence)
 (defpointer acl2-unwind-protect system-utilities)
+(defpointer acl2p parallelism)
+(defpointer acl2r real)
 (defpointer acl2s acl2-sedan)
 (defpointer add-ld-keyword-alias ld-keyword-aliases)
 (defpointer add-ld-keyword-alias! ld-keyword-aliases)
