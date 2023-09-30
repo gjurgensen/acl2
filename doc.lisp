@@ -5655,6 +5655,7 @@ Subtopics
   stabilizing on the ``frequently used'' names from [47m\"ACL2\"[0m, we intend
   never to define a symbol whose [47m[symbol-package-name][0m is
   [47m\"ACL2-USER\"[0m.")
+ (ACL2P (POINTERS) "See [parallelism].")
  (ACL2P-KEY-CHECKPOINTS
   (PARALLEL-PROOF)
   "Key checkpoints in ACL2(p)
@@ -5690,6 +5691,7 @@ Subtopics
   in the following sense: a subgoal is a key checkpoint if it leads,
   in the current call of the waterfall, to a goal that is pushed for
   induction.")
+ (ACL2R (POINTERS) "See [real].")
  (ACL2S (POINTERS) "See [ACL2-sedan].")
  (ACL2_AS_AN_INTERACTIVE_THEOREM_PROVER
   (PAGES_WRITTEN_ESPECIALLY_FOR_THE_TOURS)
@@ -105154,6 +105156,12 @@ Subtopics
 
   [ACL2-unwind-protect]
       See [system-utilities].
+
+  [ACL2p]
+      See [parallelism].
+
+  [ACL2r]
+      See [real].
 
   [ACL2s]
       See [ACL2-sedan].
