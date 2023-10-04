@@ -32724,6 +32724,10 @@ Miscellaneous efficiency ideas
   [47mlhs[0m in more than one destructor term, and all occurrences of [47mx[0m in
   [47mlhs[0m are inside destructor terms.
 
+  An [47m:elim[0m rule is available for a given destructor function (in the
+  manner described below) when it is the most recently added
+  [enable]d [47m:elim[0m rule for that function.
+
   To use an [47m:elim[0m rule, the theorem prover waits until a conjecture has
   been maximally simplified.  It then searches for an instance of
   some destructor term [47m(fn v1 ... vn)[0m in the conjecture, where the
@@ -99968,6 +99972,11 @@ Changes to Existing Features
   particular, replacing ``we had to fold ... into a single
   IF-expression'' by ``we had to termify ... (see :DOC termify)'' and
   explaining in the new [documentation] topic, [termify].
+
+  It is now legal to introduce more than one [elim] rule for the same
+  function symbol.  Thanks to Eric Smith for pointing out that the
+  current implementation was inconsistent in accepting a replacement
+  [elim] rule when including a book but not at the top level.
 
 
 New Features
