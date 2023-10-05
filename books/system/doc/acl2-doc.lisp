@@ -102281,7 +102281,7 @@ it."
 ; conversion of fmt, (er soft ...), one-way-unify, and genvar, and related
 ; utilities to guard-verified :logic mode.
 
-;   70 ; Changes to Existing Features
+;   71 ; Changes to Existing Features
 ;   31 ; New Features
 ;    8 ; Heuristic and Efficiency Improvements
 ;   27 ; Bug Fixes
@@ -103183,6 +103183,9 @@ it."
  function symbol.  Thanks to Eric Smith for pointing out that the current
  implementation was inconsistent in accepting a replacement @(see elim) rule
  when including a book but not at the top level.</p>
+
+ <p>It is no longer illegal to read a @(see stobj) when in a @(see wormhole)
+ state, for example, when inside @(see break-rewrite).</p>
 
  <h3>New Features</h3>
 

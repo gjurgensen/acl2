@@ -99978,6 +99978,9 @@ Changes to Existing Features
   current implementation was inconsistent in accepting a replacement
   [elim] rule when including a book but not at the top level.
 
+  It is no longer illegal to read a [stobj] when in a [wormhole] state,
+  for example, when inside [break-rewrite].
+
 
 New Features
 
