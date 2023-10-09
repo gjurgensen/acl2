@@ -29501,6 +29501,10 @@ ld) and @(tsee include-book)"
  @('lhs') in more than one destructor term, and all occurrences of @('x') in
  @('lhs') are inside destructor terms.</p>
 
+ <p>An @(':elim') rule is available for a given destructor function (in the
+ manner described below) when it is the most recently added @(see enable)d
+ @(':elim') rule for that function.</p>
+
  <p>To use an @(':elim') rule, the theorem prover waits until a conjecture has
  been maximally simplified.  It then searches for an instance of some
  destructor term @('(fn v1 ... vn)') in the conjecture, where the instance for
@@ -102277,7 +102281,7 @@ it."
 ; conversion of fmt, (er soft ...), one-way-unify, and genvar, and related
 ; utilities to guard-verified :logic mode.
 
-;   69 ; Changes to Existing Features
+;   71 ; Changes to Existing Features
 ;   31 ; New Features
 ;    8 ; Heuristic and Efficiency Improvements
 ;   27 ; Bug Fixes
@@ -103174,6 +103178,14 @@ it."
  particular, replacing &ldquo;we had to fold ... into a single
  IF-expression&rdquo; by &ldquo;we had to termify ... (see :DOC termify)&rdquo;
  and explaining in the new @(see documentation) topic, @(see termify).</p>
+
+ <p>It is now legal to introduce more than one @(see elim) rule for the same
+ function symbol.  Thanks to Eric Smith for pointing out that the current
+ implementation was inconsistent in accepting a replacement @(see elim) rule
+ when including a book but not at the top level.</p>
+
+ <p>It is no longer illegal to read a @(see stobj) when in a @(see wormhole)
+ state, for example, when inside @(see break-rewrite).</p>
 
  <h3>New Features</h3>
 
