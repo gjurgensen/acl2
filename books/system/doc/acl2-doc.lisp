@@ -97,7 +97,6 @@
     (DO-NOT-HINT "[books]/tools/do-not.lisp")
     (EASY-SIMPLIFY-TERM "[books]/tools/easy-simplify.lisp")
     (ER-SOFT+ "[books]/kestrel/utilities/er-soft-plus.lisp")
-    (ER-SOFT-LOGIC "[books]/tools/er-soft-logic.lisp")
     (FINAL-CDR "[books]/std/lists/final-cdr.lisp")
     (FTY "[books]/centaur/fty/top.lisp")
     (GETOPT "[books]/centaur/getopt/top.lisp")
@@ -4203,7 +4202,7 @@ and @(tsee include-book)"
  inhibit various types of output.</li>
 
  <li>See @(see SET-RAW-PROOF-FORMAT) to make proof output display lists of
- @(see rune)s.</li>
+ @(see rune)s and, optionally, clausal form for goals.</li>
 
  <li>See @(see SET-RAW-WARNING-FORMAT) to make some warnings display in a
  ``raw'' s-expression format.</li>
@@ -29502,6 +29501,10 @@ ld) and @(tsee include-book)"
  @('lhs') in more than one destructor term, and all occurrences of @('x') in
  @('lhs') are inside destructor terms.</p>
 
+ <p>An @(':elim') rule is available for a given destructor function (in the
+ manner described below) when it is the most recently added @(see enable)d
+ @(':elim') rule for that function.</p>
+
  <p>To use an @(':elim') rule, the theorem prover waits until a conjecture has
  been maximally simplified.  It then searches for an instance of some
  destructor term @('(fn v1 ... vn)') in the conjecture, where the instance for
@@ -31098,10 +31101,7 @@ ld) and @(tsee include-book)"
  function, @(tsee hard-error), which has a @(see guard) of @('T'), while the
  @('hard')/@('hard!') forms have expansions that call the function, @(tsee
  illegal), which has a guard that is logically @('NIL').  Those generate code
- that is in @(':')@(tsee logic) mode, in contrast to variants of @('(er soft
- ...)'), which generate calls of the @(':')@(tsee program) mode function,
- @(tsee error1).  For variants of @('(er soft ...)') that generate @(':')@(tsee
- logic) mode code, see @(see er-soft-logic) and @(see er-soft+).</p>
+ that is in @(':')@(tsee logic) mode, as do variants of @('(er soft ...)').</p>
 
  <p>The general forms of the macros are as follows.  Their macroexpansions
  include code that avoids the printing of error messages when error output is
@@ -101490,7 +101490,7 @@ it."
 
 (defxdoc note-8-5
 
-; Total number of release note items: 131, as follows.
+; Total number of release note items: 78, as follows.
 ;   20 ; Changes to Existing Features
 ;   17 ; New Features
 ;    6 ; Heuristic and Efficiency Improvements
@@ -102277,6 +102277,20 @@ it."
 
 (defxdoc note-8-6
 
+; Total number of release note items: 158, as follows -- not including the
+; conversion of fmt, (er soft ...), one-way-unify, and genvar, and related
+; utilities to guard-verified :logic mode.
+
+;   71 ; Changes to Existing Features
+;   31 ; New Features
+;    8 ; Heuristic and Efficiency Improvements
+;   27 ; Bug Fixes
+;   17 ; Changes at the System Level
+;    7 ; EMACS Support
+;    1 ; Experimental Versions
+
+; Not discussed below are exensions to the constant, *acl2-exports*.
+
 ; Fixed error when attempting to use #@ reader in a book being certified.
 
 ; Fixed a bug in the error message when using #@ in a book being certified.
@@ -102599,6 +102613,22 @@ it."
 ; DARPA with "DISTRIBUTION STATEMENT A. Approved for public
 ; release. Distribution is unlimited."
 
+; Much of the code and comments in the definition of simplify-clause was moved
+; to a new function, simplify-clause-rcnst, which is now called by
+; simplify-clause.  This change clarifies the commonality in how
+; simplify-clause calls simplify-clause1 regardless of the rewrite-constant
+; used by simplify-clause1 (moving the computation of that rewrite-constant
+; into simplify-clause-rcnst).  It also avoids having to keep simplify-clause
+; in sync with a definition of simplify-clause-rcnst formerly residing in
+; community book books/misc/computed-hint-rewrite.lisp; the new source function
+; simplify-clause-rcnst is now used in that book.  In fact the definition of
+; simplify-clause-rcnst formerly in that book wasn't quite in sync with
+; simplify-clause, so that book has in essence been updated to match the
+; current behavior of simplify-clause.
+
+; Modified set-cert-replay-p to treat illegal values of guard-checking-on as
+; :nowarn, as documented in :DOC guard-evaluation-table.
+
   :parents (release-notes)
   :short "ACL2 Version  8.6 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -102612,18 +102642,20 @@ it."
  category, though of course many changes could be placed in more than one
  category.</p>
 
+ <p>Note that only ACL2 system changes are listed below.  See also @(see
+ note-8-6-books) for a summary of changes made to the ACL2 Community Books
+ since ACL2 8.5, including the build system.</p>
+
  <p><i>DARPA Note.</i>  The following statement applies to items below that are
  marked with &ldquo;See DARPA Note above&rdquo;: Release was approved by
  DARPA with &ldquo;DISTRIBUTION STATEMENT A. Approved for public
  release. Distribution is unlimited.&rdquo;</p>
 
- <p>Note that only ACL2 system changes are listed below.  See also @(see
- note-8-5-books) for a summary of changes made to the ACL2 Community Books
- since ACL2 8.5, including the build system.  Also note that with each release,
- it is typical that the value of constant @(tsee *acl2-exports*) has been
- extended, and that some built-in functions that were formerly in @(':')@(tsee
- program) mode are now @(see guard)-verified @(':')@(tsee logic) mode
- functions.  For this release the following are particularly significant.</p>
+ <h3>Changes to Existing Features</h3>
+
+ <p>Some built-in functions that were formerly in @(':')@(tsee program) mode
+ are now @(see guard)-verified @(':')@(tsee logic) mode functions.  Among the
+ most significant such built-in functions are the following.</p>
 
  <ul>
 
@@ -102631,12 +102663,15 @@ it."
 
  <li>@(tsee Genvar) (see @('books/system/brr-near-missp.lisp'))</li>
 
- <li>@('Eviscerate-top'), towards the @(tsee fmt) family of functions (see
- @('books/system/eviscerate-top.lisp'))  [See DARPA Note above.]</li>
+ <li>@(tsee Fmt), @(tsee error1) (which supports macros @('(er soft ...)') and
+ @(tsee er-soft)), and related printing utilities &mdash; and some code was
+ modified to support their conversion to @(':')@(tsee logic) mode [See DARPA
+ Note above.]</li>
 
  </ul>
 
- <h3>Changes to Existing Features</h3>
+ <p>Note that because of the @(tsee error1) change noted above, @('(er soft
+ ...)') can now be used in @(':logic') mode code.</p>
 
  <p>The connected book directory (that is, the @(see cbd)) now elaborates
  relative @(see pathname)s to absolute pathnames not only for book operations,
@@ -102782,7 +102817,7 @@ it."
  We are also grateful to Sol for providing a very helpful sketch of a
  correctness proof.</p>
 
- <p>When there an attachment to a common ancestor of the evaluator and meta
+ <p>When there is an attachment to a common ancestor of the evaluator and meta
  function of a proposed rule of class @(':')@(tsee meta) or @(':')@(tsee
  clause-processor), the resulting error message now includes ancestor paths
  leading from the evaluator or meta function to a common ancestor.</p>
@@ -102970,10 +103005,10 @@ it."
  @(':DO-NOT-INDUCT') hint or an @(see induction-depth-limit) being exceeded).
  Thanks to Eric Smith for a chat that helped lead to this improvement.</p>
 
- <p>For most built-in @(see table)s, improved error messages for guard
- failures.  This improvement was made by using a new macro that is also
- available to ACL2 users, @(tsee set-table-guard), which adds a @(see table)
- guard that produces a user-friendly error message when the guard fails.</p>
+ <p>For most built-in @(see table)s, error messages for guard failures have
+ been improved, by use of a new macro that is also available to ACL2 users:
+ @(tsee set-table-guard).  That utility may be used to set a @(see table) guard
+ in a way that produces a user-friendly error message when the guard fails.</p>
 
  <p>The prover may now print a parenthetical remark about &ldquo;dropping false
  conclusion&rdquo;.  That remark points to a new documentation topic, which
@@ -103033,7 +103068,7 @@ it."
 
  </ul>
 
- <p>The definition of bounded-integer-alistp has been modified by adding a
+ <p>The definition of @('bounded-integer-alistp') has been modified by adding a
  guard @('(posp n)') and removing the @('(integerp n)') test from the body of
  its @(tsee defun).  [See DARPA Note above.]</p>
 
@@ -103138,6 +103173,19 @@ it."
  @('books/std/basic/code-char-char-code-with-force.lisp'); including this books
  (perhaps @(see local)ly) may rescue a proof that now fails because of the
  change.</p>
+
+ <p>Fixed an induction message when limiting the number of cases, in
+ particular, replacing &ldquo;we had to fold ... into a single
+ IF-expression&rdquo; by &ldquo;we had to termify ... (see :DOC termify)&rdquo;
+ and explaining in the new @(see documentation) topic, @(see termify).</p>
+
+ <p>It is now legal to introduce more than one @(see elim) rule for the same
+ function symbol.  Thanks to Eric Smith for pointing out that the current
+ implementation was inconsistent in accepting a replacement @(see elim) rule
+ when including a book but not at the top level.</p>
+
+ <p>It is no longer illegal to read a @(see stobj) when in a @(see wormhole)
+ state, for example, when inside @(see break-rewrite).</p>
 
  <h3>New Features</h3>
 
@@ -103294,6 +103342,24 @@ it."
 
  <p>@(tsee Thm) now takes an optional @(':instructions') keyword argument, like
  @(tsee defthm).  Thanks to Warren Hunt for requesting this enhancement.</p>
+
+ <p>New utilities @(tsee trans*) and @(tsee trans*-) can show repeated
+ macroexpansions of a form leading to its final translation, where @('trans*')
+ also shows @(tsee make-event) expansions.  Thanks to Warren Hunt for
+ requesting a utility that does repeated macroexpansion.</p>
+
+ <p>A new command has been added to the @(see proof-builder-commands), to
+ display the linear arithmetic database.  See @(see acl2-pc::pot-lst).  Thanks
+ to Dave Greve for bringing forward the idea of such a command.</p>
+
+ <p>The utility @(tsee set-raw-proof-format) now takes a new legal value,
+ @(':clause'), which is like @('t') except that in addition to printing @(see
+ rune)s as lists in output from the simplifier, it prints all goals as @(see
+ clause)s.  Thanks to Eric Smith for encouraging such an enhancement.</p>
+
+ <p>It is possible to cause ACL2 to increase its effort in @(see
+ type-reasoning).  See @(see set-dwp).  Thanks to Eric Smith for correspondence
+ leading to this feature.</p>
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
@@ -103713,6 +103779,14 @@ it."
  which is still an alist, now includes additional pairs, which are from the
  constant @('*initial-ld-special-bindings*'); thus, @('*initial-global-table*')
  now specifies a value for each so-called &ldquo;@(tsee ld) special&rdquo;.</p>
+
+ <p>The previous ACL2 release (Version_8.5) arranged that when a raw Lisp error
+ is encountered, any available input is cleared from the input channel.
+ However, this can lead to discarding of valid input or an attempt to read
+ values from within a comment; see @(see community-books) files
+ @('clear-input-1.lsp') and @('clear-input-2.lsp'), respectively, in directory
+ @('books/system/tests/').  So now, input is cleared on error only when reading
+ from the terminal (technically, from @(tsee *standard-oi*)).</p>
 
  <h3>EMACS Support</h3>
 
@@ -123997,17 +124071,34 @@ work on <tt>(q x)</tt>.</p>
  @('IF') (it continues through the true and false branches of these calls even
  without @('IF') being among the ruler-extenders).</p>
 
- <p>IMPORTANT REMARKS.  (1) Notice that the argument to
- @('set-ruler-extenders') is evaluated, but the argument to
- @(':RULER-EXTENDERS') in @('XARGS') is not evaluated.  (2) Do not put macro
- names in your list of ruler-extenders.  For example, if you intend that @('+')
- should not block the termination analysis, in analogy to @('cons') in the
- example above, then the list of ruler-extenders should include @('binary-+'),
- not @('+').  Of course, if you use @(':all') then this is not an issue, but
- see the next remark.  (3) Also please note that by taking advantage of the
- ruler-extenders, you may be complicating the induction scheme stored for the
- function, whose computation takes similar advantage of the additional @('IF')
- structure that you are specifying.</p>
+ <p>IMPORTANT REMARKS.</p>
+
+ <ol>
+
+ <li>Notice that the argument to @('set-ruler-extenders') is evaluated, but the
+ argument to @(':RULER-EXTENDERS') in @('XARGS') is not evaluated.</li>
+
+ <li>Do not put macro names in your list of ruler-extenders.  For example, if
+ you intend that @('+') should not block the termination analysis, in analogy
+ to @('cons') in the example above, then the list of ruler-extenders should
+ include @('binary-+'), not @('+').  Of course, if you use @(':all') then this
+ is not an issue, but see the next remark.</li>
+
+ <li>Also please note that by taking advantage of the ruler-extenders, you may
+ change the induction scheme computed for the function.  This is especially
+ worth remembering for functions containing @(tsee let) or @(tsee let*)
+ expressions (which translate to @(tsee lambda) applications; see @(see term)).
+ If the induction scheme suggested by such a function seems to provide more
+ induction hypotheses than appear necessary, it might help to admit the
+ function with @(':lambdas') included among the ruler extenders even if that is
+ not necessary for the termination proof.  This can cause the induction scheme
+ to have a richer case analysis with fewer induction hypotheses on any given
+ induction step.  While this can make it more difficult for the system to merge
+ induction schemes to get an appropriate induction, it can also make the proof
+ of each induction step easier.  Unfortunately, we have no more precise advice
+ as to exactly when adding @(':lambdas') will help.</li>
+
+ </ol>
 
  <p>To see the ruler-extenders of an existing function symbol, @('fn'), in a
  logical @(see world), @('wrld'), evaluate @('(ruler-extenders 'fn wrld)')
@@ -124494,6 +124585,18 @@ work on <tt>(q x)</tt>.</p>
  @(see enable)d or @(see disable)d, and they do not have associated @(see
  corollary) formulas.  In short, despite the fact that the user may sometimes
  see fake runes printed, they should never be typed.</p>")
+
+(defxdoc rw-cache-state
+  :parents (rewrite)
+  :short "The current rw-cache-state"
+  :long "<p>See @(tsee set-rw-cache-state) for background on the
+ <i>rw-cache</i>, which saves failed attempts to apply conditional @(see
+ rewrite) rules.  To get the current rw-cache-state, evaluate the following
+ form.</p>
+
+ @({
+ (rw-cache-state (w state))
+ })")
 
 (defxdoc |Revisiting the Admission of App|
   :parents (|Pages Written Especially for the Tours|)
@@ -126858,6 +126961,59 @@ work on <tt>(q x)</tt>.</p>
  set-duplicate-keys-action) is to be preferred unless you have a good reason
  for wanting to export the effect of this event outside the enclosing @(tsee
  encapsulate) or book.</p>")
+
+(defxdoc set-dwp
+  :parents (type-reasoning)
+  :short "Affect the effort made in @(see type-reasoning)"
+  :long "<p>This is a relatively advanced event that affects the @(see type-reasoning)
+ heuristics.  (The name &ldquo;dwp&rdquo; stands for &ldquo;double-whammy
+ property&rdquo; because the effect pertains to making a second attempt.)  The
+ default behavior is obtained with @('(set-dwp nil)'), but type reasoning makes
+ an extra effort after evaluation of @('(set-dwp t)').</p>
+
+ <p>Note: This is an event!  It does not print the usual event @(see summary)
+ but nevertheless changes the ACL2 logical @(see world) and is so recorded.  It
+ is @(tsee local) to the book or @(tsee encapsulate) form in which it occurs;
+ see @(see set-dwp!) for a corresponding non-@(tsee local) event.</p>
+
+ @({
+  General Form:
+  (set-dwp val)
+ })
+
+ <p>where @('val') is arbitrary but is typically @('t') or @('nil'), since
+ every non-@('nil') value is treated the same as @('t').</p>
+
+ <p>The following example, from Eric Smith, proves after evaluating @('(set-dwp
+ t)') but otherwise fails.</p>
+
+ @({
+ (thm
+  (implies (and (<= 0 (* 2 k)) ; extra hyp ;
+                (unsigned-byte-p 4 k)
+                (integerp x)
+                (< x (+ 4 (* 2 k))))
+           (<= x (+ 3 (* 2 k))))
+  :hints ((\"Goal\" :in-theory (disable unsigned-byte-p))))
+ })
+
+ <p>So why not always evaluate @('(set-dwp t)') at the beginning of an ACL2
+ session?  Such a change added 3.9% to the certification of the ACL2 community
+ books, and at least one book took almost twice as long to certify.  That isn't
+ a huge penalty, but on the other hand it seems likely that @('(set-dwp t)') is
+ helpful only in rare instances.</p>
+
+ <p>To get the current value of @('dwp'), evaluate @('(get-dwp (w
+ state))').</p>")
+
+(defxdoc set-dwp!
+  :parents (type-reasoning)
+  :short "Affect the effort made in @(see type-reasoning), non-@(tsee local)ly"
+  :long "<p>Please see @(see set-dwp), which is the same as @('set-dwp!')
+ except that the latter is not @(tsee local) to the @(tsee encapsulate) or the
+ book in which it occurs.  Probably @(see set-dwp) is to be preferred unless
+ you have a good reason for wanting to export the effect of this event outside
+ the enclosing @(tsee encapsulate) or book.</p>")
 
 (defxdoc set-enforce-redundancy
   :parents (redundant-events)
@@ -129443,26 +129599,38 @@ work on <tt>(q x)</tt>.</p>
 
 (defxdoc set-raw-proof-format
   :parents (output-controls)
-  :short "Print runes as lists in proof output from simplification"
+  :short "Proof output with @(see rune)s as lists and maybe clausal goals"
   :long "@({
   General Forms:
   (set-raw-proof-format t)
   :set-raw-proof-format t
   (set-raw-proof-format nil)
   :set-raw-proof-format nil
+  (set-raw-proof-format :clause)
+  :set-raw-proof-format :clause
+
  })
 
  <p>This command affects output from the theorem prover only when @(''prove')
  output is not inhibited (see @(see set-inhibit-output-lst)) and gag-mode is
- off (see @(see set-gag-mode)).  Calling this macro with value @('t') as shown
- above will cause simplification steps from proof output, including steps from
- preprocess (see @(see simple)), to print the list of runes used in a list
- format, rather than in the English proof commentary.  This ``raw'' format can
- be handy when you want to use that list as a basis for @(tsee hints) that you
- construct for a subsequent proof attempt.</p>
+ off (see @(see set-gag-mode)).  The default behavior is obtained with argument
+ @('nil').</p>
 
- <p>To obtain the current raw-proof-format (@('t') if that format is active,
- @('nil') if not), evaluate @('(@ raw-proof-format)').</p>")
+ <p>Calling this macro with argument @('t') will cause simplification steps
+ from proof output, including steps from preprocess (see @(see simple)), to
+ print the list of runes used in a list format, rather than in the English
+ proof commentary.  This ``raw'' format can be handy when you want to use that
+ list as a basis for @(tsee hints) that you construct for a subsequent proof
+ attempt.</p>
+
+ <p>Calling this macro with argument @(':clause') provides not only the
+ behavior described above for argument @('t'), but also causes goals to be
+ printed using their internal clausal format: each goal is a list, implicitly
+ disjoined, of translated @(see term)s.  See @(see clause).</p>
+
+ <p>To obtain the current raw proof format value of @('t'), @(':clause') or
+ @('nil'), corresponding to the descriptions above, evaluate @('(@
+ raw-proof-format)').</p>")
 
 (defxdoc set-raw-warning-format
   :parents (output-controls)
@@ -129596,7 +129764,8 @@ work on <tt>(q x)</tt>.</p>
  rw-cache (rewriter cache), to save failed attempts to apply conditional @(see
  rewrite) rules.  The regression suite has taken approximately 11% less time
  with this mechanism.  The rw-cache is active by default but this event allows
- it to be turned off or modified.  Note that this event is @(see local) to its
+ its behavior to be modified or even disabled by changing the so-called
+ <i>rw-cache-state</i>.  Note that this event is @(see local) to its
  context (from @(tsee encapsulate) or @(tsee include-book)).  For a non-local
  version, use @(see set-rw-cache-state!).</p>
 
@@ -129623,6 +129792,9 @@ work on <tt>(q x)</tt>.</p>
  becomes active when some simplification has taken place.  We have seen a few
  cases where value @('t') will make a proof fail but @(':disabled') does
  not.</p>
+
+ <p>To obtain the current rw-cache-state, evaluate the form
+ @('(rw-cache-state (w state))').</p>
 
  <p>The following example illustrates the rw-cache in action.  You will see a
  break during evaluation of the @(tsee thm) form.  Type @(':eval') and you will
@@ -140221,6 +140393,29 @@ work on <tt>(q x)</tt>.</p>
  telling ACL2 to skip the test at the risk of soundness (see @(tsee
  set-skip-meta-termp-checks)).</p>")
 
+(defxdoc termify
+  :parents (term)
+  :short "the process of converting a clause to a term"
+  :long "<p>The ACL2 prover represents its goals and subgoals as @(see
+  clause)s, e.g., lists of @(see term)s treated as disjunctions.  The
+  individual elements of a clause are called <i>literals</i>.  For example a
+  goal printed as @('(IMPLIES (AND p q) r)') is internally represented as the
+  3-literal clause @('((NOT p) (NOT q) r)').  A clause containing just one
+  literal is called a <i>unit clause</i>.</p>
+
+  <p>To <i>termify</i> a clause containing multiple literals, we convert the
+  clause to a unit clause using @('IF') to express the disjunction.  For
+  example, the 3-literal clause @('((NOT p) (NOT q) r)') is propositionally
+  equivalent to the term @('(IF (NOT P) 'T (IF (NOT Q) 'T R))').  By embedding
+  that @('IF')-term in a singleton list we obtain a unit clause equivalent to
+  the original 3-literal clause.</p>
+
+  <p>Applying an induction scheme to a clause containing multiple literals can
+  produce an exponential number of cases.  This does not happen if the clause
+  is a unit clause.  So the ACL2 induction mechanism sometimes termifies its
+  goal clause before applying the induction scheme to shift the case-analysis
+  burden to the rest of the prover.</p>")
+
 (defxdoc termination-theorem
   :parents (lemma-instance measure hints)
   :short "Use a (functional instance of a) previously-proved measure theorem"
@@ -140851,9 +141046,9 @@ work on <tt>(q x)</tt>.</p>
 
  <p>We now precisely define the runic designators and the set of @(see rune)s
  denoted by each.  When we refer below to the ``macro-aliases dereference of''
- a symbol, @('symb'), we mean the (function) symbol corresponding @('symb') in
- the macro-aliases-table if there is such a symbol, else @('symb') itself; see
- @(see macro-aliases-table).  For example, the macro-aliases dereference of
+ a symbol, @('symb'), we mean the (function) symbol corresponding to @('symb')
+ in the macro-aliases-table if there is such a symbol, else @('symb') itself;
+ see @(see macro-aliases-table).  For example, the macro-aliases dereference of
  @(tsee append) is @(tsee binary-append), and the macro-aliases dereference of
  @(tsee nth) is @('nth').</p>
 
@@ -143354,7 +143549,7 @@ work on <tt>(q x)</tt>.</p>
 
 (defxdoc trans
   :parents (macros)
-  :short "Print the macroexpansion of a form"
+  :short "Print the translation of a form"
   :long "@({
   Examples:
   :trans (list a b c)
@@ -143362,13 +143557,19 @@ work on <tt>(q x)</tt>.</p>
   :trans (cond (p q) (r))
  })
 
- <p>This function takes one argument, an alleged term, and translates it,
- expanding the macros in it completely.  Either an error is caused or the
- formal meaning of the term is printed.  We also print the ``output signature''
- which indicates how many results are returned and which are single-threaded
- objects.  For example, a term that returns one ordinary object (e.g., an
- object other than @(tsee STATE) or a user-defined single-threaded object (see
- @(see defstobj))) has the output signature</p>
+ <p>ACL2 accepts user-level syntax as input, but <i>translates</i> it to an
+ internal syntax.  This translation includes macroexpansion, replacing @(tsee
+ let) forms by @(tsee lambda) expressions, quoting constants, and so on.  See
+ @(see term) for relevant background.</p>
+
+ <p>@('Trans') takes one argument, an alleged term in user syntax, and
+ translates it, expanding the macros in it completely.  Either an error is
+ caused or the internal syntax for the term (representing its formal meaning)
+ is printed.  We also print the ``output signature'' which indicates how many
+ results are returned and which are single-threaded objects.  For example, a
+ term that returns one ordinary object (e.g., an object other than @(tsee
+ STATE) or a user-defined single-threaded object (see @(see defstobj))) has the
+ output signature</p>
 
  @({
   => *
@@ -143392,7 +143593,8 @@ work on <tt>(q x)</tt>.</p>
  that the last result is @('STATE').</p>
 
  <p>See @(see trans!) for a corresponding command that does not enforce
- restrictions of single-threaded objects.</p>
+ restrictions of single-threaded objects.  See @(see trans*) for a command that
+ can show intermediate expansion results.</p>
 
  <p>It is sometimes more convenient to use @(tsee trans1) which is like trans
  but which only does top-level macroexpansion.</p>
@@ -143401,17 +143603,287 @@ work on <tt>(q x)</tt>.</p>
 
 (defxdoc trans!
   :parents (macros)
-  :short "Print the macroexpansion of a form without single-threadedness concerns"
+  :short "Print the translation of a form without code restrictions"
   :long "@({
   Examples:
   :trans! (list a b c)
   :trans! (append x state)
+  :trans! (cons (mv 3 4) x)
  })
 
- <p>@(':Trans!') is identical to @(':')@(tsee trans), except that unlike
- @(':trans'), @(':trans!') ignores single-threadedness restrictions.  Thus, the
- second form above is legal for @(':trans!').  Also see @(see trans) and see
- @(see trans1).</p>")
+ <p>@(':Trans!') is identical to @(':')@(tsee trans), except that @(':trans!')
+ is more permissive: it allows expressions that may occur in theorems but are
+ illegal in code.  In particular, @(':trans!') allows violations of
+ single-threadedness and multiple-value restrictions.  Thus, the second and
+ third forms above are legal for @(':trans!') even though they are illegal for
+ @(':trans').  Also see @(see trans), see @(see trans1), and see @(see
+ trans*).</p>")
+
+(defxdoc trans*
+  :parents (macros)
+  :short "Show intermediate expansion results for the translation of a form"
+  :long "<p>See @(see term) for background on translated and untranslated
+ terms.  See @(see trans), @(see trans!), and @(tsee trans1) for other
+ utilities that expand and translate their input.</p>
+
+ <p>Unlike @('trans'), the @('trans*') command can show not only the
+ translation of a given expression but also the intermediate expansions leading
+ to that translation, and @('trans*') can also show @(tsee make-event)
+ expansions.  Another difference between @('trans*') and @('trans') is that
+ @('trans*') does not enforce code restrictions; thus, multiple-value
+ mismatches and violations of single-threadedness are permitted by @('trans*').
+ That is: when @('trans*') takes steps to convert an untranslated term to a
+ translated term, it does so as though one is translating a theorem statement,
+ not a definition body.</p>
+
+ <p>For discussion of how one may use a keyword command like @(':trans*') in
+ place of calling the corresponding utility, in this case @('trans*'), see
+ @(see keyword-commands).  Below we focus on the use of the keyword command,
+ @(':trans*').</p>
+
+ <p>We begin with some simple examples that may suffice to explain how to use
+ @('trans*').  We then document this utility before concluding with further
+ details.</p>
+
+ <h3>Introductory Examples</h3>
+
+ <p>The examples below assume that the following definition has been
+ submitted.</p>
+
+ @({
+ (defmacro mac (x y) `(append ,y (rest ,x)))
+ })
+
+ <p>Here is a log showing a typical use of @(':trans*'); comments are
+ below.</p>
+
+ @({
+ ACL2 !>:trans* t (mac u v)
+
+ Iteration 1 produces (by expansion):
+ (APPEND V (REST U))
+ ----------
+
+ Iteration 2 produces (by expansion):
+ (BINARY-APPEND V (REST U))
+ ----------
+
+ Iteration 3 produces (by translation):
+ (BINARY-APPEND V (CDR U))
+ ----------
+ ACL2 !>
+ })
+
+ <p>We see that Iteration 1 expands away the call of the macro, @('mac').  The
+ next iteration expands away the resulting call of the macro, @('append').
+ Those two steps are labeled with &ldquo;(by expansion)&rdquo; because they are
+ removing top-level macro calls.  The result of the second iteration is not a
+ macro call, so @(':trans*') finishes up by translating that result to obtain
+ the final result; notice translation of the second argument of the
+ @('binary-append') call by expanding @(tsee rest) to @(tsee cdr).</p>
+
+ <p>The example above illustrates a couple of aspects of @(':trans*').</p>
+
+ <ul>
+
+ <li>An expansion step occurs only with a top-level macro call.</li>
+
+ <li>A translation step is always last.</li>
+
+ </ul>
+
+ <p>The result is the same for input @(':trans* 3 (mac u v)'), i.e., if first
+ argument @('t') is replaced by @('3') or, in fact, any integer that is at
+ least the total number of iterations produced with argument @('t').  But we
+ can specify that we want to stop before the final step.  One way is to specify
+ a number less than the number of iterations.  Here is what we get when we
+ specify that we should stop after 1 iteration.</p>
+
+ @({
+ ACL2 !>:trans* 1 (mac u v)
+
+ Iteration 1 produces (by expansion):
+ (APPEND V (REST U))
+ ----------
+ ACL2 !>
+ })
+
+ <p>Another way to stop early is to rule out the final translation step.  Here
+ is an example by using @('nil') or a negative integer as the first
+ argument.</p>
+
+ @({
+ ACL2 !>:trans* -5 (mac u v) ; same for nil, -2, -3, -4, etc. instead of -5
+
+ Iteration 1 produces (by expansion):
+ (APPEND V (REST U))
+ ----------
+
+ Iteration 2 produces (by expansion):
+ (BINARY-APPEND V (REST U))
+ ----------
+ ACL2 !>
+ })
+
+ <p>If you are only interested in obtaining the final result, with no
+ intermediate printing, put parentheses around the first argument.  Here is
+ what happens when we make that modification to the example immediately
+ above.</p>
+
+ @({
+ ACL2 !>:trans* (-5) (mac u v) ; same answer for nil, -2, -3, etc instead of -5
+  (BINARY-APPEND V (REST U))
+ ACL2 !>
+ })
+
+ <p>Note the single space of indentation in the result above.  That indicates
+ that what is actually returned is multiple values, @('(mv nil (BINARY-APPEND V
+ (REST U)) state)').  Without the parentheses, @('(mv nil :invisible state)')
+ is returned.  See @(see error-triple).</p>
+
+ <h3>Documentation</h3>
+
+ @({
+  General Forms:
+  :trans t form
+  :trans nil form
+  :trans n form
+  :trans -n form
+  :trans (x) form ; for x = t, nil, n, or -n
+ })
+
+ <p>where @('n') is a positive integer and @('form') is any ACL2 expression
+ (i.e., any untranslated term; see @(see term)).  These commands repeat
+ translation steps as described later below, according to the value of the
+ first argument, as follows.</p>
+
+ <ul>
+
+ <li>@('t'): iterate to completion, printing intermediate results</li>
+
+ <li>@('nil'): iterate to completion except for skipping the final translation
+ step, printing intermediate results</li>
+
+ <li>@('n'): iterate at most @('n') steps, printing intermediate results</li>
+
+ <li>@('-n'): iterate at most @('n') steps except for skipping a final
+ translation step, printing intermediate results</li>
+
+ <li>@('(x)'): same as @('x') but without printing intermediate results, and
+ returning an @(see error-triple) @('(mv nil val state)') where @('val') is the
+ final result,</li>
+
+ </ul>
+
+ <p>It is reasonable to think of a first argument of @('t') as
+ &ldquo;infinity&rdquo; and of @('nil') as &ldquo;minus infinity&rdquo;.
+ Although a first argument of @('(t)') is much like using @(tsee trans), key
+ differences besides enforcement of code restrictions (as discussed above) are
+ that @('trans*') performs @(tsee make-event) expansion and discards certain
+ &ldquo;wrappers&rdquo; like @(tsee with-output), as described below.  The
+ related utility @(tsee trans*-) differs from @('trans*') in only one way:
+ @('trans*-') does not perform @('make-event') expansion.</p>
+
+ <p>Here is a specification of the iteration step performed on a given form,
+ which is initially the second argument of @('trans*') and is updated by each
+ iteration.  If the form is not a true-list then iteration halts without any
+ further result.  Otherwise the form may be written as a call @('(caller arg1
+ ... argk)'), and the next step's result, if any, depends on @('caller') as
+ follows.</p>
+
+ <ul>
+
+ <li>If @('caller') is in the list of &ldquo;event wrappers&rdquo;,
+ @(`*destructure-expansion-wrappers*`), then the next step's result is the last
+ argument of the call, denoted @('argk') above.</li>
+
+ <li>Else if @('caller') is @(tsee make-event), the result is the form's
+ @('make-event') expansion.  (This step is skipped when @(tsee trans*-) is used
+ rather than @('trans*').)</li>
+
+ <li>Else if @('caller') is a built-in event constructor such as @(tsee defun)
+ or @(tsee defthm), or one of @(tsee certify-book), @(tsee defpkg), or @(tsee
+ in-package), then iteration is halted.
+ (Technical note: The actual test used here is whether @('caller') is a key of
+ the alist value of the constant, @('*syms-not-callable-in-code-fal*').)</li>
+
+ <li>Else if @('caller') is a macro, expand the macro call.</li>
+
+ <li>Otherwise translate the form, except that as noted above, if the first
+ argument of @('trans*') is @('nil') or a negative integer, then this step is
+ skipped and instead iteration is halted.</li>
+
+ </ul>
+
+ <h3>Further Details</h3>
+
+ <p>While @('trans*') will almost always determine accurately how the given
+ input expands and is ultimately translated, it is not quite 100% reliable for
+ that purpose.  In particular, @('make-event') expansion isn't guaranteed to
+ check that the expansion is an embedded event form, as is required for @(tsee
+ make-event).  Another limitation for @('make-event') expansion is that when an
+ iteration reaches the form @('(:OR ev1 ... evk)'), the iteration concludes
+ rather than evaluating the events @('evi') (see @(see make-event)).</p>
+
+ <p>A similar utility, @(tsee trans*-), stops iteration at a call of
+ @('make-event') without continuing with its @('make-event') expansion.  That
+ is, in fact, the only difference between @('trans*') and @('trans*-').</p>
+
+ <p>We conclude by adding emphasis to an aspect of @('trans*') that is already
+ noted above: expansion (whether macroexpansion or @('make-event') expansion)
+ and elimination of event wrappers only take place for the top-level call, not
+ calls occurring in subterms.  Of course, one can call @('trans*') on subterms.
+ Consider the following example.</p>
+
+ @({
+ ACL2 !>:trans* t (defund-nx f (x) x)
+
+ Iteration 1 produces (by expansion):
+ (WITH-OUTPUT
+      :STACK
+      :PUSH :OFF
+      :ALL
+      (PROGN (ENCAPSULATE NIL
+               (LOGIC)
+               (SET-STATE-OK T)
+               (WITH-OUTPUT :STACK :POP
+                            (DEFUND F (X)
+                              (DECLARE (XARGS :NON-EXECUTABLE T :MODE :LOGIC))
+                              (PROG2$ (THROW-NONEXEC-ERROR 'F (LIST X))
+                                      X)))
+               (WITH-OUTPUT :STACK :POP :OFF
+                            SUMMARY (IN-THEORY (DISABLE (:E F)))))
+             (WITH-OUTPUT :STACK :POP :OFF SUMMARY
+                          (VALUE-TRIPLE '(:DEFUND-NX F)))))
+ ----------
+
+ Iteration 2 is dropping the WITH-OUTPUT wrapper:
+ (PROGN (ENCAPSULATE NIL
+          (LOGIC)
+          (SET-STATE-OK T)
+          (WITH-OUTPUT :STACK :POP
+                       (DEFUND F (X)
+                         (DECLARE (XARGS :NON-EXECUTABLE T :MODE :LOGIC))
+                         (PROG2$ (THROW-NONEXEC-ERROR 'F (LIST X))
+                                 X)))
+          (WITH-OUTPUT :STACK :POP :OFF
+                       SUMMARY (IN-THEORY (DISABLE (:E F)))))
+        (WITH-OUTPUT :STACK :POP :OFF
+                     SUMMARY (VALUE-TRIPLE '(:DEFUND-NX F))))
+ ----------
+ ACL2 !>
+ })
+
+ <p>One can then call @('trans*') on the @(tsee defund) subterm to see its
+ expansion.</p>")
+
+(defxdoc trans*-
+  :parents (macros)
+  :short "Variant of @(tsee trans*) the skips @(tsee make-event) expansion"
+  :long "<p>See @(see trans*).  The only difference between @('trans*') and
+  @('trans*-') is that the latter does not do @(tsee make-event) expansion, but
+  rather, stops the iterations when reaching a form that is a call of
+  @('make-event').</p>")
 
 (defxdoc trans-eval
   :parents (system-utilities)
@@ -159736,6 +160208,102 @@ print the rules for a given name"
  subterm, consider the @('show-rewrites') (or equivalently, @('sr'))
  command.</p>")
 
+(defxdoc acl2-pc::pot-lst
+  :parents (proof-builder-commands)
+  :short "(macro)
+display the linear arithmetic database based on the current context"
+  :long "<p>This is a relatively advanced command.  For discusion of a related
+ but more elementary command, including remarks about the utility of such a
+ command, see @(see acl2-pc::type-alist).  See @(see acl2::linear-arithmetic)
+ for a description of the ACL2 linear arithmetic decision procedure</p>
+
+ @({
+  Examples:
+  (pot-lst nil t)   ; display linear pot-lst based on governors only (default)
+  pot-lst           ; same as (pot-lst nil t) -- governors only (default)
+  (pot-lst nil)     ; same as (pot-lst nil t) -- governors only (default)
+  (pot-lst nil t nil nil) ; same as above
+  (pot-lst nil t nil t)   ; same as above, except: raw format
+  (pot-lst t t)     ; display pot-lst based on conclusion and governors
+  (pot-lst t)       ; same as (pot-lst t nil) -- conclusion only
+  (pot-lst nil nil) ; based on neither conclusion nor governors
+
+  General Form:
+  (pot-lst &optional concl-flg govs-flg rawp)
+ })
+
+ <p>where if @('govs-flg') is omitted then it defaults to @('(not concl-flg)'),
+ and each of the other optional arguments defaults to @('nil').</p>
+
+ <p>This command displays the linear database, also known as the linear
+ <i>pot-lst</i>, that is computed from a suitable set of assumptions.  That set
+ of assumptions always includes all top-level hypotheses.  By default, and when
+ @('govs-flg') is supplied a non-@('nil') value, the set of assumptions
+ includes all governors (which are based on surrounding if-expressions that
+ must be true or false).  The negation of the current goal's top-level
+ conclusion is also included in the assumptions when @('concl-flg') is supplied
+ a non-@('nil') value.</p>
+
+ <p>The computed pot-lst is based on the result of forward chaining from the
+ set of assumptions as described above.  By default, that pot-lst is displayed
+ in a self-explanatory way.  Here is an (admittedly contrived) example.</p>
+
+ @({
+ ACL2 !>(verify (implies (and (>= (- (nth 3 x) a) 7)
+                              (< (nth 3 x) b)
+                              (< c b))
+                         (< (nth 3 x) d)))
+ ->: promote
+ ->: th
+ *** Top-level hypotheses:
+ 1. (<= 7 (+ (NTH 3 X) (- A)))
+ 2. (< (NTH 3 X) B)
+ 3. (< C B)
+
+ The current subterm is:
+ (< (NTH 3 X) D)
+ ->: pot-lst
+ Current pot-lst:
+ -----
+ For maximal term B
+ the list of polynomials is:
+ ((A + 7 < B))
+ -----
+ For maximal term C
+ the list of polynomials is:
+ ((C < B))
+ -----
+ For maximal term (NTH '3 X)
+ the list of polynomials is:
+ (((NTH '3 X) < B) (A + 7 <= (NTH '3 X)))
+
+ NIL
+ ->: (pot-lst t t)
+ Current pot-lst:
+ -----
+ For maximal term B
+ the list of polynomials is:
+ ((A + 7 < B))
+ -----
+ For maximal term C
+ the list of polynomials is:
+ ((C < B))
+ -----
+ For maximal term D
+ the list of polynomials is:
+ ((D < B))
+ -----
+ For maximal term (NTH '3 X)
+ the list of polynomials is:
+ (((NTH '3 X) < B) (A + 7 <= (NTH '3 X)) (D <= (NTH '3 X)))
+
+ NIL
+ ->:
+ })
+
+ <p>You can get the internal form of the pot-lst by supplying all optional
+ arguments including a non-@('nil') value for @('rawp').</p>")
+
 (defxdoc acl2-pc::pp
   :parents (proof-builder-commands)
   :short "(macro)
@@ -161260,6 +161828,8 @@ expand function call at the current subterm, without simplifying"
 (defpointer abstract-stobj defabsstobj)
 (defpointer accumulated-persistence-oops accumulated-persistence)
 (defpointer acl2-unwind-protect system-utilities)
+(defpointer acl2p parallelism)
+(defpointer acl2r real)
 (defpointer acl2s acl2-sedan)
 (defpointer add-ld-keyword-alias ld-keyword-aliases)
 (defpointer add-ld-keyword-alias! ld-keyword-aliases)
@@ -161539,7 +162109,6 @@ expand function call at the current subterm, without simplifying"
 (defpointer ruler rulers)
 (defpointer runes-diff saving-event-data)
 (defpointer rw-cache set-rw-cache-state)
-(defpointer rw-cache-state hints t)
 (defpointer saving-and-restoring save-exec)
 (defpointer set-accumulated-persistence accumulated-persistence)
 (defpointer set-difference-eq set-difference$)
