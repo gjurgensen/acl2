@@ -100468,6 +100468,11 @@ Bug Fixes
   component is [47m:WARRANTED[0m --- and similarly for [47m[defbadge][0m and
   [47m:BADGED[0m.
 
+  We fixed a bug that caused the [tau-system] sometimes to cause a raw
+  Lisp error when the [executable-counterpart]s of certain primitive
+  recognizers were [disable]d.  Thanks to Eric Smith for reporting
+  this bug and providing an example of it.
+
 
 Changes at the System Level
 
