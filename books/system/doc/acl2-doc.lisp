@@ -102284,7 +102284,7 @@ it."
 ;   71 ; Changes to Existing Features
 ;   31 ; New Features
 ;    8 ; Heuristic and Efficiency Improvements
-;   27 ; Bug Fixes
+;   28 ; Bug Fixes
 ;   17 ; Changes at the System Level
 ;    7 ; EMACS Support
 ;    1 ; Experimental Versions
@@ -103687,6 +103687,11 @@ it."
  @('T') &mdash; more precisely, it returns a @(see value-triple) whose value
  component is @(':WARRANTED') &mdash; and similarly for @(tsee defbadge) and
  @(':BADGED').</p>
+
+ <p>We fixed a bug that caused the @(see tau-system) sometimes to cause a raw
+ Lisp error when the @(see executable-counterpart)s of certain primitive
+ recognizers were @(see disable)d.  Thanks to Eric Smith for reporting this bug
+ and providing an example of it.</p>
 
  <h3>Changes at the System Level</h3>
 
