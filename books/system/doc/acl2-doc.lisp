@@ -121093,7 +121093,7 @@ work on <tt>(q x)</tt>.</p>
  worlds.  Here we discuss how to install an initial segment (retraction) of a
  user-defined world, that is, a world other than the one named
  @(''current-acl2-world'), which is maintained by the ACL2 system.  Also see
- @(see retract-world) for a similar utility that instead extends a named
+ @(see extend-world) for a similar utility that instead extends a named
  world.</p>
 
  @({
