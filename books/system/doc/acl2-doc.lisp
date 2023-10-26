@@ -102281,7 +102281,7 @@ it."
 ; conversion of fmt, (er soft ...), one-way-unify, and genvar, and related
 ; utilities to guard-verified :logic mode.
 
-;   71 ; Changes to Existing Features
+;   74 ; Changes to Existing Features
 ;   31 ; New Features
 ;    8 ; Heuristic and Efficiency Improvements
 ;   29 ; Bug Fixes
