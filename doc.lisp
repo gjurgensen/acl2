@@ -100473,6 +100473,10 @@ Bug Fixes
   recognizers were [disable]d.  Thanks to Eric Smith for reporting
   this bug and providing an example of it.
 
+  We fixed a bug that might cause suitable induction schemes to be
+  eliminated because of inappropriate consideration of [47m:[0m[47m[definition][0m
+  rules.
+
 
 Changes at the System Level
 

@@ -102284,7 +102284,7 @@ it."
 ;   71 ; Changes to Existing Features
 ;   31 ; New Features
 ;    8 ; Heuristic and Efficiency Improvements
-;   28 ; Bug Fixes
+;   29 ; Bug Fixes
 ;   17 ; Changes at the System Level
 ;    7 ; EMACS Support
 ;    1 ; Experimental Versions
@@ -103692,6 +103692,9 @@ it."
  Lisp error when the @(see executable-counterpart)s of certain primitive
  recognizers were @(see disable)d.  Thanks to Eric Smith for reporting this bug
  and providing an example of it.</p>
+
+ <p>We fixed a bug that might cause suitable induction schemes to be eliminated
+ because of inappropriate consideration of @(':')@(tsee definition) rules.</p>
 
  <h3>Changes at the System Level</h3>
 
