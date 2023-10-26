@@ -102284,7 +102284,7 @@ it."
 ;   74 ; Changes to Existing Features
 ;   31 ; New Features
 ;    8 ; Heuristic and Efficiency Improvements
-;   29 ; Bug Fixes
+;   30 ; Bug Fixes
 ;   17 ; Changes at the System Level
 ;    7 ; EMACS Support
 ;    1 ; Experimental Versions
@@ -103695,6 +103695,11 @@ it."
 
  <p>We fixed a bug that might cause suitable induction schemes to be eliminated
  because of inappropriate consideration of @(':')@(tsee definition) rules.</p>
+
+ <p>Some @(see proof-builder) commands, including @(':claim') and
+ @(':casesplit'), are more robust (specifically, when claiming or splitting on
+ certain terms that are trivially true).  Thanks to Drew Walter for supplying
+ an illustrative example.</p>
 
  <h3>Changes at the System Level</h3>
 
