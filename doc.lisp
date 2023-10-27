@@ -100477,6 +100477,11 @@ Bug Fixes
   eliminated because of inappropriate consideration of [47m:[0m[47m[definition][0m
   rules.
 
+  Some [proof-builder] commands, including [47m:claim[0m and [47m:casesplit[0m, are
+  more robust (specifically, when claiming or splitting on certain
+  terms that are trivially true).  Thanks to Drew Walter for
+  supplying an illustrative example.
+
 
 Changes at the System Level
 
@@ -119825,7 +119830,7 @@ Subtopics
   Here we discuss how to install an initial segment (retraction) of a
   user-defined world, that is, a world other than the one named
   [47m'current-acl2-world[0m, which is maintained by the ACL2 system.  Also
-  see [retract-world] for a similar utility that instead extends a
+  see [extend-world] for a similar utility that instead extends a
   named world.
 
     General Form:
