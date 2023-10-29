@@ -100468,6 +100468,20 @@ Bug Fixes
   component is [47m:WARRANTED[0m --- and similarly for [47m[defbadge][0m and
   [47m:BADGED[0m.
 
+  We fixed a bug that caused the [tau-system] sometimes to cause a raw
+  Lisp error when the [executable-counterpart]s of certain primitive
+  recognizers were [disable]d.  Thanks to Eric Smith for reporting
+  this bug and providing an example of it.
+
+  We fixed a bug that might cause suitable induction schemes to be
+  eliminated because of inappropriate consideration of [47m:[0m[47m[definition][0m
+  rules.
+
+  Some [proof-builder] commands, including [47m:claim[0m and [47m:casesplit[0m, are
+  more robust (specifically, when claiming or splitting on certain
+  terms that are trivially true).  Thanks to Drew Walter for
+  supplying an illustrative example.
+
 
 Changes at the System Level
 
@@ -119816,7 +119830,7 @@ Subtopics
   Here we discuss how to install an initial segment (retraction) of a
   user-defined world, that is, a world other than the one named
   [47m'current-acl2-world[0m, which is maintained by the ACL2 system.  Also
-  see [retract-world] for a similar utility that instead extends a
+  see [extend-world] for a similar utility that instead extends a
   named world.
 
     General Form:

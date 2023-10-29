@@ -102281,10 +102281,10 @@ it."
 ; conversion of fmt, (er soft ...), one-way-unify, and genvar, and related
 ; utilities to guard-verified :logic mode.
 
-;   71 ; Changes to Existing Features
+;   74 ; Changes to Existing Features
 ;   31 ; New Features
 ;    8 ; Heuristic and Efficiency Improvements
-;   27 ; Bug Fixes
+;   30 ; Bug Fixes
 ;   17 ; Changes at the System Level
 ;    7 ; EMACS Support
 ;    1 ; Experimental Versions
@@ -103687,6 +103687,19 @@ it."
  @('T') &mdash; more precisely, it returns a @(see value-triple) whose value
  component is @(':WARRANTED') &mdash; and similarly for @(tsee defbadge) and
  @(':BADGED').</p>
+
+ <p>We fixed a bug that caused the @(see tau-system) sometimes to cause a raw
+ Lisp error when the @(see executable-counterpart)s of certain primitive
+ recognizers were @(see disable)d.  Thanks to Eric Smith for reporting this bug
+ and providing an example of it.</p>
+
+ <p>We fixed a bug that might cause suitable induction schemes to be eliminated
+ because of inappropriate consideration of @(':')@(tsee definition) rules.</p>
+
+ <p>Some @(see proof-builder) commands, including @(':claim') and
+ @(':casesplit'), are more robust (specifically, when claiming or splitting on
+ certain terms that are trivially true).  Thanks to Drew Walter for supplying
+ an illustrative example.</p>
 
  <h3>Changes at the System Level</h3>
 
@@ -121080,7 +121093,7 @@ work on <tt>(q x)</tt>.</p>
  worlds.  Here we discuss how to install an initial segment (retraction) of a
  user-defined world, that is, a world other than the one named
  @(''current-acl2-world'), which is maintained by the ACL2 system.  Also see
- @(see retract-world) for a similar utility that instead extends a named
+ @(see extend-world) for a similar utility that instead extends a named
  world.</p>
 
  @({
