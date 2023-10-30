@@ -5655,6 +5655,7 @@ Subtopics
   stabilizing on the ``frequently used'' names from [47m\"ACL2\"[0m, we intend
   never to define a symbol whose [47m[symbol-package-name][0m is
   [47m\"ACL2-USER\"[0m.")
+ (ACL2P (POINTERS) "See [parallelism].")
  (ACL2P-KEY-CHECKPOINTS
   (PARALLEL-PROOF)
   "Key checkpoints in ACL2(p)
@@ -5690,6 +5691,7 @@ Subtopics
   in the following sense: a subgoal is a key checkpoint if it leads,
   in the current call of the waterfall, to a goal that is pushed for
   induction.")
+ (ACL2R (POINTERS) "See [real].")
  (ACL2S (POINTERS) "See [ACL2-sedan].")
  (ACL2_AS_AN_INTERACTIVE_THEOREM_PROVER
   (PAGES_WRITTEN_ESPECIALLY_FOR_THE_TOURS)
@@ -32721,6 +32723,10 @@ Miscellaneous efficiency ideas
   [47mvn[0m include all the variable symbols in the formula, no [47mfn[0m occurs in
   [47mlhs[0m in more than one destructor term, and all occurrences of [47mx[0m in
   [47mlhs[0m are inside destructor terms.
+
+  An [47m:elim[0m rule is available for a given destructor function (in the
+  manner described below) when it is the most recently added
+  [enable]d [47m:elim[0m rule for that function.
 
   To use an [47m:elim[0m rule, the theorem prover waits until a conjecture has
   been maximally simplified.  It then searches for an instance of
@@ -99967,6 +99973,14 @@ Changes to Existing Features
   IF-expression'' by ``we had to termify ... (see :DOC termify)'' and
   explaining in the new [documentation] topic, [termify].
 
+  It is now legal to introduce more than one [elim] rule for the same
+  function symbol.  Thanks to Eric Smith for pointing out that the
+  current implementation was inconsistent in accepting a replacement
+  [elim] rule when including a book but not at the top level.
+
+  It is no longer illegal to read a [stobj] when in a [wormhole] state,
+  for example, when inside [break-rewrite].
+
 
 New Features
 
@@ -100453,6 +100467,11 @@ Bug Fixes
   [47mT[0m --- more precisely, it returns a [value-triple] whose value
   component is [47m:WARRANTED[0m --- and similarly for [47m[defbadge][0m and
   [47m:BADGED[0m.
+
+  We fixed a bug that caused the [tau-system] sometimes to cause a raw
+  Lisp error when the [executable-counterpart]s of certain primitive
+  recognizers were [disable]d.  Thanks to Eric Smith for reporting
+  this bug and providing an example of it.
 
 
 Changes at the System Level
@@ -105154,6 +105173,12 @@ Subtopics
 
   [ACL2-unwind-protect]
       See [system-utilities].
+
+  [ACL2p]
+      See [parallelism].
+
+  [ACL2r]
+      See [real].
 
   [ACL2s]
       See [ACL2-sedan].
