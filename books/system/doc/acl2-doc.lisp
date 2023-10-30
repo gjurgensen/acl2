@@ -18730,6 +18730,77 @@ subtree of X with T, without duplication.</p>
 
  @(def count-keys)")
 
+(defxdoc course-materials
+
+; This was originally at the end of workshops.html.  The first two broken links
+; below were commented on that page as shown; the third is now broken as well.
+
+; <!-- Broken link
+; <li><a href='http://www.stanford.edu/~ewsmith/acl2/'>Eric Smith's web
+;     page for a class at Stanford</a></li>
+; -->
+
+; <!-- Broken link
+; <li>Here is a link to the <a
+; href='http://www.faculty.idc.ac.il/yishai/reasoning/'>web
+; page for Yishai Feldman's Computer-Aided Reasoning course at The
+;     Interdisciplinary Center, Herzliya</a>.</li>
+; -->
+
+;;; Broken link
+; <li><a href='http://www.cs.ou.edu/~rlpage/SEcollab/'>A course taught by Rex Page at the
+; Univ. of Oklahoma, and related links</a></li>
+
+  :parents (documentation)
+  :short "Some ACL2 course materials"
+  :long "<p>The links listed below will take you to materials for some courses
+that involve ACL2.  This list is loosely maintained and incomplete, and is
+given in no particular order.  We strongly encourage you to send email to <a
+href='mailto:kaufmann@cs.utexas.edu'>Matt Kaufmann</a> and <a
+href='mailto:moore@cs.utexas.edu'>J Strother Moore</a> if you have additional
+such links to contribute; or if you are a contributor to the ACL2 @(see
+community-books), please feel free to add them yourself.</p>
+
+<ul>
+
+<li>See @(see recursion-and-induction) for notes you can use to teach yourself
+how to prove theorems about recursively defined functions using mathematical
+induction.  That document started as notes for the course &ldquo;Recursion and
+Induction&rdquo; in the Department of Computer Science of the University of
+Texas at Austin.</li>
+
+<li><a href='https://www.ccs.neu.edu/home/pete/teaching.html'>Courses
+    taught by Pete Manolios</a>, which use
+    the <a href='http://acl2s.ccs.neu.edu/acl2s/doc/'>ACL2 Sedan
+    (ACL2s)</a>,
+    including <a href='https://www.ccs.neu.edu/home/pete/courses/Logic-and-Computation/2020-Spring/'>one
+    taught at Northeastern in Spring 2020</a></li>
+
+<li>The following two interfaces to ACL2 support the teaching of ACL2
+to undergraduates:
+
+  <ul>
+
+  <li>The <a href='http://acl2s.ccs.neu.edu/acl2s/doc/'>ACL2 Sedan
+  (ACL2s)</a></li>
+
+  <li><a href='http://dracula-lang.github.io/index.html'>DrACuLa</a></li>
+
+  </ul></li>
+
+<li>John Cowles, <a href='http://www.cs.uwyo.edu/~cowles/jvm-acl2/'>COSC5010:
+Formalizing the JVM in ACL2</a>, Univ. of Wyoming</li>
+
+<li>Links to some of Warren Hunt's courses, many of which use ACL2, may be found <a
+href='http://www.cs.utexas.edu/users/hunt/class/index.html'>here</a>.</li>
+
+<li>Links to some of J Moore's courses, many of which use ACL2, may be found <a
+href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
+
+</ul>
+
+")
+
 (defxdoc cpu-core-count
   :parents (parallelism acl2-built-ins)
   :short "The number of cpu cores"
@@ -60946,7 +61017,7 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
 ; WARNING: Don’t change the name of this topic without also changing its
 ; reference in :DOC acknowledgments!
 
-  :parents (loop$ programming)
+  :parents (loop$ documentation programming)
   :short "Primer for using @(tsee loop$)"
   :long "<h1>The Loop$ Primer</h1>
 
@@ -102281,10 +102352,10 @@ it."
 ; conversion of fmt, (er soft ...), one-way-unify, and genvar, and related
 ; utilities to guard-verified :logic mode.
 
-;   71 ; Changes to Existing Features
+;   74 ; Changes to Existing Features
 ;   31 ; New Features
 ;    8 ; Heuristic and Efficiency Improvements
-;   28 ; Bug Fixes
+;   30 ; Bug Fixes
 ;   17 ; Changes at the System Level
 ;    7 ; EMACS Support
 ;    1 ; Experimental Versions
@@ -103692,6 +103763,14 @@ it."
  Lisp error when the @(see executable-counterpart)s of certain primitive
  recognizers were @(see disable)d.  Thanks to Eric Smith for reporting this bug
  and providing an example of it.</p>
+
+ <p>We fixed a bug that might cause suitable induction schemes to be eliminated
+ because of inappropriate consideration of @(':')@(tsee definition) rules.</p>
+
+ <p>Some @(see proof-builder) commands, including @(':claim') and
+ @(':casesplit'), are more robust (specifically, when claiming or splitting on
+ certain terms that are trivially true).  Thanks to Drew Walter for supplying
+ an illustrative example.</p>
 
  <h3>Changes at the System Level</h3>
 
@@ -114861,7 +114940,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 ; File emacs/html-to-xdoc.el contains Emacs tools that assisted in the
 ; conversion of the resulting HTML to XDOC format.
 
-  :parents (top) ; planned to be (acl2 about-acl2)
+  :parents (documentation acl2 about-acl2)
   :short "Recursion and Induction"
   :long "<h3>Recursion and Induction</h3>
 
