@@ -1642,6 +1642,9 @@ Subtopics
   [Git-quick-start]
       Git quick start guide
 
+  [Recursion-and-induction]
+      Recursion and Induction
+
   [Release-notes]
       Pointers to what has changed
 
@@ -2738,6 +2741,9 @@ Subtopics
 
   [Real]
       ACL2(r) support for real numbers
+
+  [Recursion-and-induction]
+      Recursion and Induction
 
   [Rule-classes]
       Adding rules to the database
@@ -22018,6 +22024,41 @@ Subtopics
             (+ 1
                (count-keys (hons-remove-assoc (caar al) (cdr al))))
           (count-keys (cdr al)))))")
+ (COURSE-MATERIALS
+  (DOCUMENTATION)
+  "Some ACL2 course materials
+
+  The links listed below will take you to materials for some courses
+  that involve ACL2.  This list is loosely maintained and incomplete,
+  and is given in no particular order.  We strongly encourage you to
+  send email to {Matt Kaufmann | mailto:kaufmann@cs.utexas.edu} and
+  {J Strother Moore | mailto:moore@cs.utexas.edu} if you have
+  additional such links to contribute; or if you are a contributor to
+  the ACL2 [community-books], please feel free to add them yourself.
+
+    * See [recursion-and-induction] for notes you can use to teach yourself
+      how to prove theorems about recursively defined functions using
+      mathematical induction.  That document started as notes for the
+      course ``Recursion and Induction'' in the Department of
+      Computer Science of the University of Texas at Austin.
+    * {Courses taught by Pete Manolios |
+      https://www.ccs.neu.edu/home/pete/teaching.html}, which use the
+      {ACL2 Sedan (ACL2s) | http://acl2s.ccs.neu.edu/acl2s/doc/},
+      including {one taught at Northeastern in Spring 2020 |
+      https://www.ccs.neu.edu/home/pete/courses/Logic-and-Computation/2020-Spring/}
+    * The following two interfaces to ACL2 support the teaching of ACL2 to
+      undergraduates:
+        * The {ACL2 Sedan (ACL2s) | http://acl2s.ccs.neu.edu/acl2s/doc/}
+        * {DrACuLa | http://dracula-lang.github.io/index.html}
+
+    * John Cowles, {COSC5010: Formalizing the JVM in ACL2 |
+      http://www.cs.uwyo.edu/~cowles/jvm-acl2/}, Univ. of Wyoming
+    * Links to some of Warren Hunt's courses, many of which use ACL2, may
+      be found {here |
+      http://www.cs.utexas.edu/users/hunt/class/index.html}.
+    * Links to some of J Moore's courses, many of which use ACL2, may be
+      found {here |
+      http://www.cs.utexas.edu/users/moore/classes/index.html}.")
  (CPU-CORE-COUNT
   (PARALLELISM ACL2-BUILT-INS)
   "The number of cpu cores
@@ -31878,6 +31919,9 @@ Subtopics
       Placeholder for link to documentation that resides in the community
       books
 
+  [Course-materials]
+      Some ACL2 course materials
+
   [Doc]
       [Documentation] at the terminal
 
@@ -31887,8 +31931,14 @@ Subtopics
   [Finding-documentation]
       Searching the documentation
 
+  [Loop$-primer]
+      Primer for using [47m[loop$][0m
+
   [Pointers]
-      Links pointing to relevant documentation topics")
+      Links pointing to relevant documentation topics
+
+  [Recursion-and-induction]
+      Recursion and Induction")
  (DOCUMENTATION-COPYRIGHT
   (COPYRIGHT DOCUMENTATION)
   "Copyright and authorship of documentation
@@ -64746,7 +64796,7 @@ Subtopics
  (LOOP$-FOR (POINTERS)
             "See [for-loop$].")
  (LOOP$-PRIMER
-  (LOOP$ PROGRAMMING)
+  (LOOP$ DOCUMENTATION PROGRAMMING)
   "Primer for using [47m[loop$][0m
 
 
@@ -100473,6 +100523,15 @@ Bug Fixes
   recognizers were [disable]d.  Thanks to Eric Smith for reporting
   this bug and providing an example of it.
 
+  We fixed a bug that might cause suitable induction schemes to be
+  eliminated because of inappropriate consideration of [47m:[0m[47m[definition][0m
+  rules.
+
+  Some [proof-builder] commands, including [47m:claim[0m and [47m:casesplit[0m, are
+  more robust (specifically, when claiming or splitting on certain
+  terms that are trivially true).  Thanks to Drew Walter for
+  supplying an illustrative example.
+
 
 Changes at the System Level
 
@@ -117648,7 +117707,7 @@ Subtopics
   If you supply the above ``filter'' argument, then you may also supply
   the keyword argument [47m:dir[0m, which is then passed to [47mld[0m; see [ld].")
  (RECURSION-AND-INDUCTION
-  (TOP)
+  (DOCUMENTATION ACL2 ABOUT-ACL2)
   "Recursion and Induction
 
 
@@ -119821,7 +119880,7 @@ Subtopics
   Here we discuss how to install an initial segment (retraction) of a
   user-defined world, that is, a world other than the one named
   [47m'current-acl2-world[0m, which is maintained by the ACL2 system.  Also
-  see [retract-world] for a similar utility that instead extends a
+  see [extend-world] for a similar utility that instead extends a
   named world.
 
     General Form:
