@@ -100532,6 +100532,19 @@ Bug Fixes
   terms that are trivially true).  Thanks to Drew Walter for
   supplying an illustrative example.
 
+  A bug in [47m[trace$][0m could trigger raw Lisp errors when the [47m:entry[0m,
+  [47m:exit[0m, or [47m:cond[0m option specified an ill-guarded expression.  For
+  example, after evaluating [47m(defun f (x) x)[0m and then [47m(trace$ (f
+  :entry (car x)))[0m, evaluation of [47m(f 3)[0m caused a raw Lisp error due
+  to evaluation of [47m[car][0m on the value, 3.  This has been fixed.
+  (Technical Remark: the fix was to replace the expression with the
+  same ``oneify'' process that is used for generating definitions of
+  executable-counterpart functions; [evaluation].)
+
+  Eliminated the built-in [47m:[0m[47m[type-prescription][0m rule [47mtrue-listp-take[0m,
+  thanks to Eric Smith, who pointed out that the same rule is already
+  installed as the built-in [47m:type-prescription[0m rule for [47m[take][0m.
+
 
 Changes at the System Level
 
