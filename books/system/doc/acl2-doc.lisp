@@ -102355,7 +102355,7 @@ it."
 ;   74 ; Changes to Existing Features
 ;   31 ; New Features
 ;    8 ; Heuristic and Efficiency Improvements
-;   30 ; Bug Fixes
+;   32 ; Bug Fixes
 ;   17 ; Changes at the System Level
 ;    7 ; EMACS Support
 ;    1 ; Experimental Versions
@@ -103771,6 +103771,20 @@ it."
  @(':casesplit'), are more robust (specifically, when claiming or splitting on
  certain terms that are trivially true).  Thanks to Drew Walter for supplying
  an illustrative example.</p>
+
+ <p>A bug in @(tsee trace$) could trigger raw Lisp errors when the @(':entry'),
+ @(':exit'), or @(':cond') option specified an ill-guarded expression.  For
+ example, after evaluating @('(defun f (x) x)') and then @('(trace$ (f :entry
+ (car x)))'), evaluation of @('(f 3)') caused a raw Lisp error due to
+ evaluation of @(tsee car) on the value, 3.  This has been fixed.  (Technical
+ Remark: the fix was to replace the expression with the same
+ &ldquo;oneify&rdquo; process that is used for generating definitions of
+ executable-counterpart functions; @(see evaluation).)</p>
+
+ <p>Eliminated the built-in @(':')@(tsee type-prescription) rule
+ @('true-listp-take'), thanks to Eric Smith, who pointed out that the same rule
+ is already installed as the built-in @(':type-prescription') rule for @(tsee
+ take).</p>
 
  <h3>Changes at the System Level</h3>
 
