@@ -102348,7 +102348,7 @@ it."
 
 (defxdoc note-8-6
 
-; Total number of release note items: 158, as follows -- not including the
+; Total number of release note items: 170, as follows -- not including the
 ; conversion of fmt, (er soft ...), one-way-unify, and genvar, and related
 ; utilities to guard-verified :logic mode.
 
