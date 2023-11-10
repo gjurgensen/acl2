@@ -52107,7 +52107,9 @@ Subtopics
 
   Under the hood, when [47malist[0m is a fast alist that is associated with a
   valid hash table, [47mhons-get[0m first norms [47mkey[0m using [47m[hons-copy][0m, then
-  becomes a [47mgethash[0m operation on the hidden hash table.
+  becomes a [47mgethash[0m operation on the hidden hash table.  Otherwise
+  [47mhons-copy[0m simply invokes [47m[hons-assoc-equal][0m, which is similar (in
+  definition and in performance) to [47m[assoc-equal][0m, on [47mkey[0m and [47malist[0m.
 
   [31;1mFunction: [0m<hons-get>
 
@@ -100531,6 +100533,19 @@ Bug Fixes
   more robust (specifically, when claiming or splitting on certain
   terms that are trivially true).  Thanks to Drew Walter for
   supplying an illustrative example.
+
+  A bug in [47m[trace$][0m could trigger raw Lisp errors when the [47m:entry[0m,
+  [47m:exit[0m, or [47m:cond[0m option specified an ill-guarded expression.  For
+  example, after evaluating [47m(defun f (x) x)[0m and then [47m(trace$ (f
+  :entry (car x)))[0m, evaluation of [47m(f 3)[0m caused a raw Lisp error due
+  to evaluation of [47m[car][0m on the value, 3.  This has been fixed.
+  (Technical Remark: the fix was to replace the expression with the
+  same ``oneify'' process that is used for generating definitions of
+  executable-counterpart functions; [evaluation].)
+
+  Eliminated the built-in [47m:[0m[47m[type-prescription][0m rule [47mtrue-listp-take[0m,
+  thanks to Eric Smith, who pointed out that the same rule is already
+  installed as the built-in [47m:type-prescription[0m rule for [47m[take][0m.
 
 
 Changes at the System Level
