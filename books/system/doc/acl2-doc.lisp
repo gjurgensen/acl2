@@ -48820,7 +48820,7 @@ fast-alists)."
  <p>Under the hood, when @('alist') is a fast alist that is associated with a
  valid hash table, @('hons-get') first norms @('key') using @(tsee hons-copy),
  then becomes a @('gethash') operation on the hidden hash table.  Otherwise
- @('hons-copy') simply invokes @(tsee hons-assoc-equal), which is similar (in
+ @('hons-get') simply invokes @(tsee hons-assoc-equal), which is similar (in
  definition and in performance) to @(tsee assoc-equal), on @('key') and
  @('alist').</p>
 

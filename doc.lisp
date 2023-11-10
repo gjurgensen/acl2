@@ -52108,7 +52108,7 @@ Subtopics
   Under the hood, when [47malist[0m is a fast alist that is associated with a
   valid hash table, [47mhons-get[0m first norms [47mkey[0m using [47m[hons-copy][0m, then
   becomes a [47mgethash[0m operation on the hidden hash table.  Otherwise
-  [47mhons-copy[0m simply invokes [47m[hons-assoc-equal][0m, which is similar (in
+  [47mhons-get[0m simply invokes [47m[hons-assoc-equal][0m, which is similar (in
   definition and in performance) to [47m[assoc-equal][0m, on [47mkey[0m and [47malist[0m.
 
   [31;1mFunction: [0m<hons-get>
