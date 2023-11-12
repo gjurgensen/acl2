@@ -49759,6 +49759,8 @@ Subtopics
       (declare (xargs :guard t))
       (declare (ignore ctx str alist))
       nil)")
+ (HASH-TABLES (POINTERS)
+              "See [defstobj].")
  (HEADER
   (ARRAYS ACL2-BUILT-INS)
   "Return the header of a 1- or 2-dimensional array
@@ -105658,6 +105660,9 @@ Subtopics
 
   [Hands-off]
       See [hints] for information about the keyword [47m:hands-off[0m.
+
+  [Hash-tables]
+      See [defstobj].
 
   [If-intro]
       See [splitter].
