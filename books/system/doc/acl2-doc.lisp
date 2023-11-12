@@ -162066,6 +162066,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer guard-msg-table set-guard-msg)
 (defpointer guard-holder guard-holders)
 (defpointer hands-off hints t)
+(defpointer hash-tables defstobj)
 (defpointer if-intro splitter)
 (defpointer ignorable declare)
 (defpointer ignore declare)
