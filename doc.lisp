@@ -100185,7 +100185,7 @@ New Features
   This can be helpful when a [47m[verify-termination][0m event in a book is
   intended to verify [guard]s but a [local]ly included book declares
   [47m:verify-guards nil[0m in the corresponding [47mverify-termination[0m event.
-  (Technical note: That issue occurs because [47mverify-termimnation[0m
+  (Technical note: That issue occurs because [47mverify-termination[0m
   invokes [47m[make-event][0m, and the expansion is saved when locally
   including the sub-book.)
 
