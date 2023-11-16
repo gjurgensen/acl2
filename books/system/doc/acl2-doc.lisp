@@ -48820,7 +48820,7 @@ fast-alists)."
  <p>Under the hood, when @('alist') is a fast alist that is associated with a
  valid hash table, @('hons-get') first norms @('key') using @(tsee hons-copy),
  then becomes a @('gethash') operation on the hidden hash table.  Otherwise
- @('hons-copy') simply invokes @(tsee hons-assoc-equal), which is similar (in
+ @('hons-get') simply invokes @(tsee hons-assoc-equal), which is similar (in
  definition and in performance) to @(tsee assoc-equal), on @('key') and
  @('alist').</p>
 
@@ -103405,7 +103405,7 @@ it."
  This can be helpful when a @(tsee verify-termination) event in a book is
  intended to verify @(see guard)s but a @(see local)ly included book declares
  @(':verify-guards nil') in the corresponding @('verify-termination')
- event.  (Technical note: That issue occurs because @('verify-termimnation')
+ event.  (Technical note: That issue occurs because @('verify-termination')
  invokes @(tsee make-event), and the expansion is saved when locally including
  the sub-book.)</p>
 
