@@ -103405,7 +103405,7 @@ it."
  This can be helpful when a @(tsee verify-termination) event in a book is
  intended to verify @(see guard)s but a @(see local)ly included book declares
  @(':verify-guards nil') in the corresponding @('verify-termination')
- event.  (Technical note: That issue occurs because @('verify-termimnation')
+ event.  (Technical note: That issue occurs because @('verify-termination')
  invokes @(tsee make-event), and the expansion is saved when locally including
  the sub-book.)</p>
 
