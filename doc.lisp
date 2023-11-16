@@ -49759,6 +49759,8 @@ Subtopics
       (declare (xargs :guard t))
       (declare (ignore ctx str alist))
       nil)")
+ (HASH-TABLES (POINTERS)
+              "See [defstobj].")
  (HEADER
   (ARRAYS ACL2-BUILT-INS)
   "Return the header of a 1- or 2-dimensional array
@@ -52108,7 +52110,7 @@ Subtopics
   Under the hood, when [47malist[0m is a fast alist that is associated with a
   valid hash table, [47mhons-get[0m first norms [47mkey[0m using [47m[hons-copy][0m, then
   becomes a [47mgethash[0m operation on the hidden hash table.  Otherwise
-  [47mhons-copy[0m simply invokes [47m[hons-assoc-equal][0m, which is similar (in
+  [47mhons-get[0m simply invokes [47m[hons-assoc-equal][0m, which is similar (in
   definition and in performance) to [47m[assoc-equal][0m, on [47mkey[0m and [47malist[0m.
 
   [31;1mFunction: [0m<hons-get>
@@ -100183,7 +100185,7 @@ New Features
   This can be helpful when a [47m[verify-termination][0m event in a book is
   intended to verify [guard]s but a [local]ly included book declares
   [47m:verify-guards nil[0m in the corresponding [47mverify-termination[0m event.
-  (Technical note: That issue occurs because [47mverify-termimnation[0m
+  (Technical note: That issue occurs because [47mverify-termination[0m
   invokes [47m[make-event][0m, and the expansion is saved when locally
   including the sub-book.)
 
@@ -105658,6 +105660,9 @@ Subtopics
 
   [Hands-off]
       See [hints] for information about the keyword [47m:hands-off[0m.
+
+  [Hash-tables]
+      See [defstobj].
 
   [If-intro]
       See [splitter].
