@@ -1642,6 +1642,9 @@ Subtopics
   [Git-quick-start]
       Git quick start guide
 
+  [Recursion-and-induction]
+      Recursion and Induction
+
   [Release-notes]
       Pointers to what has changed
 
@@ -2738,6 +2741,9 @@ Subtopics
 
   [Real]
       ACL2(r) support for real numbers
+
+  [Recursion-and-induction]
+      Recursion and Induction
 
   [Rule-classes]
       Adding rules to the database
@@ -5655,6 +5661,7 @@ Subtopics
   stabilizing on the ``frequently used'' names from [47m\"ACL2\"[0m, we intend
   never to define a symbol whose [47m[symbol-package-name][0m is
   [47m\"ACL2-USER\"[0m.")
+ (ACL2P (POINTERS) "See [parallelism].")
  (ACL2P-KEY-CHECKPOINTS
   (PARALLEL-PROOF)
   "Key checkpoints in ACL2(p)
@@ -5690,6 +5697,7 @@ Subtopics
   in the following sense: a subgoal is a key checkpoint if it leads,
   in the current call of the waterfall, to a goal that is pushed for
   induction.")
+ (ACL2R (POINTERS) "See [real].")
  (ACL2S (POINTERS) "See [ACL2-sedan].")
  (ACL2_AS_AN_INTERACTIVE_THEOREM_PROVER
   (PAGES_WRITTEN_ESPECIALLY_FOR_THE_TOURS)
@@ -6613,7 +6621,7 @@ Proof debugging and output control:
       [set-inhibit-er], and see [set-inhibited-summary-types] to
       inhibit various types of output.
     * See [set-raw-proof-format] to make proof output display lists of
-      [rune]s.
+      [rune]s and, optionally, clausal form for goals.
     * See [set-raw-warning-format] to make some warnings display in a
       ``raw'' s-expression format.
     * See [skip-proofs] to skip proofs for a given form.
@@ -15238,7 +15246,6 @@ Subtopics
        (do-not-hint \"[books]/tools/do-not.lisp\")
        (easy-simplify-term \"[books]/tools/easy-simplify.lisp\")
        (er-soft+ \"[books]/kestrel/utilities/er-soft-plus.lisp\")
-       (er-soft-logic \"[books]/tools/er-soft-logic.lisp\")
        (final-cdr \"[books]/std/lists/final-cdr.lisp\")
        (fty \"[books]/centaur/fty/top.lisp\")
        (getopt \"[books]/centaur/getopt/top.lisp\")
@@ -17666,7 +17673,7 @@ Subtopics
                            (#\\Z . #\\z)))))
         (cond (pair (cdr pair))
               ((characterp x) x)
-              (t (code-char 0)))))")
+              (t *null-char*))))")
  (CHAR-EQUAL
   (CHARACTERS ACL2-BUILT-INS)
   "Character equality without regard to case
@@ -17736,7 +17743,7 @@ Subtopics
                            (#\\z . #\\Z)))))
         (cond (pair (cdr pair))
               ((characterp x) x)
-              (t (code-char 0)))))")
+              (t *null-char*))))")
  (CHAR<
   (CHARACTERS ACL2-BUILT-INS)
   "Less-than test for [characters]
@@ -22017,6 +22024,41 @@ Subtopics
             (+ 1
                (count-keys (hons-remove-assoc (caar al) (cdr al))))
           (count-keys (cdr al)))))")
+ (COURSE-MATERIALS
+  (DOCUMENTATION)
+  "Some ACL2 course materials
+
+  The links listed below will take you to materials for some courses
+  that involve ACL2.  This list is loosely maintained and incomplete,
+  and is given in no particular order.  We strongly encourage you to
+  send email to {Matt Kaufmann | mailto:kaufmann@cs.utexas.edu} and
+  {J Strother Moore | mailto:moore@cs.utexas.edu} if you have
+  additional such links to contribute; or if you are a contributor to
+  the ACL2 [community-books], please feel free to add them yourself.
+
+    * See [recursion-and-induction] for notes you can use to teach yourself
+      how to prove theorems about recursively defined functions using
+      mathematical induction.  That document started as notes for the
+      course ``Recursion and Induction'' in the Department of
+      Computer Science of the University of Texas at Austin.
+    * {Courses taught by Pete Manolios |
+      https://www.ccs.neu.edu/home/pete/teaching.html}, which use the
+      {ACL2 Sedan (ACL2s) | http://acl2s.ccs.neu.edu/acl2s/doc/},
+      including {one taught at Northeastern in Spring 2020 |
+      https://www.ccs.neu.edu/home/pete/courses/Logic-and-Computation/2020-Spring/}
+    * The following two interfaces to ACL2 support the teaching of ACL2 to
+      undergraduates:
+        * The {ACL2 Sedan (ACL2s) | http://acl2s.ccs.neu.edu/acl2s/doc/}
+        * {DrACuLa | http://dracula-lang.github.io/index.html}
+
+    * John Cowles, {COSC5010: Formalizing the JVM in ACL2 |
+      http://www.cs.uwyo.edu/~cowles/jvm-acl2/}, Univ. of Wyoming
+    * Links to some of Warren Hunt's courses, many of which use ACL2, may
+      be found {here |
+      http://www.cs.utexas.edu/users/hunt/class/index.html}.
+    * Links to some of J Moore's courses, many of which use ACL2, may be
+      found {here |
+      http://www.cs.utexas.edu/users/moore/classes/index.html}.")
  (CPU-CORE-COUNT
   (PARALLELISM ACL2-BUILT-INS)
   "The number of cpu cores
@@ -31877,6 +31919,9 @@ Subtopics
       Placeholder for link to documentation that resides in the community
       books
 
+  [Course-materials]
+      Some ACL2 course materials
+
   [Doc]
       [Documentation] at the terminal
 
@@ -31886,8 +31931,14 @@ Subtopics
   [Finding-documentation]
       Searching the documentation
 
+  [Loop$-primer]
+      Primer for using [47m[loop$][0m
+
   [Pointers]
-      Links pointing to relevant documentation topics")
+      Links pointing to relevant documentation topics
+
+  [Recursion-and-induction]
+      Recursion and Induction")
  (DOCUMENTATION-COPYRIGHT
   (COPYRIGHT DOCUMENTATION)
   "Copyright and authorship of documentation
@@ -32722,6 +32773,10 @@ Miscellaneous efficiency ideas
   [47mvn[0m include all the variable symbols in the formula, no [47mfn[0m occurs in
   [47mlhs[0m in more than one destructor term, and all occurrences of [47mx[0m in
   [47mlhs[0m are inside destructor terms.
+
+  An [47m:elim[0m rule is available for a given destructor function (in the
+  manner described below) when it is the most recently added
+  [enable]d [47m:elim[0m rule for that function.
 
   To use an [47m:elim[0m rule, the theorem prover waits until a conjecture has
   been maximally simplified.  It then searches for an instance of
@@ -34289,10 +34344,7 @@ Subtopics
   function, [47m[hard-error][0m, which has a [guard] of [47mT[0m, while the
   [47mhard[0m/[47mhard![0m forms have expansions that call the function, [47m[illegal][0m,
   which has a guard that is logically [47mNIL[0m.  Those generate code that
-  is in [47m:[0m[47m[logic][0m mode, in contrast to variants of [47m(er soft ...)[0m,
-  which generate calls of the [47m:[0m[47m[program][0m mode function, [47m[error1][0m.
-  For variants of [47m(er soft ...)[0m that generate [47m:[0m[47m[logic][0m mode code, see
-  [er-soft-logic] and [er-soft+].
+  is in [47m:[0m[47m[logic][0m mode, as do variants of [47m(er soft ...)[0m.
 
   The general forms of the macros are as follows.  Their
   macroexpansions include code that avoids the printing of error
@@ -49707,6 +49759,8 @@ Subtopics
       (declare (xargs :guard t))
       (declare (ignore ctx str alist))
       nil)")
+ (HASH-TABLES (POINTERS)
+              "See [defstobj].")
  (HEADER
   (ARRAYS ACL2-BUILT-INS)
   "Return the header of a 1- or 2-dimensional array
@@ -50612,17 +50666,16 @@ Subtopics
 
     [47m:induct[0m
 
-        [47mValue[0m is either [47mt[0m or a term containing at least one recursively
-        defined function symbol; if [47mt[0m, this hint indicates that the
-        system should proceed to apply its induction heuristic to the
-        specified goal produced (without trying simplification,
-        etc.); if [47mvalue[0m is a term other than [47mt[0m, then not only should
-        the system apply induction immediately, but it should analyze
-        [47mvalue[0m rather than the goal to generate its [induction]
-        scheme.  Merging and the other [induction] heuristics are
-        applied.  Thus, if [47mvalue[0m contains several mergeable
-        [induction]s, the ``best'' will be created and chosen.  E.g.,
-        the [47m:induct[0m hint
+        [47mValue[0m is either [47mt[0m or a term that is not an atom or a quoted constant.
+        The value [47mt[0m indicates that the system use induction
+        immediately by applying its induction heuristic to the
+        specified goal (without trying simplification, etc.).
+        Otherwise, the system should apply induction immediately, but
+        it should analyze [47mvalue[0m rather than the goal to generate its
+        [induction] scheme.  Either way (i.e., for value [47mt[0m or not),
+        merging and the other [induction] heuristics are applied.
+        Thus, if [47mvalue[0m contains several mergeable [induction]s, the
+        ``best'' will be created and chosen.  E.g., the [47m:induct[0m hint
 
           (and (nth i a) (nth j a))
 
@@ -50645,7 +50698,7 @@ Subtopics
 
         [47mValue[0m is any object and is irrelevant.  This hint has no effect,
         although unlike an empty hint such as [47m(\"Goal\")[0m, it is not
-        dropped.  Thus, [47m(\"Goal\") :do-not t[0m will shadow any later (or
+        dropped.  Thus, [47m(\"Goal\" :no-op t)[0m will shadow any later (or
         default) hint on [47m\"Goal\"[0m, but [47m(\"Goal\")[0m will not.  Unlike other
         hint keywords, multiple occurrences of the keyword [47m:no-op[0m are
         tolerated.
@@ -52056,7 +52109,9 @@ Subtopics
 
   Under the hood, when [47malist[0m is a fast alist that is associated with a
   valid hash table, [47mhons-get[0m first norms [47mkey[0m using [47m[hons-copy][0m, then
-  becomes a [47mgethash[0m operation on the hidden hash table.
+  becomes a [47mgethash[0m operation on the hidden hash table.  Otherwise
+  [47mhons-get[0m simply invokes [47m[hons-assoc-equal][0m, which is similar (in
+  definition and in performance) to [47m[assoc-equal][0m, on [47mkey[0m and [47malist[0m.
 
   [31;1mFunction: [0m<hons-get>
 
@@ -64745,7 +64800,7 @@ Subtopics
  (LOOP$-FOR (POINTERS)
             "See [for-loop$].")
  (LOOP$-PRIMER
-  (LOOP$ PROGRAMMING)
+  (LOOP$ DOCUMENTATION PROGRAMMING)
   "Primer for using [47m[loop$][0m
 
 
@@ -69915,11 +69970,16 @@ Subtopics
       translate a form and clean it up into a pretty term
 
   [Trans]
-      Print the macroexpansion of a form
+      Print the translation of a form
 
   [Trans!]
-      Print the macroexpansion of a form without single-threadedness
-      concerns
+      Print the translation of a form without code restrictions
+
+  [Trans*]
+      Show intermediate expansion results for the translation of a form
+
+  [Trans*-]
+      Variant of [47m[trans*][0m the skips [47m[make-event][0m expansion
 
   [Trans1]
       Print the one-step macroexpansion of a form
@@ -70051,7 +70111,7 @@ Subtopics
             ((characterp (car x))
              (cons (car x)
                    (make-character-list (cdr x))))
-            (t (cons (code-char 0)
+            (t (cons *null-char*
                      (make-character-list (cdr x))))))")
  (MAKE-EVENT
   (EVENTS MACROS)
@@ -77176,8 +77236,7 @@ Subtopics
 
     (defun newline (channel state)
      (declare
-          (xargs :guard (and (state-p state)
-                             (symbolp channel)
+          (xargs :guard (and (symbolp channel)
                              (open-output-channel-p channel
                                                     :character state))))
      (princ$ #\\Newline channel state))")
@@ -99465,27 +99524,31 @@ Experimental Versions
   Each change is described in just one category, though of course
   many changes could be placed in more than one category.
 
+  Note that only ACL2 system changes are listed below.  See also
+  [note-8-6-books] for a summary of changes made to the ACL2
+  Community Books since ACL2 8.5, including the build system.
+
   [3mDARPA Note.[0m The following statement applies to items below that are
   marked with ``See DARPA Note above'': Release was approved by DARPA
   with ``DISTRIBUTION STATEMENT A. Approved for public release.
   Distribution is unlimited.''
 
-  Note that only ACL2 system changes are listed below.  See also
-  [note-8-5-books] for a summary of changes made to the ACL2
-  Community Books since ACL2 8.5, including the build system.  Also
-  note that with each release, it is typical that the value of
-  constant [47m[*ACL2-exports*][0m has been extended, and that some built-in
-  functions that were formerly in [47m:[0m[47m[program][0m mode are now
-  [guard]-verified [47m:[0m[47m[logic][0m mode functions.  For this release the
-  following are particularly significant.
+
+Changes to Existing Features
+
+  Some built-in functions that were formerly in [47m:[0m[47m[program][0m mode are now
+  [guard]-verified [47m:[0m[47m[logic][0m mode functions.  Among the most
+  significant such built-in functions are the following.
 
     * [47mOne-way-unify[0m (see [47mbooks/system/brr-near-missp.lisp[0m)
     * [47m[Genvar][0m (see [47mbooks/system/brr-near-missp.lisp[0m)
-    * [47mEviscerate-top[0m, towards the [47m[fmt][0m family of functions (see
-      [47mbooks/system/eviscerate-top.lisp[0m) [See DARPA Note above.]
+    * [47m[Fmt][0m, [47m[error1][0m (which supports macros [47m(er soft ...)[0m and [47m[er-soft][0m),
+      and related printing utilities --- and some code was modified
+      to support their conversion to [47m:[0m[47m[logic][0m mode [See DARPA Note
+      above.]
 
-
-Changes to Existing Features
+  Note that because of the [47m[error1][0m change noted above, [47m(er soft ...)[0m
+  can now be used in [47m:logic[0m mode code.
 
   The connected book directory (that is, the [cbd]) now elaborates
   relative [pathname]s to absolute pathnames not only for book
@@ -99619,7 +99682,7 @@ Changes to Existing Features
   functions.  We are also grateful to Sol for providing a very
   helpful sketch of a correctness proof.
 
-  When there an attachment to a common ancestor of the evaluator and
+  When there is an attachment to a common ancestor of the evaluator and
   meta function of a proposed rule of class [47m:[0m[47m[meta][0m or
   [47m:[0m[47m[clause-processor][0m, the resulting error message now includes
   ancestor paths leading from the evaluator or meta function to a
@@ -99797,11 +99860,11 @@ Changes to Existing Features
   [induction-depth-limit] being exceeded).  Thanks to Eric Smith for
   a chat that helped lead to this improvement.
 
-  For most built-in [table]s, improved error messages for guard
-  failures.  This improvement was made by using a new macro that is
-  also available to ACL2 users, [47m[set-table-guard][0m, which adds a
-  [table] guard that produces a user-friendly error message when the
-  guard fails.
+  For most built-in [table]s, error messages for guard failures have
+  been improved, by use of a new macro that is also available to ACL2
+  users: [47m[set-table-guard][0m.  That utility may be used to set a
+  [table] guard in a way that produces a user-friendly error message
+  when the guard fails.
 
   The prover may now print a parenthetical remark about ``dropping
   false conclusion''.  That remark points to a new documentation
@@ -99857,7 +99920,7 @@ Changes to Existing Features
     * The macro [47mshow-brr-evisc-tuple[0m has been eliminated, but
       [47m[brr-evisc-tuple][0m is available instead.
 
-  The definition of bounded-integer-alistp has been modified by adding
+  The definition of [47mbounded-integer-alistp[0m has been modified by adding
   a guard [47m(posp n)[0m and removing the [47m(integerp n)[0m test from the body
   of its [47m[defun][0m.  [See DARPA Note above.]
 
@@ -99938,6 +100001,39 @@ Changes to Existing Features
   [verify-guards] for a discussion of the case of [47m[mutual-recursion][0m,
   where only the definition of [47mfn[0m is relevant for keyword values, not
   other definitions in its clique.
+
+  A hint of the form [47m:induct X[0m is now an error if [47mX[0m is an atom other
+  than [47mt[0m or a quoted constant, since those do not suggest any
+  induction scheme.  Thanks to Eric Smith for raising the question of
+  what [47m:induct nil[0m should do and helping with examples showing that
+  the current behavior is not really consistent.  Thanks to
+  Alessandro Coglio for suggesting that [47m:induct nil[0m cause an error
+  since it serves no purpose and could be confused with
+  [47m:do-not-induct t[0m, which is quite different.
+
+  The built-in [47m[defaxiom][0m events [47mcode-char-char-code-is-identity[0m and
+  [47mchar-code-code-char-is-identity[0m no longer have [47m[force][0md hypotheses.
+  Thanks to Alessandro Coglio for pointing out that these [rewrite]
+  rules were rather unique as built-in rewrite rules that force
+  hypotheses.  Note that the original versions of these two rules,
+  stated as [47m[defthm][0m events with suffix [47m\"-FORCED\"[0m added to the names,
+  may be found in community book
+  [47mbooks/std/basic/code-char-char-code-with-force.lisp[0m; including this
+  books (perhaps [local]ly) may rescue a proof that now fails because
+  of the change.
+
+  Fixed an induction message when limiting the number of cases, in
+  particular, replacing ``we had to fold ... into a single
+  IF-expression'' by ``we had to termify ... (see :DOC termify)'' and
+  explaining in the new [documentation] topic, [termify].
+
+  It is now legal to introduce more than one [elim] rule for the same
+  function symbol.  Thanks to Eric Smith for pointing out that the
+  current implementation was inconsistent in accepting a replacement
+  [elim] rule when including a book but not at the top level.
+
+  It is no longer illegal to read a [stobj] when in a [wormhole] state,
+  for example, when inside [break-rewrite].
 
 
 New Features
@@ -100089,7 +100185,7 @@ New Features
   This can be helpful when a [47m[verify-termination][0m event in a book is
   intended to verify [guard]s but a [local]ly included book declares
   [47m:verify-guards nil[0m in the corresponding [47mverify-termination[0m event.
-  (Technical note: That issue occurs because [47mverify-termimnation[0m
+  (Technical note: That issue occurs because [47mverify-termination[0m
   invokes [47m[make-event][0m, and the expansion is saved when locally
   including the sub-book.)
 
@@ -100100,6 +100196,26 @@ New Features
 
   [47m[Thm][0m now takes an optional [47m:instructions[0m keyword argument, like
   [47m[defthm][0m.  Thanks to Warren Hunt for requesting this enhancement.
+
+  New utilities [47m[trans*][0m and [47m[trans*-][0m can show repeated
+  macroexpansions of a form leading to its final translation, where
+  [47mtrans*[0m also shows [47m[make-event][0m expansions.  Thanks to Warren Hunt
+  for requesting a utility that does repeated macroexpansion.
+
+  A new command has been added to the [proof-builder-commands], to
+  display the linear arithmetic database.  See [ACL2-pc::pot-lst].
+  Thanks to Dave Greve for bringing forward the idea of such a
+  command.
+
+  The utility [47m[set-raw-proof-format][0m now takes a new legal value,
+  [47m:clause[0m, which is like [47mt[0m except that in addition to printing
+  [rune]s as lists in output from the simplifier, it prints all goals
+  as [clause]s.  Thanks to Eric Smith for encouraging such an
+  enhancement.
+
+  It is possible to cause ACL2 to increase its effort in
+  [type-reasoning].  See [set-dwp].  Thanks to Eric Smith for
+  correspondence leading to this feature.
 
 
 Heuristic and Efficiency Improvements
@@ -100406,6 +100522,33 @@ Bug Fixes
   component is [47m:WARRANTED[0m --- and similarly for [47m[defbadge][0m and
   [47m:BADGED[0m.
 
+  We fixed a bug that caused the [tau-system] sometimes to cause a raw
+  Lisp error when the [executable-counterpart]s of certain primitive
+  recognizers were [disable]d.  Thanks to Eric Smith for reporting
+  this bug and providing an example of it.
+
+  We fixed a bug that might cause suitable induction schemes to be
+  eliminated because of inappropriate consideration of [47m:[0m[47m[definition][0m
+  rules.
+
+  Some [proof-builder] commands, including [47m:claim[0m and [47m:casesplit[0m, are
+  more robust (specifically, when claiming or splitting on certain
+  terms that are trivially true).  Thanks to Drew Walter for
+  supplying an illustrative example.
+
+  A bug in [47m[trace$][0m could trigger raw Lisp errors when the [47m:entry[0m,
+  [47m:exit[0m, or [47m:cond[0m option specified an ill-guarded expression.  For
+  example, after evaluating [47m(defun f (x) x)[0m and then [47m(trace$ (f
+  :entry (car x)))[0m, evaluation of [47m(f 3)[0m caused a raw Lisp error due
+  to evaluation of [47m[car][0m on the value, 3.  This has been fixed.
+  (Technical Remark: the fix was to replace the expression with the
+  same ``oneify'' process that is used for generating definitions of
+  executable-counterpart functions; [evaluation].)
+
+  Eliminated the built-in [47m:[0m[47m[type-prescription][0m rule [47mtrue-listp-take[0m,
+  thanks to Eric Smith, who pointed out that the same rule is already
+  installed as the built-in [47m:type-prescription[0m rule for [47m[take][0m.
+
 
 Changes at the System Level
 
@@ -100492,6 +100635,15 @@ Changes at the System Level
   which are from the constant [47m*initial-ld-special-bindings*[0m; thus,
   [47m*initial-global-table*[0m now specifies a value for each so-called
   ``[47m[ld][0m special''.
+
+  The previous ACL2 release (Version_8.5) arranged that when a raw Lisp
+  error is encountered, any available input is cleared from the input
+  channel.  However, this can lead to discarding of valid input or an
+  attempt to read values from within a comment; see [community-books]
+  files [47mclear-input-1.lsp[0m and [47mclear-input-2.lsp[0m, respectively, in
+  directory [47mbooks/system/tests/[0m.  So now, input is cleared on error
+  only when reading from the terminal (technically, from
+  [47m[*standard-oi*][0m).
 
 
 EMACS Support
@@ -102437,7 +102589,7 @@ Subtopics
       Cause subgoal numbers to be printed when [47m'prove[0m output is inhibited
 
   [Set-raw-proof-format]
-      Print runes as lists in proof output from simplification
+      Proof output with [rune]s as lists and maybe clausal goals
 
   [Set-raw-warning-format]
       Print some warnings in a ``raw'', s-expression format
@@ -105098,6 +105250,12 @@ Subtopics
   [ACL2-unwind-protect]
       See [system-utilities].
 
+  [ACL2p]
+      See [parallelism].
+
+  [ACL2r]
+      See [real].
+
   [ACL2s]
       See [ACL2-sedan].
 
@@ -105502,6 +105660,9 @@ Subtopics
 
   [Hands-off]
       See [hints] for information about the keyword [47m:hands-off[0m.
+
+  [Hash-tables]
+      See [defstobj].
 
   [If-intro]
       See [splitter].
@@ -105934,9 +106095,6 @@ Subtopics
 
   [Rw-cache]
       See [set-rw-cache-state].
-
-  [Rw-cache-state]
-      See [hints] for information about the keyword [47m:rw-cache-state[0m.
 
   [Saving-and-restoring]
       See [save-exec].
@@ -110374,6 +110532,10 @@ Subtopics
 
   [ACL2-pc::pl]
       (macro) print the rules for a given name
+
+  [ACL2-pc::pot-lst]
+      (macro) display the linear arithmetic database based on the current
+      context
 
   [ACL2-pc::pp]
       (macro) prettyprint the current term in internal (translated) form
@@ -117565,7 +117727,7 @@ Subtopics
   If you supply the above ``filter'' argument, then you may also supply
   the keyword argument [47m:dir[0m, which is then passed to [47mld[0m; see [ld].")
  (RECURSION-AND-INDUCTION
-  (TOP)
+  (DOCUMENTATION ACL2 ABOUT-ACL2)
   "Recursion and Induction
 
 
@@ -119738,7 +119900,7 @@ Subtopics
   Here we discuss how to install an initial segment (retraction) of a
   user-defined world, that is, a world other than the one named
   [47m'current-acl2-world[0m, which is maintained by the ACL2 system.  Also
-  see [retract-world] for a similar utility that instead extends a
+  see [extend-world] for a similar utility that instead extends a
   named world.
 
     General Form:
@@ -120672,6 +120834,9 @@ Subtopics
 
   [Rewriting-versus-cleaning-up-lambda-objects]
       why change the default action on rewriting [47mlambda[0m objects
+
+  [Rw-cache-state]
+      The current rw-cache-state
 
   [Set-rw-cache-state]
       Set the default rw-cache-state
@@ -122840,18 +123005,32 @@ Subtopics
   false branches of these calls even without [47mIF[0m being among the
   ruler-extenders).
 
-  IMPORTANT REMARKS.  (1) Notice that the argument to
-  [47mset-ruler-extenders[0m is evaluated, but the argument to
-  [47m:RULER-EXTENDERS[0m in [47mXARGS[0m is not evaluated.  (2) Do not put macro
-  names in your list of ruler-extenders.  For example, if you intend
-  that [47m+[0m should not block the termination analysis, in analogy to
-  [47mcons[0m in the example above, then the list of ruler-extenders should
-  include [47mbinary-+[0m, not [47m+[0m.  Of course, if you use [47m:all[0m then this is
-  not an issue, but see the next remark.  (3) Also please note that
-  by taking advantage of the ruler-extenders, you may be complicating
-  the induction scheme stored for the function, whose computation
-  takes similar advantage of the additional [47mIF[0m structure that you are
-  specifying.
+  IMPORTANT REMARKS.
+
+   1. Notice that the argument to [47mset-ruler-extenders[0m is evaluated, but the
+      argument to [47m:RULER-EXTENDERS[0m in [47mXARGS[0m is not evaluated.
+   2. Do not put macro names in your list of ruler-extenders.  For example,
+      if you intend that [47m+[0m should not block the termination analysis,
+      in analogy to [47mcons[0m in the example above, then the list of
+      ruler-extenders should include [47mbinary-+[0m, not [47m+[0m.  Of course, if
+      you use [47m:all[0m then this is not an issue, but see the next
+      remark.
+   3. Also please note that by taking advantage of the ruler-extenders, you
+      may change the induction scheme computed for the function.
+      This is especially worth remembering for functions containing
+      [47m[let][0m or [47m[let*][0m expressions (which translate to [47m[lambda][0m
+      applications; see [term]).  If the induction scheme suggested
+      by such a function seems to provide more induction hypotheses
+      than appear necessary, it might help to admit the function with
+      [47m:lambdas[0m included among the ruler extenders even if that is not
+      necessary for the termination proof.  This can cause the
+      induction scheme to have a richer case analysis with fewer
+      induction hypotheses on any given induction step.  While this
+      can make it more difficult for the system to merge induction
+      schemes to get an appropriate induction, it can also make the
+      proof of each induction step easier.  Unfortunately, we have no
+      more precise advice as to exactly when adding [47m:lambdas[0m will
+      help.
 
   To see the ruler-extenders of an existing function symbol, [47mfn[0m, in a
   logical [world], [47mwrld[0m, evaluate [47m(ruler-extenders 'fn wrld)[0m after
@@ -123334,8 +123513,14 @@ Subtopics
  (RW-CACHE (POINTERS)
            "See [set-rw-cache-state].")
  (RW-CACHE-STATE
-   (POINTERS)
-   "See [hints] for information about the keyword [47m:rw-cache-state[0m.")
+  (REWRITE)
+  "The current rw-cache-state
+
+  See [47m[set-rw-cache-state][0m for background on the [3mrw-cache[0m, which saves
+  failed attempts to apply conditional [rewrite] rules.  To get the
+  current rw-cache-state, evaluate the following form.
+
+    (rw-cache-state (w state))")
  (SAFE-MODE
   (GUARD MACROS)
   "A mode that avoids [guard] violations on [primitive]s
@@ -125485,6 +125670,54 @@ Subtopics
   [47mset-duplicate-keys-action![0m except that the latter is not [47m[local][0m to
   the [47m[encapsulate][0m or the book in which it occurs.  Perhaps
   [set-duplicate-keys-action] is to be preferred unless you have a
+  good reason for wanting to export the effect of this event outside
+  the enclosing [47m[encapsulate][0m or book.")
+ (SET-DWP
+  (TYPE-REASONING)
+  "Affect the effort made in [type-reasoning]
+
+  This is a relatively advanced event that affects the [type-reasoning]
+  heuristics.  (The name ``dwp'' stands for ``double-whammy
+  property'' because the effect pertains to making a second attempt.)
+  The default behavior is obtained with [47m(set-dwp nil)[0m, but type
+  reasoning makes an extra effort after evaluation of [47m(set-dwp t)[0m.
+
+  Note: This is an event!  It does not print the usual event [summary]
+  but nevertheless changes the ACL2 logical [world] and is so
+  recorded.  It is [47m[local][0m to the book or [47m[encapsulate][0m form in which
+  it occurs; see [set-dwp!] for a corresponding non-[47m[local][0m event.
+
+    General Form:
+    (set-dwp val)
+
+  where [47mval[0m is arbitrary but is typically [47mt[0m or [47mnil[0m, since every non-[47mnil[0m
+  value is treated the same as [47mt[0m.
+
+  The following example, from Eric Smith, proves after evaluating
+  [47m(set-dwp t)[0m but otherwise fails.
+
+    (thm
+     (implies (and (<= 0 (* 2 k)) ; extra hyp ;
+                   (unsigned-byte-p 4 k)
+                   (integerp x)
+                   (< x (+ 4 (* 2 k))))
+              (<= x (+ 3 (* 2 k))))
+     :hints ((\"Goal\" :in-theory (disable unsigned-byte-p))))
+
+  So why not always evaluate [47m(set-dwp t)[0m at the beginning of an ACL2
+  session?  Such a change added 3.9% to the certification of the ACL2
+  community books, and at least one book took almost twice as long to
+  certify.  That isn't a huge penalty, but on the other hand it seems
+  likely that [47m(set-dwp t)[0m is helpful only in rare instances.
+
+  To get the current value of [47mdwp[0m, evaluate [47m(get-dwp (w state))[0m.")
+ (SET-DWP!
+  (TYPE-REASONING)
+  "Affect the effort made in [type-reasoning], non-[47m[local][0mly
+
+  Please see [set-dwp], which is the same as [47mset-dwp![0m except that the
+  latter is not [47m[local][0m to the [47m[encapsulate][0m or the book in which it
+  occurs.  Probably [set-dwp] is to be preferred unless you have a
   good reason for wanting to export the effect of this event outside
   the enclosing [47m[encapsulate][0m or book.")
  (SET-ENFORCE-REDUNDANCY
@@ -127986,26 +128219,36 @@ Subtopics
   [set-raw-mode] for a discussion of raw-mode.")
  (SET-RAW-PROOF-FORMAT
   (OUTPUT-CONTROLS)
-  "Print runes as lists in proof output from simplification
+  "Proof output with [rune]s as lists and maybe clausal goals
 
     General Forms:
     (set-raw-proof-format t)
     :set-raw-proof-format t
     (set-raw-proof-format nil)
     :set-raw-proof-format nil
+    (set-raw-proof-format :clause)
+    :set-raw-proof-format :clause
 
   This command affects output from the theorem prover only when [47m'prove[0m
   output is not inhibited (see [set-inhibit-output-lst]) and gag-mode
-  is off (see [set-gag-mode]).  Calling this macro with value [47mt[0m as
-  shown above will cause simplification steps from proof output,
-  including steps from preprocess (see [simple]), to print the list
-  of runes used in a list format, rather than in the English proof
-  commentary.  This ``raw'' format can be handy when you want to use
-  that list as a basis for [47m[hints][0m that you construct for a
-  subsequent proof attempt.
+  is off (see [set-gag-mode]).  The default behavior is obtained with
+  argument [47mnil[0m.
 
-  To obtain the current raw-proof-format ([47mt[0m if that format is active,
-  [47mnil[0m if not), evaluate [47m(@ raw-proof-format)[0m.")
+  Calling this macro with argument [47mt[0m will cause simplification steps
+  from proof output, including steps from preprocess (see [simple]),
+  to print the list of runes used in a list format, rather than in
+  the English proof commentary.  This ``raw'' format can be handy
+  when you want to use that list as a basis for [47m[hints][0m that you
+  construct for a subsequent proof attempt.
+
+  Calling this macro with argument [47m:clause[0m provides not only the
+  behavior described above for argument [47mt[0m, but also causes goals to
+  be printed using their internal clausal format: each goal is a
+  list, implicitly disjoined, of translated [term]s.  See [clause].
+
+  To obtain the current raw proof format value of [47mt[0m, [47m:clause[0m or [47mnil[0m,
+  corresponding to the descriptions above, evaluate [47m(@
+  raw-proof-format)[0m.")
  (SET-RAW-WARNING-FORMAT
   (OUTPUT-CONTROLS)
   "Print some warnings in a ``raw'', s-expression format
@@ -128135,10 +128378,10 @@ Subtopics
   (rewriter cache), to save failed attempts to apply conditional
   [rewrite] rules.  The regression suite has taken approximately 11%
   less time with this mechanism.  The rw-cache is active by default
-  but this event allows it to be turned off or modified.  Note that
-  this event is [local] to its context (from [47m[encapsulate][0m or
-  [47m[include-book][0m).  For a non-local version, use
-  [set-rw-cache-state!].
+  but this event allows its behavior to be modified or even disabled
+  by changing the so-called [3mrw-cache-state[0m.  Note that this event is
+  [local] to its context (from [47m[encapsulate][0m or [47m[include-book][0m).  For
+  a non-local version, use [set-rw-cache-state!].
 
     Example forms:
     (set-rw-cache-state :atom)     ; default: rw-cache cleared for each literal
@@ -128161,6 +128404,9 @@ Subtopics
   initially inactive and only becomes active when some simplification
   has taken place.  We have seen a few cases where value [47mt[0m will make
   a proof fail but [47m:disabled[0m does not.
+
+  To obtain the current rw-cache-state, evaluate the form
+  [47m(rw-cache-state (w state))[0m.
 
   The following example illustrates the rw-cache in action.  You will
   see a break during evaluation of the [47m[thm][0m form.  Type [47m:eval[0m and
@@ -138415,6 +138661,9 @@ Subtopics
   [Term-order]
       The ordering relation on terms used by ACL2
 
+  [Termify]
+      the process of converting a clause to a term
+
   [Termp]
       recognizer for the quotation of a [term]")
  (TERM-LIST-LISTP
@@ -138671,6 +138920,29 @@ Subtopics
   proving that it will always succeed (see
   [well-formedness-guarantee]) or by telling ACL2 to skip the test at
   the risk of soundness (see [47m[set-skip-meta-termp-checks][0m).")
+ (TERMIFY
+  (TERM)
+  "the process of converting a clause to a term
+
+  The ACL2 prover represents its goals and subgoals as [clause]s, e.g.,
+  lists of [term]s treated as disjunctions.  The individual elements
+  of a clause are called [3mliterals[0m.  For example a goal printed as
+  [47m(IMPLIES (AND p q) r)[0m is internally represented as the 3-literal
+  clause [47m((NOT p) (NOT q) r)[0m.  A clause containing just one literal
+  is called a [3munit clause[0m.
+
+  To [3mtermify[0m a clause containing multiple literals, we convert the
+  clause to a unit clause using [47mIF[0m to express the disjunction.  For
+  example, the 3-literal clause [47m((NOT p) (NOT q) r)[0m is
+  propositionally equivalent to the term [47m(IF (NOT P) 'T (IF (NOT Q)
+  'T R))[0m.  By embedding that [47mIF[0m-term in a singleton list we obtain a
+  unit clause equivalent to the original 3-literal clause.
+
+  Applying an induction scheme to a clause containing multiple literals
+  can produce an exponential number of cases.  This does not happen
+  if the clause is a unit clause.  So the ACL2 induction mechanism
+  sometimes termifies its goal clause before applying the induction
+  scheme to shift the case-analysis burden to the rest of the prover.")
  (TERMINATION-THEOREM
   (LEMMA-INSTANCE MEASURE HINTS)
   "Use a (functional instance of a) previously-proved measure theorem
@@ -139336,7 +139608,7 @@ Subtopics
   We now precisely define the runic designators and the set of [rune]s
   denoted by each.  When we refer below to the ``macro-aliases
   dereference of'' a symbol, [47msymb[0m, we mean the (function) symbol
-  corresponding [47msymb[0m in the macro-aliases-table if there is such a
+  corresponding to [47msymb[0m in the macro-aliases-table if there is such a
   symbol, else [47msymb[0m itself; see [macro-aliases-table].  For example,
   the macro-aliases dereference of [47m[append][0m is [47m[binary-append][0m, and
   the macro-aliases dereference of [47m[nth][0m is [47mnth[0m.
@@ -142763,20 +143035,26 @@ Remarks
   [47m:eval[0m or [47m:go[0m.")
  (TRANS
   (MACROS)
-  "Print the macroexpansion of a form
+  "Print the translation of a form
 
     Examples:
     :trans (list a b c)
     :trans (caddr x)
     :trans (cond (p q) (r))
 
-  This function takes one argument, an alleged term, and translates it,
-  expanding the macros in it completely.  Either an error is caused
-  or the formal meaning of the term is printed.  We also print the
-  ``output signature'' which indicates how many results are returned
-  and which are single-threaded objects.  For example, a term that
-  returns one ordinary object (e.g., an object other than [47m[state][0m or
-  a user-defined single-threaded object (see [defstobj])) has the
+  ACL2 accepts user-level syntax as input, but [3mtranslates[0m it to an
+  internal syntax.  This translation includes macroexpansion,
+  replacing [47m[let][0m forms by [47m[lambda][0m expressions, quoting constants,
+  and so on.  See [term] for relevant background.
+
+  [47mTrans[0m takes one argument, an alleged term in user syntax, and
+  translates it, expanding the macros in it completely.  Either an
+  error is caused or the internal syntax for the term (representing
+  its formal meaning) is printed.  We also print the ``output
+  signature'' which indicates how many results are returned and which
+  are single-threaded objects.  For example, a term that returns one
+  ordinary object (e.g., an object other than [47m[state][0m or a
+  user-defined single-threaded object (see [defstobj])) has the
   output signature
 
     => *
@@ -142795,7 +143073,8 @@ Remarks
   ordinary, and that the last result is [47mSTATE[0m.
 
   See [trans!] for a corresponding command that does not enforce
-  restrictions of single-threaded objects.
+  restrictions of single-threaded objects.  See [trans*] for a
+  command that can show intermediate expansion results.
 
   It is sometimes more convenient to use [47m[trans1][0m which is like trans
   but which only does top-level macroexpansion.
@@ -142803,16 +143082,256 @@ Remarks
   For more, see [term].")
  (TRANS!
   (MACROS)
-  "Print the macroexpansion of a form without single-threadedness
-  concerns
+  "Print the translation of a form without code restrictions
 
     Examples:
     :trans! (list a b c)
     :trans! (append x state)
+    :trans! (cons (mv 3 4) x)
 
-  [47m:Trans![0m is identical to [47m:[0m[47m[trans][0m, except that unlike [47m:trans[0m, [47m:trans![0m
-  ignores single-threadedness restrictions.  Thus, the second form
-  above is legal for [47m:trans![0m.  Also see [trans] and see [trans1].")
+  [47m:Trans![0m is identical to [47m:[0m[47m[trans][0m, except that [47m:trans![0m is more
+  permissive: it allows expressions that may occur in theorems but
+  are illegal in code.  In particular, [47m:trans![0m allows violations of
+  single-threadedness and multiple-value restrictions.  Thus, the
+  second and third forms above are legal for [47m:trans![0m even though they
+  are illegal for [47m:trans[0m.  Also see [trans], see [trans1], and see
+  [trans*].")
+ (TRANS*
+  (MACROS)
+  "Show intermediate expansion results for the translation of a form
+
+  See [term] for background on translated and untranslated terms.  See
+  [trans], [trans!], and [47m[trans1][0m for other utilities that expand and
+  translate their input.
+
+  Unlike [47mtrans[0m, the [47mtrans*[0m command can show not only the translation of
+  a given expression but also the intermediate expansions leading to
+  that translation, and [47mtrans*[0m can also show [47m[make-event][0m expansions.
+  Another difference between [47mtrans*[0m and [47mtrans[0m is that [47mtrans*[0m does not
+  enforce code restrictions; thus, multiple-value mismatches and
+  violations of single-threadedness are permitted by [47mtrans*[0m.  That
+  is: when [47mtrans*[0m takes steps to convert an untranslated term to a
+  translated term, it does so as though one is translating a theorem
+  statement, not a definition body.
+
+  For discussion of how one may use a keyword command like [47m:trans*[0m in
+  place of calling the corresponding utility, in this case [47mtrans*[0m,
+  see [keyword-commands].  Below we focus on the use of the keyword
+  command, [47m:trans*[0m.
+
+  We begin with some simple examples that may suffice to explain how to
+  use [47mtrans*[0m.  We then document this utility before concluding with
+  further details.
+
+
+Introductory Examples
+
+  The examples below assume that the following definition has been
+  submitted.
+
+    (defmacro mac (x y) `(append ,y (rest ,x)))
+
+  Here is a log showing a typical use of [47m:trans*[0m; comments are below.
+
+    ACL2 !>:trans* t (mac u v)
+
+    Iteration 1 produces (by expansion):
+    (APPEND V (REST U))
+    ----------
+
+    Iteration 2 produces (by expansion):
+    (BINARY-APPEND V (REST U))
+    ----------
+
+    Iteration 3 produces (by translation):
+    (BINARY-APPEND V (CDR U))
+    ----------
+    ACL2 !>
+
+  We see that Iteration 1 expands away the call of the macro, [47mmac[0m.  The
+  next iteration expands away the resulting call of the macro,
+  [47mappend[0m.  Those two steps are labeled with ``(by expansion)''
+  because they are removing top-level macro calls.  The result of the
+  second iteration is not a macro call, so [47m:trans*[0m finishes up by
+  translating that result to obtain the final result; notice
+  translation of the second argument of the [47mbinary-append[0m call by
+  expanding [47m[rest][0m to [47m[cdr][0m.
+
+  The example above illustrates a couple of aspects of [47m:trans*[0m.
+
+    * An expansion step occurs only with a top-level macro call.
+    * A translation step is always last.
+
+  The result is the same for input [47m:trans* 3 (mac u v)[0m, i.e., if first
+  argument [47mt[0m is replaced by [47m3[0m or, in fact, any integer that is at
+  least the total number of iterations produced with argument [47mt[0m.  But
+  we can specify that we want to stop before the final step.  One way
+  is to specify a number less than the number of iterations.  Here is
+  what we get when we specify that we should stop after 1 iteration.
+
+    ACL2 !>:trans* 1 (mac u v)
+
+    Iteration 1 produces (by expansion):
+    (APPEND V (REST U))
+    ----------
+    ACL2 !>
+
+  Another way to stop early is to rule out the final translation step.
+  Here is an example by using [47mnil[0m or a negative integer as the first
+  argument.
+
+    ACL2 !>:trans* -5 (mac u v) ; same for nil, -2, -3, -4, etc. instead of -5
+
+    Iteration 1 produces (by expansion):
+    (APPEND V (REST U))
+    ----------
+
+    Iteration 2 produces (by expansion):
+    (BINARY-APPEND V (REST U))
+    ----------
+    ACL2 !>
+
+  If you are only interested in obtaining the final result, with no
+  intermediate printing, put parentheses around the first argument.
+  Here is what happens when we make that modification to the example
+  immediately above.
+
+    ACL2 !>:trans* (-5) (mac u v) ; same answer for nil, -2, -3, etc instead of -5
+     (BINARY-APPEND V (REST U))
+    ACL2 !>
+
+  Note the single space of indentation in the result above.  That
+  indicates that what is actually returned is multiple values, [47m(mv
+  nil (BINARY-APPEND V (REST U)) state)[0m.  Without the parentheses,
+  [47m(mv nil :invisible state)[0m is returned.  See [error-triple].
+
+
+Documentation
+
+    General Forms:
+    :trans t form
+    :trans nil form
+    :trans n form
+    :trans -n form
+    :trans (x) form ; for x = t, nil, n, or -n
+
+  where [47mn[0m is a positive integer and [47mform[0m is any ACL2 expression (i.e.,
+  any untranslated term; see [term]).  These commands repeat
+  translation steps as described later below, according to the value
+  of the first argument, as follows.
+
+    * [47mt[0m: iterate to completion, printing intermediate results
+    * [47mnil[0m: iterate to completion except for skipping the final translation
+      step, printing intermediate results
+    * [47mn[0m: iterate at most [47mn[0m steps, printing intermediate results
+    * [47m-n[0m: iterate at most [47mn[0m steps except for skipping a final translation
+      step, printing intermediate results
+    * [47m(x)[0m: same as [47mx[0m but without printing intermediate results, and
+      returning an [error-triple] [47m(mv nil val state)[0m where [47mval[0m is the
+      final result,
+
+  It is reasonable to think of a first argument of [47mt[0m as ``infinity''
+  and of [47mnil[0m as ``minus infinity''.  Although a first argument of [47m(t)[0m
+  is much like using [47m[trans][0m, key differences besides enforcement of
+  code restrictions (as discussed above) are that [47mtrans*[0m performs
+  [47m[make-event][0m expansion and discards certain ``wrappers'' like
+  [47m[with-output][0m, as described below.  The related utility [47m[trans*-][0m
+  differs from [47mtrans*[0m in only one way: [47mtrans*-[0m does not perform
+  [47mmake-event[0m expansion.
+
+  Here is a specification of the iteration step performed on a given
+  form, which is initially the second argument of [47mtrans*[0m and is
+  updated by each iteration.  If the form is not a true-list then
+  iteration halts without any further result.  Otherwise the form may
+  be written as a call [47m(caller arg1 ... argk)[0m, and the next step's
+  result, if any, depends on [47mcaller[0m as follows.
+
+    * If [47mcaller[0m is in the list of ``event wrappers'', [47m(local skip-proofs
+      with-cbd with-current-package with-guard-checking-event
+      with-output with-prover-step-limit with-prover-time-limit)[0m,
+      then the next step's result is the last argument of the call,
+      denoted [47margk[0m above.
+    * Else if [47mcaller[0m is [47m[make-event][0m, the result is the form's [47mmake-event[0m
+      expansion.  (This step is skipped when [47m[trans*-][0m is used rather
+      than [47mtrans*[0m.)
+    * Else if [47mcaller[0m is a built-in event constructor such as [47m[defun][0m or
+      [47m[defthm][0m, or one of [47m[certify-book][0m, [47m[defpkg][0m, or [47m[in-package][0m,
+      then iteration is halted.  (Technical note: The actual test
+      used here is whether [47mcaller[0m is a key of the alist value of the
+      constant, [47m*syms-not-callable-in-code-fal*[0m.)
+    * Else if [47mcaller[0m is a macro, expand the macro call.
+    * Otherwise translate the form, except that as noted above, if the
+      first argument of [47mtrans*[0m is [47mnil[0m or a negative integer, then
+      this step is skipped and instead iteration is halted.
+
+
+Further Details
+
+  While [47mtrans*[0m will almost always determine accurately how the given
+  input expands and is ultimately translated, it is not quite 100%
+  reliable for that purpose.  In particular, [47mmake-event[0m expansion
+  isn't guaranteed to check that the expansion is an embedded event
+  form, as is required for [47m[make-event][0m.  Another limitation for
+  [47mmake-event[0m expansion is that when an iteration reaches the form
+  [47m(:OR ev1 ... evk)[0m, the iteration concludes rather than evaluating
+  the events [47mevi[0m (see [make-event]).
+
+  A similar utility, [47m[trans*-][0m, stops iteration at a call of [47mmake-event[0m
+  without continuing with its [47mmake-event[0m expansion.  That is, in
+  fact, the only difference between [47mtrans*[0m and [47mtrans*-[0m.
+
+  We conclude by adding emphasis to an aspect of [47mtrans*[0m that is already
+  noted above: expansion (whether macroexpansion or [47mmake-event[0m
+  expansion) and elimination of event wrappers only take place for
+  the top-level call, not calls occurring in subterms.  Of course,
+  one can call [47mtrans*[0m on subterms.  Consider the following example.
+
+    ACL2 !>:trans* t (defund-nx f (x) x)
+
+    Iteration 1 produces (by expansion):
+    (WITH-OUTPUT
+         :STACK
+         :PUSH :OFF
+         :ALL
+         (PROGN (ENCAPSULATE NIL
+                  (LOGIC)
+                  (SET-STATE-OK T)
+                  (WITH-OUTPUT :STACK :POP
+                               (DEFUND F (X)
+                                 (DECLARE (XARGS :NON-EXECUTABLE T :MODE :LOGIC))
+                                 (PROG2$ (THROW-NONEXEC-ERROR 'F (LIST X))
+                                         X)))
+                  (WITH-OUTPUT :STACK :POP :OFF
+                               SUMMARY (IN-THEORY (DISABLE (:E F)))))
+                (WITH-OUTPUT :STACK :POP :OFF SUMMARY
+                             (VALUE-TRIPLE '(:DEFUND-NX F)))))
+    ----------
+
+    Iteration 2 is dropping the WITH-OUTPUT wrapper:
+    (PROGN (ENCAPSULATE NIL
+             (LOGIC)
+             (SET-STATE-OK T)
+             (WITH-OUTPUT :STACK :POP
+                          (DEFUND F (X)
+                            (DECLARE (XARGS :NON-EXECUTABLE T :MODE :LOGIC))
+                            (PROG2$ (THROW-NONEXEC-ERROR 'F (LIST X))
+                                    X)))
+             (WITH-OUTPUT :STACK :POP :OFF
+                          SUMMARY (IN-THEORY (DISABLE (:E F)))))
+           (WITH-OUTPUT :STACK :POP :OFF
+                        SUMMARY (VALUE-TRIPLE '(:DEFUND-NX F))))
+    ----------
+    ACL2 !>
+
+  One can then call [47mtrans*[0m on the [47m[defund][0m subterm to see its
+  expansion.")
+ (TRANS*-
+  (MACROS)
+  "Variant of [47m[trans*][0m the skips [47m[make-event][0m expansion
+
+  See [trans*].  The only difference between [47mtrans*[0m and [47mtrans*-[0m is that
+  the latter does not do [47m[make-event][0m expansion, but rather, stops
+  the iterations when reaching a form that is a call of [47mmake-event[0m.")
  (TRANS-EVAL
   (SYSTEM-UTILITIES)
   "Evaluate a form
@@ -145219,7 +145738,16 @@ Subtopics
   The instantiated hypothesis above was relieved because it was in the
   context, so no rewriting was necessary to establish it.  See
   [force] for how to involve the ACL2 rewriter to establish
-  hypotheses of type-prescription rules.")
+  hypotheses of type-prescription rules.
+
+
+Subtopics
+
+  [Set-dwp]
+      Affect the effort made in [type-reasoning]
+
+  [Set-dwp!]
+      Affect the effort made in [type-reasoning], non-[47m[local][0mly")
  (TYPE-SET
   (MISCELLANEOUS)
   "How type information is encoded in ACL2
@@ -157566,6 +158094,99 @@ Subtopics
 
   If you want information about applying rewrite rules to the current
   subterm, consider the [47mshow-rewrites[0m (or equivalently, [47msr[0m) command.")
+ (ACL2-PC::POT-LST
+  (PROOF-BUILDER-COMMANDS)
+  "(macro) display the linear arithmetic database based on the current
+  context
+
+  This is a relatively advanced command.  For discusion of a related
+  but more elementary command, including remarks about the utility of
+  such a command, see [ACL2-pc::type-alist].  See [linear-arithmetic]
+  for a description of the ACL2 linear arithmetic decision procedure
+
+    Examples:
+    (pot-lst nil t)   ; display linear pot-lst based on governors only (default)
+    pot-lst           ; same as (pot-lst nil t) -- governors only (default)
+    (pot-lst nil)     ; same as (pot-lst nil t) -- governors only (default)
+    (pot-lst nil t nil nil) ; same as above
+    (pot-lst nil t nil t)   ; same as above, except: raw format
+    (pot-lst t t)     ; display pot-lst based on conclusion and governors
+    (pot-lst t)       ; same as (pot-lst t nil) -- conclusion only
+    (pot-lst nil nil) ; based on neither conclusion nor governors
+
+    General Form:
+    (pot-lst &optional concl-flg govs-flg rawp)
+
+  where if [47mgovs-flg[0m is omitted then it defaults to [47m(not concl-flg)[0m, and
+  each of the other optional arguments defaults to [47mnil[0m.
+
+  This command displays the linear database, also known as the linear
+  [3mpot-lst[0m, that is computed from a suitable set of assumptions.  That
+  set of assumptions always includes all top-level hypotheses.  By
+  default, and when [47mgovs-flg[0m is supplied a non-[47mnil[0m value, the set of
+  assumptions includes all governors (which are based on surrounding
+  if-expressions that must be true or false).  The negation of the
+  current goal's top-level conclusion is also included in the
+  assumptions when [47mconcl-flg[0m is supplied a non-[47mnil[0m value.
+
+  The computed pot-lst is based on the result of forward chaining from
+  the set of assumptions as described above.  By default, that
+  pot-lst is displayed in a self-explanatory way.  Here is an
+  (admittedly contrived) example.
+
+    ACL2 !>(verify (implies (and (>= (- (nth 3 x) a) 7)
+                                 (< (nth 3 x) b)
+                                 (< c b))
+                            (< (nth 3 x) d)))
+    ->: promote
+    ->: th
+    *** Top-level hypotheses:
+    1. (<= 7 (+ (NTH 3 X) (- A)))
+    2. (< (NTH 3 X) B)
+    3. (< C B)
+
+    The current subterm is:
+    (< (NTH 3 X) D)
+    ->: pot-lst
+    Current pot-lst:
+    -----
+    For maximal term B
+    the list of polynomials is:
+    ((A + 7 < B))
+    -----
+    For maximal term C
+    the list of polynomials is:
+    ((C < B))
+    -----
+    For maximal term (NTH '3 X)
+    the list of polynomials is:
+    (((NTH '3 X) < B) (A + 7 <= (NTH '3 X)))
+
+    NIL
+    ->: (pot-lst t t)
+    Current pot-lst:
+    -----
+    For maximal term B
+    the list of polynomials is:
+    ((A + 7 < B))
+    -----
+    For maximal term C
+    the list of polynomials is:
+    ((C < B))
+    -----
+    For maximal term D
+    the list of polynomials is:
+    ((D < B))
+    -----
+    For maximal term (NTH '3 X)
+    the list of polynomials is:
+    (((NTH '3 X) < B) (A + 7 <= (NTH '3 X)) (D <= (NTH '3 X)))
+
+    NIL
+    ->:
+
+  You can get the internal form of the pot-lst by supplying all
+  optional arguments including a non-[47mnil[0m value for [47mrawp[0m.")
  (ACL2-PC::PP
   (PROOF-BUILDER-COMMANDS)
   "(macro) prettyprint the current term in internal (translated) form
