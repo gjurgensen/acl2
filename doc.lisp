@@ -35375,6 +35375,8 @@ Subtopics
       (cond ((endp l) nil)
             (t (cons (car l) (evens (cddr l))))))")
  (EVENT (POINTERS) "See [events].")
+ (EVENT-DATA (POINTERS)
+             "See [saving-event-data].")
  (EVENTS
   (ACL2)
   "Functions that extend the logic
@@ -105489,6 +105491,9 @@ Subtopics
 
   [Event]
       See [events].
+
+  [Event-data]
+      See [saving-event-data].
 
   [Execution]
       See [evaluation].
