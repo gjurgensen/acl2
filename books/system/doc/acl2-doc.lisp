@@ -162009,6 +162009,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer error hints t)
 (defpointer ev$-list apply$)
 (defpointer event events)
+(defpointer event-data saving-event-data)
 (defpointer execution evaluation)
 (defpointer expand hints t)
 (defpointer extended-syntaxp syntaxp)
