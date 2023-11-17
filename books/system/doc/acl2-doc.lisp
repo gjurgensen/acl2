@@ -102703,6 +102703,10 @@ it."
 ; Modified set-cert-replay-p to treat illegal values of guard-checking-on as
 ; :nowarn, as documented in :DOC guard-evaluation-table.
 
+; Tweaked the logical definition of read-object to check (consp (cdr entry)),
+; which is more natural, in place of (cdr entry).  These are equivalent under
+; the guard.  Thanks to Eric Smith for the suggestion.
+
   :parents (release-notes)
   :short "ACL2 Version  8.6 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
