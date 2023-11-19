@@ -13921,14 +13921,15 @@ with any questions about building the community books.</p>")
  })
 
  <p>Next fetch and extract a development snapshot in the new @('ccl')
- directory.  The version below is current as of this writing (April, 2021), but
- see <a
+ directory.  <b>WARNING.</b>  The version below is current as of this
+ writing (November, 2023), but see <a
  href='https://github.com/Clozure/ccl/releases/'>https://github.com/Clozure/ccl/releases/</a>
- for the latest snapshots.</p>
+ for the latest snapshots; in particular, @('\"v1.12.2\"') below could change,
+ e.g., to @('\"v1.12.3\"') or @('\"v1.13\"').</p>
 
  @({
  cd ccl
- wget https://github.com/Clozure/ccl/releases/download/v1.12/linuxx86.tar.gz
+ wget https://github.com/Clozure/ccl/releases/download/v1.12.2/linuxx86.tar.gz
  tar xfz linuxx86.tar.gz
  })
 
@@ -13998,13 +13999,15 @@ with any questions about building the community books.</p>")
  cd 2017-12-07-6be8298fe5/ccl
  })
 
- <p>Next fetch and extract a development snapshot.  The version below is
- current as of this writing (December, 2021), but see <a
+ <p>Next fetch and extract a development snapshot in the new @('ccl')
+ directory.  <b>WARNING.</b>  The version below is current as of this
+ writing (November, 2023), but see <a
  href='https://github.com/Clozure/ccl/releases/'>https://github.com/Clozure/ccl/releases/</a>
- for the latest snapshots.</p>
+ for the latest snapshots; in particular, @('\"v1.12.2\"') below could change,
+ e.g., to @('\"v1.12.3\"') or @('\"v1.13\"').</p>
 
  @({
- wget https://github.com/Clozure/ccl/releases/download/v1.12.1/linuxx86.tar.gz
+ wget https://github.com/Clozure/ccl/releases/download/v1.12.2/linuxx86.tar.gz
  tar xfz linuxx86.tar.gz
  })
 
@@ -14060,14 +14063,15 @@ with any questions about building the community books.</p>")
  })
 
  <p>Next fetch and extract a development snapshot in the new @('ccl')
- directory.  The version below is current as of this writing (April, 2021), but
- see <a
+ directory.  <b>WARNING.</b>  The version below is current as of this
+ writing (November, 2023), but see <a
  href='https://github.com/Clozure/ccl/releases/'>https://github.com/Clozure/ccl/releases/</a>
- for the latest snapshots.</p>
+ for the latest snapshots; in particular, @('\"v1.12.2\"') below could change,
+ e.g., to @('\"v1.12.3\"') or @('\"v1.13\"').</p>
 
  @({
  cd ccl
- curl -O -L https://github.com/Clozure/ccl/releases/download/v1.12/darwinx86.tar.gz
+ curl -O -L https://github.com/Clozure/ccl/releases/download/v1.12.2/darwinx86.tar.gz
  tar xfz darwinx86.tar.gz
  })
 
@@ -14142,13 +14146,15 @@ with any questions about building the community books.</p>")
  cd 2017-12-07-6be8298fe5/ccl
  })
 
- <p>Next fetch and extract a development snapshot.  The version below is
- current as of this writing (December, 2021), but see <a
+ <p>Next fetch and extract a development snapshot in the new @('ccl')
+ directory.  <b>WARNING.</b>  The version below is current as of this
+ writing (November, 2023), but see <a
  href='https://github.com/Clozure/ccl/releases/'>https://github.com/Clozure/ccl/releases/</a>
- for the latest snapshots.</p>
+ for the latest snapshots; in particular, @('\"v1.12.2\"') below could change,
+ e.g., to @('\"v1.12.3\"') or @('\"v1.13\"').</p>
 
  @({
- curl -L -O https://github.com/Clozure/ccl/releases/download/v1.12.1/darwinx86.tar.gz
+ curl -L -O https://github.com/Clozure/ccl/releases/download/v1.12.2/darwinx86.tar.gz
  tar xfz darwinx86.tar.gz
  })
 

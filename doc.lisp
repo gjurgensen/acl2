@@ -16787,12 +16787,15 @@ configure-ccl.lisp
     git clone https://github.com/Clozure/ccl
 
   Next fetch and extract a development snapshot in the new [47mccl[0m
-  directory.  The version below is current as of this writing (April,
-  2021), but see {https://github.com/Clozure/ccl/releases/ |
-  https://github.com/Clozure/ccl/releases/} for the latest snapshots.
+  directory.  [31;1mWARNING.[0m The version below is current as of this
+  writing (November, 2023), but see
+  {https://github.com/Clozure/ccl/releases/ |
+  https://github.com/Clozure/ccl/releases/} for the latest snapshots;
+  in particular, [47m\"v1.12.2\"[0m below could change, e.g., to [47m\"v1.12.3\"[0m or
+  [47m\"v1.13\"[0m.
 
     cd ccl
-    wget https://github.com/Clozure/ccl/releases/download/v1.12/linuxx86.tar.gz
+    wget https://github.com/Clozure/ccl/releases/download/v1.12.2/linuxx86.tar.gz
     tar xfz linuxx86.tar.gz
 
   Rebuild and quit, twice.
@@ -16851,12 +16854,15 @@ configure-ccl.lisp
     mv temp 2017-12-07-6be8298fe5
     cd 2017-12-07-6be8298fe5/ccl
 
-  Next fetch and extract a development snapshot.  The version below is
-  current as of this writing (December, 2021), but see
+  Next fetch and extract a development snapshot in the new [47mccl[0m
+  directory.  [31;1mWARNING.[0m The version below is current as of this
+  writing (November, 2023), but see
   {https://github.com/Clozure/ccl/releases/ |
-  https://github.com/Clozure/ccl/releases/} for the latest snapshots.
+  https://github.com/Clozure/ccl/releases/} for the latest snapshots;
+  in particular, [47m\"v1.12.2\"[0m below could change, e.g., to [47m\"v1.12.3\"[0m or
+  [47m\"v1.13\"[0m.
 
-    wget https://github.com/Clozure/ccl/releases/download/v1.12.1/linuxx86.tar.gz
+    wget https://github.com/Clozure/ccl/releases/download/v1.12.2/linuxx86.tar.gz
     tar xfz linuxx86.tar.gz
 
   Rebuild and quit, twice.
@@ -16899,12 +16905,15 @@ configure-ccl.lisp
     git clone https://github.com/Clozure/ccl
 
   Next fetch and extract a development snapshot in the new [47mccl[0m
-  directory.  The version below is current as of this writing (April,
-  2021), but see {https://github.com/Clozure/ccl/releases/ |
-  https://github.com/Clozure/ccl/releases/} for the latest snapshots.
+  directory.  [31;1mWARNING.[0m The version below is current as of this
+  writing (November, 2023), but see
+  {https://github.com/Clozure/ccl/releases/ |
+  https://github.com/Clozure/ccl/releases/} for the latest snapshots;
+  in particular, [47m\"v1.12.2\"[0m below could change, e.g., to [47m\"v1.12.3\"[0m or
+  [47m\"v1.13\"[0m.
 
     cd ccl
-    curl -O -L https://github.com/Clozure/ccl/releases/download/v1.12/darwinx86.tar.gz
+    curl -O -L https://github.com/Clozure/ccl/releases/download/v1.12.2/darwinx86.tar.gz
     tar xfz darwinx86.tar.gz
 
   Rebuild the lisp kernel by hand before trying to rebuild the lisp.
@@ -16966,12 +16975,15 @@ configure-ccl.lisp
     mv temp 2017-12-07-6be8298fe5
     cd 2017-12-07-6be8298fe5/ccl
 
-  Next fetch and extract a development snapshot.  The version below is
-  current as of this writing (December, 2021), but see
+  Next fetch and extract a development snapshot in the new [47mccl[0m
+  directory.  [31;1mWARNING.[0m The version below is current as of this
+  writing (November, 2023), but see
   {https://github.com/Clozure/ccl/releases/ |
-  https://github.com/Clozure/ccl/releases/} for the latest snapshots.
+  https://github.com/Clozure/ccl/releases/} for the latest snapshots;
+  in particular, [47m\"v1.12.2\"[0m below could change, e.g., to [47m\"v1.12.3\"[0m or
+  [47m\"v1.13\"[0m.
 
-    curl -L -O https://github.com/Clozure/ccl/releases/download/v1.12.1/darwinx86.tar.gz
+    curl -L -O https://github.com/Clozure/ccl/releases/download/v1.12.2/darwinx86.tar.gz
     tar xfz darwinx86.tar.gz
 
   Rebuild the lisp kernel by hand before trying to rebuild the lisp.
