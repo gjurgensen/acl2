@@ -50351,7 +50351,7 @@ tables in the current Hons Space."
   <p>Roughly speaking, a test <i>governs</i> a recursive call if the test must
   be true for control to reach that call.  The <i>ruling</i> tests are a subset
   of the governing tests and are the ones that determine the case analysis of
-  any suggested induction.</p> 
+  any suggested induction.</p>
 
   <p>For example, if we are analyzing a definition of @('(fn x)') and the body
   is @('(if (not (consp x)) (h nil) (h (fn (cdr x))))') then @('(consp x)')
@@ -50549,7 +50549,7 @@ tables in the current Hons Space."
   analysis shown subsequently.</p>
 
   @({
-  (defun fn (x y) 
+  (defun fn (x y)
     (declare (xargs :ruler-extenders :lambdas))
     (if (consp x)
         (let* ((y1 (if (consp (car x))
@@ -102877,14 +102877,14 @@ it."
 
 (defxdoc note-8-6
 
-; Total number of release note items: 170, as follows -- not including the
+; Total number of release note items: 171, as follows -- not including the
 ; conversion of fmt, (er soft ...), one-way-unify, and genvar, and related
 ; utilities to guard-verified :logic mode.
 
 ;   74 ; Changes to Existing Features
 ;   31 ; New Features
 ;    8 ; Heuristic and Efficiency Improvements
-;   32 ; Bug Fixes
+;   33 ; Bug Fixes
 ;   17 ; Changes at the System Level
 ;    7 ; EMACS Support
 ;    1 ; Experimental Versions
@@ -104329,6 +104329,11 @@ it."
  @('true-listp-take'), thanks to Eric Smith, who pointed out that the same rule
  is already installed as the built-in @(':type-prescription') rule for @(tsee
  take).</p>
+
+ <p>Fixed a bug in handling of @(tsee do-loop$) expressions that return
+ multiple values, when encountered during proofs.  An example labeled with
+ &ldquo;Version 8.5&rdquo; is near the end of @(see community-book)
+ @('projects/apply/loop-tests.lisp').</p>
 
  <h3>Changes at the System Level</h3>
 
