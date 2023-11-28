@@ -101090,6 +101090,11 @@ Bug Fixes
   thanks to Eric Smith, who pointed out that the same rule is already
   installed as the built-in [47m:type-prescription[0m rule for [47m[take][0m.
 
+  Fixed a bug in handling of [47m[do-loop$][0m expressions that return
+  multiple values, when encountered during proofs.  An example
+  labeled with ``Version 8.5'' is near the end of [community-book]
+  [47mprojects/apply/loop-tests.lisp[0m.
+
 
 Changes at the System Level
 

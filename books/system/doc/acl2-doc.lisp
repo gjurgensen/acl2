@@ -8875,8 +8875,7 @@ and @(tsee include-book)"
   ACL2 !>(thm (equal (if a b c) (if (not a) c b))
               :hints ((\"Goal\" :bdd (:vars nil)))) ; Prove with BDDs
 
-  [Note:  A hint was supplied for our processing of the goal above.
-  Thanks!]
+  [Note:  A hint was supplied of the goal above.  Thanks!]
 
   But simplification with BDDs (7 nodes) reduces this to T, using the
   :definitions EQUAL and NOT.
@@ -8965,8 +8964,7 @@ and @(tsee include-book)"
           :hints ((\"Goal\" :bdd (:vars nil)
                    :in-theory (disable v-not-cons))))
 
-  [Note:  A hint was supplied for our processing of the goal above.
-  Thanks!]
+  [Note:  A hint was supplied of the goal above.  Thanks!]
 
   ACL2 Error in ( THM ...):  Attempted to create V-NOT node during BDD
   processing with an argument that is a call of a bdd-constructor,
@@ -9029,8 +9027,7 @@ and @(tsee include-book)"
                    ;; This time we do not specify a variable order.
                    (:vars nil))))
 
-  [Note:  A hint was supplied for our processing of the goal above.
-  Thanks!]
+  [Note:  A hint was supplied of the goal above.  Thanks!]
 
   ACL2 Error in ( THM ...):  The :BDD hint for the current goal has
   successfully simplified this goal, but has failed to prove it.
@@ -13488,13 +13485,11 @@ with any questions about building the community books.</p>")
  output for that limit of 10.</p>
 
  @({
- [Note:  A hint was supplied for our processing of the goal above.
- Thanks!]
+ [Note:  A hint was supplied of the goal above.  Thanks!]
 
  This simplifies, using trivial observations, to
 
- [Note:  A hint was supplied for our processing of the goal below.
- Thanks!]
+ [Note:  A hint was supplied of the goal below.  Thanks!]
 
  Goal'
  (IMPLIES (AND (NOT (EQUAL (F1 A B C) XXX))
@@ -15557,8 +15552,7 @@ with any questions about building the community books.</p>")
                 :clause-processor
                 (note-fact-clause-processor clause '(equal a a)))))
 
-  [Note:  A hint was supplied for our processing of the goal above.
-  Thanks!]
+  [Note:  A hint was supplied of the goal above.  Thanks!]
 
   We now apply the verified :CLAUSE-PROCESSOR function NOTE-FACT-CLAUSE-
   PROCESSOR to produce two new subgoals.
@@ -22910,8 +22904,7 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
                 :clause-processor
                 (note-fact-clause-processor clause '(equal a a)))))
 
-  [Note:  A hint was supplied for our processing of the goal above.
-  Thanks!]
+  [Note:  A hint was supplied of the goal above.  Thanks!]
 
   We now apply the trusted :CLAUSE-PROCESSOR function NOTE-FACT-CLAUSE-
   PROCESSOR to produce two new subgoals.
@@ -47285,10 +47278,9 @@ current fast alists."
          (TRUE-LISTP (REV (CDR X))))
     (TRUE-LISTP (APPEND (REV (CDR X)) (LIST (CAR X))))).
 
-  [Note:  A hint was supplied for our processing
-  of the goal above, because of a :backtrack hint
-  that is preventing destructor elimination.
-  Thanks!]
+  [Note:  A hint was supplied for the goal above,
+  because of a :backtrack hint that is preventing
+  destructor elimination. Thanks!]
 
   We generalize this conjecture, replacing
   (REV (CDR X)) by RV.  This produces
@@ -47436,8 +47428,7 @@ current fast alists."
 
   [[... output omitted here ...]]
 
-  [Note:  A hint was supplied for our processing of the goal below.
-  Thanks!]
+  [Note:  A hint was supplied of the goal below.  Thanks!]
 
   Subgoal *1/2'
   (IMPLIES (AND (CONSP X)
@@ -47762,8 +47753,7 @@ current fast alists."
                        (:use cdr-cons :in-theory (enable append)))
                   :do-not '(generalize))))
 
-    [Note:  A hint was supplied for our processing of the goal above.
-    Thanks!]
+    [Note:  A hint was supplied of the goal above.  Thanks!]
 
     The :OR hint for Goal gives rise to two disjunctive branches.  Proving
     any one of these branches would suffice to prove Goal.  We explore
@@ -47779,8 +47769,7 @@ current fast alists."
                   :IN-THEORY (DISABLE CAR-CONS)
                   :DO-NOT '(GENERALIZE)).
 
-    [Note:  A hint was supplied for our processing of the goal above.
-    Thanks!]
+    [Note:  A hint was supplied of the goal above.  Thanks!]
 
     Normally we would attempt to prove this formula by induction.  However,
     we prefer in this instance to focus on the original input conjecture
@@ -47799,8 +47788,7 @@ current fast alists."
                   :IN-THEORY (ENABLE APPEND)
                   :DO-NOT '(GENERALIZE)).
 
-    [Note:  A hint was supplied for our processing of the goal above.
-    Thanks!]
+    [Note:  A hint was supplied of the goal above.  Thanks!]
 
     ACL2 Warning [Use] in ( THM ...):  It is unusual to :USE the formula
     of an enabled :REWRITE or :DEFINITION rule, so you may want to consider
@@ -48165,11 +48153,9 @@ current fast alists."
   val2 ...). See :DOC hints and :DOC hints-and-the-waterfall; community
   book books/hints/merge-hint.lisp might also be helpful.
 
-  [Note:  A hint was supplied for our processing of the goal above.
-  Thanks!]
+  [Note:  A hint was supplied of the goal above.  Thanks!]
 
-  [Note:  A hint was supplied for our processing of the goal above.
-  Thanks!]
+  [Note:  A hint was supplied of the goal above.  Thanks!]
 
   Name the formula above *1.
  })
@@ -50351,7 +50337,7 @@ tables in the current Hons Space."
   <p>Roughly speaking, a test <i>governs</i> a recursive call if the test must
   be true for control to reach that call.  The <i>ruling</i> tests are a subset
   of the governing tests and are the ones that determine the case analysis of
-  any suggested induction.</p> 
+  any suggested induction.</p>
 
   <p>For example, if we are analyzing a definition of @('(fn x)') and the body
   is @('(if (not (consp x)) (h nil) (h (fn (cdr x))))') then @('(consp x)')
@@ -50549,7 +50535,7 @@ tables in the current Hons Space."
   analysis shown subsequently.</p>
 
   @({
-  (defun fn (x y) 
+  (defun fn (x y)
     (declare (xargs :ruler-extenders :lambdas))
     (if (consp x)
         (let* ((y1 (if (consp (car x))
@@ -51197,8 +51183,7 @@ tables in the current Hons Space."
   When applied to the goal at hand the above induction scheme produces
   two nontautological subgoals.
 
-  [Note:  A hint was supplied for our processing of the goal below.
-  Thanks!]
+  [Note:  A hint was supplied of the goal below.  Thanks!]
 
   Subgoal *1/2
   (IMPLIES (AND (NOT (ENDP X))
@@ -51283,8 +51268,7 @@ tables in the current Hons Space."
  here.</p>
 
  @({
-  [Note:  A hint was supplied for our processing of the goal below.
-  Thanks!]
+  [Note:  A hint was supplied of the goal below.  Thanks!]
 
   Subgoal *1/2
   (IMPLIES (AND (NOT (ENDP X))
@@ -51586,8 +51570,7 @@ tables in the current Hons Space."
  <p>Here is an edited version of the resulting log.</p>
 
  @({
-  [Note:  A hint was supplied for our processing of the goal above.
-  Thanks!]
+  [Note:  A hint was supplied of the goal above.  Thanks!]
 
   [[1> Executing proof-builder instructions]]
 
@@ -51602,8 +51585,7 @@ tables in the current Hons Space."
 
   [[ ... output omitted ... ]]
 
-  [Note:  A hint was supplied for our processing of the goal below.
-  Thanks!]
+  [Note:  A hint was supplied of the goal below.  Thanks!]
 
   Subgoal *1/3''
   (IMPLIES (AND (CONSP X)
@@ -51620,8 +51602,7 @@ tables in the current Hons Space."
   ->: :BASH
   ***** Now entering the theorem prover *****
 
-  [Note:  A hint was supplied for our processing of the goal above.
-  Thanks!]
+  [Note:  A hint was supplied of the goal above.  Thanks!]
 
   But we have been asked to pretend that this goal is subsumed by the
   yet-to-be-proved |PROOF-BUILDER Goal|.
@@ -80509,8 +80490,7 @@ it."
                    104))
    :hints ((\"Goal\" :in-theory (enable bvecp))))
 
-  [Note:  A hint was supplied for our processing of the goal above.
-  Thanks!]
+  [Note:  A hint was supplied of the goal above.  Thanks!]
 
   By the simple :definition BVECP, the :executable-counterparts of EXPT
   and UNARY-/ and the simple :rewrite rule ASSOCIATIVITY-OF-* we reduce
@@ -102877,14 +102857,14 @@ it."
 
 (defxdoc note-8-6
 
-; Total number of release note items: 170, as follows -- not including the
+; Total number of release note items: 171, as follows -- not including the
 ; conversion of fmt, (er soft ...), one-way-unify, and genvar, and related
 ; utilities to guard-verified :logic mode.
 
 ;   74 ; Changes to Existing Features
 ;   31 ; New Features
 ;    8 ; Heuristic and Efficiency Improvements
-;   32 ; Bug Fixes
+;   33 ; Bug Fixes
 ;   17 ; Changes at the System Level
 ;    7 ; EMACS Support
 ;    1 ; Experimental Versions
@@ -103232,6 +103212,8 @@ it."
 ; Tweaked the logical definition of read-object to check (consp (cdr entry)),
 ; which is more natural, in place of (cdr entry).  These are equivalent under
 ; the guard.  Thanks to Eric Smith for the suggestion.
+
+; Shortened "thanks for the hint" wording as suggested by Eric Smith.
 
   :parents (release-notes)
   :short "ACL2 Version  8.6 (xxx, 20xx) Notes"
@@ -104329,6 +104311,11 @@ it."
  @('true-listp-take'), thanks to Eric Smith, who pointed out that the same rule
  is already installed as the built-in @(':type-prescription') rule for @(tsee
  take).</p>
+
+ <p>Fixed a bug in handling of @(tsee do-loop$) expressions that return
+ multiple values, when encountered during proofs.  An example labeled with
+ &ldquo;Version 8.5&rdquo; is near the end of @(see community-book)
+ @('projects/apply/loop-tests.lisp').</p>
 
  <h3>Changes at the System Level</h3>
 
@@ -141317,8 +141304,7 @@ work on <tt>(q x)</tt>.</p>
           (O< (ACL2-COUNT (CDDR X))
               (ACL2-COUNT X))).
 
- [Note:  A hint was supplied for our processing of the goal above.
- Thanks!]
+ [Note:  A hint was supplied of the goal above.  Thanks!]
 
  We augment the goal with the hypothesis provided by the :USE hint.
  The hypothesis can be obtained from F.  We are left with the following
