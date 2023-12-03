@@ -11689,8 +11689,7 @@ Subtopics
     ACL2 !>(thm (equal (if a b c) (if (not a) c b))
                 :hints ((\"Goal\" :bdd (:vars nil)))) ; Prove with BDDs
 
-    [Note:  A hint was supplied for our processing of the goal above.
-    Thanks!]
+    [Note:  A hint was supplied of the goal above.  Thanks!]
 
     But simplification with BDDs (7 nodes) reduces this to T, using the
     :definitions EQUAL and NOT.
@@ -11774,8 +11773,7 @@ Subtopics
             :hints ((\"Goal\" :bdd (:vars nil)
                      :in-theory (disable v-not-cons))))
 
-    [Note:  A hint was supplied for our processing of the goal above.
-    Thanks!]
+    [Note:  A hint was supplied of the goal above.  Thanks!]
 
     ACL2 Error in ( THM ...):  Attempted to create V-NOT node during BDD
     processing with an argument that is a call of a bdd-constructor,
@@ -11837,8 +11835,7 @@ Subtopics
                      ;; This time we do not specify a variable order.
                      (:vars nil))))
 
-    [Note:  A hint was supplied for our processing of the goal above.
-    Thanks!]
+    [Note:  A hint was supplied of the goal above.  Thanks!]
 
     ACL2 Error in ( THM ...):  The :BDD hint for the current goal has
     successfully simplified this goal, but has failed to prove it.
@@ -15798,6 +15795,9 @@ Subtopics
       Installing Clozure Common Lisp (CCL)
 
   [Sbcl-installation]
+      Installing Steel Bank Common Lisp (SBCL)
+
+  [Sbcl-installation-brief]
       Installing Steel Bank Common Lisp (SBCL)")
  (BUILT-IN-CLAUSE
   (RULE-CLASSES)
@@ -16426,13 +16426,11 @@ Subtopics
   rewriting of literals is inhibited, as explained below.  Here is
   the first part of the output for that limit of 10.
 
-    [Note:  A hint was supplied for our processing of the goal above.
-    Thanks!]
+    [Note:  A hint was supplied of the goal above.  Thanks!]
 
     This simplifies, using trivial observations, to
 
-    [Note:  A hint was supplied for our processing of the goal below.
-    Thanks!]
+    [Note:  A hint was supplied of the goal below.  Thanks!]
 
     Goal'
     (IMPLIES (AND (NOT (EQUAL (F1 A B C) XXX))
@@ -18549,8 +18547,7 @@ Subtopics
                   :clause-processor
                   (note-fact-clause-processor clause '(equal a a)))))
 
-    [Note:  A hint was supplied for our processing of the goal above.
-    Thanks!]
+    [Note:  A hint was supplied of the goal above.  Thanks!]
 
     We now apply the verified :CLAUSE-PROCESSOR function NOTE-FACT-CLAUSE-
     PROCESSOR to produce two new subgoals.
@@ -26006,8 +26003,7 @@ Restrictions
                   :clause-processor
                   (note-fact-clause-processor clause '(equal a a)))))
 
-    [Note:  A hint was supplied for our processing of the goal above.
-    Thanks!]
+    [Note:  A hint was supplied of the goal above.  Thanks!]
 
     We now apply the trusted :CLAUSE-PROCESSOR function NOTE-FACT-CLAUSE-
     PROCESSOR to produce two new subgoals.
@@ -50274,10 +50270,9 @@ Subtopics
                  (TRUE-LISTP (REV (CDR X))))
             (TRUE-LISTP (APPEND (REV (CDR X)) (LIST (CAR X))))).
 
-          [Note:  A hint was supplied for our processing
-          of the goal above, because of a :backtrack hint
-          that is preventing destructor elimination.
-          Thanks!]
+          [Note:  A hint was supplied for the goal above,
+          because of a :backtrack hint that is preventing
+          destructor elimination. Thanks!]
 
           We generalize this conjecture, replacing
           (REV (CDR X)) by RV.  This produces
@@ -50430,8 +50425,7 @@ Subtopics
 
           [[... output omitted here ...]]
 
-          [Note:  A hint was supplied for our processing of the goal below.
-          Thanks!]
+          [Note:  A hint was supplied of the goal below.  Thanks!]
 
           Subgoal *1/2'
           (IMPLIES (AND (CONSP X)
@@ -50760,8 +50754,7 @@ Subtopics
                              (:use cdr-cons :in-theory (enable append)))
                         :do-not '(generalize))))
 
-          [Note:  A hint was supplied for our processing of the goal above.
-          Thanks!]
+          [Note:  A hint was supplied of the goal above.  Thanks!]
 
           The :OR hint for Goal gives rise to two disjunctive branches.  Proving
           any one of these branches would suffice to prove Goal.  We explore
@@ -50777,8 +50770,7 @@ Subtopics
                         :IN-THEORY (DISABLE CAR-CONS)
                         :DO-NOT '(GENERALIZE)).
 
-          [Note:  A hint was supplied for our processing of the goal above.
-          Thanks!]
+          [Note:  A hint was supplied of the goal above.  Thanks!]
 
           Normally we would attempt to prove this formula by induction.  However,
           we prefer in this instance to focus on the original input conjecture
@@ -50797,8 +50789,7 @@ Subtopics
                         :IN-THEORY (ENABLE APPEND)
                         :DO-NOT '(GENERALIZE)).
 
-          [Note:  A hint was supplied for our processing of the goal above.
-          Thanks!]
+          [Note:  A hint was supplied of the goal above.  Thanks!]
 
           ACL2 Warning [Use] in ( THM ...):  It is unusual to :USE the formula
           of an enabled :REWRITE or :DEFINITION rule, so you may want to consider
@@ -51218,11 +51209,9 @@ Subtopics
      val2 ...). See :DOC hints and :DOC hints-and-the-waterfall; community
      book books/hints/merge-hint.lisp might also be helpful.
 
-     [Note:  A hint was supplied for our processing of the goal above.
-     Thanks!]
+     [Note:  A hint was supplied of the goal above.  Thanks!]
 
-     [Note:  A hint was supplied for our processing of the goal above.
-     Thanks!]
+     [Note:  A hint was supplied of the goal above.  Thanks!]
 
      Name the formula above *1.
 
@@ -54434,8 +54423,7 @@ Subtopics
     When applied to the goal at hand the above induction scheme produces
     two nontautological subgoals.
 
-    [Note:  A hint was supplied for our processing of the goal below.
-    Thanks!]
+    [Note:  A hint was supplied of the goal below.  Thanks!]
 
     Subgoal *1/2
     (IMPLIES (AND (NOT (ENDP X))
@@ -54515,8 +54503,7 @@ Subtopics
   empty goal stack, therefore proving the goal, as reported in the
   output, which we repeat here.
 
-    [Note:  A hint was supplied for our processing of the goal below.
-    Thanks!]
+    [Note:  A hint was supplied of the goal below.  Thanks!]
 
     Subgoal *1/2
     (IMPLIES (AND (NOT (ENDP X))
@@ -54802,8 +54789,7 @@ Subtopics
 
   Here is an edited version of the resulting log.
 
-    [Note:  A hint was supplied for our processing of the goal above.
-    Thanks!]
+    [Note:  A hint was supplied of the goal above.  Thanks!]
 
     [[1> Executing proof-builder instructions]]
 
@@ -54818,8 +54804,7 @@ Subtopics
 
     [[ ... output omitted ... ]]
 
-    [Note:  A hint was supplied for our processing of the goal below.
-    Thanks!]
+    [Note:  A hint was supplied of the goal below.  Thanks!]
 
     Subgoal *1/3''
     (IMPLIES (AND (CONSP X)
@@ -54836,8 +54821,7 @@ Subtopics
     ->: :BASH
     ***** Now entering the theorem prover *****
 
-    [Note:  A hint was supplied for our processing of the goal above.
-    Thanks!]
+    [Note:  A hint was supplied of the goal above.  Thanks!]
 
     But we have been asked to pretend that this goal is subsumed by the
     yet-to-be-proved |PROOF-BUILDER Goal|.
@@ -83332,8 +83316,7 @@ Table of Contents
                      104))
      :hints ((\"Goal\" :in-theory (enable bvecp))))
 
-    [Note:  A hint was supplied for our processing of the goal above.
-    Thanks!]
+    [Note:  A hint was supplied of the goal above.  Thanks!]
 
     By the simple :definition BVECP, the :executable-counterparts of EXPT
     and UNARY-/ and the simple :rewrite rule ASSOCIATIVITY-OF-* we reduce
@@ -124751,6 +124734,122 @@ Further information
 
   SBCL is available from [47m{https://www.sbcl.org | https://www.sbcl.org}[0m.
   You can of course go to that website to find download and
+  installation instructions for SBCL, but below is a concise summary
+  that includes build options appropriate for ACL2.
+
+  [31;1mNOTE:[0m If you already have a previous version of SBCL installed and
+  you have experience with Lisp, you might want to see
+  [sbcl-installation-brief] for abbreviated instructions to use
+  instead of those below.
+
+   1. Download an SBCL binary from
+      [47m{https://www.sbcl.org/platform-table.html |
+      https://www.sbcl.org}[0m.  That page contains a table with
+      combinations of operating systems and hardware architectures,
+      from which you have to pick the one that applies to you.  Note
+      that you need an SBCL binary in order to compile from source
+      (see below).  The file downloaded from the table will have a
+      name like [47msbcl-2.1.2-arm64-darwin-binary.tar.bz2[0m, where the
+      [47marm64-darwin[0m part depends on the chosen combination of
+      operating system and hardware architecture.
+   2. Untar the file in a directory of your choice, which will create a
+      subdirectory with a name like [47msbcl-2.1.2-arm64-darwin[0m,
+      consistently with the name of the downloaded file.
+   3. Change to that subdirectory and run
+
+          sh run-sbcl.sh
+
+      to make sure that the binary works.  On macOS, you may get a pop-up
+      saying that Apple cannot check it for malware and that it needs
+      to be updated.  In that case, open the macOS settings, go under
+      `Privacy and Security' (or `Security and Privacy', depending on
+      macOS version), and you should see something about the (SBCL)
+      executable whose execution was stopped: click the button to
+      allow it, and retry running it.  Eventually it should work.
+   4. In the same directory where you just ran SBCL, run the SBCL
+      installer.  This is done via
+
+          INSTALL_ROOT=... sh install.sh
+
+      where [47m...[0m is optional: if omitted, it defaults to [47m/usr/local[0m.  If
+      you pick something different from this default, note that the
+      installer will create three directories there, namely [47mbin[0m, [47mlib[0m,
+      and [47mshare[0m.  Thus, for examples, if you want to install SBCL in
+      your home, you may want to create a directory in your home
+      (e.g. [47msbcl[0m, or [47mapps[0m), and pass that as [47mINSTALL_ROOT[0m, instead of
+      passing your home directory.
+   5. Add that [47mbin[0m directory to your path, so that SBCL can be found.  Try
+      running
+
+          sbcl
+
+      to make sure that the installed binary works.  This time macOS
+      should not block its execution.
+   6. Download the SBCL source from
+      [47m{https://www.sbcl.org/platform-table.html |
+      https://www.sbcl.org}[0m, the same page with the table of
+      binaries.  There should be one link to the sources, above the
+      table of binaries.  The downloaded file will have a name like
+      [47msbcl-2.3.9-source.tar.bz2[0m.
+   7. Untar the file in a directory of your choice, which will create a
+      subdirectory with a name like [47msbcl-2.3.9[0m.
+   8. Change to that subdirectory, and compile SBCL via:
+
+          sh make.sh --without-immobile-space --without-immobile-code --without-compact-instance-header
+
+      These options prevents certain possible errors.  The compilation
+      process prints a lot of stuff on the screen, and should
+      succeed.
+   9. The final part of the screen output will suggest to run the tests,
+      via:
+
+          cd ./tests &amp;&amp; sh ./run-tests.sh
+
+      They will take a while, but should eventually succeed.
+  10. The final part of the screen output will also suggest to build the
+      documentation, via
+
+          cd ./doc/manual &amp;&amp; make
+
+      --- this may fail, but that does not seem to matter.
+  11. Finally, install the just compiled SBCL in the same way as the
+      downloaded binary above, via:
+
+          INSTALL_ROOT=... sh install.sh
+
+      If you use the same [47m...[0m as above (or use the default if you did
+      before), the new installation will replace the old one, and
+      invoking SBCL (which will still be on the path) will run the
+      newly compiled version.
+  12. If a new version of the SBCL sources becomes available, you can
+      repeat the procedure above to compile and install it, using the
+      previously installed binary.
+  13. As an alternative to installing the binary compiled from the sources,
+      you could create a script, in your executable path, containing
+
+          #!/bin/sh
+          <dir>/run-sbcl.sh --dynamic-space-size 2000 \"$@\"
+
+      where [47m<dir>[0m is the untarred directory described above, and where the
+      dynamic space size option is just an example of how one can
+      pass options to the running SBCL, but it is not necessarily
+      needed.  If you need to pass options like this, you can also do
+      that if you follow the installation instructions: in that case,
+      the script should contain just [47msbcl[0m instead of
+      [47m<dir>/run-sbcl.sh[0m.")
+ (SBCL-INSTALLATION-BRIEF
+  (BUILDING-ACL2)
+  "Installing Steel Bank Common Lisp (SBCL)
+
+  The topic [sbcl-installation] contains full installation instructions
+  for SBCL.  The present topic contains abbreviated instructions that
+  have been used successfully over time; these may be suitable for
+  those who already have a previous version of SBCL installed and
+  have experience with Lisp.  If the instructions below are not
+  sufficient for you, please see [sbcl-installation] instead.
+
+  SBCL is available from [47m{https://www.sbcl.org | https://www.sbcl.org}[0m.
+  You can of course go to that website to find download and
   installation instructions for SBCL, but here is a concise summary
   that includes build options appropriate for ACL2.
 
@@ -139729,8 +139828,7 @@ Subtopics
              (O< (ACL2-COUNT (CDDR X))
                  (ACL2-COUNT X))).
 
-    [Note:  A hint was supplied for our processing of the goal above.
-    Thanks!]
+    [Note:  A hint was supplied of the goal above.  Thanks!]
 
     We augment the goal with the hypothesis provided by the :USE hint.
     The hypothesis can be obtained from F.  We are left with the following

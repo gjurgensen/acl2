@@ -126049,6 +126049,125 @@ work on <tt>(q x)</tt>.</p>
 
 (defxdoc sbcl-installation
 
+; See sbcl-installation-brief for a comment about former material in
+; installation/requirements.html.
+
+  :parents (building-acl2)
+  :short "Installing Steel Bank Common Lisp (SBCL)"
+  :long "<p>SBCL is available from <tt><a
+ href='https://www.sbcl.org'>https://www.sbcl.org</a></tt>.  You can of course
+ go to that website to find download and installation instructions for SBCL,
+ but below is a concise summary that includes build options appropriate for
+ ACL2.</p>
+
+ <p><b>NOTE:</b> If you already have a previous version of SBCL installed and
+ you have experience with Lisp, you might want to see @(see
+ sbcl-installation-brief) for abbreviated instructions to use instead of those
+ below.</p>
+
+ <ol>
+
+ <li>Download an SBCL binary from
+ <tt><a href='https://www.sbcl.org'>https://www.sbcl.org/platform-table.html</a></tt>.
+ That page contains a table
+ with  combinations of operating systems and hardware architectures,
+ from which you have to pick the one that applies to you.
+ Note that you need an SBCL binary
+ in order to compile from source (see below).
+ The file downloaded from the table will have a name like
+ @('sbcl-2.1.2-arm64-darwin-binary.tar.bz2'),
+ where the @('arm64-darwin') part depends on
+ the chosen combination of operating system and hardware architecture.</li>
+
+ <li>Untar the file in a directory of your choice,
+ which will create a subdirectory with a name like
+ @('sbcl-2.1.2-arm64-darwin'),
+ consistently with the name of the downloaded file.</li>
+
+ <li>Change to that subdirectory and run
+ @({sh run-sbcl.sh})
+ to make sure that the binary works.
+ On macOS, you may get a pop-up saying that
+ Apple cannot check it for malware and that it needs to be updated.
+ In that case, open the macOS settings,
+ go under `Privacy and Security'
+ (or `Security and Privacy', depending on macOS version),
+ and you should see something about the (SBCL) executable
+ whose execution was stopped:
+ click the button to allow it, and retry running it.
+ Eventually it should work.</li>
+
+ <li>In the same directory where you just ran SBCL, run the SBCL installer.
+ This is done via
+ @({INSTALL_ROOT=... sh install.sh})
+ where @('...') is optional: if omitted, it defaults to @('/usr/local').
+ If you pick something different from this default,
+ note that the installer will create three directories there,
+ namely @('bin'), @('lib'), and @('share').
+ Thus, for examples, if you want to install SBCL in your home,
+ you may want to create a directory in your home (e.g. @('sbcl'), or @('apps')),
+ and pass that as @('INSTALL_ROOT'),
+ instead of passing your home directory.</li>
+
+ <li>Add that @('bin') directory to your path, so that SBCL can be found.
+ Try running @({sbcl}) to make sure that the installed binary works.
+ This time macOS should not block its execution.</li>
+
+ <li>Download the SBCL source from
+ <tt><a href='https://www.sbcl.org'>https://www.sbcl.org/platform-table.html</a></tt>,
+ the same page with the table of binaries.
+ There should be one link to the sources, above the table of binaries.
+ The downloaded file will have a name like @('sbcl-2.3.9-source.tar.bz2').</li>
+
+ <li>Untar the file in a directory of your choice,
+ which will create a subdirectory with a name like @('sbcl-2.3.9').</li>
+
+ <li>Change to that subdirectory, and compile SBCL via:
+ @({sh make.sh --without-immobile-space --without-immobile-code --without-compact-instance-header})
+ These options prevents certain possible errors.
+ The compilation process prints a lot of stuff on the screen,
+ and should succeed.</li>
+
+ <li>The final part of the screen output will suggest
+ to run the tests, via:
+ @({cd ./tests &amp;&amp; sh ./run-tests.sh})
+ They will take a while, but should eventually succeed.</li>
+
+ <li>The final part of the screen output will also suggest
+ to build the documentation, via @({cd ./doc/manual &amp;&amp; make})
+ &mdash; this may fail, but that does not seem to matter.</li>
+
+ <li>Finally, install the just compiled SBCL
+ in the same way as the downloaded binary above, via:
+ @({INSTALL_ROOT=... sh install.sh})
+ If you use the same @('...') as above (or use the default if you did before),
+ the new installation will replace the old one,
+ and invoking SBCL (which will still be on the path)
+ will run the newly compiled version.</li>
+
+ <li>If a new version of the SBCL sources becomes available,
+ you can repeat the procedure above to compile and install it,
+ using the previously installed binary.</li>
+
+ <li>As an alternative to installing the binary compiled from the sources,
+ you could create a script, in your executable path, containing
+ @({
+ #!/bin/sh
+ <dir>/run-sbcl.sh --dynamic-space-size 2000 \"$@\"
+ })
+ where @('<dir>') is the untarred directory described above,
+ and where the dynamic space size option is just an example
+ of how one can pass options to the running SBCL,
+ but it is not necessarily needed.
+ If you need to pass options like this,
+ you can also do that if you follow the installation instructions:
+ in that case, the script should contain just @('sbcl')
+ instead of @('<dir>/run-sbcl.sh').</li>
+
+ </ol>")
+
+(defxdoc sbcl-installation-brief
+
 ; This :DOC topic replaces what was in the section on "Obtaining SBCL" in ACL2
 ; file installation/requirements.html.  That material contained some
 ; information that is probably now obsolete.  Here is that material, in case
@@ -126129,7 +126248,14 @@ work on <tt>(q x)</tt>.</p>
 
   :parents (building-acl2)
   :short "Installing Steel Bank Common Lisp (SBCL)"
-  :long "<p>SBCL is available from <tt><a
+  :long "<p>The topic @(see sbcl-installation) contains full installation
+ instructions for SBCL.  The present topic contains abbreviated instructions
+ that have been used successfully over time; these may be suitable for those
+ who already have a previous version of SBCL installed and have experience with
+ Lisp.  If the instructions below are not sufficient for you, please see @(see
+ sbcl-installation) instead.</p>
+
+ <p>SBCL is available from <tt><a
  href='https://www.sbcl.org'>https://www.sbcl.org</a></tt>.  You can of course
  go to that website to find download and installation instructions for SBCL,
  but here is a concise summary that includes build options appropriate for
@@ -126137,102 +126263,44 @@ work on <tt>(q x)</tt>.</p>
 
  <ol>
 
- <li>Download an SBCL binary from
- <tt><a href='https://www.sbcl.org'>https://www.sbcl.org/platform-table.html</a></tt>.
- That page contains a table
- with  combinations of operating systems and hardware architectures,
- from which you have to pick the one that applies to you.
- Note that you need an SBCL binary
- in order to compile from source (see below).
- The file downloaded from the table will have a name like
- @('sbcl-2.1.2-arm64-darwin-binary.tar.bz2'),
- where the @('arm64-darwin') part depends on
- the chosen combination of operating system and hardware architecture.</li>
+ <li>Download SBCL from <tt><a
+ href='https://www.sbcl.org'>https://www.sbcl.org</a></tt>.  A shortcut may be
+ to follow the &ldquo;<b>Source</b>&rdquo; link near the top of the page,
+ <tt><a
+ href='https://www.sbcl.org/platform-table.html'>https://www.sbcl.org/platform-table.html</a></tt>.</li>
 
- <li>Untar the file in a directory of your choice,
- which will create a subdirectory with a name like
- @('sbcl-2.1.2-arm64-darwin'),
- consistently with the name of the downloaded file.</li>
+ <li>The downloaded file will have a name like
+ &ldquo;@('sbcl-2.2.10-source.tar.bz2')&rdquo;, where &ldquo;@('2.2.10')&rdquo;
+ is replaced by the current SBCL version.  Change to a directory just above
+ where you want SBCL to reside and move the downloaded file there.</li>
 
- <li>Change to that subdirectory and run
- @{(sh run-sbcl.sh)}
- to make sure that the binary works.
- On macOS, you may get a pop-up saying that
- Apple cannot check it for malware and that it needs to be updated.
- In that case, open the macOS settings,
- go under `Privacy and Security'
- (or `Security and Privacy', depending on macOS version),
- and you should see something about the (SBCL) executable
- whose execution was stopped:
- click the button to allow it, and retry running it.
- Eventually it should work.</li>
+ <li>Extract the downloaded file (where it now resides), for example as follows
+ (again, where &ldquo;@('2.2.10')&rdquo; is replaced by the current SBCL
+ version number).
 
- <li>In the same directory where you just ran SBCL, run the SBCL installer.
- This is done via
- @{(INSTALL_ROOT=... sh install.sh)},
- where @('...') is optional: if omitted, it defaults to @('/usr/local').
- If you pick something different from this default,
- note that the installer will create three directories there,
- namely @('bin'), @('lib'), and @('share').
- Thus, for examples, if you want to install SBCL in your home,
- you may want to create a directory in your home (e.g. @('sbcl'), or @('apps')),
- and pass that as @('INSTALL_ROOT'),
- instead of passing your home directory.</li>
+ @({
+ tar xfj sbcl-2.2.10-source.tar.bz2
+ })</li>
 
- <li>Add that @('bin') directory to your path, so that SBCL can be found.
- Try running @{(sbcl)} to make sure that the installed binary works.
- This time macOS should not block its execution.</li>
+ <li>Change to the new directory and build SBCL with options appropriate for
+ ACL2, as follows (again, replacing &ldquo;@('2.2.10')&rdquo; as appropriate).
 
- <li>Download the SBCL source from
- <tt><a href='https://www.sbcl.org'>https://www.sbcl.org/platform-table.html</a></tt>,
- the same page with the table of binaries.
- There should be one link to the sources, above the table of binaries.
- The downloaded file will have a name like @('sbcl-2.3.9-source.tar.bz2').</li>
+ @({
+ cd sbcl-2.2.10
+ sh make.sh --without-immobile-space --without-immobile-code --without-compact-instance-header
+ })</li>
 
- <li>Untar the file in a directory of your choice,
- which will create a subdirectory with a name like @('sbcl-2.3.9').</li>
+ <li>Create a script file in a directory that is on your path (or, if you are
+ updating your sbcl, just replace your current sbcl script; you can find its
+ location by executing the command, &ldquo;@('which sbcl')&rdquo;).  If you are
+ in directory @('<DIR>') from the preceding step (e.g., a path ending in
+ &ldquo;@('sbcl-2.2.10')&rdquo;), then that script file should contain the
+ following lines.
 
- <li>Change to that subdirectory, and compile SBCL via
- @{(sh make.sh --without-immobile-space --without-immobile-code --without-compact-instance-header)}.
- These options prevents certain possible errors.
- The compilation process prints a lot of stuff on the screen,
- and should succeed.</li>
-
- <li>The final part of the screen output will suggest
- to run the tests, via
- @{(cd ./tests &amp;&amp; sh ./run-tests.sh)}.
- They will take a while, but should eventually succeed.</li>
-
- <li>The final part of the screen output will also suggest
- to build the documentation, via @{(cd ./doc/manual &amp;&amp; make)},
- which may fail, but that does not seem to matter.</li>
-
- <li>Finally, install the just compiled SBCL
- in the same way as the downloaded binary above, via
- @{(INSTALL_ROOT=... sh install.sh)}.
- If you use the same @('...') as above (or use the default if you did before),
- the new installation will replace the old one,
- and invoking SBCL (which will still be on the path)
- will run the newly compiled version.</li>
-
- <li>If a new version of the SBCL sources becomes available,
- you can repeat the procedure above to compile and install it,
- using the previously installed binary.</li>
-
- <li>As an alternative to installing the binary compiled from the sources,
- you could create a script, in your executable path, containing
- @{(
+ @({
  #!/bin/sh
- &lt;dir&gt;/run-sbcl.sh --dynamic-space-size 2000 \"$@\"
- )}
- where @('&lt;dir&gt;') is the untarred directory described above,
- and where the dynamic space size option is just an example
- of how one can pass options to the running SBCL,
- but it is not necessarily needed.
- If you need to pass options like this,
- you can also do that if you follow the installation instructions:
- in that case, the script should contain just @('sbcl')
- instead of @('&lt;dir&gt;/run-sbcl.sh').</li>
+ <DIR>/run-sbcl.sh --dynamic-space-size 2000 \"$@\"
+ })</li>
 
  </ol>")
 
