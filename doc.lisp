@@ -100547,6 +100547,10 @@ Changes to Existing Features
   It is no longer illegal to read a [stobj] when in a [wormhole] state,
   for example, when inside [break-rewrite].
 
+  In [gag-mode] (which is on by default), when the prover notes that a
+  forcing round is pending, it now lists the names of the rules that
+  are responsible.
+
 
 New Features
 

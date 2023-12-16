@@ -102861,7 +102861,7 @@ it."
 ; conversion of fmt, (er soft ...), one-way-unify, and genvar, and related
 ; utilities to guard-verified :logic mode.
 
-;   74 ; Changes to Existing Features
+;   75 ; Changes to Existing Features
 ;   31 ; New Features
 ;    8 ; Heuristic and Efficiency Improvements
 ;   33 ; Bug Fixes
@@ -103772,6 +103772,10 @@ it."
 
  <p>It is no longer illegal to read a @(see stobj) when in a @(see wormhole)
  state, for example, when inside @(see break-rewrite).</p>
+
+ <p>In @(see gag-mode) (which is on by default), when the prover notes that a
+ forcing round is pending, it now lists the names of the rules that are
+ responsible.</p>
 
  <h3>New Features</h3>
 
