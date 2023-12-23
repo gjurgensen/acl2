@@ -27554,9 +27554,11 @@ Hash-table Types
   [47mtest[0m is [47m[hons-equal][0m then there is no restriction on keys, but each
   proposed key is [47m[hons][0med in raw Lisp before it is used (whether for
   access or update) and before it is put into the underlying hash
-  table.  The [47msize[0m, if supplied and not [47mnil[0m, is a positive integer
-  that may be used by the host Lisp as a hint for how to size the
-  associated hash table in raw Lisp.
+  table.  The [47msize[0m defaults to [47mnil[0m, and if supplied, it must be
+  either [47mnil[0m or a non-negative integer, or else a defined constant
+  evaluating to [47mnil[0m or a non-negative integer.  When the value is a
+  (non-negative) integer, it may be used by the host Lisp as a hint
+  for how to size the associated hash table in raw Lisp.
 
   For a hash-table field, the [47m:initially[0m keyword specifies a default
   rather than an initial value: it provides the value (default [47mnil[0m)
@@ -100551,6 +100553,12 @@ Changes to Existing Features
   forcing round is pending, it now lists the names of the rules that
   are responsible.
 
+  A hash-table or stobj-table field of a [stobj] may now specify a size
+  that is a constant symbol with a suitable value.  See [defstobj]
+  and see [stobj-table].  The meaning is the same as if the size had
+  been given as the value of that constant.  Thanks to Warren Hunt
+  for requesting this enhancement.
+
 
 New Features
 
@@ -109199,7 +109207,61 @@ Subtopics
   [safe-mode] (e.g., during macroexpansion), because there is no
   guarantee that evaluation of the raw Lisp code will be ``safe''.
 
-  See [safe-mode-cheat-sheet] for possible workarounds.")
+  The constant [47m*initial-program-fns-with-raw-code*[0m provides the initial
+  value of [47m(@ program-fns-with-raw-code)[0m.  The value of that constant
+  is the list of ACL2 source functions that have special raw-Lisp
+  code.  It is important that these [program]-mode functions not be
+  converted to [logic] mode.  Otherwise, one could arrange to prove a
+  contradiction.  To see how, consider the following example, which
+  shows how one might prove that a call of a program-only function,
+  [47mp-o[0m, returns two different values on the same input (an obvious
+  contradiction).
+
+    (defun p-o (x)
+      (declare (xargs :guard t))
+      (er hard? 'p-o
+          \"Attempted logical evaluatin of ~x0.\"
+          (list 'p-0 x)))
+
+    :q ; exit the ACL2 read-eval-print loop
+
+    (defun p-o (x)
+      (declare (xargs :guard t))
+      (atom x))
+
+    (lp) ; re-enter the ACL2 read-eval-print loop
+
+    (defthm p-0-nil-is-nil
+      (equal (p-o nil) nil)
+      :hints ((\"Goal\" :in-theory (disable (:e p-o)))))
+
+    (defthm p-o-nil-is-t
+      (equal (p-o nil) t))
+
+  In the ACL2 source one often finds a definition marked with readtime
+  conditionals, such as the following.
+
+    (defun p-o (x)
+      (declare (xargs :guard t))
+      #-acl2-loop-only
+      (atom x)
+      #+acl2-loop-only
+      (er hard? 'p-o
+          \"Attempted logical evaluatin of ~x0.\"
+          (list 'p-0 x)))
+
+  The [47macl2-loop-only[0m annotations arrange that when ACL2 is built, one
+  gets the effect described above, where the [47m#+acl2-loop-only[0m code is
+  used in the definition known to ACL2 and the [47m#-acl2-loop-only[0m code
+  is used in the definition known to raw Lisp.  All function symbols
+  with such definitions are in the list mentioned above, that is, the
+  value of the constant [47m*initial-program-fns-with-raw-code*[0m.
+
+  In summary: The contradiction proved above explains the restriction
+  that [47m[logic][0m-mode functions may not call [program]-mode functions.
+
+  See [safe-mode-cheat-sheet] for possible workarounds, which however
+  may compromise soundness.")
  (PROGRAM-WRAPPER
   (PROGRAM PROGRAMMING ADVANCED-FEATURES)
   "Avoiding expensive [guard] checks using [program]-mode functions
@@ -124142,7 +124204,9 @@ Subtopics
     (See :DOC set-iprint to be able to see elided values in this message.)
 
   When the term is a call of [47mev-w[0m, an unsafe hack allowing such calls
-  is as follows.  Warning: This may result in unsoundness!
+  is as follows.  Warning: This may result in unsoundness!  (On a
+  related note: For discussion about unsoundness when converting such
+  [program]-mode functions to [logic] mode, see [program-only].
 
     (value :q)
     (setf (symbol-function (*1*-symbol 'ev-w))
@@ -134421,14 +134485,17 @@ Subtopics
   See [stobj] for basic background on stobjs, and see [defstobj] for
   detailed documentation on the syntax and semantics of stobjs,
   including fields specified with [47m:type (stobj-table)[0m or [47m:type
-  (stobj-table SIZE)[0m for some natural number, [47mSIZE[0m.  We call such
-  fields ``stobj-table fields''; this documentation topic explains
-  them, and it assumes familiarity with stobj fields of stobjs as
-  documented in [nested-stobjs] --- especially, the use of
-  [47m[stobj-let][0m to read and write such fields.  Note that the
-  documentation for [defstobj] shows the default names for accessors
-  and updaters; for a stobj-table field, [47mTBL[0m, these are [47mTBL-GET[0m and
-  [47mTBL-PUT[0m, respectively.
+  (stobj-table SIZE)[0m.  In the latter case, [47mSIZE[0m must either be a
+  natural number or a defined constant whose value is a natural
+  number.  We call such fields --- that is, stobj fields specified
+  with [47m:type (stobj-table)[0m or [47m:type (stobj-table SIZE)[0m ---
+  ``stobj-table fields''; this documentation topic explains them, and
+  it assumes familiarity with stobj fields of stobjs as documented in
+  [nested-stobjs] --- especially, the use of [47m[stobj-let][0m to read and
+  write such fields.  Note that the documentation for [defstobj]
+  shows the default names for accessors and updaters; for a
+  stobj-table field, [47mTBL[0m, these are [47mTBL-GET[0m and [47mTBL-PUT[0m,
+  respectively.
 
   For examples of [47mstobj-let[0m usage for stobj-tables, see
   [community-book] [47mbooks/system/tests/stobj-table-tests-input.lsp[0m.
@@ -150801,17 +150868,12 @@ Subtopics
   "Permit [47m[verify-termination][0m for functions with raw Lisp code.
 
   By default, it is not permitted to verify termination (see
-  [VERIFY-TERMINATION]) for functions with raw Lisp code.  (Technical
-  note: With sufficient effort this restriction could perhaps be
-  lifted, but that would involve significant modification to the ACL2
-  sources, in particular to handle properly code generation for
-  executable-counterparts (see [evaluation]) in such cases in source
-  function [47moneify-cltl-code[0m.)
-
-  However, in some cases it may be harmless to remove this restriction.
-  That can be done as follows.  Note that an active trust tag is
-  required: in principle you can render ACL2 unsound with this
-  action!
+  [VERIFY-TERMINATION]) for functions with raw Lisp code.  This
+  restriction is important in general for preserving soundness; see
+  [program-only].  However, in some cases it may be harmless to
+  remove this restriction.  That can be done as follows.  Note that
+  an active trust tag is required: in principle you can render ACL2
+  unsound with this action!
 
     (defttag t)
     (remove-untouchable verify-termination-on-raw-program-okp nil)
