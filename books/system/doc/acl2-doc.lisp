@@ -24416,9 +24416,11 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
  eqlablep), respectively; and if @('test') is @(tsee HONS-EQUAL) then there is
  no restriction on keys, but each proposed key is @(tsee hons)ed in raw Lisp
  before it is used (whether for access or update) and before it is put into the
- underlying hash table.  The @('size'), if supplied and not @('nil'), is a
- positive integer that may be used by the host Lisp as a hint for how to size
- the associated hash table in raw Lisp.</p>
+ underlying hash table.  The @('size') defaults to @('nil'), and if supplied,
+ it must be either @('nil') or a non-negative integer, or else a defined
+ constant evaluating to @('nil') or a non-negative integer.  When the value is
+ a (non-negative) integer, it may be used by the host Lisp as a hint for how to
+ size the associated hash table in raw Lisp.</p>
 
  <p>For a hash-table field, the @(':initially') keyword specifies a default
  rather than an initial value: it provides the value (default @('nil'))
@@ -102861,7 +102863,7 @@ it."
 ; conversion of fmt, (er soft ...), one-way-unify, and genvar, and related
 ; utilities to guard-verified :logic mode.
 
-;   74 ; Changes to Existing Features
+;   76 ; Changes to Existing Features
 ;   31 ; New Features
 ;    8 ; Heuristic and Efficiency Improvements
 ;   33 ; Bug Fixes
@@ -103772,6 +103774,16 @@ it."
 
  <p>It is no longer illegal to read a @(see stobj) when in a @(see wormhole)
  state, for example, when inside @(see break-rewrite).</p>
+
+ <p>In @(see gag-mode) (which is on by default), when the prover notes that a
+ forcing round is pending, it now lists the names of the rules that are
+ responsible.</p>
+
+ <p>A hash-table or stobj-table field of a @(see stobj) may now specify a size
+ that is a constant symbol with a suitable value.  See @(see defstobj) and see
+ @(see stobj-table).  The meaning is the same as if the size had been given as
+ the value of that constant.  Thanks to Warren Hunt for requesting this
+ enhancement.</p>
 
  <h3>New Features</h3>
 
@@ -110305,7 +110317,64 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  because there is no guarantee that evaluation of the raw Lisp code will be
  ``safe''.</p>
 
- <p>See @(see safe-mode-cheat-sheet) for possible workarounds.</p>")
+ <p>The constant @('*initial-program-fns-with-raw-code*') provides the initial
+ value of @('(@ program-fns-with-raw-code)').  The value of that constant is
+ the list of ACL2 source functions that have special raw-Lisp code.  It is
+ important that these @(see program)-mode functions not be converted to @(see
+ logic) mode.  Otherwise, one could arrange to prove a contradiction.  To see
+ how, consider the following example, which shows how one might prove that a
+ call of a program-only function, @('p-o'), returns two different values on the
+ same input (an obvious contradiction).</p>
+
+ @({
+ (defun p-o (x)
+   (declare (xargs :guard t))
+   (er hard? 'p-o
+       \"Attempted logical evaluatin of ~x0.\"
+       (list 'p-0 x)))
+
+ :q ; exit the ACL2 read-eval-print loop
+
+ (defun p-o (x)
+   (declare (xargs :guard t))
+   (atom x))
+
+ (lp) ; re-enter the ACL2 read-eval-print loop
+
+ (defthm p-0-nil-is-nil
+   (equal (p-o nil) nil)
+   :hints ((\"Goal\" :in-theory (disable (:e p-o)))))
+
+ (defthm p-o-nil-is-t
+   (equal (p-o nil) t))
+ })
+
+ <p>In the ACL2 source one often finds a definition marked with readtime
+ conditionals, such as the following.</p>
+
+ @({
+ (defun p-o (x)
+   (declare (xargs :guard t))
+   #-acl2-loop-only
+   (atom x)
+   #+acl2-loop-only
+   (er hard? 'p-o
+       \"Attempted logical evaluatin of ~x0.\"
+       (list 'p-0 x)))
+ })
+
+ <p>The @('acl2-loop-only') annotations arrange that when ACL2 is built, one
+ gets the effect described above, where the @('#+acl2-loop-only') code is used
+ in the definition known to ACL2 and the @('#-acl2-loop-only') code is used in
+ the definition known to raw Lisp.  All function symbols with such definitions
+ are in the list mentioned above, that is, the value of the constant
+ @('*initial-program-fns-with-raw-code*').</p>
+
+ <p>In summary: The contradiction proved above explains the restriction that
+ @(tsee logic)-mode functions may not call @(see program)-mode functions.</p>
+
+ <p>See @(see safe-mode-cheat-sheet) for possible workarounds, which however
+ may compromise soundness.</p>")
 
 (defxdoc program-wrapper
   :parents (program programming advanced-features)
@@ -125423,8 +125492,10 @@ work on <tt>(q x)</tt>.</p>
  (See :DOC set-iprint to be able to see elided values in this message.)
  })
 
- <p>When the term is a call of @('ev-w'), an unsafe hack allowing such calls
- is as follows.  Warning: This may result in unsoundness!</p>
+ <p>When the term is a call of @('ev-w'), an unsafe hack allowing such calls is
+ as follows.  Warning: This may result in unsoundness!  (On a related note: For
+ discussion about unsoundness when converting such @(see program)-mode
+ functions to @(see logic) mode, see @(see program-only).</p>
 
  @({
  (value :q)
@@ -136101,13 +136172,16 @@ work on <tt>(q x)</tt>.</p>
   :long "<p>See @(see stobj) for basic background on stobjs, and see @(see
  defstobj) for detailed documentation on the syntax and semantics of stobjs,
  including fields specified with @(':type (stobj-table)') or
- @(':type (stobj-table SIZE)') for some natural number, @('SIZE').  We call
- such fields ``stobj-table fields''; this documentation topic explains them,
- and it assumes familiarity with stobj fields of stobjs as documented in @(see
- nested-stobjs) &mdash; especially, the use of @(tsee stobj-let) to read and
- write such fields.  Note that the documentation for @(see defstobj) shows the
- default names for accessors and updaters; for a stobj-table field, @('TBL'),
- these are @('TBL-GET') and @('TBL-PUT'), respectively.</p>
+ @(':type (stobj-table SIZE)').  In the latter case, @('SIZE') must either be a
+ natural number or a defined constant whose value is a natural number.  We call
+ such fields &mdash; that is, stobj fields specified with
+ @(':type (stobj-table)') or @(':type (stobj-table SIZE)') &mdash;
+ ``stobj-table fields''; this documentation topic explains them, and it assumes
+ familiarity with stobj fields of stobjs as documented in @(see nested-stobjs)
+ &mdash; especially, the use of @(tsee stobj-let) to read and write such
+ fields.  Note that the documentation for @(see defstobj) shows the default
+ names for accessors and updaters; for a stobj-table field, @('TBL'), these are
+ @('TBL-GET') and @('TBL-PUT'), respectively.</p>
 
  <p>For examples of @('stobj-let') usage for stobj-tables, see @(see
  community-book) @('books/system/tests/stobj-table-tests-input.lsp').</p>
@@ -152578,15 +152652,10 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   :short "Permit @(tsee verify-termination) for functions with raw Lisp code."
   :long "<p>By default, it is not permitted to <see topic='@(url
  verify-termination)'>verify termination</see> for functions with raw Lisp
- code.  (Technical note: With sufficient effort this restriction could perhaps
- be lifted, but that would involve significant modification to the ACL2
- sources, in particular to handle properly code generation for
- executable-counterparts (see @(see evaluation)) in such cases in source
- function @('oneify-cltl-code').)</p>
-
- <p>However, in some cases it may be harmless to remove this restriction.  That
- can be done as follows.  Note that an active trust tag is required: in
- principle you can render ACL2 unsound with this action!</p>
+ code.  This restriction is important in general for preserving soundness; see
+ @(see program-only).  However, in some cases it may be harmless to remove this
+ restriction.  That can be done as follows.  Note that an active trust tag is
+ required: in principle you can render ACL2 unsound with this action!</p>
 
  @({
  (defttag t)
