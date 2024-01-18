@@ -6593,6 +6593,10 @@ On proving termination for definitions:
     * See [ordinals] for a discussion of ordinals in ACL2.
     * See [ruler-extenders] for a control on ACL2's termination and
       induction analyses.
+    * See [induction-coarse-v-fine-grained] for a discussion of how a
+      well-chosen setting for [ruler-extenders] can improve an
+      induction scheme, especiall for a function containing [47m[let][0m and
+      [47m[let*][0m bindings that contain conditional recursive calls.
     * See [set-well-founded-relation] to set the default well-founded
       relation for termination analysis.
     * See [ACL2-sedan] for a related tool that provides extra automation
@@ -11685,8 +11689,7 @@ Subtopics
     ACL2 !>(thm (equal (if a b c) (if (not a) c b))
                 :hints ((\"Goal\" :bdd (:vars nil)))) ; Prove with BDDs
 
-    [Note:  A hint was supplied for our processing of the goal above.
-    Thanks!]
+    [Note:  A hint was supplied of the goal above.  Thanks!]
 
     But simplification with BDDs (7 nodes) reduces this to T, using the
     :definitions EQUAL and NOT.
@@ -11770,8 +11773,7 @@ Subtopics
             :hints ((\"Goal\" :bdd (:vars nil)
                      :in-theory (disable v-not-cons))))
 
-    [Note:  A hint was supplied for our processing of the goal above.
-    Thanks!]
+    [Note:  A hint was supplied of the goal above.  Thanks!]
 
     ACL2 Error in ( THM ...):  Attempted to create V-NOT node during BDD
     processing with an argument that is a call of a bdd-constructor,
@@ -11833,8 +11835,7 @@ Subtopics
                      ;; This time we do not specify a variable order.
                      (:vars nil))))
 
-    [Note:  A hint was supplied for our processing of the goal above.
-    Thanks!]
+    [Note:  A hint was supplied of the goal above.  Thanks!]
 
     ACL2 Error in ( THM ...):  The :BDD hint for the current goal has
     successfully simplified this goal, but has failed to prove it.
@@ -15794,6 +15795,9 @@ Subtopics
       Installing Clozure Common Lisp (CCL)
 
   [Sbcl-installation]
+      Installing Steel Bank Common Lisp (SBCL)
+
+  [Sbcl-installation-brief]
       Installing Steel Bank Common Lisp (SBCL)")
  (BUILT-IN-CLAUSE
   (RULE-CLASSES)
@@ -16422,13 +16426,11 @@ Subtopics
   rewriting of literals is inhibited, as explained below.  Here is
   the first part of the output for that limit of 10.
 
-    [Note:  A hint was supplied for our processing of the goal above.
-    Thanks!]
+    [Note:  A hint was supplied of the goal above.  Thanks!]
 
     This simplifies, using trivial observations, to
 
-    [Note:  A hint was supplied for our processing of the goal below.
-    Thanks!]
+    [Note:  A hint was supplied of the goal below.  Thanks!]
 
     Goal'
     (IMPLIES (AND (NOT (EQUAL (F1 A B C) XXX))
@@ -16787,12 +16789,15 @@ configure-ccl.lisp
     git clone https://github.com/Clozure/ccl
 
   Next fetch and extract a development snapshot in the new [47mccl[0m
-  directory.  The version below is current as of this writing (April,
-  2021), but see {https://github.com/Clozure/ccl/releases/ |
-  https://github.com/Clozure/ccl/releases/} for the latest snapshots.
+  directory.  [31;1mWARNING.[0m The version below is current as of this
+  writing (November, 2023), but see
+  {https://github.com/Clozure/ccl/releases/ |
+  https://github.com/Clozure/ccl/releases/} for the latest snapshots;
+  in particular, [47m\"v1.12.2\"[0m below could change, e.g., to [47m\"v1.12.3\"[0m or
+  [47m\"v1.13\"[0m.
 
     cd ccl
-    wget https://github.com/Clozure/ccl/releases/download/v1.12/linuxx86.tar.gz
+    wget https://github.com/Clozure/ccl/releases/download/v1.12.2/linuxx86.tar.gz
     tar xfz linuxx86.tar.gz
 
   Rebuild and quit, twice.
@@ -16851,12 +16856,15 @@ configure-ccl.lisp
     mv temp 2017-12-07-6be8298fe5
     cd 2017-12-07-6be8298fe5/ccl
 
-  Next fetch and extract a development snapshot.  The version below is
-  current as of this writing (December, 2021), but see
+  Next fetch and extract a development snapshot in the new [47mccl[0m
+  directory.  [31;1mWARNING.[0m The version below is current as of this
+  writing (November, 2023), but see
   {https://github.com/Clozure/ccl/releases/ |
-  https://github.com/Clozure/ccl/releases/} for the latest snapshots.
+  https://github.com/Clozure/ccl/releases/} for the latest snapshots;
+  in particular, [47m\"v1.12.2\"[0m below could change, e.g., to [47m\"v1.12.3\"[0m or
+  [47m\"v1.13\"[0m.
 
-    wget https://github.com/Clozure/ccl/releases/download/v1.12.1/linuxx86.tar.gz
+    wget https://github.com/Clozure/ccl/releases/download/v1.12.2/linuxx86.tar.gz
     tar xfz linuxx86.tar.gz
 
   Rebuild and quit, twice.
@@ -16899,12 +16907,15 @@ configure-ccl.lisp
     git clone https://github.com/Clozure/ccl
 
   Next fetch and extract a development snapshot in the new [47mccl[0m
-  directory.  The version below is current as of this writing (April,
-  2021), but see {https://github.com/Clozure/ccl/releases/ |
-  https://github.com/Clozure/ccl/releases/} for the latest snapshots.
+  directory.  [31;1mWARNING.[0m The version below is current as of this
+  writing (November, 2023), but see
+  {https://github.com/Clozure/ccl/releases/ |
+  https://github.com/Clozure/ccl/releases/} for the latest snapshots;
+  in particular, [47m\"v1.12.2\"[0m below could change, e.g., to [47m\"v1.12.3\"[0m or
+  [47m\"v1.13\"[0m.
 
     cd ccl
-    curl -O -L https://github.com/Clozure/ccl/releases/download/v1.12/darwinx86.tar.gz
+    curl -O -L https://github.com/Clozure/ccl/releases/download/v1.12.2/darwinx86.tar.gz
     tar xfz darwinx86.tar.gz
 
   Rebuild the lisp kernel by hand before trying to rebuild the lisp.
@@ -16966,12 +16977,15 @@ configure-ccl.lisp
     mv temp 2017-12-07-6be8298fe5
     cd 2017-12-07-6be8298fe5/ccl
 
-  Next fetch and extract a development snapshot.  The version below is
-  current as of this writing (December, 2021), but see
+  Next fetch and extract a development snapshot in the new [47mccl[0m
+  directory.  [31;1mWARNING.[0m The version below is current as of this
+  writing (November, 2023), but see
   {https://github.com/Clozure/ccl/releases/ |
-  https://github.com/Clozure/ccl/releases/} for the latest snapshots.
+  https://github.com/Clozure/ccl/releases/} for the latest snapshots;
+  in particular, [47m\"v1.12.2\"[0m below could change, e.g., to [47m\"v1.12.3\"[0m or
+  [47m\"v1.13\"[0m.
 
-    curl -L -O https://github.com/Clozure/ccl/releases/download/v1.12.1/darwinx86.tar.gz
+    curl -L -O https://github.com/Clozure/ccl/releases/download/v1.12.2/darwinx86.tar.gz
     tar xfz darwinx86.tar.gz
 
   Rebuild the lisp kernel by hand before trying to rebuild the lisp.
@@ -18533,8 +18547,7 @@ Subtopics
                   :clause-processor
                   (note-fact-clause-processor clause '(equal a a)))))
 
-    [Note:  A hint was supplied for our processing of the goal above.
-    Thanks!]
+    [Note:  A hint was supplied of the goal above.  Thanks!]
 
     We now apply the verified :CLAUSE-PROCESSOR function NOTE-FACT-CLAUSE-
     PROCESSOR to produce two new subgoals.
@@ -25806,6 +25819,8 @@ Subtopics
   [47mwell-founded-relation[0m, and [47mruler-extenders[0m default to the measure,
   well-founded relation, and ruler-extender settings used in the
   admittance of [47mname[0m.  The keyword argument [47mhints[0m defaults to [47mnil[0m.
+  Note that an appropriate choice of [47mruler-extenders[0m can improve some
+  induction schemes.  See [induction-coarse-v-fine-grained].
 
 
 Restrictions
@@ -25988,8 +26003,7 @@ Restrictions
                   :clause-processor
                   (note-fact-clause-processor clause '(equal a a)))))
 
-    [Note:  A hint was supplied for our processing of the goal above.
-    Thanks!]
+    [Note:  A hint was supplied of the goal above.  Thanks!]
 
     We now apply the trusted :CLAUSE-PROCESSOR function NOTE-FACT-CLAUSE-
     PROCESSOR to produce two new subgoals.
@@ -27540,9 +27554,11 @@ Hash-table Types
   [47mtest[0m is [47m[hons-equal][0m then there is no restriction on keys, but each
   proposed key is [47m[hons][0med in raw Lisp before it is used (whether for
   access or update) and before it is put into the underlying hash
-  table.  The [47msize[0m, if supplied and not [47mnil[0m, is a positive integer
-  that may be used by the host Lisp as a hint for how to size the
-  associated hash table in raw Lisp.
+  table.  The [47msize[0m defaults to [47mnil[0m, and if supplied, it must be
+  either [47mnil[0m or a non-negative integer, or else a defined constant
+  evaluating to [47mnil[0m or a non-negative integer.  When the value is a
+  (non-negative) integer, it may be used by the host Lisp as a hint
+  for how to size the associated hash table in raw Lisp.
 
   For a hash-table field, the [47m:initially[0m keyword specifies a default
   rather than an initial value: it provides the value (default [47mnil[0m)
@@ -28646,7 +28662,9 @@ Subtopics
   Optionally, see [rulers] for a more detailed discussion of the
   termination analysis and resulting proof obligations for
   admissibility, as well as a discussion of the relation to how ACL2
-  stores induction schemes.
+  stores induction schemes.  See [induction-coarse-v-fine-grained]
+  for a discussion of how well-chosen rulers can affect the induction
+  scheme.
 
   On very rare occasions ACL2 will seem to \"hang\" when processing a
   definition, especially if there are many subexpressions of the body
@@ -35375,6 +35393,8 @@ Subtopics
       (cond ((endp l) nil)
             (t (cons (car l) (evens (cddr l))))))")
  (EVENT (POINTERS) "See [events].")
+ (EVENT-DATA (POINTERS)
+             "See [saving-event-data].")
  (EVENTS
   (ACL2)
   "Functions that extend the logic
@@ -50252,10 +50272,9 @@ Subtopics
                  (TRUE-LISTP (REV (CDR X))))
             (TRUE-LISTP (APPEND (REV (CDR X)) (LIST (CAR X))))).
 
-          [Note:  A hint was supplied for our processing
-          of the goal above, because of a :backtrack hint
-          that is preventing destructor elimination.
-          Thanks!]
+          [Note:  A hint was supplied for the goal above,
+          because of a :backtrack hint that is preventing
+          destructor elimination. Thanks!]
 
           We generalize this conjecture, replacing
           (REV (CDR X)) by RV.  This produces
@@ -50408,8 +50427,7 @@ Subtopics
 
           [[... output omitted here ...]]
 
-          [Note:  A hint was supplied for our processing of the goal below.
-          Thanks!]
+          [Note:  A hint was supplied of the goal below.  Thanks!]
 
           Subgoal *1/2'
           (IMPLIES (AND (CONSP X)
@@ -50738,8 +50756,7 @@ Subtopics
                              (:use cdr-cons :in-theory (enable append)))
                         :do-not '(generalize))))
 
-          [Note:  A hint was supplied for our processing of the goal above.
-          Thanks!]
+          [Note:  A hint was supplied of the goal above.  Thanks!]
 
           The :OR hint for Goal gives rise to two disjunctive branches.  Proving
           any one of these branches would suffice to prove Goal.  We explore
@@ -50755,8 +50772,7 @@ Subtopics
                         :IN-THEORY (DISABLE CAR-CONS)
                         :DO-NOT '(GENERALIZE)).
 
-          [Note:  A hint was supplied for our processing of the goal above.
-          Thanks!]
+          [Note:  A hint was supplied of the goal above.  Thanks!]
 
           Normally we would attempt to prove this formula by induction.  However,
           we prefer in this instance to focus on the original input conjecture
@@ -50775,8 +50791,7 @@ Subtopics
                         :IN-THEORY (ENABLE APPEND)
                         :DO-NOT '(GENERALIZE)).
 
-          [Note:  A hint was supplied for our processing of the goal above.
-          Thanks!]
+          [Note:  A hint was supplied of the goal above.  Thanks!]
 
           ACL2 Warning [Use] in ( THM ...):  It is unusual to :USE the formula
           of an enabled :REWRITE or :DEFINITION rule, so you may want to consider
@@ -51196,11 +51211,9 @@ Subtopics
      val2 ...). See :DOC hints and :DOC hints-and-the-waterfall; community
      book books/hints/merge-hint.lisp might also be helpful.
 
-     [Note:  A hint was supplied for our processing of the goal above.
-     Thanks!]
+     [Note:  A hint was supplied of the goal above.  Thanks!]
 
-     [Note:  A hint was supplied for our processing of the goal above.
-     Thanks!]
+     [Note:  A hint was supplied of the goal above.  Thanks!]
 
      Name the formula above *1.
 
@@ -53386,7 +53399,13 @@ Subtopics
   a measure that decreases in a well-founded way on a given set of
   ``controlling'' arguments, every recursive definition suggests a
   dual induction scheme that ``unwinds'' the function from a given
-  application.
+  application.  The case analysis in the induction scheme suggested
+  by a function call is determined by the case analysis used to prove
+  termination.  That case analysis chooses a subset of the tests
+  governing recursive calls and then generating base cases for the
+  combinations of tests that do not lead to recursive calls and
+  induction steps for the combinations that do.  See [rulers] and
+  [induction-coarse-v-fine-grained].
 
   For example, since [47m[append][0m (actually [47m[binary-append][0m, but we'll
   ignore the distinction here) decomposes its first argument by
@@ -53560,6 +53579,507 @@ Subtopics
 
   [Set-induction-depth-limit!]
       Set the induction-depth-limit non-[47m[local][0mly")
+ (INDUCTION-COARSE-V-FINE-GRAINED
+  (RULERS)
+  "advice on case explosion in complex inductions
+
+  Recursive functions suggest inductions based on the case analysis in
+  the function definition and the positions of recursive calls within
+  that case analysis.  That analysis is done when termination is
+  proved.  Key parts of that analysis are the notions of governing
+  tests and ruling tests.  By using the so-called ``ruler-extenders''
+  feature of termination analysis you can sometimes choose between
+  ``coarse-grained'' and ``fine-grained'' inductions.  The former
+  have few cases but may provide multiple and sometimes irrelevant
+  induction hypotheses.  The latter provide more cases, each targeted
+  at a given output, and tend to provide only induction hypotheses
+  needed for that output.  See [rulers] for a discussion of
+  ruler-extenders.
+
+
+Governing versus Ruling Tests
+
+  Roughly speaking, a test [3mgoverns[0m a recursive call if the test must be
+  true for control to reach that call.  The [3mruling[0m tests are a subset
+  of the governing tests and are the ones that determine the case
+  analysis of any suggested induction.
+
+  For example, if we are analyzing a definition of [47m(fn x)[0m and the body
+  is [47m(if (not (consp x)) (h nil) (h (fn (cdr x))))[0m then [47m(consp x)[0m
+  governs the recursive call and it also rules the call.  But if the
+  body were [47m(h (if (not (consp x)) nil (fn (cdr x))))[0m then [47m(consp x)[0m
+  governs the recursive call but may not rule it.  It would be
+  considered a ruler if the symbol [47mh[0m were on the ``ruler-extenders''
+  list --- the list of symbols that allow further collection of
+  rulers from inside terms that begin with those symbols.
+
+  The default setting of ruler-extenders is [47m(if mv-list return-last)[0m.
+  That means that termination (and induction) analysis stops looking
+  for ruling tests when a term is encountered that does not begin
+  with one of these listed symbols.  For example, under the default
+  ruler-extenders, when the analysis encounters a term that starts
+  with a [47mlambda[0m expression, that term is considered a tip of the
+  tree.  ([47mLambda[0m expressions are relevant because they are introduced
+  by the macroexpansion of [47m[let][0m and [47m[let*][0m expressions, which arise
+  frequently in interesting recursive functions because they
+  facilitate [3mcode sharing[0m by allowing the computation of intermediate
+  results used on multiple output branches.)  When the analysis
+  encounters a term considered a tip, the rulers collected so far are
+  used to rule [3mall[0m the recursive calls in that tip.  So at a tip, the
+  analysis collects all the recursive calls occurring in that tip and
+  forms measure conjectures and, eventually, induction hypotheses
+  about them, using the rulers as the hypotheses of those
+  conjectures.
+
+  So the user can influence the determination of the rulers by setting
+  the ``ruler-extenders'' in effect when the function is admitted.
+  The global default ruler-extenders can be set by the event
+  [47mset-ruler-extenders[0m or specified locally in a [47mdefun[0m by the [47m[xargs][0m
+  keyword [47m:ruler-extenders[0m.  See [rulers] for the details.
+
+
+Coarse versus Fine Induction Case Analysis
+
+  Most often, users think about ruler-extenders only in the context of
+  [3mfailed[0m termination proofs: inspection of the measure conjectures
+  reveal that an important governing hypothesis was curiously
+  omitted, the user consults the documentation or appeals for help
+  from other users, and is reminded of ruler-extenders.  One could
+  argue that users forget about ruler-extenders because the default
+  setting for ruler-extenders is so often the ``right'' one.  But
+  sometimes even a function that is successfully admitted under the
+  default setting would benefit from selecting a non-default setting
+  for ruler-extenders.
+
+  Sometimes you may feel that the prover is struggling with an
+  induction suggested by a function, even though the function that
+  suggested the induction is the one you expected to be selected, and
+  for most simple recursive functions the induction suggested is the
+  ``perfect'' induction for that function.  This problem of the
+  prover struggling to simplify the induction steps might arise most
+  commonly with functions that have [47m[let*][0m bindings that contain
+  [47mif[0m-expressions, some of which contain recursive calls.  For
+  example, the following artificial example raises the possibility of
+  this problem.
+
+    (defun fn (x y)
+      (if (consp x)
+          (let* ((y1 (if (consp (car x))
+                         (fn (car x) (cons 'car y))
+                         y))
+                 (y2 (if (consp (cdr x))
+                         (fn (cdr x) (cons 'cdr y1))
+                         y1)))
+            (cons y1 y2))
+          y))
+
+  Recall that [47mlet*[0m expressions are translated into nested [47mlambda[0m
+  expressions, so the formal definition of [47mfn[0m is
+
+    (defun fn (x y)
+      (if (consp x)
+          ((lambda (y1 x)
+             ((lambda (y2 y1) (cons y1 y2))
+              (if (consp (cdr x))
+                  (fn (cdr x) (cons 'cdr y1))
+                y1)
+              y1))
+           (if (consp (car x))
+               (fn (car x) (cons 'car y))
+             y)
+           x)
+          y))
+
+  So, the entire [47mlet*[0m above, i.e., the formal term starting with the
+  first [47mlambda[0m expression, is a tip ruled only by [47m(consp x)[0m.  The [47mif[0ms
+  within it are not considered even though their tests govern (but do
+  not rule) the subsequent recursions.  The recursive calls in that
+  tip are
+
+    (fn (car x) (cons 'car y))
+
+  and
+
+    (fn (cdr x)
+        (cons 'cdr
+              (if (consp (car x))
+                  (fn (car x) (cons 'car y))
+                  y))).
+
+  The default measure in this definition is [47m(acl2-count x)[0m.  The
+  measure conjectures are easy to prove because [47m(consp x)[0m implies
+  [47m(acl2-count (car x))[0m and [47m(acl2-count (cdr x))[0m are both less than
+  [47m(acl2-count x)[0m.  Since there are no more recursive calls in the
+  definition, [47mfn[0m is admitted.
+
+  Now consider how the prover would attempt to prove [47m(p (fn x y))[0m by
+  the induction suggested by [47mfn[0m.  The induction argument, shown
+  below, has one base case and one induction step.  The induction
+  step has two induction hypotheses.
+
+    (and (implies (not (consp x)) (p (fn x y)))
+         (implies (and (consp x)
+                       (p (fn (car x) (cons 'car y)))
+                       (p (fn (cdr x)
+                              (cons 'cdr
+                                    (if (consp (car x))
+                                        (fn (car x) (cons 'car y))
+                                        y)))))
+                  (p (fn x y)))).
+
+  [31;1mNote[0m: Here and throughought this documentation topic we freely
+  rearrange the formulas we display to make it easier to compare
+  different induction schemes.  For example, when the prover attempts
+  to prove [47m(p (fn x y))[0m it lists the conjuncts above in the opposite
+  order, i.e., the base case occurs last.  It can be hard to compare
+  induction schemes from similar functions because ACL2's methods of
+  generating induction schemes does not preserve the order of tips.
+
+  The prover attempts to reduce each of these two conjuncts to [47mT[0m by
+  simplification.  The base case is generally simple.  So consider
+  the induction step, the second implication above, which we
+  abbreviate here as
+
+    (implies (and (consp x)
+                  [3mind-hyp1[0m
+                  [3mind-hyp2[0m)
+             [3mind-concl[0m)
+
+  where, [3mind-hyp1[0m, the first induction hypothesis, is [47m(p (fn (car x)
+  (cons 'car y)))[0m, etc.  See [introduction-to-the-theorem-prover] for
+  more details of how the rewriter works.  When rewriting the formula
+  above it basically proceeds left-to-right, innermost first, keeping
+  track of what can be assumed given the context in which terms
+  occur.  Thus, by the time the rewriter gets to the induction
+  conclusion, [3mind-concl[0m, the two induction hypotheses will have been
+  rewritten, making them easier to find and identify as true if they
+  occur in the rewriting of the conclusion.
+
+  But rewriting [3mind-hyp1[0m here will involve rewriting [47m(fn (car x) (cons
+  'car y))[0m, which is completely irrelevant to half of the proof of
+  [3mind-concl[0m.  In particular, inspection of [47mfn[0m reveals that the first
+  recursive call of [47mfn[0m is only relevant if [47m(consp (car x))[0m is true.
+  But we know nothing about [47m(car x)[0m in this induction step.
+  Furthermore, rewriting a call of a recursive function can be very
+  expensive since it requires (a) rewriting the actual expressions,
+  then (b) rewriting the body of the function under a substitution
+  replacing the function's formals by the rewritten actuals, and then
+  (c) heuristically deciding whether the rewritten body is preferable
+  to the call, given the subterms occurring elsewhere in the goal.
+
+  Another way to describe the unfortunate induction scheme above is
+  that it ``coarse,'' because it provides a simple case analysis,
+  which necessitates lumping all the possibly relevant induction
+  hypotheses into a single case (in this particular example).  When
+  the induction conclusion opens, after the induction hypotheses have
+  all been simplified, it will cause further splitting, (e.g., on
+  [47m(consp (car x))[0m), and in some of those subgoals some of the
+  simplified induction hypotheses will be irrelevant (but still
+  burden the simplification process if the cases are not proved
+  immediately).
+
+  Depending on how hard it is to rewrite irrelevant induction
+  hypotheses --- which depends not just on the function, like [47mfn[0m,
+  suggesting the induction but also on the conjecture being proved
+  --- it might be more efficient to have a finer-grained case
+  analysis so that the only induction hypotheses in a given case are
+  those on a given execution path.
+
+  A finer-grained induction scheme is generated, in the case of [47mfn[0m, by
+  arranging for [47mlambda[0m expressions [3mnot[0m to stop the collection of
+  rulers.  This can be done by adding the keyword [47m:lambdas[0m to the
+  ruler-extenders.  The presence of that keyword means ``keep
+  collecting rulers as you dive into [3many[0m term beginning with a [47mlambda[0m
+  expression.'' (By the way, normally [47m:ruler-extenders[0m expects a list
+  but if you specify the single keyword [47m:lambdas[0m it denotes the list
+  [47m(if :lambdas mv-list return-last)[0m.)  Again, see [47mrulers[0m for details.
+
+  If we had defined [47mfn[0m as shown below we would get the finer induction
+  analysis shown subsequently.
+
+    (defun fn (x y)
+      (declare (xargs :ruler-extenders :lambdas))
+      (if (consp x)
+          (let* ((y1 (if (consp (car x))
+                         (fn (car x) (cons 'car y))
+                         y))
+                 (y2 (if (consp (cdr x))
+                         (fn (cdr x) (cons 'cdr y1))
+                         y1)))
+            (cons y1 y2))
+          y))
+
+  Note that [47mfn[0m can be admitted without extending the rulers --- we have
+  already demonstrated that.  We are including [47m:lambdas[0m here
+  precisely to get a finer case analysis for induction.
+
+  The induction generated is shown below.  We have slightly simplified
+  the induction by replacing [47m(if [0m[3ma b c[0m[47m)[0m by [3mb[0m when [3ma[0m is among the
+  hypotheses in the case analysis, and by replacing [47m(if [0m[3ma b c[0m[47m)[0m by [3mc[0m
+  when [47m(not [0m[3ma[0m[47m)[0m is among the hyotheses.  This simplification is
+  actually not done by induction analysis but by the first
+  simplification.
+
+    (and (implies (not (consp x)) (p (fn x y)))
+         (implies (and (consp x)
+                       (not (consp (car x)))
+                       (not (consp (cdr x))))
+                  (p (fn x y)))
+         (implies (and (consp x)
+                       (not (consp (car x)))
+                       (consp (cdr x))
+                       (p (fn (cdr x) (cons 'cdr y))))
+                  (p (fn x y)))
+         (implies (and (consp x)
+                       (consp (car x))
+                       (not (consp (cdr x)))
+                       (p (fn (car x) (cons 'car y))))
+                  (p (fn x y)))
+         (implies (and (consp x)
+                       (consp (car x))
+                       (consp (cdr x))
+                       (p (fn (car x) (cons 'car y)))
+                       (p (fn (cdr x)
+                              (cons 'cdr (fn (car x) (cons 'car y))))))
+                  (p (fn x y))))
+
+  Note that the case analysis here steers the [47m(fn x y)[0m in the
+  conclusion down exactly one path and the only hypotheses provided
+  in each induction step concern recursive calls on that path.
+
+  The finer case analysis gives us two base cases and four induction
+  steps, one of which has two induction hypotheses.  We'll encounter
+  terms of the form [47m(p (fn ...))[0m nine times in using this scheme,
+  instead of just four such terms in the first scheme we showed.  It
+  may seem surprising that this scheme ever leads to faster proofs
+  than the earlier one.  But it can.  Whether it does depends, as
+  mentioned above, on the complexity of rewriting the recursive calls
+  involved and the conjecture being proved.
+
+  [31;1mNote[0m: The ruler-extenders may include arbitrary function symbols and
+  the keyword [47m:lambdas[0m as above.  But it can also be set to [47m:all[0m
+  which makes all the governors be rulers, i.e., collection of rulers
+  dives through all function symbols.  We focus here on diving
+  through [47mlambda[0m expressions because they are by far the most common
+  ``function symbol'' (other than [47mif[0m) under which one finds
+  additional tests and recursive calls.
+
+  In the next section we'll discuss a theorem that makes use of these
+  insights and demonstrates that the finer scheme can lead to faster
+  proofs.
+
+
+An Actual Example of Coarse versus Fine Induction Schemes
+
+  The ACL2 prettyprinter is implemented with the function [47mppr[0m.  It is
+  basically the composition of two functions, [47mppr1[0m, which takes the
+  object to be printed and computes a ``ppr tuple'' describing how
+  much to indent each subexpression and where to break the lines, and
+  [47mppr2[0m, which actually prints.  To admit [47mppr[0m as a logic mode function
+  we have to prove termination and verify the guards of all the
+  functions involved.  To verify the guards, we have to prove that
+  [47mppr1[0m returns a [47mppr-tuple-p[0m.  You can see the definitions of [47mppr1[0m
+  and [47mppr-tuple-p[0m and their mutually recursive peers by using the
+  [47m:[0m[47m[pe][0m command, e.g., [47m:pe ppr1[0m.
+
+  We'll focus here on [47mppr1[0m, which is mutually recursive with [47mppr1-lst[0m.
+  To prove anything interesting about a function in a mutually
+  recursive clique you generally have to simultaneously prove
+  analogous theorems about every function in the clique.  That is
+  most often done by defining a ``flagged'' function which can recur
+  as any function in the clique according to a flag.  The community
+  book [47mbooks/tools/flag[0m provides a convenient way to do that.  Since
+  that book facilitates the introduction of the flagged function, it
+  allows the generated definition to be processed with a
+  user-supplied ruler-extenders.
+
+  A good demonstration of the ``coarse'' and ``fine'' induction schemes
+  for [47mppr1[0m can be found in the community book
+  [47mbooks/demos/ppr1-experiments[0m.  We summarize the contents of that
+  book here.
+
+  The book proves that [47mppr1[0m returns a [47mppr-tuple-p[0m and [47mppr1-lst[0m returns
+  a [47mppr-tuple-lst-p[0m.  In fact, it does that proof seven times, under
+  coarse and fine inductions and variations on some hints.  The
+  coarse induction is obtained by admitting a flagged version of
+  [47mppr1[0m/[47mppr1-lst[0m under the default ruler-extenders.  The fine
+  induction is obtained by admitting a differently named flagged
+  version of [47mppr1[0m/[47mppr1-lst[0m with [47m:ruler-extenders :lambdas[0m.
+
+  The coarse induction, generated under the default ruler-extenders,
+  has 76 cases.  Six are base cases.  The other 70 are induction
+  steps with varying numbers of induction hypotheses as given in the
+  sketch below.
+
+    (76           ;; 76 cases in the induction scheme
+        (0 . 6)   ;; no induction hyps in 6 cases, i.e., Base Cases
+        (1 . 8)   ;; 1 induction hyp in 8 cases
+        (2 . 2)   ;; 2 induction hyps in 2 cases
+        (3 . 16)  ;; 3 induction hyps in 16 cases
+        (4 . 32)  ;; 4 induction hyps in 32 cases
+        (8 . 4)   ;; 8 induction hyps in 4 cases
+        (9 . 8))  ;; 9 induction hyps in 8 cases
+
+  The fine induction, generated under the [47m:lambdas[0m ruler-extension, can
+  be similarly sketched.
+
+    (256          ;; 256 cases in the induction scheme
+        (0 . 6)   ;; no induction hyps in 6 cases, i.e., Base Cases
+        (1 . 8)   ;; 1 induction hyp in 8 cases
+        (2 . 82)  ;; 2 induction hyps in 82 cases
+        (3 . 80)  ;; 3 induction hyps in 80 cases
+        (4 . 80)) ;; 4 induction hyps in 80 cases
+
+  The induction generated under the [47m:all[0m ruler-extensions is identical
+  to the fine induction for [47mppr1[0m and [47mppr1-lst[0m.  (No governing [47mif[0ms are
+  hidden under function calls other than [47mif[0m and [47mlambda[0m expressions in
+  those two functions.)
+
+  Regardless of which induction scheme we use, the proof that [47mppr1[0m
+  returns a [47mppr-tuple-p[0m and that [47mppr1-lst[0m returns a [47mppr1-tuple-lst-p[0m
+  fails without a certain hint: we have to tell the prover to expand
+  the calls of [47mppr1[0m and [47mppr1-lst[0m in the conclusions of the induction
+  steps.  If you try to prove the theorem without the hint the first
+  checkpoint makes clear that you need the hint.  (This is not an
+  uncommon problem in inductive proofs about mutually recursive
+  functions.)  But in the most basic like-for-like comparison of the
+  successful proof of the theorem by each induction scheme augmented
+  by an [47m:expand[0m hint, the coarse induction takes 2,165 seconds and
+  the fine induction takes 65 seconds.  See scenarios 1 and 3 in the
+  next section.
+
+
+Comparing Several Optimizations
+
+  After noticing the performance differences between the coarse and
+  fine inductions we spent some time trying to further optimize the
+  proof.  We compared seven different combinations of approaches.  We
+  discuss them here.  See the [47mbooks/demos/ppr1-experiments[0m for the
+  details of each hint, etc.  The times reported below were
+  originally recovered from the [47m.cert.out[0m file after certification of
+  the book in September, 2023, using the development copy of ACL2
+  slated to become Version 8.6, running in CCL on a Macbook Pro.
+  Inspect the [47m.cert.out[0m file for more recent results.
+
+  As mentioned previously, a common situation with inductive proofs
+  about complicated mutually recursive functions is that the calls in
+  the conclusion aren't always automatically opened by ACL2's
+  heuristics.  So it is not unusual in such proofs to provide a hint
+  that explicitly expands the [47mppr1[0m and [47mppr1-lst[0m calls in the
+  conclusion.  In these experiments we provide that hint two ways,
+  either as part of fairly sophisticated computed hint or with an
+  [47m:expand[0m hint on [47m\"Goal\"[0m.  If you try to prove this theorem with no
+  hint it fails.
+
+  We will also be experimenting with the enabled status of [47mppr1[0m and
+  [47mppr1-lst[0m.
+
+  The seven scenarios are specified by saying which induction scheme is
+  used, whether [47mppr1[0m and [47mppr1-lst[0m are enabled or disabled by default,
+  and what hints are provided.  There are three basic hints to chose
+  from.
+
+    * [47mcomputed[0m --- when a subgoal becomes stable, open [47mppr1[0m and [47mppr1-lst[0m in
+      the conclusion, and when any subgoal of that becomes stable
+      again, enable [47mppr1[0m and [47mppr1-lst[0m and let ACL2's heuristics take
+      over.  This hint only makes sense if [47mppr1[0m and [47mppr1-lst[0m are
+      initially disabled.
+    * [47mcomputed'[0m --- like [47mcomputed[0m but skips the first stable opening of
+      [47mppr1[0m and [47mppr1-lst[0m.  That is handled instead by an [47m:expand[0m hint.
+    * [47m:expand[0m --- a traditional [47m:expand[0m hint to open [47mppr1[0m and [47mppr1-lst[0m
+      terms as they appear in induction conclusions.  The expand hint
+      is
+
+          :expand
+          ((:free (print-base print-radix width rpc state eviscp)
+                  (ppr1 x print-base print-radix width rpc state eviscp))
+           (:free (print-base print-radix width rpc pair-keywords-p state eviscp)
+                  (ppr1-lst lst print-base print-radix width rpc
+                            pair-keywords-p state eviscp)))
+
+      which allows the non-controller arguments of [47mppr1[0m and [47mppr1-lst[0m to be
+      any terms but insists that the controllers, [47mx[0m and [47mlst[0m,
+      respectively, be those particular variable names.
+
+  In addition, we sometime avail ourselves of special-purpose lemmas.
+
+    * [47mNIL lem[0m --- rewrites [47m(ppr1-lst nil ...)[0m to [47mnil[0m.
+    * [47mMAX hack[0m --- lemmas about [47mMAX[0m allowing us to disable [47mMAX[0m
+
+  We try seven different combinations, numbered 1-7, but listed below
+  in descending order of proof times.
+
+    n      induction    status                 hints               proof time
+
+    1       coarse      enabled      :expand                         2165.19
+    2       coarse      disabled     computed                         207.49
+    6       fine        disabled     computed                          82.29
+    3       fine        enabled      :expand                           65.00
+    4       fine        disabled     computed + :expand                62.86
+    5       fine        disabled     computed' + :expand + NIL lem     61.58
+    7       fine        disabled     computed + :expand + MAX hack     55.14
+
+  Note that scenarios 1 and 3 are a direct comparison of coarse and
+  fine induction with exactly the same hint.  The coarse induction
+  took 2165.19 seconds and the fine induction took 65.00, despite the
+  fact that the coarse induction had 76 cases to deal with and the
+  fine induction had 256.  The most likely reason the coarse
+  induction performed poorly is that there were 8 induction steps
+  that had 9 induction hypotheses each, even though no case ever
+  actually required more than 4 induction hypotheses.
+
+  Scenario 2 shows that much time is saved by disabling [47mppr1[0m and
+  [47mppr1-lst[0m and expanding them (when stable) with the computed hint.
+  Note that since the computed hint first expands them in the
+  conclusion and lets the resulting subgoals stabilize before
+  enabling [47mppr1[0m and [47mppr1-lst[0m, the calls of [47mppr1[0m and [47mppr1-lst[0m in the
+  induction hypotheses do not expand until the relevant case analysis
+  is exposed by expanding the conclusion.
+
+  Scenarios 4, 5, 6, and 7, attempt to improve upon the time seen in
+  scenario 3.  We see that the best performance in this particular
+  problem is to use the fine induction case analysis, keep the
+  relevant recursive functions disabled by default, use an [47m:expand[0m
+  hint to open them in the conclusion but also have a computed hint
+  that expands them in the conclusions if a stable subgoal arises,
+  and only enable those functions if they're still in the
+  subsequently stable subgoals.  The [47mMAX hack[0m saves another 10% by
+  avoiding case splits caused by the many occurrences of [47mMAX[0m in [47mppr1[0m.
+
+  However, it should be noted that the major source of improvement is
+  the use of the fine induction scheme.  The fact that there is only
+  a 10% further improvement achieved by the various other hints
+  suggests it may not be worth the effort!  Coding the computed hint
+  took time and thought, compared to just using an [47m:expand[0m hint.  And
+  it was a lot easier to leave [47mppr1[0m and [47mppr1-lst[0m enabled and let ACL2
+  decide when to expand them than it was to disable them and control
+  their expansion by hints and lemmas.  One take-home lesson for us
+  was that ACL2's heuristics for opening recursive functions are
+  pretty good!
+
+  Ignoring scenario 7 --- where the additional improvement came from a
+  completely different source, namely, avoidng the expansion of [47mMAX[0m
+  expressions --- the difference between the easiest thing to do
+  (scenario 3) and the fastest method that focused on manually
+  controlling [47mppr1[0m and [47mppr1-lst[0m (scenario 5) was less than 4 seconds.
+  So, as usual with all kinds of performance optimization, don't get
+  sucked down the rabbit hole!  Take the easy wins and get on with
+  the rest of your project!
+
+
+Conclusion
+
+  Of course, whether fine induction schemes will improve other proofs
+  just depends on how many irrelevant induction hypotheses are
+  present and how complicated it is to simplify the terms in the
+  theorem.  If you are proving something about a recursive function
+  that contains [47mlet*[0m expressions in which some of the bindings
+  conditionally make recursive calls, be alert to the possibility
+  that adjusting ruler-extenders to include [47m:lambdas[0m may give better
+  inductive performance.  If you witness the prover engaged in fairly
+  deep case splits, even as it seems always to prove the resulting
+  cases, you might look for ways to get a finer induction case
+  analysis.")
  (INDUCTION-DEPTH-LIMIT
   (INDUCTION)
   "The maximum number permitted of nested inductions
@@ -53905,8 +54425,7 @@ Subtopics
     When applied to the goal at hand the above induction scheme produces
     two nontautological subgoals.
 
-    [Note:  A hint was supplied for our processing of the goal below.
-    Thanks!]
+    [Note:  A hint was supplied of the goal below.  Thanks!]
 
     Subgoal *1/2
     (IMPLIES (AND (NOT (ENDP X))
@@ -53986,8 +54505,7 @@ Subtopics
   empty goal stack, therefore proving the goal, as reported in the
   output, which we repeat here.
 
-    [Note:  A hint was supplied for our processing of the goal below.
-    Thanks!]
+    [Note:  A hint was supplied of the goal below.  Thanks!]
 
     Subgoal *1/2
     (IMPLIES (AND (NOT (ENDP X))
@@ -54273,8 +54791,7 @@ Subtopics
 
   Here is an edited version of the resulting log.
 
-    [Note:  A hint was supplied for our processing of the goal above.
-    Thanks!]
+    [Note:  A hint was supplied of the goal above.  Thanks!]
 
     [[1> Executing proof-builder instructions]]
 
@@ -54289,8 +54806,7 @@ Subtopics
 
     [[ ... output omitted ... ]]
 
-    [Note:  A hint was supplied for our processing of the goal below.
-    Thanks!]
+    [Note:  A hint was supplied of the goal below.  Thanks!]
 
     Subgoal *1/3''
     (IMPLIES (AND (CONSP X)
@@ -54307,8 +54823,7 @@ Subtopics
     ->: :BASH
     ***** Now entering the theorem prover *****
 
-    [Note:  A hint was supplied for our processing of the goal above.
-    Thanks!]
+    [Note:  A hint was supplied of the goal above.  Thanks!]
 
     But we have been asked to pretend that this goal is subsumed by the
     yet-to-be-proved |PROOF-BUILDER Goal|.
@@ -82803,8 +83318,7 @@ Table of Contents
                      104))
      :hints ((\"Goal\" :in-theory (enable bvecp))))
 
-    [Note:  A hint was supplied for our processing of the goal above.
-    Thanks!]
+    [Note:  A hint was supplied of the goal above.  Thanks!]
 
     By the simple :definition BVECP, the :executable-counterparts of EXPT
     and UNARY-/ and the simple :rewrite rule ASSOCIATIVITY-OF-* we reduce
@@ -100035,6 +100549,16 @@ Changes to Existing Features
   It is no longer illegal to read a [stobj] when in a [wormhole] state,
   for example, when inside [break-rewrite].
 
+  In [gag-mode] (which is on by default), when the prover notes that a
+  forcing round is pending, it now lists the names of the rules that
+  are responsible.
+
+  A hash-table or stobj-table field of a [stobj] may now specify a size
+  that is a constant symbol with a suitable value.  See [defstobj]
+  and see [stobj-table].  The meaning is the same as if the size had
+  been given as the value of that constant.  Thanks to Warren Hunt
+  for requesting this enhancement.
+
 
 New Features
 
@@ -100216,6 +100740,18 @@ New Features
   It is possible to cause ACL2 to increase its effort in
   [type-reasoning].  See [set-dwp].  Thanks to Eric Smith for
   correspondence leading to this feature.
+
+  The new documentation topic, [induction-coarse-v-fine-grained],
+  discusses how appropriately setting ruler-extenders can sometimes
+  improve the induction scheme suggested by a recursive function,
+  especially one involving [47m[let][0m and [47m[let*][0m bindings containing
+  conditional recursive calls.  For that new topic, new related books
+  [47mbooks/demos/ppr1-experiments.lisp[0ma nd
+  [47mbooks/demos/ppr1-experiments-thm-1-ppr1.lisp[0m, and related edits of
+  existing :DOC topics ([advanced-features], [definductor], [defun],
+  [induction], [rulers], [verify-termination], and [xargs]): Release
+  was approved by DARPA with ``DISTRIBUTION STATEMENT A. Approved for
+  public release. Distribution is unlimited.''
 
 
 Heuristic and Efficiency Improvements
@@ -100548,6 +101084,11 @@ Bug Fixes
   Eliminated the built-in [47m:[0m[47m[type-prescription][0m rule [47mtrue-listp-take[0m,
   thanks to Eric Smith, who pointed out that the same rule is already
   installed as the built-in [47m:type-prescription[0m rule for [47m[take][0m.
+
+  Fixed a bug in handling of [47m[do-loop$][0m expressions that return
+  multiple values, when encountered during proofs.  An example
+  labeled with ``Version 8.5'' is near the end of [community-book]
+  [47mprojects/apply/loop-tests.lisp[0m.
 
 
 Changes at the System Level
@@ -105490,6 +106031,9 @@ Subtopics
   [Event]
       See [events].
 
+  [Event-data]
+      See [saving-event-data].
+
   [Execution]
       See [evaluation].
 
@@ -108663,7 +109207,61 @@ Subtopics
   [safe-mode] (e.g., during macroexpansion), because there is no
   guarantee that evaluation of the raw Lisp code will be ``safe''.
 
-  See [safe-mode-cheat-sheet] for possible workarounds.")
+  The constant [47m*initial-program-fns-with-raw-code*[0m provides the initial
+  value of [47m(@ program-fns-with-raw-code)[0m.  The value of that constant
+  is the list of ACL2 source functions that have special raw-Lisp
+  code.  It is important that these [program]-mode functions not be
+  converted to [logic] mode.  Otherwise, one could arrange to prove a
+  contradiction.  To see how, consider the following example, which
+  shows how one might prove that a call of a program-only function,
+  [47mp-o[0m, returns two different values on the same input (an obvious
+  contradiction).
+
+    (defun p-o (x)
+      (declare (xargs :guard t))
+      (er hard? 'p-o
+          \"Attempted logical evaluatin of ~x0.\"
+          (list 'p-0 x)))
+
+    :q ; exit the ACL2 read-eval-print loop
+
+    (defun p-o (x)
+      (declare (xargs :guard t))
+      (atom x))
+
+    (lp) ; re-enter the ACL2 read-eval-print loop
+
+    (defthm p-0-nil-is-nil
+      (equal (p-o nil) nil)
+      :hints ((\"Goal\" :in-theory (disable (:e p-o)))))
+
+    (defthm p-o-nil-is-t
+      (equal (p-o nil) t))
+
+  In the ACL2 source one often finds a definition marked with readtime
+  conditionals, such as the following.
+
+    (defun p-o (x)
+      (declare (xargs :guard t))
+      #-acl2-loop-only
+      (atom x)
+      #+acl2-loop-only
+      (er hard? 'p-o
+          \"Attempted logical evaluatin of ~x0.\"
+          (list 'p-0 x)))
+
+  The [47macl2-loop-only[0m annotations arrange that when ACL2 is built, one
+  gets the effect described above, where the [47m#+acl2-loop-only[0m code is
+  used in the definition known to ACL2 and the [47m#-acl2-loop-only[0m code
+  is used in the definition known to raw Lisp.  All function symbols
+  with such definitions are in the list mentioned above, that is, the
+  value of the constant [47m*initial-program-fns-with-raw-code*[0m.
+
+  In summary: The contradiction proved above explains the restriction
+  that [47m[logic][0m-mode functions may not call [program]-mode functions.
+
+  See [safe-mode-cheat-sheet] for possible workarounds, which however
+  may compromise soundness.")
  (PROGRAM-WRAPPER
   (PROGRAM PROGRAMMING ADVANCED-FEATURES)
   "Avoiding expensive [guard] checks using [program]-mode functions
@@ -123030,7 +123628,7 @@ Subtopics
       schemes to get an appropriate induction, it can also make the
       proof of each induction step easier.  Unfortunately, we have no
       more precise advice as to exactly when adding [47m:lambdas[0m will
-      help.
+      help.  See [induction-coarse-v-fine-grained].
 
   To see the ruler-extenders of an existing function symbol, [47mfn[0m, in a
   logical [world], [47mwrld[0m, evaluate [47m(ruler-extenders 'fn wrld)[0m after
@@ -123322,7 +123920,10 @@ Subtopics
 Subtopics
 
   [Default-ruler-extenders]
-      The default [ruler-extenders] for [47m[defun][0m'd functions")
+      The default [ruler-extenders] for [47m[defun][0m'd functions
+
+  [Induction-coarse-v-fine-grained]
+      advice on case explosion in complex inductions")
  (RUNE
   (THEORIES)
   "A rule name
@@ -123603,7 +124204,9 @@ Subtopics
     (See :DOC set-iprint to be able to see elided values in this message.)
 
   When the term is a call of [47mev-w[0m, an unsafe hack allowing such calls
-  is as follows.  Warning: This may result in unsoundness!
+  is as follows.  Warning: This may result in unsoundness!  (On a
+  related note: For discussion about unsoundness when converting such
+  [program]-mode functions to [logic] mode, see [program-only].
 
     (value :q)
     (setf (symbol-function (*1*-symbol 'ev-w))
@@ -124196,6 +124799,122 @@ Further information
  (SBCL-INSTALLATION
   (BUILDING-ACL2)
   "Installing Steel Bank Common Lisp (SBCL)
+
+  SBCL is available from [47m{https://www.sbcl.org | https://www.sbcl.org}[0m.
+  You can of course go to that website to find download and
+  installation instructions for SBCL, but below is a concise summary
+  that includes build options appropriate for ACL2.
+
+  [31;1mNOTE:[0m If you already have a previous version of SBCL installed and
+  you have experience with Lisp, you might want to see
+  [sbcl-installation-brief] for abbreviated instructions to use
+  instead of those below.
+
+   1. Download an SBCL binary from
+      [47m{https://www.sbcl.org/platform-table.html |
+      https://www.sbcl.org}[0m.  That page contains a table with
+      combinations of operating systems and hardware architectures,
+      from which you have to pick the one that applies to you.  Note
+      that you need an SBCL binary in order to compile from source
+      (see below).  The file downloaded from the table will have a
+      name like [47msbcl-2.1.2-arm64-darwin-binary.tar.bz2[0m, where the
+      [47marm64-darwin[0m part depends on the chosen combination of
+      operating system and hardware architecture.
+   2. Untar the file in a directory of your choice, which will create a
+      subdirectory with a name like [47msbcl-2.1.2-arm64-darwin[0m,
+      consistently with the name of the downloaded file.
+   3. Change to that subdirectory and run
+
+          sh run-sbcl.sh
+
+      to make sure that the binary works.  On macOS, you may get a pop-up
+      saying that Apple cannot check it for malware and that it needs
+      to be updated.  In that case, open the macOS settings, go under
+      `Privacy and Security' (or `Security and Privacy', depending on
+      macOS version), and you should see something about the (SBCL)
+      executable whose execution was stopped: click the button to
+      allow it, and retry running it.  Eventually it should work.
+   4. In the same directory where you just ran SBCL, run the SBCL
+      installer.  This is done via
+
+          INSTALL_ROOT=... sh install.sh
+
+      where [47m...[0m is optional: if omitted, it defaults to [47m/usr/local[0m.  If
+      you pick something different from this default, note that the
+      installer will create three directories there, namely [47mbin[0m, [47mlib[0m,
+      and [47mshare[0m.  Thus, for examples, if you want to install SBCL in
+      your home, you may want to create a directory in your home
+      (e.g. [47msbcl[0m, or [47mapps[0m), and pass that as [47mINSTALL_ROOT[0m, instead of
+      passing your home directory.
+   5. Add that [47mbin[0m directory to your path, so that SBCL can be found.  Try
+      running
+
+          sbcl
+
+      to make sure that the installed binary works.  This time macOS
+      should not block its execution.
+   6. Download the SBCL source from
+      [47m{https://www.sbcl.org/platform-table.html |
+      https://www.sbcl.org}[0m, the same page with the table of
+      binaries.  There should be one link to the sources, above the
+      table of binaries.  The downloaded file will have a name like
+      [47msbcl-2.3.9-source.tar.bz2[0m.
+   7. Untar the file in a directory of your choice, which will create a
+      subdirectory with a name like [47msbcl-2.3.9[0m.
+   8. Change to that subdirectory, and compile SBCL via:
+
+          sh make.sh --without-immobile-space --without-immobile-code --without-compact-instance-header
+
+      These options prevents certain possible errors.  The compilation
+      process prints a lot of stuff on the screen, and should
+      succeed.
+   9. The final part of the screen output will suggest to run the tests,
+      via:
+
+          cd ./tests &amp;&amp; sh ./run-tests.sh
+
+      They will take a while, but should eventually succeed.
+  10. The final part of the screen output will also suggest to build the
+      documentation, via
+
+          cd ./doc/manual &amp;&amp; make
+
+      --- this may fail, but that does not seem to matter.
+  11. Finally, install the just compiled SBCL in the same way as the
+      downloaded binary above, via:
+
+          INSTALL_ROOT=... sh install.sh
+
+      If you use the same [47m...[0m as above (or use the default if you did
+      before), the new installation will replace the old one, and
+      invoking SBCL (which will still be on the path) will run the
+      newly compiled version.
+  12. If a new version of the SBCL sources becomes available, you can
+      repeat the procedure above to compile and install it, using the
+      previously installed binary.
+  13. As an alternative to installing the binary compiled from the sources,
+      you could create a script, in your executable path, containing
+
+          #!/bin/sh
+          <dir>/run-sbcl.sh --dynamic-space-size 2000 \"$@\"
+
+      where [47m<dir>[0m is the untarred directory described above, and where the
+      dynamic space size option is just an example of how one can
+      pass options to the running SBCL, but it is not necessarily
+      needed.  If you need to pass options like this, you can also do
+      that if you follow the installation instructions: in that case,
+      the script should contain just [47msbcl[0m instead of
+      [47m<dir>/run-sbcl.sh[0m.")
+ (SBCL-INSTALLATION-BRIEF
+  (BUILDING-ACL2)
+  "Installing Steel Bank Common Lisp (SBCL)
+
+  The topic [sbcl-installation] contains full installation instructions
+  for SBCL.  The present topic contains abbreviated instructions that
+  have been used successfully over time; these may be suitable for
+  those who already have a previous version of SBCL installed and
+  have experience with Lisp.  If the instructions below are not
+  sufficient for you, please see [sbcl-installation] instead.
 
   SBCL is available from [47m{https://www.sbcl.org | https://www.sbcl.org}[0m.
   You can of course go to that website to find download and
@@ -133766,14 +134485,17 @@ Subtopics
   See [stobj] for basic background on stobjs, and see [defstobj] for
   detailed documentation on the syntax and semantics of stobjs,
   including fields specified with [47m:type (stobj-table)[0m or [47m:type
-  (stobj-table SIZE)[0m for some natural number, [47mSIZE[0m.  We call such
-  fields ``stobj-table fields''; this documentation topic explains
-  them, and it assumes familiarity with stobj fields of stobjs as
-  documented in [nested-stobjs] --- especially, the use of
-  [47m[stobj-let][0m to read and write such fields.  Note that the
-  documentation for [defstobj] shows the default names for accessors
-  and updaters; for a stobj-table field, [47mTBL[0m, these are [47mTBL-GET[0m and
-  [47mTBL-PUT[0m, respectively.
+  (stobj-table SIZE)[0m.  In the latter case, [47mSIZE[0m must either be a
+  natural number or a defined constant whose value is a natural
+  number.  We call such fields --- that is, stobj fields specified
+  with [47m:type (stobj-table)[0m or [47m:type (stobj-table SIZE)[0m ---
+  ``stobj-table fields''; this documentation topic explains them, and
+  it assumes familiarity with stobj fields of stobjs as documented in
+  [nested-stobjs] --- especially, the use of [47m[stobj-let][0m to read and
+  write such fields.  Note that the documentation for [defstobj]
+  shows the default names for accessors and updaters; for a
+  stobj-table field, [47mTBL[0m, these are [47mTBL-GET[0m and [47mTBL-PUT[0m,
+  respectively.
 
   For examples of [47mstobj-let[0m usage for stobj-tables, see
   [community-book] [47mbooks/system/tests/stobj-table-tests-input.lsp[0m.
@@ -139177,8 +139899,7 @@ Subtopics
              (O< (ACL2-COUNT (CDDR X))
                  (ACL2-COUNT X))).
 
-    [Note:  A hint was supplied for our processing of the goal above.
-    Thanks!]
+    [Note:  A hint was supplied of the goal above.  Thanks!]
 
     We augment the goal with the hypothesis provided by the :USE hint.
     The hypothesis can be obtained from F.  We are left with the following
@@ -150051,6 +150772,12 @@ Subtopics
   earlier [47mdefun[0m after undoing that earlier definition with [47m:[0m[47m[ubt][0m[47m
   fact[0m, then [47m(verify-termination fact)[0m will succeed.
 
+  It may be necessary to specify an appropriate [47m:ruler-extenders[0m in a
+  [47mdcl[0m supplied to [47mverify-termination[0m.  This determines the [rulers]
+  used in the termination proofs and also the case analysis in the
+  induction scheme suggested by the admitted function.  See
+  [induction-coarse-v-fine-grained].
+
   [31;1mRemark on system functions.[0m There may be times when you want to apply
   [47mverify-termination[0m (and also, perhaps, [47m[verify-guards][0m) to
   functions that are predefined in ACL2.  It may be necessary in such
@@ -150141,17 +150868,12 @@ Subtopics
   "Permit [47m[verify-termination][0m for functions with raw Lisp code.
 
   By default, it is not permitted to verify termination (see
-  [VERIFY-TERMINATION]) for functions with raw Lisp code.  (Technical
-  note: With sufficient effort this restriction could perhaps be
-  lifted, but that would involve significant modification to the ACL2
-  sources, in particular to handle properly code generation for
-  executable-counterparts (see [evaluation]) in such cases in source
-  function [47moneify-cltl-code[0m.)
-
-  However, in some cases it may be harmless to remove this restriction.
-  That can be done as follows.  Note that an active trust tag is
-  required: in principle you can render ACL2 unsound with this
-  action!
+  [VERIFY-TERMINATION]) for functions with raw Lisp code.  This
+  restriction is important in general for preserving soundness; see
+  [program-only].  However, in some cases it may be harmless to
+  remove this restriction.  That can be done as follows.  Note that
+  an active trust tag is required: in principle you can render ACL2
+  unsound with this action!
 
     (defttag t)
     (remove-untouchable verify-termination-on-raw-program-okp nil)
@@ -156149,7 +156871,9 @@ Subtopics
   For recursive definitions (possibly mutually recursive), [47mvalue[0m
   controls termination analysis and the resulting stored induction
   scheme.  See [rulers] for a discussion of legal values and their
-  effects.
+  effects.  See [induction-coarse-v-fine-grained] for a discussion of
+  how a well-chosen [47m:ruler-extenders[0m setting may improve the
+  induction scheme suggested by a function.
 
   [47m:[0m[47msplit-types[0m
   [47mValue[0m is [47mt[0m or [47mnil[0m, indicating whether or not [type]s are to be

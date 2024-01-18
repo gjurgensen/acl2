@@ -4160,6 +4160,11 @@ and @(tsee include-book)"
  <li>See @(see RULER-EXTENDERS) for a control on ACL2's termination and
  induction analyses.</li>
 
+ <li>See @(see INDUCTION-COARSE-V-FINE-GRAINED) for a discussion of how a
+ well-chosen setting for @(see RULER-EXTENDERS) can improve an induction
+ scheme, especiall for a function containing @(tsee let) and @(tsee let*)
+ bindings that contain conditional recursive calls.</li>
+
  <li>See @(see SET-WELL-FOUNDED-RELATION) to set the default well-founded
  relation for termination analysis.</li>
 
@@ -8870,8 +8875,7 @@ and @(tsee include-book)"
   ACL2 !>(thm (equal (if a b c) (if (not a) c b))
               :hints ((\"Goal\" :bdd (:vars nil)))) ; Prove with BDDs
 
-  [Note:  A hint was supplied for our processing of the goal above.
-  Thanks!]
+  [Note:  A hint was supplied of the goal above.  Thanks!]
 
   But simplification with BDDs (7 nodes) reduces this to T, using the
   :definitions EQUAL and NOT.
@@ -8960,8 +8964,7 @@ and @(tsee include-book)"
           :hints ((\"Goal\" :bdd (:vars nil)
                    :in-theory (disable v-not-cons))))
 
-  [Note:  A hint was supplied for our processing of the goal above.
-  Thanks!]
+  [Note:  A hint was supplied of the goal above.  Thanks!]
 
   ACL2 Error in ( THM ...):  Attempted to create V-NOT node during BDD
   processing with an argument that is a call of a bdd-constructor,
@@ -9024,8 +9027,7 @@ and @(tsee include-book)"
                    ;; This time we do not specify a variable order.
                    (:vars nil))))
 
-  [Note:  A hint was supplied for our processing of the goal above.
-  Thanks!]
+  [Note:  A hint was supplied of the goal above.  Thanks!]
 
   ACL2 Error in ( THM ...):  The :BDD hint for the current goal has
   successfully simplified this goal, but has failed to prove it.
@@ -13483,13 +13485,11 @@ with any questions about building the community books.</p>")
  output for that limit of 10.</p>
 
  @({
- [Note:  A hint was supplied for our processing of the goal above.
- Thanks!]
+ [Note:  A hint was supplied of the goal above.  Thanks!]
 
  This simplifies, using trivial observations, to
 
- [Note:  A hint was supplied for our processing of the goal below.
- Thanks!]
+ [Note:  A hint was supplied of the goal below.  Thanks!]
 
  Goal'
  (IMPLIES (AND (NOT (EQUAL (F1 A B C) XXX))
@@ -13921,14 +13921,15 @@ with any questions about building the community books.</p>")
  })
 
  <p>Next fetch and extract a development snapshot in the new @('ccl')
- directory.  The version below is current as of this writing (April, 2021), but
- see <a
+ directory.  <b>WARNING.</b>  The version below is current as of this
+ writing (November, 2023), but see <a
  href='https://github.com/Clozure/ccl/releases/'>https://github.com/Clozure/ccl/releases/</a>
- for the latest snapshots.</p>
+ for the latest snapshots; in particular, @('\"v1.12.2\"') below could change,
+ e.g., to @('\"v1.12.3\"') or @('\"v1.13\"').</p>
 
  @({
  cd ccl
- wget https://github.com/Clozure/ccl/releases/download/v1.12/linuxx86.tar.gz
+ wget https://github.com/Clozure/ccl/releases/download/v1.12.2/linuxx86.tar.gz
  tar xfz linuxx86.tar.gz
  })
 
@@ -13998,13 +13999,15 @@ with any questions about building the community books.</p>")
  cd 2017-12-07-6be8298fe5/ccl
  })
 
- <p>Next fetch and extract a development snapshot.  The version below is
- current as of this writing (December, 2021), but see <a
+ <p>Next fetch and extract a development snapshot in the new @('ccl')
+ directory.  <b>WARNING.</b>  The version below is current as of this
+ writing (November, 2023), but see <a
  href='https://github.com/Clozure/ccl/releases/'>https://github.com/Clozure/ccl/releases/</a>
- for the latest snapshots.</p>
+ for the latest snapshots; in particular, @('\"v1.12.2\"') below could change,
+ e.g., to @('\"v1.12.3\"') or @('\"v1.13\"').</p>
 
  @({
- wget https://github.com/Clozure/ccl/releases/download/v1.12.1/linuxx86.tar.gz
+ wget https://github.com/Clozure/ccl/releases/download/v1.12.2/linuxx86.tar.gz
  tar xfz linuxx86.tar.gz
  })
 
@@ -14060,14 +14063,15 @@ with any questions about building the community books.</p>")
  })
 
  <p>Next fetch and extract a development snapshot in the new @('ccl')
- directory.  The version below is current as of this writing (April, 2021), but
- see <a
+ directory.  <b>WARNING.</b>  The version below is current as of this
+ writing (November, 2023), but see <a
  href='https://github.com/Clozure/ccl/releases/'>https://github.com/Clozure/ccl/releases/</a>
- for the latest snapshots.</p>
+ for the latest snapshots; in particular, @('\"v1.12.2\"') below could change,
+ e.g., to @('\"v1.12.3\"') or @('\"v1.13\"').</p>
 
  @({
  cd ccl
- curl -O -L https://github.com/Clozure/ccl/releases/download/v1.12/darwinx86.tar.gz
+ curl -O -L https://github.com/Clozure/ccl/releases/download/v1.12.2/darwinx86.tar.gz
  tar xfz darwinx86.tar.gz
  })
 
@@ -14142,13 +14146,15 @@ with any questions about building the community books.</p>")
  cd 2017-12-07-6be8298fe5/ccl
  })
 
- <p>Next fetch and extract a development snapshot.  The version below is
- current as of this writing (December, 2021), but see <a
+ <p>Next fetch and extract a development snapshot in the new @('ccl')
+ directory.  <b>WARNING.</b>  The version below is current as of this
+ writing (November, 2023), but see <a
  href='https://github.com/Clozure/ccl/releases/'>https://github.com/Clozure/ccl/releases/</a>
- for the latest snapshots.</p>
+ for the latest snapshots; in particular, @('\"v1.12.2\"') below could change,
+ e.g., to @('\"v1.12.3\"') or @('\"v1.13\"').</p>
 
  @({
- curl -L -O https://github.com/Clozure/ccl/releases/download/v1.12.1/darwinx86.tar.gz
+ curl -L -O https://github.com/Clozure/ccl/releases/download/v1.12.2/darwinx86.tar.gz
  tar xfz darwinx86.tar.gz
  })
 
@@ -15546,8 +15552,7 @@ with any questions about building the community books.</p>")
                 :clause-processor
                 (note-fact-clause-processor clause '(equal a a)))))
 
-  [Note:  A hint was supplied for our processing of the goal above.
-  Thanks!]
+  [Note:  A hint was supplied of the goal above.  Thanks!]
 
   We now apply the verified :CLAUSE-PROCESSOR function NOTE-FACT-CLAUSE-
   PROCESSOR to produce two new subgoals.
@@ -22703,7 +22708,9 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
   keyword arguments @('measure'), @('well-founded-relation'), and
   @('ruler-extenders') default to the measure, well-founded relation, and
   ruler-extender settings used in the admittance of @('name').  The keyword
-  argument @('hints') defaults to @('nil').</p>
+  argument @('hints') defaults to @('nil').  Note that an appropriate choice of
+  @('ruler-extenders') can improve some induction schemes.  See @(see
+  induction-coarse-v-fine-grained).</p>
 
   <h3>Restrictions</h3>
 
@@ -22897,8 +22904,7 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
                 :clause-processor
                 (note-fact-clause-processor clause '(equal a a)))))
 
-  [Note:  A hint was supplied for our processing of the goal above.
-  Thanks!]
+  [Note:  A hint was supplied of the goal above.  Thanks!]
 
   We now apply the trusted :CLAUSE-PROCESSOR function NOTE-FACT-CLAUSE-
   PROCESSOR to produce two new subgoals.
@@ -24410,9 +24416,11 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
  eqlablep), respectively; and if @('test') is @(tsee HONS-EQUAL) then there is
  no restriction on keys, but each proposed key is @(tsee hons)ed in raw Lisp
  before it is used (whether for access or update) and before it is put into the
- underlying hash table.  The @('size'), if supplied and not @('nil'), is a
- positive integer that may be used by the host Lisp as a hint for how to size
- the associated hash table in raw Lisp.</p>
+ underlying hash table.  The @('size') defaults to @('nil'), and if supplied,
+ it must be either @('nil') or a non-negative integer, or else a defined
+ constant evaluating to @('nil') or a non-negative integer.  When the value is
+ a (non-negative) integer, it may be used by the host Lisp as a hint for how to
+ size the associated hash table in raw Lisp.</p>
 
  <p>For a hash-table field, the @(':initially') keyword specifies a default
  rather than an initial value: it provides the value (default @('nil'))
@@ -25539,7 +25547,9 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
  <p>This completes the brief sketch of the ACL2 definitional principle.
  Optionally, see @(see rulers) for a more detailed discussion of the
  termination analysis and resulting proof obligations for admissibility, as
- well as a discussion of the relation to how ACL2 stores induction schemes.</p>
+ well as a discussion of the relation to how ACL2 stores induction schemes.
+ See @(see induction-coarse-v-fine-grained) for a discussion of how well-chosen
+ rulers can affect the induction scheme.</p>
 
  <p>On very rare occasions ACL2 will seem to \"hang\" when processing a
  definition, especially if there are many subexpressions of the body whose
@@ -47270,10 +47280,9 @@ current fast alists."
          (TRUE-LISTP (REV (CDR X))))
     (TRUE-LISTP (APPEND (REV (CDR X)) (LIST (CAR X))))).
 
-  [Note:  A hint was supplied for our processing
-  of the goal above, because of a :backtrack hint
-  that is preventing destructor elimination.
-  Thanks!]
+  [Note:  A hint was supplied for the goal above,
+  because of a :backtrack hint that is preventing
+  destructor elimination. Thanks!]
 
   We generalize this conjecture, replacing
   (REV (CDR X)) by RV.  This produces
@@ -47421,8 +47430,7 @@ current fast alists."
 
   [[... output omitted here ...]]
 
-  [Note:  A hint was supplied for our processing of the goal below.
-  Thanks!]
+  [Note:  A hint was supplied of the goal below.  Thanks!]
 
   Subgoal *1/2'
   (IMPLIES (AND (CONSP X)
@@ -47747,8 +47755,7 @@ current fast alists."
                        (:use cdr-cons :in-theory (enable append)))
                   :do-not '(generalize))))
 
-    [Note:  A hint was supplied for our processing of the goal above.
-    Thanks!]
+    [Note:  A hint was supplied of the goal above.  Thanks!]
 
     The :OR hint for Goal gives rise to two disjunctive branches.  Proving
     any one of these branches would suffice to prove Goal.  We explore
@@ -47764,8 +47771,7 @@ current fast alists."
                   :IN-THEORY (DISABLE CAR-CONS)
                   :DO-NOT '(GENERALIZE)).
 
-    [Note:  A hint was supplied for our processing of the goal above.
-    Thanks!]
+    [Note:  A hint was supplied of the goal above.  Thanks!]
 
     Normally we would attempt to prove this formula by induction.  However,
     we prefer in this instance to focus on the original input conjecture
@@ -47784,8 +47790,7 @@ current fast alists."
                   :IN-THEORY (ENABLE APPEND)
                   :DO-NOT '(GENERALIZE)).
 
-    [Note:  A hint was supplied for our processing of the goal above.
-    Thanks!]
+    [Note:  A hint was supplied of the goal above.  Thanks!]
 
     ACL2 Warning [Use] in ( THM ...):  It is unusual to :USE the formula
     of an enabled :REWRITE or :DEFINITION rule, so you may want to consider
@@ -48150,11 +48155,9 @@ current fast alists."
   val2 ...). See :DOC hints and :DOC hints-and-the-waterfall; community
   book books/hints/merge-hint.lisp might also be helpful.
 
-  [Note:  A hint was supplied for our processing of the goal above.
-  Thanks!]
+  [Note:  A hint was supplied of the goal above.  Thanks!]
 
-  [Note:  A hint was supplied for our processing of the goal above.
-  Thanks!]
+  [Note:  A hint was supplied of the goal above.  Thanks!]
 
   Name the formula above *1.
  })
@@ -50140,7 +50143,12 @@ tables in the current Hons Space."
  function must be admitted with a justification in terms of a measure that
  decreases in a well-founded way on a given set of ``controlling'' arguments,
  every recursive definition suggests a dual induction scheme that ``unwinds''
- the function from a given application.</p>
+ the function from a given application.  The case analysis in the induction
+ scheme suggested by a function call is determined by the case analysis used to
+ prove termination.  That case analysis chooses a subset of the tests governing
+ recursive calls and then generating base cases for the combinations of tests
+ that do not lead to recursive calls and induction steps for the combinations
+ that do.  See @(see rulers) and @(see induction-coarse-v-fine-grained).</p>
 
  <p>For example, since @(tsee append) (actually @(tsee binary-append), but
  we'll ignore the distinction here) decomposes its first argument by successive
@@ -50310,6 +50318,512 @@ tables in the current Hons Space."
  recursion-by-sub2)') is disabled, nevertheless the induction scheme for
  @('recursion-by-sub2') will be available to apply to the instantiated
  @(':scheme-term').</p>")
+
+(defxdoc induction-coarse-v-fine-grained
+  :parents (rulers)
+  :short "advice on case explosion in complex inductions"
+  :long "<p>Recursive functions suggest inductions based on the case analysis
+  in the function definition and the positions of recursive calls within that
+  case analysis.  That analysis is done when termination is proved.  Key parts
+  of that analysis are the notions of governing tests and ruling tests.  By
+  using the so-called ``ruler-extenders'' feature of termination analysis you
+  can sometimes choose between ``coarse-grained'' and ``fine-grained''
+  inductions.  The former have few cases but may provide multiple and sometimes
+  irrelevant induction hypotheses.  The latter provide more cases, each
+  targeted at a given output, and tend to provide only induction hypotheses
+  needed for that output.  See @(see rulers) for a discussion of
+  ruler-extenders.</p>
+
+  <h3>Governing versus Ruling Tests</h3>
+
+  <p>Roughly speaking, a test <i>governs</i> a recursive call if the test must
+  be true for control to reach that call.  The <i>ruling</i> tests are a subset
+  of the governing tests and are the ones that determine the case analysis of
+  any suggested induction.</p>
+
+  <p>For example, if we are analyzing a definition of @('(fn x)') and the body
+  is @('(if (not (consp x)) (h nil) (h (fn (cdr x))))') then @('(consp x)')
+  governs the recursive call and it also rules the call.  But if the body were
+  @('(h (if (not (consp x)) nil (fn (cdr x))))') then @('(consp x)') governs the
+  recursive call but may not rule it.  It would be considered a ruler if the
+  symbol @('h') were on the ``ruler-extenders'' list &mdash; the list of
+  symbols that allow further collection of rulers from inside terms that begin
+  with those symbols.</p>
+
+  <p>The default setting of ruler-extenders is @('(if mv-list return-last)').
+  That means that termination (and induction) analysis stops looking for ruling
+  tests when a term is encountered that does not begin with one of these listed
+  symbols.  For example, under the default ruler-extenders, when the analysis
+  encounters a term that starts with a @('lambda') expression, that term is
+  considered a tip of the tree.  (@('Lambda') expressions are relevant because
+  they are introduced by the macroexpansion of @(tsee let) and @(tsee let*)
+  expressions, which arise frequently in interesting recursive functions
+  because they facilitate <i>code sharing</i> by allowing the computation of
+  intermediate results used on multiple output branches.)  When the analysis
+  encounters a term considered a tip, the rulers collected so far are used to
+  rule <i>all</i> the recursive calls in that tip.  So at a tip, the analysis
+  collects all the recursive calls occurring in that tip and forms measure
+  conjectures and, eventually, induction hypotheses about them, using the
+  rulers as the hypotheses of those conjectures.</p>
+
+  <p>So the user can influence the determination of the rulers by setting the
+  ``ruler-extenders'' in effect when the function is admitted.  The global
+  default ruler-extenders can be set by the event @('set-ruler-extenders') or
+  specified locally in a @('defun') by the @(tsee xargs) keyword
+  @(':ruler-extenders').  See @(see rulers) for the details.</p>
+
+  <h3>Coarse versus Fine Induction Case Analysis</h3>
+
+  <p>Most often, users think about ruler-extenders only in the context of
+  <i>failed</i> termination proofs: inspection of the measure conjectures
+  reveal that an important governing hypothesis was curiously omitted, the user
+  consults the documentation or appeals for help from other users, and is
+  reminded of ruler-extenders.  One could argue that users forget about
+  ruler-extenders because the default setting for ruler-extenders is so often
+  the ``right'' one.  But sometimes even a function that is successfully
+  admitted under the default setting would benefit from selecting a non-default
+  setting for ruler-extenders.</p>
+
+  <p>Sometimes you may feel that the prover is struggling with an induction
+  suggested by a function, even though the function that suggested the
+  induction is the one you expected to be selected, and for most simple
+  recursive functions the induction suggested is the ``perfect'' induction for
+  that function.  This problem of the prover struggling to simplify the
+  induction steps might arise most commonly with functions that have @(tsee
+  let*) bindings that contain @('if')-expressions, some of which contain
+  recursive calls.  For example, the following artificial example raises the
+  possibility of this problem.</p>
+
+  @({
+  (defun fn (x y)
+    (if (consp x)
+        (let* ((y1 (if (consp (car x))
+                       (fn (car x) (cons 'car y))
+                       y))
+               (y2 (if (consp (cdr x))
+                       (fn (cdr x) (cons 'cdr y1))
+                       y1)))
+          (cons y1 y2))
+        y))
+  })
+
+  <p>Recall that @('let*') expressions are translated into nested @('lambda')
+  expressions, so the formal definition of @('fn') is</p>
+
+  @({
+  (defun fn (x y)
+    (if (consp x)
+        ((lambda (y1 x)
+           ((lambda (y2 y1) (cons y1 y2))
+            (if (consp (cdr x))
+                (fn (cdr x) (cons 'cdr y1))
+              y1)
+            y1))
+         (if (consp (car x))
+             (fn (car x) (cons 'car y))
+           y)
+         x)
+        y))
+  })
+
+  <p>So, the entire @('let*') above, i.e., the formal term starting with the
+  first @('lambda') expression, is a tip ruled only by @('(consp x)').  The
+  @('if')s within it are not considered even though their tests govern (but do
+  not rule) the subsequent recursions.  The recursive calls in that tip are</p>
+
+  @({
+  (fn (car x) (cons 'car y))
+  })
+
+  <p>and</p>
+
+  @({
+  (fn (cdr x)
+      (cons 'cdr
+            (if (consp (car x))
+                (fn (car x) (cons 'car y))
+                y))).
+  })
+
+  <p>The default measure in this definition is @('(acl2-count x)').  The
+  measure conjectures are easy to prove because @('(consp x)') implies
+  @('(acl2-count (car x))') and @('(acl2-count (cdr x))') are both less than
+  @('(acl2-count x)').  Since there are no more recursive calls in the
+  definition, @('fn') is admitted.</p>
+
+  <p>Now consider how the prover would attempt to prove @('(p (fn x y))') by
+  the induction suggested by @('fn').  The induction argument, shown below, has
+  one base case and one induction step.  The induction step has two induction
+  hypotheses.</p>
+
+  @({
+  (and (implies (not (consp x)) (p (fn x y)))
+       (implies (and (consp x)
+                     (p (fn (car x) (cons 'car y)))
+                     (p (fn (cdr x)
+                            (cons 'cdr
+                                  (if (consp (car x))
+                                      (fn (car x) (cons 'car y))
+                                      y)))))
+                (p (fn x y)))).
+  })
+
+  <p><b>Note</b>: Here and throughought this documentation topic we freely
+  rearrange the formulas we display to make it easier to compare different
+  induction schemes.  For example, when the prover attempts to prove @('(p (fn
+  x y))') it lists the conjuncts above in the opposite order, i.e., the base
+  case occurs last.  It can be hard to compare induction schemes from similar
+  functions because ACL2's methods of generating induction schemes does not
+  preserve the order of tips.</p>
+
+  <p>The prover attempts to reduce each of these two conjuncts to @('T') by
+  simplification.  The base case is generally simple.  So consider the
+  induction step, the second implication above, which we abbreviate here as</p>
+
+  <code>
+  (implies (and (consp x)
+                <i>ind-hyp1</i>
+                <i>ind-hyp2</i>)
+           <i>ind-concl</i>)
+  </code>
+
+  <p>where, <i>ind-hyp1</i>, the first induction hypothesis, is @('(p (fn (car
+  x) (cons 'car y)))'), etc.  See @(see introduction-to-the-theorem-prover) for
+  more details of how the rewriter works.  When rewriting the formula above it
+  basically proceeds left-to-right, innermost first, keeping track of what can
+  be assumed given the context in which terms occur.  Thus, by the time the
+  rewriter gets to the induction conclusion, <i>ind-concl</i>, the two
+  induction hypotheses will have been rewritten, making them easier to find and
+  identify as true if they occur in the rewriting of the conclusion.</p>
+
+  <p>But rewriting <i>ind-hyp1</i> here will involve rewriting @('(fn (car
+  x) (cons 'car y))'), which is completely irrelevant to half of the proof of
+  <i>ind-concl</i>.  In particular, inspection of @('fn') reveals that the
+  first recursive call of @('fn') is only relevant if @('(consp (car x))') is
+  true.  But we know nothing about @('(car x)') in this induction step.
+  Furthermore, rewriting a call of a recursive function can be very expensive
+  since it requires (a) rewriting the actual expressions, then (b) rewriting
+  the body of the function under a substitution replacing the function's
+  formals by the rewritten actuals, and then (c) heuristically deciding whether
+  the rewritten body is preferable to the call, given the subterms occurring
+  elsewhere in the goal.</p>
+
+  <p>Another way to describe the unfortunate induction scheme above is that it
+  ``coarse,'' because it provides a simple case analysis, which necessitates
+  lumping all the possibly relevant induction hypotheses into a single case (in
+  this particular example).  When the induction conclusion opens, after the
+  induction hypotheses have all been simplified, it will cause further
+  splitting, (e.g., on @('(consp (car x))')), and in some of those subgoals
+  some of the simplified induction hypotheses will be irrelevant (but still
+  burden the simplification process if the cases are not proved
+  immediately).</p>
+
+  <p>Depending on how hard it is to rewrite irrelevant induction hypotheses
+  &mdash; which depends not just on the function, like @('fn'), suggesting the
+  induction but also on the conjecture being proved &mdash; it might be more
+  efficient to have a finer-grained case analysis so that the only induction
+  hypotheses in a given case are those on a given execution path.</p>
+
+  <p>A finer-grained induction scheme is generated, in the case of @('fn'), by
+  arranging for @('lambda') expressions <i>not</i> to stop the collection of
+  rulers.  This can be done by adding the keyword @(':lambdas') to the
+  ruler-extenders.  The presence of that keyword means ``keep collecting rulers
+  as you dive into <i>any</i> term beginning with a @('lambda') expression.''
+  (By the way, normally @(':ruler-extenders') expects a list but if you specify
+  the single keyword @(':lambdas') it denotes the list @('(if :lambdas mv-list
+  return-last)').)  Again, see @('rulers') for details.</p>
+
+  <p>If we had defined @('fn') as shown below we would get the finer induction
+  analysis shown subsequently.</p>
+
+  @({
+  (defun fn (x y)
+    (declare (xargs :ruler-extenders :lambdas))
+    (if (consp x)
+        (let* ((y1 (if (consp (car x))
+                       (fn (car x) (cons 'car y))
+                       y))
+               (y2 (if (consp (cdr x))
+                       (fn (cdr x) (cons 'cdr y1))
+                       y1)))
+          (cons y1 y2))
+        y))
+  })
+
+  <p>Note that @('fn') can be admitted without extending the rulers &mdash; we
+  have already demonstrated that.  We are including @(':lambdas') here
+  precisely to get a finer case analysis for induction.</p>
+
+  <p>The induction generated is shown below.  We have slightly simplified the
+  induction by replacing @('(if ')<i>a b c</i>@(')') by <i>b</i> when <i>a</i>
+  is among the hypotheses in the case analysis, and by replacing @('(if ')<i>a
+  b c</i>@(')') by <i>c</i> when @('(not ')<i>a</i>@(')') is among the
+  hyotheses.  This simplification is actually not done by induction analysis
+  but by the first simplification.</p>
+
+  @({
+  (and (implies (not (consp x)) (p (fn x y)))
+       (implies (and (consp x)
+                     (not (consp (car x)))
+                     (not (consp (cdr x))))
+                (p (fn x y)))
+       (implies (and (consp x)
+                     (not (consp (car x)))
+                     (consp (cdr x))
+                     (p (fn (cdr x) (cons 'cdr y))))
+                (p (fn x y)))
+       (implies (and (consp x)
+                     (consp (car x))
+                     (not (consp (cdr x)))
+                     (p (fn (car x) (cons 'car y))))
+                (p (fn x y)))
+       (implies (and (consp x)
+                     (consp (car x))
+                     (consp (cdr x))
+                     (p (fn (car x) (cons 'car y)))
+                     (p (fn (cdr x)
+                            (cons 'cdr (fn (car x) (cons 'car y))))))
+                (p (fn x y))))
+  })
+
+  <p>Note that the case analysis here steers the @('(fn x y)') in the
+  conclusion down exactly one path and the only hypotheses provided in each
+  induction step concern recursive calls on that path.</p>
+
+  <p>The finer case analysis gives us two base cases and four induction steps,
+  one of which has two induction hypotheses.  We'll encounter terms of the form
+  @('(p (fn ...))') nine times in using this scheme, instead of just four such
+  terms in the first scheme we showed.  It may seem surprising that this scheme
+  ever leads to faster proofs than the earlier one.  But it can.  Whether it
+  does depends, as mentioned above, on the complexity of rewriting the
+  recursive calls involved and the conjecture being proved.</p>
+
+  <p><b>Note</b>: The ruler-extenders may include arbitrary function symbols
+  and the keyword @(':lambdas') as above.  But it can also be set to @(':all')
+  which makes all the governors be rulers, i.e., collection of rulers dives
+  through all function symbols.  We focus here on diving through @('lambda')
+  expressions because they are by far the most common ``function
+  symbol'' (other than @('if')) under which one finds additional tests and
+  recursive calls.</p>
+
+  <p>In the next section we'll discuss a theorem that makes use of these
+  insights and demonstrates that the finer scheme can lead to faster
+  proofs.</p>
+
+  <h3>An Actual Example of Coarse versus Fine Induction Schemes</h3>
+
+  <p>The ACL2 prettyprinter is implemented with the function @('ppr').  It is
+  basically the composition of two functions, @('ppr1'), which takes the object
+  to be printed and computes a ``ppr tuple'' describing how much to indent each
+  subexpression and where to break the lines, and @('ppr2'), which actually
+  prints.  To admit @('ppr') as a logic mode function we have to prove
+  termination and verify the guards of all the functions involved.  To verify
+  the guards, we have to prove that @('ppr1') returns a @('ppr-tuple-p').  You
+  can see the definitions of @('ppr1') and @('ppr-tuple-p') and their mutually
+  recursive peers by using the @(':')@(tsee pe) command, e.g., @(':pe
+  ppr1').</p>
+
+  <p>We'll focus here on @('ppr1'), which is mutually recursive with
+  @('ppr1-lst').  To prove anything interesting about a function in a mutually
+  recursive clique you generally have to simultaneously prove analogous
+  theorems about every function in the clique.  That is most often done by
+  defining a ``flagged'' function which can recur as any function in the clique
+  according to a flag.  The community book @('books/tools/flag') provides a
+  convenient way to do that.  Since that book facilitates the introduction of
+  the flagged function, it allows the generated definition to be processed with a
+  user-supplied ruler-extenders.</p>
+
+  <p>A good demonstration of the ``coarse'' and ``fine'' induction schemes for
+  @('ppr1') can be found in the community book
+  @('books/demos/ppr1-experiments').  We summarize the contents of that book
+  here.</p>
+
+  <p>The book proves that @('ppr1') returns a @('ppr-tuple-p') and
+  @('ppr1-lst') returns a @('ppr-tuple-lst-p').  In fact, it does that proof
+  seven times, under coarse and fine inductions and variations on some hints.
+  The coarse induction is obtained by admitting a flagged version of
+  @('ppr1')/@('ppr1-lst') under the default ruler-extenders.  The fine
+  induction is obtained by admitting a differently named flagged version of
+  @('ppr1')/@('ppr1-lst') with @(':ruler-extenders :lambdas').</p>
+
+  <p>The coarse induction, generated under the default ruler-extenders, has 76
+  cases.  Six are base cases.  The other 70 are induction steps with varying
+  numbers of induction hypotheses as given in the sketch below.</p>
+
+  @({
+  (76           ;; 76 cases in the induction scheme
+      (0 . 6)   ;; no induction hyps in 6 cases, i.e., Base Cases
+      (1 . 8)   ;; 1 induction hyp in 8 cases
+      (2 . 2)   ;; 2 induction hyps in 2 cases
+      (3 . 16)  ;; 3 induction hyps in 16 cases
+      (4 . 32)  ;; 4 induction hyps in 32 cases
+      (8 . 4)   ;; 8 induction hyps in 4 cases
+      (9 . 8))  ;; 9 induction hyps in 8 cases
+  })
+
+  <p>The fine induction, generated under the @(':lambdas') ruler-extension, can
+  be similarly sketched.</p>
+
+  @({
+  (256          ;; 256 cases in the induction scheme
+      (0 . 6)   ;; no induction hyps in 6 cases, i.e., Base Cases
+      (1 . 8)   ;; 1 induction hyp in 8 cases
+      (2 . 82)  ;; 2 induction hyps in 82 cases
+      (3 . 80)  ;; 3 induction hyps in 80 cases
+      (4 . 80)) ;; 4 induction hyps in 80 cases
+  })
+
+  <p>The induction generated under the @(':all') ruler-extensions is identical
+  to the fine induction for @('ppr1') and @('ppr1-lst').  (No governing
+  @('if')s are hidden under function calls other than @('if') and @('lambda')
+  expressions in those two functions.)</p>
+
+  <p>Regardless of which induction scheme we use, the proof that @('ppr1')
+  returns a @('ppr-tuple-p') and that @('ppr1-lst') returns a
+  @('ppr1-tuple-lst-p') fails without a certain hint: we have to tell the
+  prover to expand the calls of @('ppr1') and @('ppr1-lst') in the conclusions
+  of the induction steps.  If you try to prove the theorem without the hint the
+  first checkpoint makes clear that you need the hint.  (This is not an
+  uncommon problem in inductive proofs about mutually recursive functions.)
+  But in the most basic like-for-like comparison of the successful proof of the
+  theorem by each induction scheme augmented by an @(':expand') hint, the
+  coarse induction takes 2,165 seconds and the fine induction takes 65 seconds.
+  See scenarios 1 and 3 in the next section.</p>
+
+  <h3>Comparing Several Optimizations</h3>
+
+  <p>After noticing the performance differences between the coarse and fine
+  inductions we spent some time trying to further optimize the proof.  We
+  compared seven different combinations of approaches.  We discuss them here.
+  See the @('books/demos/ppr1-experiments') for the details of each hint, etc.
+  The times reported below were originally recovered from the @('.cert.out')
+  file after certification of the book in September, 2023, using the
+  development copy of ACL2 slated to become Version 8.6, running in CCL on a
+  Macbook Pro.  Inspect the @('.cert.out') file for more recent results.</p>
+
+  <p>As mentioned previously, a common situation with inductive proofs about
+  complicated mutually recursive functions is that the calls in the conclusion
+  aren't always automatically opened by ACL2's heuristics.  So it is not
+  unusual in such proofs to provide a hint that explicitly expands the
+  @('ppr1') and @('ppr1-lst') calls in the conclusion.  In these experiments we
+  provide that hint two ways, either as part of fairly sophisticated computed
+  hint or with an @(':expand') hint on @('\"Goal\"').  If you try to prove this
+  theorem with no hint it fails.</p>
+
+  <p>We will also be experimenting with the enabled status of @('ppr1') and
+  @('ppr1-lst').</p>
+
+  <p>The seven scenarios are specified by saying which induction scheme is
+  used, whether @('ppr1') and @('ppr1-lst') are enabled or disabled by default,
+  and what hints are provided.  There are three basic hints to chose from.</p>
+
+  <ul>
+
+  <li>@('computed') &mdash; when a subgoal becomes stable, open @('ppr1') and
+      @('ppr1-lst') in the conclusion, and when any subgoal of that becomes
+      stable again, enable @('ppr1') and @('ppr1-lst') and let ACL2's
+      heuristics take over.  This hint only makes sense if @('ppr1') and
+      @('ppr1-lst') are initially disabled.</li>
+
+  <li> @('computed'') &mdash; like @('computed') but skips the first stable
+       opening of @('ppr1') and @('ppr1-lst').  That is handled instead by an
+       @(':expand') hint.</li>
+
+  <li>@(':expand') &mdash; a traditional @(':expand') hint to open @('ppr1')
+      and @('ppr1-lst') terms as they appear in induction conclusions.
+      The expand hint is
+      @({
+      :expand
+      ((:free (print-base print-radix width rpc state eviscp)
+              (ppr1 x print-base print-radix width rpc state eviscp))
+       (:free (print-base print-radix width rpc pair-keywords-p state eviscp)
+              (ppr1-lst lst print-base print-radix width rpc
+                        pair-keywords-p state eviscp)))
+      })
+      which allows the non-controller arguments of @('ppr1') and @('ppr1-lst')
+      to be any terms but insists that the controllers, @('x') and @('lst'),
+      respectively, be those particular variable names.</li>
+
+      </ul>
+
+  <p>In addition, we sometime avail ourselves of special-purpose lemmas.</p>
+
+  <ul>
+  <li>@('NIL lem')  &mdash; rewrites @('(ppr1-lst nil ...)') to @('nil').</li>
+
+  <li>@('MAX hack') &mdash; lemmas about @('MAX') allowing us to disable @('MAX')</li>
+  </ul>
+
+  <p>We try seven different combinations, numbered 1-7, but listed below
+  in descending order of proof times.</p>
+
+  @({
+  n      induction    status                 hints               proof time
+
+  1       coarse      enabled      :expand                         2165.19
+  2       coarse      disabled     computed                         207.49
+  6       fine        disabled     computed                          82.29
+  3       fine        enabled      :expand                           65.00
+  4       fine        disabled     computed + :expand                62.86
+  5       fine        disabled     computed' + :expand + NIL lem     61.58
+  7       fine        disabled     computed + :expand + MAX hack     55.14
+  })
+
+  <p>Note that scenarios 1 and 3 are a direct comparison of coarse and fine
+  induction with exactly the same hint.  The coarse induction took 2165.19
+  seconds and the fine induction took 65.00, despite the fact that the coarse
+  induction had 76 cases to deal with and the fine induction had 256.  The most
+  likely reason the coarse induction performed poorly is that there were 8
+  induction steps that had 9 induction hypotheses each, even though no case
+  ever actually required more than 4 induction hypotheses.</p>
+
+  <p>Scenario 2 shows that much time is saved by disabling @('ppr1') and
+  @('ppr1-lst') and expanding them (when stable) with the computed hint.  Note
+  that since the computed hint first expands them in the conclusion and lets
+  the resulting subgoals stabilize before enabling @('ppr1') and @('ppr1-lst'),
+  the calls of @('ppr1') and @('ppr1-lst') in the induction hypotheses do not
+  expand until the relevant case analysis is exposed by expanding the
+  conclusion.</p>
+
+  <p>Scenarios 4, 5, 6, and 7, attempt to improve upon the time seen in
+  scenario 3.  We see that the best performance in this particular problem is
+  to use the fine induction case analysis, keep the relevant recursive
+  functions disabled by default, use an @(':expand') hint to open them in the
+  conclusion but also have a computed hint that expands them in the conclusions
+  if a stable subgoal arises, and only enable those functions if they're still
+  in the subsequently stable subgoals.  The @('MAX hack') saves another 10\% by
+  avoiding case splits caused by the many occurrences of @('MAX') in
+  @('ppr1').</p>
+
+  <p>However, it should be noted that the major source of improvement is the
+  use of the fine induction scheme.  The fact that there is only a 10\% further
+  improvement achieved by the various other hints suggests it may not be worth
+  the effort!  Coding the computed hint took time and thought, compared to just
+  using an @(':expand') hint.  And it was a lot easier to leave @('ppr1') and
+  @('ppr1-lst') enabled and let ACL2 decide when to expand them than it was to
+  disable them and control their expansion by hints and lemmas.  One take-home
+  lesson for us was that ACL2's heuristics for opening recursive functions are
+  pretty good!</p>
+
+  <p>Ignoring scenario 7 &mdash; where the additional improvement came from a
+  completely different source, namely, avoidng the expansion of @('MAX')
+  expressions &mdash; the difference between the easiest thing to do (scenario
+  3) and the fastest method that focused on manually controlling @('ppr1') and
+  @('ppr1-lst') (scenario 5) was less than 4 seconds.  So, as usual with all
+  kinds of performance optimization, don't get sucked down the rabbit hole!
+  Take the easy wins and get on with the rest of your project!</p>
+
+  <h3>Conclusion</h3>
+
+  <p>Of course, whether fine induction schemes will improve other proofs just
+  depends on how many irrelevant induction hypotheses are present and how
+  complicated it is to simplify the terms in the theorem.  If you are proving
+  something about a recursive function that contains @('let*') expressions in
+  which some of the bindings conditionally make recursive calls, be alert to
+  the possibility that adjusting ruler-extenders to include @(':lambdas') may
+  give better inductive performance.  If you witness the prover engaged in
+  fairly deep case splits, even as it seems always to prove the resulting
+  cases, you might look for ways to get a finer induction case analysis.</p>")
 
 (defxdoc induction-depth-limit
   :parents (induction)
@@ -50671,8 +51185,7 @@ tables in the current Hons Space."
   When applied to the goal at hand the above induction scheme produces
   two nontautological subgoals.
 
-  [Note:  A hint was supplied for our processing of the goal below.
-  Thanks!]
+  [Note:  A hint was supplied of the goal below.  Thanks!]
 
   Subgoal *1/2
   (IMPLIES (AND (NOT (ENDP X))
@@ -50757,8 +51270,7 @@ tables in the current Hons Space."
  here.</p>
 
  @({
-  [Note:  A hint was supplied for our processing of the goal below.
-  Thanks!]
+  [Note:  A hint was supplied of the goal below.  Thanks!]
 
   Subgoal *1/2
   (IMPLIES (AND (NOT (ENDP X))
@@ -51060,8 +51572,7 @@ tables in the current Hons Space."
  <p>Here is an edited version of the resulting log.</p>
 
  @({
-  [Note:  A hint was supplied for our processing of the goal above.
-  Thanks!]
+  [Note:  A hint was supplied of the goal above.  Thanks!]
 
   [[1> Executing proof-builder instructions]]
 
@@ -51076,8 +51587,7 @@ tables in the current Hons Space."
 
   [[ ... output omitted ... ]]
 
-  [Note:  A hint was supplied for our processing of the goal below.
-  Thanks!]
+  [Note:  A hint was supplied of the goal below.  Thanks!]
 
   Subgoal *1/3''
   (IMPLIES (AND (CONSP X)
@@ -51094,8 +51604,7 @@ tables in the current Hons Space."
   ->: :BASH
   ***** Now entering the theorem prover *****
 
-  [Note:  A hint was supplied for our processing of the goal above.
-  Thanks!]
+  [Note:  A hint was supplied of the goal above.  Thanks!]
 
   But we have been asked to pretend that this goal is subsumed by the
   yet-to-be-proved |PROOF-BUILDER Goal|.
@@ -79983,8 +80492,7 @@ it."
                    104))
    :hints ((\"Goal\" :in-theory (enable bvecp))))
 
-  [Note:  A hint was supplied for our processing of the goal above.
-  Thanks!]
+  [Note:  A hint was supplied of the goal above.  Thanks!]
 
   By the simple :definition BVECP, the :executable-counterparts of EXPT
   and UNARY-/ and the simple :rewrite rule ASSOCIATIVITY-OF-* we reduce
@@ -102351,14 +102859,14 @@ it."
 
 (defxdoc note-8-6
 
-; Total number of release note items: 170, as follows -- not including the
+; Total number of release note items: 171, as follows -- not including the
 ; conversion of fmt, (er soft ...), one-way-unify, and genvar, and related
 ; utilities to guard-verified :logic mode.
 
-;   74 ; Changes to Existing Features
+;   76 ; Changes to Existing Features
 ;   31 ; New Features
 ;    8 ; Heuristic and Efficiency Improvements
-;   32 ; Bug Fixes
+;   33 ; Bug Fixes
 ;   17 ; Changes at the System Level
 ;    7 ; EMACS Support
 ;    1 ; Experimental Versions
@@ -102702,6 +103210,12 @@ it."
 
 ; Modified set-cert-replay-p to treat illegal values of guard-checking-on as
 ; :nowarn, as documented in :DOC guard-evaluation-table.
+
+; Tweaked the logical definition of read-object to check (consp (cdr entry)),
+; which is more natural, in place of (cdr entry).  These are equivalent under
+; the guard.  Thanks to Eric Smith for the suggestion.
+
+; Shortened "thanks for the hint" wording as suggested by Eric Smith.
 
   :parents (release-notes)
   :short "ACL2 Version  8.6 (xxx, 20xx) Notes"
@@ -103261,6 +103775,16 @@ it."
  <p>It is no longer illegal to read a @(see stobj) when in a @(see wormhole)
  state, for example, when inside @(see break-rewrite).</p>
 
+ <p>In @(see gag-mode) (which is on by default), when the prover notes that a
+ forcing round is pending, it now lists the names of the rules that are
+ responsible.</p>
+
+ <p>A hash-table or stobj-table field of a @(see stobj) may now specify a size
+ that is a constant symbol with a suitable value.  See @(see defstobj) and see
+ @(see stobj-table).  The meaning is the same as if the size had been given as
+ the value of that constant.  Thanks to Warren Hunt for requesting this
+ enhancement.</p>
+
  <h3>New Features</h3>
 
  <p>The new zero-ary attachable system function, @(tsee heavy-linear-p), allows
@@ -103434,6 +103958,17 @@ it."
  <p>It is possible to cause ACL2 to increase its effort in @(see
  type-reasoning).  See @(see set-dwp).  Thanks to Eric Smith for correspondence
  leading to this feature.</p>
+
+ <p>The new documentation topic, @(see induction-coarse-v-fine-grained),
+ discusses how appropriately setting ruler-extenders can sometimes improve the
+ induction scheme suggested by a recursive function, especially one involving
+ @(tsee let) and @(tsee let*) bindings containing conditional recursive calls.
+ For that new topic, new related books @('books/demos/ppr1-experiments.lisp')a
+ nd @('books/demos/ppr1-experiments-thm-1-ppr1.lisp'), and related edits of
+ existing :DOC topics (@(see advanced-features), @(see definductor), @(see
+ defun), @(see induction), @(see rulers), @(see verify-termination), and @(see
+ xargs)): Release was approved by DARPA with &ldquo;DISTRIBUTION STATEMENT
+ A. Approved for public release. Distribution is unlimited.&rdquo;</p>
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
@@ -103788,6 +104323,11 @@ it."
  @('true-listp-take'), thanks to Eric Smith, who pointed out that the same rule
  is already installed as the built-in @(':type-prescription') rule for @(tsee
  take).</p>
+
+ <p>Fixed a bug in handling of @(tsee do-loop$) expressions that return
+ multiple values, when encountered during proofs.  An example labeled with
+ &ldquo;Version 8.5&rdquo; is near the end of @(see community-book)
+ @('projects/apply/loop-tests.lisp').</p>
 
  <h3>Changes at the System Level</h3>
 
@@ -109777,7 +110317,64 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  because there is no guarantee that evaluation of the raw Lisp code will be
  ``safe''.</p>
 
- <p>See @(see safe-mode-cheat-sheet) for possible workarounds.</p>")
+ <p>The constant @('*initial-program-fns-with-raw-code*') provides the initial
+ value of @('(@ program-fns-with-raw-code)').  The value of that constant is
+ the list of ACL2 source functions that have special raw-Lisp code.  It is
+ important that these @(see program)-mode functions not be converted to @(see
+ logic) mode.  Otherwise, one could arrange to prove a contradiction.  To see
+ how, consider the following example, which shows how one might prove that a
+ call of a program-only function, @('p-o'), returns two different values on the
+ same input (an obvious contradiction).</p>
+
+ @({
+ (defun p-o (x)
+   (declare (xargs :guard t))
+   (er hard? 'p-o
+       \"Attempted logical evaluatin of ~x0.\"
+       (list 'p-0 x)))
+
+ :q ; exit the ACL2 read-eval-print loop
+
+ (defun p-o (x)
+   (declare (xargs :guard t))
+   (atom x))
+
+ (lp) ; re-enter the ACL2 read-eval-print loop
+
+ (defthm p-0-nil-is-nil
+   (equal (p-o nil) nil)
+   :hints ((\"Goal\" :in-theory (disable (:e p-o)))))
+
+ (defthm p-o-nil-is-t
+   (equal (p-o nil) t))
+ })
+
+ <p>In the ACL2 source one often finds a definition marked with readtime
+ conditionals, such as the following.</p>
+
+ @({
+ (defun p-o (x)
+   (declare (xargs :guard t))
+   #-acl2-loop-only
+   (atom x)
+   #+acl2-loop-only
+   (er hard? 'p-o
+       \"Attempted logical evaluatin of ~x0.\"
+       (list 'p-0 x)))
+ })
+
+ <p>The @('acl2-loop-only') annotations arrange that when ACL2 is built, one
+ gets the effect described above, where the @('#+acl2-loop-only') code is used
+ in the definition known to ACL2 and the @('#-acl2-loop-only') code is used in
+ the definition known to raw Lisp.  All function symbols with such definitions
+ are in the list mentioned above, that is, the value of the constant
+ @('*initial-program-fns-with-raw-code*').</p>
+
+ <p>In summary: The contradiction proved above explains the restriction that
+ @(tsee logic)-mode functions may not call @(see program)-mode functions.</p>
+
+ <p>See @(see safe-mode-cheat-sheet) for possible workarounds, which however
+ may compromise soundness.</p>")
 
 (defxdoc program-wrapper
   :parents (program programming advanced-features)
@@ -124197,7 +124794,8 @@ work on <tt>(q x)</tt>.</p>
  induction step.  While this can make it more difficult for the system to merge
  induction schemes to get an appropriate induction, it can also make the proof
  of each induction step easier.  Unfortunately, we have no more precise advice
- as to exactly when adding @(':lambdas') will help.</li>
+ as to exactly when adding @(':lambdas') will help.  See @(see
+ induction-coarse-v-fine-grained).</li>
 
  </ol>
 
@@ -124894,8 +125492,10 @@ work on <tt>(q x)</tt>.</p>
  (See :DOC set-iprint to be able to see elided values in this message.)
  })
 
- <p>When the term is a call of @('ev-w'), an unsafe hack allowing such calls
- is as follows.  Warning: This may result in unsoundness!</p>
+ <p>When the term is a call of @('ev-w'), an unsafe hack allowing such calls is
+ as follows.  Warning: This may result in unsoundness!  (On a related note: For
+ discussion about unsoundness when converting such @(see program)-mode
+ functions to @(see logic) mode, see @(see program-only).</p>
 
  @({
  (value :q)
@@ -125520,6 +126120,125 @@ work on <tt>(q x)</tt>.</p>
 
 (defxdoc sbcl-installation
 
+; See sbcl-installation-brief for a comment about former material in
+; installation/requirements.html.
+
+  :parents (building-acl2)
+  :short "Installing Steel Bank Common Lisp (SBCL)"
+  :long "<p>SBCL is available from <tt><a
+ href='https://www.sbcl.org'>https://www.sbcl.org</a></tt>.  You can of course
+ go to that website to find download and installation instructions for SBCL,
+ but below is a concise summary that includes build options appropriate for
+ ACL2.</p>
+
+ <p><b>NOTE:</b> If you already have a previous version of SBCL installed and
+ you have experience with Lisp, you might want to see @(see
+ sbcl-installation-brief) for abbreviated instructions to use instead of those
+ below.</p>
+
+ <ol>
+
+ <li>Download an SBCL binary from
+ <tt><a href='https://www.sbcl.org'>https://www.sbcl.org/platform-table.html</a></tt>.
+ That page contains a table
+ with  combinations of operating systems and hardware architectures,
+ from which you have to pick the one that applies to you.
+ Note that you need an SBCL binary
+ in order to compile from source (see below).
+ The file downloaded from the table will have a name like
+ @('sbcl-2.1.2-arm64-darwin-binary.tar.bz2'),
+ where the @('arm64-darwin') part depends on
+ the chosen combination of operating system and hardware architecture.</li>
+
+ <li>Untar the file in a directory of your choice,
+ which will create a subdirectory with a name like
+ @('sbcl-2.1.2-arm64-darwin'),
+ consistently with the name of the downloaded file.</li>
+
+ <li>Change to that subdirectory and run
+ @({sh run-sbcl.sh})
+ to make sure that the binary works.
+ On macOS, you may get a pop-up saying that
+ Apple cannot check it for malware and that it needs to be updated.
+ In that case, open the macOS settings,
+ go under `Privacy and Security'
+ (or `Security and Privacy', depending on macOS version),
+ and you should see something about the (SBCL) executable
+ whose execution was stopped:
+ click the button to allow it, and retry running it.
+ Eventually it should work.</li>
+
+ <li>In the same directory where you just ran SBCL, run the SBCL installer.
+ This is done via
+ @({INSTALL_ROOT=... sh install.sh})
+ where @('...') is optional: if omitted, it defaults to @('/usr/local').
+ If you pick something different from this default,
+ note that the installer will create three directories there,
+ namely @('bin'), @('lib'), and @('share').
+ Thus, for examples, if you want to install SBCL in your home,
+ you may want to create a directory in your home (e.g. @('sbcl'), or @('apps')),
+ and pass that as @('INSTALL_ROOT'),
+ instead of passing your home directory.</li>
+
+ <li>Add that @('bin') directory to your path, so that SBCL can be found.
+ Try running @({sbcl}) to make sure that the installed binary works.
+ This time macOS should not block its execution.</li>
+
+ <li>Download the SBCL source from
+ <tt><a href='https://www.sbcl.org'>https://www.sbcl.org/platform-table.html</a></tt>,
+ the same page with the table of binaries.
+ There should be one link to the sources, above the table of binaries.
+ The downloaded file will have a name like @('sbcl-2.3.9-source.tar.bz2').</li>
+
+ <li>Untar the file in a directory of your choice,
+ which will create a subdirectory with a name like @('sbcl-2.3.9').</li>
+
+ <li>Change to that subdirectory, and compile SBCL via:
+ @({sh make.sh --without-immobile-space --without-immobile-code --without-compact-instance-header})
+ These options prevents certain possible errors.
+ The compilation process prints a lot of stuff on the screen,
+ and should succeed.</li>
+
+ <li>The final part of the screen output will suggest
+ to run the tests, via:
+ @({cd ./tests &amp;&amp; sh ./run-tests.sh})
+ They will take a while, but should eventually succeed.</li>
+
+ <li>The final part of the screen output will also suggest
+ to build the documentation, via @({cd ./doc/manual &amp;&amp; make})
+ &mdash; this may fail, but that does not seem to matter.</li>
+
+ <li>Finally, install the just compiled SBCL
+ in the same way as the downloaded binary above, via:
+ @({INSTALL_ROOT=... sh install.sh})
+ If you use the same @('...') as above (or use the default if you did before),
+ the new installation will replace the old one,
+ and invoking SBCL (which will still be on the path)
+ will run the newly compiled version.</li>
+
+ <li>If a new version of the SBCL sources becomes available,
+ you can repeat the procedure above to compile and install it,
+ using the previously installed binary.</li>
+
+ <li>As an alternative to installing the binary compiled from the sources,
+ you could create a script, in your executable path, containing
+ @({
+ #!/bin/sh
+ <dir>/run-sbcl.sh --dynamic-space-size 2000 \"$@\"
+ })
+ where @('<dir>') is the untarred directory described above,
+ and where the dynamic space size option is just an example
+ of how one can pass options to the running SBCL,
+ but it is not necessarily needed.
+ If you need to pass options like this,
+ you can also do that if you follow the installation instructions:
+ in that case, the script should contain just @('sbcl')
+ instead of @('<dir>/run-sbcl.sh').</li>
+
+ </ol>")
+
+(defxdoc sbcl-installation-brief
+
 ; This :DOC topic replaces what was in the section on "Obtaining SBCL" in ACL2
 ; file installation/requirements.html.  That material contained some
 ; information that is probably now obsolete.  Here is that material, in case
@@ -125600,7 +126319,14 @@ work on <tt>(q x)</tt>.</p>
 
   :parents (building-acl2)
   :short "Installing Steel Bank Common Lisp (SBCL)"
-  :long "<p>SBCL is available from <tt><a
+  :long "<p>The topic @(see sbcl-installation) contains full installation
+ instructions for SBCL.  The present topic contains abbreviated instructions
+ that have been used successfully over time; these may be suitable for those
+ who already have a previous version of SBCL installed and have experience with
+ Lisp.  If the instructions below are not sufficient for you, please see @(see
+ sbcl-installation) instead.</p>
+
+ <p>SBCL is available from <tt><a
  href='https://www.sbcl.org'>https://www.sbcl.org</a></tt>.  You can of course
  go to that website to find download and installation instructions for SBCL,
  but here is a concise summary that includes build options appropriate for
@@ -135446,13 +136172,16 @@ work on <tt>(q x)</tt>.</p>
   :long "<p>See @(see stobj) for basic background on stobjs, and see @(see
  defstobj) for detailed documentation on the syntax and semantics of stobjs,
  including fields specified with @(':type (stobj-table)') or
- @(':type (stobj-table SIZE)') for some natural number, @('SIZE').  We call
- such fields ``stobj-table fields''; this documentation topic explains them,
- and it assumes familiarity with stobj fields of stobjs as documented in @(see
- nested-stobjs) &mdash; especially, the use of @(tsee stobj-let) to read and
- write such fields.  Note that the documentation for @(see defstobj) shows the
- default names for accessors and updaters; for a stobj-table field, @('TBL'),
- these are @('TBL-GET') and @('TBL-PUT'), respectively.</p>
+ @(':type (stobj-table SIZE)').  In the latter case, @('SIZE') must either be a
+ natural number or a defined constant whose value is a natural number.  We call
+ such fields &mdash; that is, stobj fields specified with
+ @(':type (stobj-table)') or @(':type (stobj-table SIZE)') &mdash;
+ ``stobj-table fields''; this documentation topic explains them, and it assumes
+ familiarity with stobj fields of stobjs as documented in @(see nested-stobjs)
+ &mdash; especially, the use of @(tsee stobj-let) to read and write such
+ fields.  Note that the documentation for @(see defstobj) shows the default
+ names for accessors and updaters; for a stobj-table field, @('TBL'), these are
+ @('TBL-GET') and @('TBL-PUT'), respectively.</p>
 
  <p>For examples of @('stobj-let') usage for stobj-tables, see @(see
  community-book) @('books/system/tests/stobj-table-tests-input.lsp').</p>
@@ -140775,8 +141504,7 @@ work on <tt>(q x)</tt>.</p>
           (O< (ACL2-COUNT (CDDR X))
               (ACL2-COUNT X))).
 
- [Note:  A hint was supplied for our processing of the goal above.
- Thanks!]
+ [Note:  A hint was supplied of the goal above.  Thanks!]
 
  We augment the goal with the hypothesis provided by the :USE hint.
  The hypothesis can be obtained from F.  We are left with the following
@@ -151838,6 +152566,12 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  @('defun') after undoing that earlier definition with @(':')@(tsee ubt)@('
  fact'), then @('(verify-termination fact)') will succeed.</p>
 
+ <p>It may be necessary to specify an appropriate @(':ruler-extenders') in a
+ @('dcl') supplied to @('verify-termination').  This determines the @(see
+ rulers) used in the termination proofs and also the case analysis in the
+ induction scheme suggested by the admitted function.  See @(see
+ induction-coarse-v-fine-grained).</p>
+
  <p><b>Remark on system functions.</b> There may be times when you want to
  apply @('verify-termination') (and also, perhaps, @(tsee verify-guards)) to
  functions that are predefined in ACL2.  It may be necessary in such cases to
@@ -151918,15 +152652,10 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   :short "Permit @(tsee verify-termination) for functions with raw Lisp code."
   :long "<p>By default, it is not permitted to <see topic='@(url
  verify-termination)'>verify termination</see> for functions with raw Lisp
- code.  (Technical note: With sufficient effort this restriction could perhaps
- be lifted, but that would involve significant modification to the ACL2
- sources, in particular to handle properly code generation for
- executable-counterparts (see @(see evaluation)) in such cases in source
- function @('oneify-cltl-code').)</p>
-
- <p>However, in some cases it may be harmless to remove this restriction.  That
- can be done as follows.  Note that an active trust tag is required: in
- principle you can render ACL2 unsound with this action!</p>
+ code.  This restriction is important in general for preserving soundness; see
+ @(see program-only).  However, in some cases it may be harmless to remove this
+ restriction.  That can be done as follows.  Note that an active trust tag is
+ required: in principle you can render ACL2 unsound with this action!</p>
 
  @({
  (defttag t)
@@ -158185,7 +158914,10 @@ created from the original fast alist during @('form') must be manually freed."
 
  For recursive definitions (possibly mutually recursive), @('value') controls
  termination analysis and the resulting stored induction scheme.  See @(see
- rulers) for a discussion of legal values and their effects.</p>
+ rulers) for a discussion of legal values and their effects.  See @(see
+ induction-coarse-v-fine-grained) for a discussion of how a well-chosen
+ @(':ruler-extenders') setting may improve the induction scheme suggested by a
+ function.</p>
 
  <p>@(':')@('split-types')<br></br>
 
@@ -162009,6 +162741,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer error hints t)
 (defpointer ev$-list apply$)
 (defpointer event events)
+(defpointer event-data saving-event-data)
 (defpointer execution evaluation)
 (defpointer expand hints t)
 (defpointer extended-syntaxp syntaxp)
