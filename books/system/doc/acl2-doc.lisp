@@ -27020,7 +27020,7 @@ ld) and @(tsee include-book)"
  0.6
  ? (+ (+ 0.1 0.2) 0.3)
  0.6000000000000001
- ? 
+ ?
  })
 
  <p>Yet ACL2 has the following axiom.</p>
@@ -27055,7 +27055,7 @@ ld) and @(tsee include-book)"
  NIL
  ? (= 0.0 (- 0.0))
  T
- ? 
+ ?
  })
 
  <h3>Section 3: How the challenges are addressed</h3>
@@ -27116,7 +27116,7 @@ ld) and @(tsee include-book)"
  Exiting the ACL2 read-eval-print loop.  To re-enter, execute (LP).
  ? (= 3.1 6980579422424269/2251799813685248)
  T
- ? 
+ ?
  })
 
  <p>Although ACL2 simulates floating-point values with rationals, we see below
@@ -27268,7 +27268,7 @@ ld) and @(tsee include-book)"
 
  ACL2 Error [Translate] in TOP-LEVEL:  It is illegal to invoke TO-DF
  here because of a signature mismatch.  This function call returns a
- result of shape :DF where a result of shape * is required.  Note: 
+ result of shape :DF where a result of shape * is required.  Note:
  this error occurred in the context (TO-DF 1).
 
  ACL2 !>
@@ -27442,7 +27442,7 @@ ld) and @(tsee include-book)"
 
  <p>Here are the rules promised above.  They are not complete; for example,
  they do not cover @(tsee stobj-let) expressions.  But those and other cases
- should present no surprises in practice.)  Let @('u') be a user-supplied
+ should present no surprises in practice.  Let @('u') be a user-supplied
  term (that is, an <i>untranslated</i> term; see @(see term)).</p>
 
  <ul>
@@ -27640,7 +27640,7 @@ ld) and @(tsee include-book)"
 
  ACL2 Error [Translate] in TOP-LEVEL:  The form X represents an ordinary
  object, but it is being used where a form representing a :DF was expected.
- See :DOC df.  Note:  this error occurred in the context 
+ See :DOC df.  Note:  this error occurred in the context
  (BINARY-DF+ X (TO-DF 1/2)).
 
  ACL2 !>
@@ -27775,7 +27775,7 @@ ld) and @(tsee include-book)"
  0.6000000000000001
  ? (+ .1 (+ .2 .3))
  0.6
- ? 
+ ?
  })
 
  <p>@('(binary-df/ :df :df) => :df')<br/>
@@ -27919,7 +27919,7 @@ ld) and @(tsee include-book)"
  ? (macroexpand-1 '(TO-DF '3))
  3.0
  T
- ? 
+ ?
  })
 
  <p>A key performance tip is that a @('defun') form should @(see declare) dfs
@@ -27957,7 +27957,7 @@ ld) and @(tsee include-book)"
  ;;; Overflow and underflow
  ;;; An assertion macro
  ;;; Df-rationalize and rize
- ;;; More on dfp &amp; to-df (recognizer &amp; generator for representables)
+ ;;; More on dfp & to-df (recognizer & generator for representables)
  ;;; Fun with pi
  ;;; No support for complex floats
  ;;; Examples with defined functions

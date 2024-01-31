@@ -30609,7 +30609,7 @@ Section 4: Syntactic Restrictions
 
   Here are the rules promised above.  They are not complete; for
   example, they do not cover [47m[stobj-let][0m expressions.  But those and
-  other cases should present no surprises in practice.)  Let [47mu[0m be a
+  other cases should present no surprises in practice.  Let [47mu[0m be a
   user-supplied term (that is, an [3muntranslated[0m term; see [term]).
 
     * If [47mu[0m is a variable, then [47mu[0m is a df with respect to [47mV[0m if and only if
@@ -31098,7 +31098,7 @@ Section 8: More examples
     ;;; Overflow and underflow
     ;;; An assertion macro
     ;;; Df-rationalize and rize
-    ;;; More on dfp &amp; to-df (recognizer &amp; generator for representables)
+    ;;; More on dfp & to-df (recognizer & generator for representables)
     ;;; Fun with pi
     ;;; No support for complex floats
     ;;; Examples with defined functions
