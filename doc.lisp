@@ -31389,7 +31389,13 @@ Section 9: Remarks for system programmers
   term.  Each of these assumes that no free variable of the
   user-level term is a df.  The function [47mtranslate1-cmp+[0m has an extra
   argument, [47mknown-dfs[0m, that is a list of free variables that are to
-  be considered to be dfs.")
+  be considered to be dfs.
+
+
+Subtopics
+
+  [Fp]
+      Floating-point and ACL2")
  (DF* (POINTERS) "See [df].")
  (DF+ (POINTERS) "See [df].")
  (DF- (POINTERS) "See [df].")
@@ -42865,6 +42871,19 @@ Subtopics
   "Fourth member of the list
 
   See any Common Lisp documentation for details.")
+ (FP
+  (DF)
+  "Floating-point and ACL2
+
+  ACL2 supports computation that uses floating-point operations; see
+  [df].  If you are using an older Lisp, an attempt to build ACL2 may
+  fail with an error complaining that ``[47mfeature :ieee-floating-point
+  is missing from *features*[0m''.  If you believe that your host Lisp
+  properly supports IEEE floating-point operations even though that
+  feature is missing (e.g., quite possibly with older versions of
+  CCL), you can avoid that built-time error by setting environment
+  variable [47mACL2_FP_OK[0m to any non-empty string.  You might want to do
+  that in a script that invokes your Lisp.")
  (FQUOTEP (POINTERS)
           "See [system-utilities].")
  (FREE-VARIABLES
