@@ -26928,7 +26928,7 @@ ld) and @(tsee include-book)"
  @('books/demos/floating-point-input.lsp').  We conclude in Section 9 with
  remarks for system programmers.</p>
 
- <p>This topic is writter for ACL2 users.  Implementation-level remarks for
+ <p>This topic is written for ACL2 users.  Implementation-level remarks for
  developers may be found in a comment in the ACL2 sources entitled &ldquo;Essay
  on Support for Floating-point (double-float, df) Operations in
  ACL2&rdquo;.</p>
