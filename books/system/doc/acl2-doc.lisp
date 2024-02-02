@@ -39504,6 +39504,19 @@ current fast alists."
   :short "Fourth member of the list"
   :long "<p>See any Common Lisp documentation for details.</p>")
 
+(defxdoc fp
+  :parents (df)
+  :short "Floating-point and ACL2"
+  :long "<p>ACL2 supports computation that uses floating-point operations; see
+ @(see df).  If you are using an older Lisp, an attempt to build ACL2 may fail
+ with an error complaining that &ldquo;<tt>feature :ieee-floating-point is
+ missing from *features*</tt>&rdquo;.  If you believe that your host Lisp
+ properly supports IEEE floating-point operations even though that feature is
+ missing (e.g., quite possibly with older versions of CCL), you can avoid that
+ built-time error by setting environment variable @('ACL2_FP_OK') to any
+ non-empty string.  You might want to do that in a script that invokes your
+ Lisp.</p>")
+
 (defxdoc free-variables
   :parents (rule-classes rewrite)
   :short "Free variables in rules"
