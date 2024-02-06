@@ -27250,7 +27250,7 @@ ld) and @(tsee include-book)"
 
  @({
  (thm ; FAILS!
-  (implies (and (dfp x) (dfp y))
+  (implies (and (dfp x) (dfp y) (dfp z))
            (equal (df+ (df+ x y) z)
                   (df+ x (df+ y z)))))
  })
