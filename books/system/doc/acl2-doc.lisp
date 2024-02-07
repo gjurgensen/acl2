@@ -27250,7 +27250,7 @@ ld) and @(tsee include-book)"
 
  @({
  (thm ; FAILS!
-  (implies (and (dfp x) (dfp y))
+  (implies (and (dfp x) (dfp y) (dfp z))
            (equal (df+ (df+ x y) z)
                   (df+ x (df+ y z)))))
  })
@@ -149088,16 +149088,8 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  analogous remark holds for the @('(j)') case.  The @('rational') and @('real')
  type specifiers are similarly generalized.</p>
 
- <p>Common Lisp itself supports richer type specifiers than ACL2.  Some
- resources:</p>
-
- <ul>
-
- <li>A <a
- href='http://sellout.github.io/2012/03/03/common-lisp-type-hierarchy/'>nice
- picture of the Common Lisp Type Hierarchy</a> by Greg Pfeil.</li>
-
- </ul>")
+ <p>Common Lisp supports a richer set of type specifiers than ACL2
+ supports.</p>")
 
 (defxdoc |The Admission of App|
   :parents (|Pages Written Especially for the Tours|)
