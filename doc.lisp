@@ -30118,7 +30118,7 @@ Subtopics
   [community-book], [47mbooks/demos/floating-point-input.lsp[0m.  We
   conclude in Section 9 with remarks for system programmers.
 
-  This topic is writter for ACL2 users.  Implementation-level remarks
+  This topic is written for ACL2 users.  Implementation-level remarks
   for developers may be found in a comment in the ACL2 sources
   entitled ``Essay on Support for Floating-point (double-float, df)
   Operations in ACL2''.
@@ -30419,7 +30419,7 @@ Section 3: How the challenges are addressed
   But [47mdf+[0m is not associative; the following fails, as it should.
 
     (thm ; FAILS!
-     (implies (and (dfp x) (dfp y))
+     (implies (and (dfp x) (dfp y) (dfp z))
               (equal (df+ (df+ x y) z)
                      (df+ x (df+ y z)))))
 
@@ -148605,12 +148605,8 @@ Type Specs
   strict.  An analogous remark holds for the [47m(j)[0m case.  The [47mrational[0m
   and [47mreal[0m type specifiers are similarly generalized.
 
-  Common Lisp itself supports richer type specifiers than ACL2.  Some
-  resources:
-
-    * A {nice picture of the Common Lisp Type Hierarchy |
-      http://sellout.github.io/2012/03/03/common-lisp-type-hierarchy/}
-      by Greg Pfeil.")
+  Common Lisp supports a richer set of type specifiers than ACL2
+  supports.")
  (TYPESPEC-CHECK (POINTERS)
                  "See [meta-extract].")
  (U
