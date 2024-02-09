@@ -6009,7 +6009,11 @@ and @(tsee include-book)"
   being simplified or expanded.  Typically you'll see a checkpoint with a term
   like @('(apply$ 'fn ...)') or @('(ev$ '(fn ...)  ...)') that you expect would
   be expanded into an actual call of @('fn').  In that case, @('fn') is of
-  interest.  Here are some questions you should ask yourself about @('fn').</p>
+  interest.  You should realize that problems of these sorts can drastically
+  slow down a proof attempt.  We have seen example proofs where failure to
+  simplify an @('apply$') term slowed the proof-attempt down by several orders
+  of magnitude.  Here are some questions you should ask yourself about
+  @('fn').</p>
 
   <ul>
 
