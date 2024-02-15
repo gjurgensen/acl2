@@ -8642,8 +8642,11 @@ Theorems Involving [47mApply$[0m
   being simplified or expanded.  Typically you'll see a checkpoint
   with a term like [47m(apply$ 'fn ...)[0m or [47m(ev$ '(fn ...)  ...)[0m that you
   expect would be expanded into an actual call of [47mfn[0m.  In that case,
-  [47mfn[0m is of interest.  Here are some questions you should ask yourself
-  about [47mfn[0m.
+  [47mfn[0m is of interest.  You should realize that problems of these sorts
+  can drastically slow down a proof attempt.  We have seen example
+  proofs where failure to simplify an [47mapply$[0m term slowed the
+  proof-attempt down by several orders of magnitude.  Here are some
+  questions you should ask yourself about [47mfn[0m.
 
     * Is [47mfn[0m defined and in [47m:logic[0m mode?  If [47mfn[0m is in [47m:program[0m mode it is
       treated by the prover as an undefined symbol.  You should try
