@@ -1621,7 +1621,7 @@ Subtopics
   (START-HERE)
   "General information About ACL2
 
-  This is ACL2 Version 8.5, [copyright] (C) 2023, Regents of the
+  This is ACL2 Version 8.5, [copyright] (C) 2024, Regents of the
   University of Texas, authored by Matt Kaufmann and J Strother
   Moore.
 
@@ -21922,7 +21922,7 @@ Subtopics
   ACL2 Version 8.5 --- A Computational Logic for Applicative Common
   Lisp
 
-  Copyright (C) 2023, Regents of the University of Texas
+  Copyright (C) 2024, Regents of the University of Texas
 
   This version of ACL2 is a descendant of ACL2 Version 1.9, Copyright
   (C) 1997 Computational Logic, Inc.  See the documentation topic
@@ -102419,6 +102419,11 @@ Bug Fixes
 
       After the change to [47mread-file-into-string[0m, its call just above causes
       an error.
+
+  Plugged a potential soundness hole in [47m[defwarrant][0m (though we have
+  not actually observed unsoundness), with changes that will probably
+  be invisible to users.  Thanks to Sol Swords for bringing this
+  issue to our attention.
 
   Fixed a bug in system function [47mbounded-integer-listp[0m, which may have
   allowed illegal [proof-builder] commands to be attempted.  Thanks
