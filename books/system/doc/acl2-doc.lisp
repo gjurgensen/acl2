@@ -104780,6 +104780,53 @@ it."
 ; avoid an error when trying to print the error message in the case that that
 ; :guard evaluates to (mv nil x) where x fails to satisfy msgp.
 
+; Enhanced code sharing by adding a third call of translate11-call-1 in the
+; definition of translate11-call.
+
+; Improved some translation error messages involving stobj recognizers.
+; Consider the following examples.
+;
+;   (defstobj st fld)
+;   (defstobj st2 fld2 :congruent-to st)
+;   (defstobj st3 fld3)
+;
+; The following continue to execute without error.
+
+;   (stp st)
+;   (stp st2)
+;
+; The following caused an error that formerly said "Note that the variable ST
+; is required ... so you may need to bind ST with LET", which is misleading: ST
+; is not required as one may pass an ordinary object as the argument, and "bind
+; ST with LET" seems distracting since the proble was the use of st3.  The
+; error is much shorter and clearer now.
+;
+;   (stp st3)
+;
+; Note that stobj recognizers can take ordinary (non-stobj) expressions as
+; arguments, as in the following example.
+;
+;   (stp (cons 3 4))
+;
+; The error message in the following was similar to that above, complaining
+; that ST was a required argument even though an ordinary object is fine.  Now
+; the error message reports the actual problem, i.e., that the wrong number of
+; arguments is supplied to cons.
+;
+;   (stp (cons 3 4 5))
+;
+; The following two defun events caused error messages that are similar to those
+; above, and were equally problematic.  They have similarly been fixed.
+;
+;
+;   (defun foo (st st2 st3)
+;     (declare (xargs :stobjs (st st2 st3)))
+;     (mv (stp st) (stp st2) (stp st3)))
+;
+;   (defun foo (st st2 st3)
+;     (declare (xargs :stobjs (st st2 st3)))
+;     (mv (stp st) (stp st2) st3 (stp (cons 3 4 5))))
+
   :parents (release-notes)
   :short "ACL2 Version  8.6 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
