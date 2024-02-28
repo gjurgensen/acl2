@@ -27457,7 +27457,7 @@ Restrictions on the Field Descriptions in Defstobj
   Each [47mtypei[0m must be either a [47m[type-spec][0m or else a list of the form
   [47m(ARRAY type-spec (max))[0m, [47m(HASH-TABLE test)[0m, [47m(HASH-TABLE test size)[0m,
   [47m(HASH-TABLE test size type-spec)[0m, [47m(STOBJ-TABLE)[0m, or [47m(STOBJ-TABLE
-  size)[0m.  (Again, we are ignoring the case of nested stobjs, ,
+  size)[0m.  (Again, we are ignoring the case of nested stobjs,
   discussed elsewhere (see [nested-stobjs]), where a type-spec may be
   replaced by a stobj name.)  The latter forms are said to be ``array
   types'', ``hash-table types'', and stobj-table types (again, not
@@ -102570,7 +102570,7 @@ Bug Fixes
       [guard] violation.
     * Run-time [guard]-checking for an expression [47m(loop$ for tail on lst
       ...)[0m now includes a check for the target, [47mlst[0m, that its final
-      tail (i.e., , [47m(last-cdr lst)[0m satisfies the declared type of the
+      tail (i.e., [47m(last-cdr lst)[0m) satisfies the declared type of the
       corresponding iteration variable.  For example, evaluation of
       the [47m[loop$][0m expression below now produces a guard violation as
       shown, but it formerly did not produce a guard violation.
