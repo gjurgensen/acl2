@@ -24291,7 +24291,7 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
  <p>Each @('typei') must be either a @(tsee type-spec) or else a list of the
  form @('(ARRAY type-spec (max))'), @('(HASH-TABLE test)'), @('(HASH-TABLE test
  size)'), @('(HASH-TABLE test size type-spec)'), @('(STOBJ-TABLE)'), or
- @('(STOBJ-TABLE size)').  (Again, we are ignoring the case of nested stobjs, ,
+ @('(STOBJ-TABLE size)').  (Again, we are ignoring the case of nested stobjs,
  discussed elsewhere (see @(see nested-stobjs)), where a type-spec may be
  replaced by a stobj name.)  The latter forms are said to be ``array types'',
  ``hash-table types'', and stobj-table types (again, not discussed much here;
@@ -105774,7 +105774,7 @@ it."
 
  <li>Run-time @(see guard)-checking for an expression @('(loop$ for tail on lst
  ...)') now includes a check for the target, @('lst'), that its final
- tail (i.e., , @('(last-cdr lst)') satisfies the declared type of the
+ tail (i.e., @('(last-cdr lst)')) satisfies the declared type of the
  corresponding iteration variable.  For example, evaluation of the @(tsee
  loop$) expression below now produces a guard violation as shown, but it
  formerly did not produce a guard violation.
