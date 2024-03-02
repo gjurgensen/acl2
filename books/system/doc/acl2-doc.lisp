@@ -24167,9 +24167,15 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
 
   General Form:
   (defstobj name
-            (field1 :type type1 :initially val1 :resizable b1)
+            (field1 :type type1
+                    :element-type etype1
+                    :initially val1
+                    :resizable b1)
             ...
-            (fieldk :type typek :initially valk :resizable bk)
+            (fieldk :type typek
+                    :element-type etypek
+                    :initially valk
+                    :resizable bk)
             :renaming doublets
             :inline flg
             :congruent-to old-stobj-name
@@ -24183,23 +24189,24 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
  @('(HASH-TABLE test)'), @('(HASH-TABLE test size)'), @('(HASH-TABLE test size
  type-indicator)'), @('(STOBJ-TABLE)'), or @('(STOBJ-TABLE size)'); each
  @('vali') is an object satisfying @('typei'); and each @('bi') is @('t') or
- @('nil').  Each pair @(':initially vali') and @(':resizable bi') may be
- omitted; more on this below.  The @(':renaming doublets') argument is optional
- and allows the user to override the default function names introduced by this
- event.  The @(':inline flg') Boolean argument is also optional and declares to
- ACL2 that the generated access and update functions for the stobj should be
- implemented as macros under the hood (which has the effect of inlining the
- function calls).  The optional @(':congruent-to old-stobj-name') argument
- specifies an existing stobj with exactly the same structure, and is discussed
- below.  The optional @(':non-memoizable nm-flg') and @(':non-executable
- ne-flg') Boolean arguments are ignored when @('nm-flg') and @('ne-flg') are
- @('nil'), but otherwise: the former instructs ACL2 to lay down faster code for
- functions that return the new stobj but disallows @(see memoization) of any
- function that takes the new stobj as an argument; and the latter avoids
- actually creating the stobj (details follow later below).  We describe further
- restrictions on the @('fieldi'), @('typei'), @('vali'), and on @('doublets')
- below.  We recommend that you read about single-threaded objects (stobjs) in
- ACL2 before proceeding; see @(see stobj).</p>
+ @('nil').  Pairs @(':element-type etypei'), @(':initially vali'), and
+ @(':resizable bi') may be omitted; more on this below.  The @(':renaming
+ doublets') argument is optional and allows the user to override the default
+ function names introduced by this event.  The @(':inline flg') Boolean
+ argument is also optional and declares to ACL2 that the generated access and
+ update functions for the stobj should be implemented as macros under the
+ hood (which has the effect of inlining the function calls).  The optional
+ @(':congruent-to old-stobj-name') argument specifies an existing stobj with
+ exactly the same structure, and is discussed below.  The optional
+ @(':non-memoizable nm-flg') and @(':non-executable ne-flg') Boolean arguments
+ are ignored when @('nm-flg') and @('ne-flg') are @('nil'), but otherwise: the
+ former instructs ACL2 to lay down faster code for functions that return the
+ new stobj but disallows @(see memoization) of any function that takes the new
+ stobj as an argument; and the latter avoids actually creating the
+ stobj (details follow later below).  We describe further restrictions on the
+ @('fieldi'), @('typei'), @('vali'), and on @('doublets') below.  We recommend
+ that you read about single-threaded objects (stobjs) in ACL2 before
+ proceeding; see @(see stobj).</p>
 
  <p>The effect of this event is to introduce a new single-threaded object
  (i.e., a ``@(see stobj)''), named @('name'), and the associated recognizers,
@@ -24270,10 +24277,12 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
  <p>In addition, the @('defstobj') event introduces functions for recognizing
  and creating the stobj and for recognizing, accessing, and updating its
  fields.  For fields of @('ARRAY') type, length and resize functions are also
- introduced.  For fields of @('HASH-TABLE') or @('STOBJ-TABLE') type, this
- event also introduces boundp, get? (@('HASH-TABLE') types only), remove,
- count, clear, and initialization functions, as discussed below.  Constants are
- introduced that correspond to the accessor functions.</p>
+ introduced; see @(see defstobj-element-type) for discussion of the
+ @(':element-type') keyword that may be provided for performance .  For fields
+ of @('HASH-TABLE') or @('STOBJ-TABLE') type, this event also introduces
+ boundp, get? (@('HASH-TABLE') types only), remove, count, clear, and
+ initialization functions, as discussed below.  Constants are introduced that
+ correspond to the accessor functions.</p>
 
  <h3>Restrictions on the Field Descriptions in Defstobj</h3>
 
@@ -24413,6 +24422,9 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
 
  <p>Array resizing is relatively slow, so we recommend using it somewhat
  sparingly.</p>
+
+ <p>See @(see defstobj-element-type) for how the @(':element-type') field may
+ help with performance.</p>
 
  <h3>Hash-table Types</h3>
 
@@ -24726,6 +24738,9 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
  disallows memoization but therefore avoids the cost of certain ``flushing''
  operations.</p>
 
+ <p>See @(see defstobj-element-type) for performance considerations pertaining
+ to the @(':element-type') field.</p>
+
  <h3>Specifying Congruent Stobjs</h3>
 
  <p>Two stobjs are may be considered to be ``congruent'' if they have the same
@@ -24795,6 +24810,84 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
 
  <p>When @(':non-executable t') is specified, it is illegal to supply a
  @(':congruent-to') argument.</p>")
+
+(defxdoc defstobj-element-type
+  :parents (defstobj)
+  :short "Specify the element type for a @(see stobj) array field"
+  :long "<p>This topic assumes familiarity with the @(tsee defstobj) event.  It
+ documents the @(':element-type') keyword for a stobj array field.  Note that
+ @(':element-type') is only supported for stobj array fields, not other sorts
+ of stobj fields.</p>
+
+ <p>Consider a stobj array field with @(':type') of the form @('(array
+ etype (n))'), for example, @('(array bit (8))').  Logically, this
+ &ldquo;array&rdquo; is a list, each of whose elements has the indicated type,
+ @('etype') &mdash; in our example, the type, @('bit') (i.e., 0 or 1).  In raw
+ Lisp, however, an array is allocated.  The Lisp code that allocates that array
+ can specify the type of its elements, and may specify that element type to be
+ @('bit').  But it would also be legal to specify a weaker type.  In particular,
+ the type @('t') is a legal type for every object, and this can be specified by
+ including @(':element-type t') in your stobj array field.</p>
+
+ <p>Perhaps surprisingly, Lisp code may run faster when the element type in a
+ raw Lisp array is @('t') rather than a more restrictive type.  The
+ @(':element-type') of a stobj array field may be specified to be @('t') to
+ give this behavior, by using @(':element-type t').  You can do your own
+ experiments to decide whether that is helpful, in particular by considering
+ @(see community-book) @('books/demos/element-type.lisp').  That file starts
+ with the following events and then times reading and writing the stobj
+ array.</p>
+
+ @({
+ (defconst *ar-size* (expt 10 8))
+ (defstobj st1
+   (ar1 :type (array double-float (*ar-size*))
+        :element-type t ; Omit this line to compare times with or without it.
+        :initially 0)
+ ; Optional:
+   :inline t)
+ })
+
+ <p>Our own experiments with this file have produced the following results (for
+ both realtime and runtime) with CCL and SBCL on a 2019-era MacBook Pro (2.4
+ GHz 8-Core Intel Core i9).  They suggest the use of @(':element-type t') with
+ read-intensive applications when using CCL.  Results may be very different
+ without the use of @(':inline t'), and of course these results may not be
+ indicative of your own experience with various applications, Lisps, and
+ operating systems.</p>
+
+ @({
+ (time$ (reads-st1 st1 *ar-size*))
+ Results:
+   CCL
+     With :element-type t
+       0.27 seconds (32 bytes allocated)
+     Without :element-type t
+     ; 0.47 seconds (32 bytes allocated)
+   SBCL
+     With :element-type t
+       0.23 seconds (0 bytes allocated)
+     Without :element-type t
+       0.21 seconds (0 bytes allocated)
+
+ (time$ (writes-st1 st1 (to-df 2) *ar-size*))
+ Results:
+   CCL
+     With :element-type t
+       1.17 seconds (128 bytes allocated);
+     Without :element-type t
+       0.27 seconds (128 bytes allocated)
+   SBCL
+     With :element-type t
+       0.24 seconds realtime (0 bytes allocated)
+     Without :element-type t
+       0.25 seconds (0 bytes allocated).
+ })
+
+ <p>Currently the legal values for @(':element-type') are @('t') and the
+ default value, which is the element type specified in the @(':type') field of
+ the stobj array field specification.  This could change if experiments suggest
+ something different.</p>")
 
 (defxdoc defstub
   :parents (events)
@@ -104398,7 +104491,7 @@ it."
 ; utilities to guard-verified :logic mode.
 
 ;   77 ; Changes to Existing Features
-;   33 ; New Features
+;   34 ; New Features
 ;    8 ; Heuristic and Efficiency Improvements
 ;   35 ; Bug Fixes
 ;   17 ; Changes at the System Level
@@ -105599,6 +105692,13 @@ it."
  sensitive to ACL2 changes.  For an example, see the use of @('(assign
  script-mode 'skip-ldd-n)') in @(see community-book) file
  @('books/demos/floating-point-input.lsp').</p>
+
+ <p>A new @(see stobj) field keyword, @(':element-type'), is legal for an array
+ field.  It specifies the raw Lisp element type of the array.  Its value can be
+ the element type specified by the value of the @(':type') for that array
+ field.  That is the default value, and the other legal value is @('t'), but
+ these may change in the future.  See @(see defstobj) and see @(see
+ defstobj-element-type).</p>
 
  <h3>Heuristic and Efficiency Improvements</h3>
 

@@ -27319,9 +27319,15 @@ Subtopics
 
     General Form:
     (defstobj name
-              (field1 :type type1 :initially val1 :resizable b1)
+              (field1 :type type1
+                      :element-type etype1
+                      :initially val1
+                      :resizable b1)
               ...
-              (fieldk :type typek :initially valk :resizable bk)
+              (fieldk :type typek
+                      :element-type etypek
+                      :initially valk
+                      :resizable bk)
               :renaming doublets
               :inline flg
               :congruent-to old-stobj-name
@@ -27333,26 +27339,26 @@ Subtopics
   form [47m(ARRAY type-indicator (max))[0m, or of one of the forms
   [47m(HASH-TABLE test)[0m, [47m(HASH-TABLE test size)[0m, [47m(HASH-TABLE test size
   type-indicator)[0m, [47m(STOBJ-TABLE)[0m, or [47m(STOBJ-TABLE size)[0m; each [47mvali[0m is
-  an object satisfying [47mtypei[0m; and each [47mbi[0m is [47mt[0m or [47mnil[0m.  Each pair
-  [47m:initially vali[0m and [47m:resizable bi[0m may be omitted; more on this
-  below.  The [47m:renaming doublets[0m argument is optional and allows the
-  user to override the default function names introduced by this
-  event.  The [47m:inline flg[0m Boolean argument is also optional and
-  declares to ACL2 that the generated access and update functions for
-  the stobj should be implemented as macros under the hood (which has
-  the effect of inlining the function calls).  The optional
-  [47m:congruent-to old-stobj-name[0m argument specifies an existing stobj
-  with exactly the same structure, and is discussed below.  The
-  optional [47m:non-memoizable nm-flg[0m and [47m:non-executable ne-flg[0m Boolean
-  arguments are ignored when [47mnm-flg[0m and [47mne-flg[0m are [47mnil[0m, but
-  otherwise: the former instructs ACL2 to lay down faster code for
-  functions that return the new stobj but disallows [memoization] of
-  any function that takes the new stobj as an argument; and the
-  latter avoids actually creating the stobj (details follow later
-  below).  We describe further restrictions on the [47mfieldi[0m, [47mtypei[0m,
-  [47mvali[0m, and on [47mdoublets[0m below.  We recommend that you read about
-  single-threaded objects (stobjs) in ACL2 before proceeding; see
-  [stobj].
+  an object satisfying [47mtypei[0m; and each [47mbi[0m is [47mt[0m or [47mnil[0m.  Pairs
+  [47m:element-type etypei[0m, [47m:initially vali[0m, and [47m:resizable bi[0m may be
+  omitted; more on this below.  The [47m:renaming doublets[0m argument is
+  optional and allows the user to override the default function names
+  introduced by this event.  The [47m:inline flg[0m Boolean argument is also
+  optional and declares to ACL2 that the generated access and update
+  functions for the stobj should be implemented as macros under the
+  hood (which has the effect of inlining the function calls).  The
+  optional [47m:congruent-to old-stobj-name[0m argument specifies an
+  existing stobj with exactly the same structure, and is discussed
+  below.  The optional [47m:non-memoizable nm-flg[0m and [47m:non-executable
+  ne-flg[0m Boolean arguments are ignored when [47mnm-flg[0m and [47mne-flg[0m are
+  [47mnil[0m, but otherwise: the former instructs ACL2 to lay down faster
+  code for functions that return the new stobj but disallows
+  [memoization] of any function that takes the new stobj as an
+  argument; and the latter avoids actually creating the stobj
+  (details follow later below).  We describe further restrictions on
+  the [47mfieldi[0m, [47mtypei[0m, [47mvali[0m, and on [47mdoublets[0m below.  We recommend that
+  you read about single-threaded objects (stobjs) in ACL2 before
+  proceeding; see [stobj].
 
   The effect of this event is to introduce a new single-threaded object
   (i.e., a ``[stobj]''), named [47mname[0m, and the associated recognizers,
@@ -27429,11 +27435,12 @@ The Single-Threaded Object Introduced
   In addition, the [47mdefstobj[0m event introduces functions for recognizing
   and creating the stobj and for recognizing, accessing, and updating
   its fields.  For fields of [47mARRAY[0m type, length and resize functions
-  are also introduced.  For fields of [47mHASH-TABLE[0m or [47mSTOBJ-TABLE[0m type,
-  this event also introduces boundp, get? ([47mHASH-TABLE[0m types only),
-  remove, count, clear, and initialization functions, as discussed
-  below.  Constants are introduced that correspond to the accessor
-  functions.
+  are also introduced; see [defstobj-element-type] for discussion of
+  the [47m:element-type[0m keyword that may be provided for performance .
+  For fields of [47mHASH-TABLE[0m or [47mSTOBJ-TABLE[0m type, this event also
+  introduces boundp, get? ([47mHASH-TABLE[0m types only), remove, count,
+  clear, and initialization functions, as discussed below.  Constants
+  are introduced that correspond to the accessor functions.
 
 
 Restrictions on the Field Descriptions in Defstobj
@@ -27450,7 +27457,7 @@ Restrictions on the Field Descriptions in Defstobj
   Each [47mtypei[0m must be either a [47m[type-spec][0m or else a list of the form
   [47m(ARRAY type-spec (max))[0m, [47m(HASH-TABLE test)[0m, [47m(HASH-TABLE test size)[0m,
   [47m(HASH-TABLE test size type-spec)[0m, [47m(STOBJ-TABLE)[0m, or [47m(STOBJ-TABLE
-  size)[0m.  (Again, we are ignoring the case of nested stobjs, ,
+  size)[0m.  (Again, we are ignoring the case of nested stobjs,
   discussed elsewhere (see [nested-stobjs]), where a type-spec may be
   replaced by a stobj name.)  The latter forms are said to be ``array
   types'', ``hash-table types'', and stobj-table types (again, not
@@ -27568,6 +27575,9 @@ Array Types
 
   Array resizing is relatively slow, so we recommend using it somewhat
   sparingly.
+
+  See [defstobj-element-type] for how the [47m:element-type[0m field may help
+  with performance.
 
 
 Hash-table Types
@@ -27869,6 +27879,9 @@ Performance
   disallows memoization but therefore avoids the cost of certain
   ``flushing'' operations.
 
+  See [defstobj-element-type] for performance considerations pertaining
+  to the [47m:element-type[0m field.
+
 
 Specifying Congruent Stobjs
 
@@ -27938,7 +27951,89 @@ Specifying Non-executable Stobjs
   field of another stobj.
 
   When [47m:non-executable t[0m is specified, it is illegal to supply a
-  [47m:congruent-to[0m argument.")
+  [47m:congruent-to[0m argument.
+
+
+Subtopics
+
+  [Defstobj-element-type]
+      Specify the element type for a [stobj] array field")
+ (DEFSTOBJ-ELEMENT-TYPE
+  (DEFSTOBJ)
+  "Specify the element type for a [stobj] array field
+
+  This topic assumes familiarity with the [47m[defstobj][0m event.  It
+  documents the [47m:element-type[0m keyword for a stobj array field.  Note
+  that [47m:element-type[0m is only supported for stobj array fields, not
+  other sorts of stobj fields.
+
+  Consider a stobj array field with [47m:type[0m of the form [47m(array etype
+  (n))[0m, for example, [47m(array bit (8))[0m.  Logically, this ``array'' is a
+  list, each of whose elements has the indicated type, [47metype[0m --- in
+  our example, the type, [47mbit[0m (i.e., 0 or 1).  In raw Lisp, however,
+  an array is allocated.  The Lisp code that allocates that array can
+  specify the type of its elements, and may specify that element type
+  to be [47mbit[0m.  But it would also be legal to specify a weaker type.
+  In particular, the type [47mt[0m is a legal type for every object, and
+  this can be specified by including [47m:element-type t[0m in your stobj
+  array field.
+
+  Perhaps surprisingly, Lisp code may run faster when the element type
+  in a raw Lisp array is [47mt[0m rather than a more restrictive type.  The
+  [47m:element-type[0m of a stobj array field may be specified to be [47mt[0m to
+  give this behavior, by using [47m:element-type t[0m.  You can do your own
+  experiments to decide whether that is helpful, in particular by
+  considering [community-book] [47mbooks/demos/element-type.lisp[0m.  That
+  file starts with the following events and then times reading and
+  writing the stobj array.
+
+    (defconst *ar-size* (expt 10 8))
+    (defstobj st1
+      (ar1 :type (array double-float (*ar-size*))
+           :element-type t ; Omit this line to compare times with or without it.
+           :initially 0)
+    ; Optional:
+      :inline t)
+
+  Our own experiments with this file have produced the following
+  results (for both realtime and runtime) with CCL and SBCL on a
+  2019-era MacBook Pro (2.4 GHz 8-Core Intel Core i9).  They suggest
+  the use of [47m:element-type t[0m with read-intensive applications when
+  using CCL.  Results may be very different without the use of
+  [47m:inline t[0m, and of course these results may not be indicative of
+  your own experience with various applications, Lisps, and operating
+  systems.
+
+    (time$ (reads-st1 st1 *ar-size*))
+    Results:
+      CCL
+        With :element-type t
+          0.27 seconds (32 bytes allocated)
+        Without :element-type t
+        ; 0.47 seconds (32 bytes allocated)
+      SBCL
+        With :element-type t
+          0.23 seconds (0 bytes allocated)
+        Without :element-type t
+          0.21 seconds (0 bytes allocated)
+
+    (time$ (writes-st1 st1 (to-df 2) *ar-size*))
+    Results:
+      CCL
+        With :element-type t
+          1.17 seconds (128 bytes allocated);
+        Without :element-type t
+          0.27 seconds (128 bytes allocated)
+      SBCL
+        With :element-type t
+          0.24 seconds realtime (0 bytes allocated)
+        Without :element-type t
+          0.25 seconds (0 bytes allocated).
+
+  Currently the legal values for [47m:element-type[0m are [47mt[0m and the default
+  value, which is the element type specified in the [47m:type[0m field of
+  the stobj array field specification.  This could change if
+  experiments suggest something different.")
  (DEFSTUB
   (EVENTS)
   "Stub-out a function symbol
@@ -102305,6 +102400,13 @@ New Features
   'skip-ldd-n)[0m in [community-book] file
   [47mbooks/demos/floating-point-input.lsp[0m.
 
+  A new [stobj] field keyword, [47m:element-type[0m, is legal for an array
+  field.  It specifies the raw Lisp element type of the array.  Its
+  value can be the element type specified by the value of the [47m:type[0m
+  for that array field.  That is the default value, and the other
+  legal value is [47mt[0m, but these may change in the future.  See
+  [defstobj] and see [defstobj-element-type].
+
 
 Heuristic and Efficiency Improvements
 
@@ -102468,7 +102570,7 @@ Bug Fixes
       [guard] violation.
     * Run-time [guard]-checking for an expression [47m(loop$ for tail on lst
       ...)[0m now includes a check for the target, [47mlst[0m, that its final
-      tail (i.e., , [47m(last-cdr lst)[0m satisfies the declared type of the
+      tail (i.e., [47m(last-cdr lst)[0m) satisfies the declared type of the
       corresponding iteration variable.  For example, evaluation of
       the [47m[loop$][0m expression below now produces a guard violation as
       shown, but it formerly did not produce a guard violation.
