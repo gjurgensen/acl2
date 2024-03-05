@@ -31327,7 +31327,8 @@ Section 8: More examples
     (defun f6 (x)
       (declare (xargs :guard (rationalp x)))
       (ec-call (unary-df- (to-df x))
-               :dfs '(t)))
+               :dfs-in '(t)
+               :dfs-out '(t)))
 
   [3m;;; We can't prove much[0m
 
@@ -33872,7 +33873,7 @@ Subtopics
 
     General Forms:
     (ec-call (fn term1 ... termk))
-    (ec-call (fn term1 ... termk) :dfs 'dfs)
+    (ec-call (fn term1 ... termk) :dfs-in 'dfs-in :dfs-out dfs-out)
 
   where [47mfn[0m is a known function symbol other than those in the list that
   is the value of the constant [47m*ec-call-bad-ops*[0m.  (But see the Note
@@ -34047,43 +34048,52 @@ Subtopics
 
   We conclude with a discussion of the second General Form:
 
-    (ec-call (fn term1 ... termk) :dfs 'dfs)
+    (ec-call (fn term1 ... termk) :dfs-in 'dfs-in :dfs-out 'dfs-out)
+
+  Note that either or both keyword arguments may be omitted, and if
+  both are included then they can be given in either order.
 
   See [df] for background on dfs.  Here is an example.
 
-    ACL2 !>(ec-call (binary-df+ (df1) (df1)) :dfs '(t))
+    ACL2 !>(ec-call (binary-df+ (df1) (df1)) :dfs-in '(t t) :dfs-out '(t))
     #d2.0
     ACL2 !>
 
-  The use of [47m:dfs '(t)[0m indicates that the call of [47mbinary-df+[0m is a df
-  expression that returns a single value.  Without the [47m:dfs[0m argument
+  The keyword arguments indicate, respectively, [47mbinary-df+[0m takes two df
+  arguments and returns a single df value.  Without those arguments
   ACL2 would report an error.
 
-  The next example illustrates the use of [47m:dfs[0m for multiple value
+  The next example illustrates the use of [47m:dfs-out[0m for multiple value
   returns.  First define [47mg[0m as follows.
 
     (defun g (x)
       (mv (df+ (df1) (to-df x)) (- x 1)))
 
-  The use of [47m:dfs[0m below tells ACL2 that the given expression [47m(g 3)[0m
+  The use of [47m:dfs-out[0m below tells ACL2 that the given expression [47m(g 3)[0m
   returns two values: a df and an ordinary value.  In the language of
   :DOC [df]: [47m(g 3)[0m is a df{0} expression and is not a df{1}
-  expression.
+  expression.  Note that the argument of [47mg[0m is an ordinary expression,
+  not a df, so no [47m:dfs-in[0m argument is necessary.
 
-    ACL2 !>(ec-call (g 3) :dfs '(t nil))
+    ACL2 !>(ec-call (g 3) :dfs-out '(t nil))
     (#d4.0 2)
     ACL2 !>
 
-  Returning to the second General Form, notice that [47mdfs[0m is quoted.  [47mDfs[0m
-  should be a list of Booleans indicating which values returned by [47mfn[0m
-  are dfs.  Thus, if [47mfn[0m returns a single value, then [47mdfs[0m is [47m(t)[0m if
-  the call of [47mfn[0m is a df, else [47mdfs[0m is [47m(nil)[0m though in that case the
-  [47m:dfs[0m keyword argument may be omitted.  If [47mfn[0m returns n values where
-  n is greater than 1, then [47mdfs[0m should be a list of length n where
-  for each zero-based index i less than n, the ith element of [47mdfs[0m is
-  [47mt[0m if the ith return value is a df (or more precisely, in the
-  language of :DOC [df], calls of [47mfn[0m are df{i} expressions), else
-  [47mnil[0m.")
+  Returning to the second General Form, notice that [47mdfs-in[0m and [47mdfs-out[0m
+  are lists of Booleans, which must be quoted, that indicate for [47mfn[0m
+  which inputs or values (respectively) are dfs.  For example, if [47mfn[0m
+  returns a single value, then [47mdfs-out[0m is [47m(t)[0m if the call of [47mfn[0m is a
+  df, else [47mdfs-out[0m is optional but may be supplied as [47m(nil)[0m.  If [47mfn[0m
+  returns n values where n is greater than 1, then [47mdfs-out[0m should be
+  a list of length n where for each zero-based index i less than n,
+  the ith element of [47mdfs[0m is [47mt[0m if the ith return value is a df (or
+  more precisely, in the language of :DOC [df], calls of [47mfn[0m are df{i}
+  expressions), else [47mnil[0m.  The rules for the [47m:dfs-in[0m argument are
+  analogous for inputs of the call of [47mfn[0m.
+
+  When there are no df inputs (respectively, outputs) of the call, then
+  [47m:dfs-in[0m (respectively, [47m:dfs-out[0m may be omitted or supplied as [47mnil[0m
+  or [47m'nil[0m.")
  (EFFICIENCY
   (DEBUGGING PROOF-AUTOMATION PROGRAMMING)
   "Efficiency considerations

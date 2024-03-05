@@ -28202,7 +28202,8 @@ ld) and @(tsee include-book)"
  (defun f6 (x)
    (declare (xargs :guard (rationalp x)))
    (ec-call (unary-df- (to-df x))
-            :dfs '(t)))
+            :dfs-in '(t)
+            :dfs-out '(t)))
  })
 
  <p><i>;;; We can't prove much</i></p>
@@ -30629,7 +30630,7 @@ ld) and @(tsee include-book)"
  @({
   General Forms:
   (ec-call (fn term1 ... termk))
-  (ec-call (fn term1 ... termk) :dfs 'dfs)
+  (ec-call (fn term1 ... termk) :dfs-in 'dfs-in :dfs-out dfs-out)
  })
 
  <p>where @('fn') is a known function symbol other than those in the list that
@@ -30819,22 +30820,25 @@ ld) and @(tsee include-book)"
  <p>We conclude with a discussion of the second General Form:</p>
 
  @({
-  (ec-call (fn term1 ... termk) :dfs 'dfs)
+  (ec-call (fn term1 ... termk) :dfs-in 'dfs-in :dfs-out 'dfs-out)
  })
+
+ <p>Note that either or both keyword arguments may be omitted, and if both are
+ included then they can be given in either order.</p>
 
  <p>See @(see df) for background on dfs.  Here is an example.</p>
 
  @({
- ACL2 !>(ec-call (binary-df+ (df1) (df1)) :dfs '(t))
+ ACL2 !>(ec-call (binary-df+ (df1) (df1)) :dfs-in '(t t) :dfs-out '(t))
  #d2.0
  ACL2 !>
  })
 
- <p>The use of @(':dfs '(t)') indicates that the call of @('binary-df+') is a
- df expression that returns a single value.  Without the @(':dfs') argument
- ACL2 would report an error.</p>
+ <p>The keyword arguments indicate, respectively, @('binary-df+') takes two df
+ arguments and returns a single df value.  Without those arguments ACL2 would
+ report an error.</p>
 
- <p>The next example illustrates the use of @(':dfs') for multiple value
+ <p>The next example illustrates the use of @(':dfs-out') for multiple value
  returns.  First define @('g') as follows.</p>
 
  @({
@@ -30842,27 +30846,33 @@ ld) and @(tsee include-book)"
    (mv (df+ (df1) (to-df x)) (- x 1)))
  })
 
- <p>The use of @(':dfs') below tells ACL2 that the given expression @('(g 3)')
- returns two values: a df and an ordinary value.  In the language of :DOC @(see
- df): @('(g 3)') is a df{0} expression and is not a df{1} expression.</p>
+ <p>The use of @(':dfs-out') below tells ACL2 that the given expression @('(g
+ 3)') returns two values: a df and an ordinary value.  In the language of :DOC
+ @(see df): @('(g 3)') is a df{0} expression and is not a df{1} expression.
+ Note that the argument of @('g') is an ordinary expression, not a df, so no
+ @(':dfs-in') argument is necessary.</p>
 
  @({
- ACL2 !>(ec-call (g 3) :dfs '(t nil))
+ ACL2 !>(ec-call (g 3) :dfs-out '(t nil))
  (#d4.0 2)
  ACL2 !>
  })
 
- <p>Returning to the second General Form, notice that @('dfs') is quoted.
- @('Dfs') should be a list of Booleans indicating which values returned by
- @('fn') are dfs.  Thus, if @('fn') returns a single value, then @('dfs') is
- @('(t)') if the call of @('fn') is a df, else @('dfs') is @('(nil)') though in
- that case the @(':dfs') keyword argument may be omitted.  If @('fn') returns n
- values where n is greater than 1, then @('dfs') should be a list of length n
- where for each zero-based index i less than n, the ith element of @('dfs') is
- @('t') if the ith return value is a df (or more precisely, in the language
- of :DOC @(see df), calls of @('fn') are df{i} expressions), else @('nil').</p>
+ <p>Returning to the second General Form, notice that @('dfs-in') and
+ @('dfs-out') are lists of Booleans, which must be quoted, that indicate for
+ @('fn') which inputs or values (respectively) are dfs.  For example, if
+ @('fn') returns a single value, then @('dfs-out') is @('(t)') if the call of
+ @('fn') is a df, else @('dfs-out') is optional but may be supplied as
+ @('(nil)').  If @('fn') returns n values where n is greater than 1, then
+ @('dfs-out') should be a list of length n where for each zero-based index i
+ less than n, the ith element of @('dfs') is @('t') if the ith return value is
+ a df (or more precisely, in the language of :DOC @(see df), calls of @('fn')
+ are df{i} expressions), else @('nil').  The rules for the @(':dfs-in')
+ argument are analogous for inputs of the call of @('fn').</p>
 
-")
+ <p>When there are no df inputs (respectively, outputs) of the call, then
+ @(':dfs-in') (respectively, @(':dfs-out') may be omitted or supplied as
+ @('nil') or @(''nil').</p>")
 
 (defxdoc efficiency
   :parents (debugging proof-automation programming)
