@@ -61790,6 +61790,25 @@ About Lambda$ Expressions
   [47mlambda$[0m objects will have been translated into quoted [47mLAMBDA[0m
   objects.
 
+  The body of a [47mlambda$[0m expression must return a single value that is
+  neither a [stobj] nor a [df].  the following example illustrates
+  this point.
+
+    (defun$ f1 (x)
+      (declare (xargs :guard t))
+      (mv x x))
+
+    ; ERROR!  The body of the lambda$ returns two values.
+    (defun f2 (y)
+      (declare (xargs :guard t))
+      (apply$ (lambda$ (x) (f1 x))
+              (list y)))
+
+    ; Succeeds.
+    (defun f2 (y) (declare (xargs :guard t))
+      (apply$ '(lambda (x) (f1 x))
+              (list y)))
+
   Finally, to see how a [47mlambda$[0m expression translates, see [47m[translam][0m.")
  (LAMBDA$ (APPLY$)
   "Lambda object constructor for use with [47mapply$[0m
@@ -102199,6 +102218,9 @@ Changes to Existing Features
   The fifth formal of [47m[do$][0m now represents the values returned rather
   than a default value.  This change supports a bug fix; see the item
   below regarding ``About a bug in DO$ in ACL2 Version_8.5''.
+
+  In [ACL2-doc], modified the [47mTAB[0m and [47mShift-TAB[0m (sometimes known as
+  [47m<backtab>[0m) commands so that they alert the user when wrapping.
 
 
 New Features
