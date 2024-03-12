@@ -58240,6 +58240,27 @@ tables in the current Hons Space."
   @('lambda$') objects will have been translated into quoted @('LAMBDA')
   objects.</p>
 
+  <p>The body of a @('lambda$') expression must return a single value that is
+  neither a @(see stobj) nor a @(see df).  the following example illustrates
+  this point.</p>
+
+  @({
+  (defun$ f1 (x)
+    (declare (xargs :guard t))
+    (mv x x))
+
+  ; ERROR!  The body of the lambda$ returns two values.
+  (defun f2 (y)
+    (declare (xargs :guard t))
+    (apply$ (lambda$ (x) (f1 x))
+            (list y)))
+
+  ; Succeeds.
+  (defun f2 (y) (declare (xargs :guard t))
+    (apply$ '(lambda (x) (f1 x))
+            (list y)))
+  })
+
   <p>Finally, to see how a @('lambda$') expression translates, see @(tsee
   translam).</p>")
 
@@ -104500,7 +104521,7 @@ it."
 ; conversion of fmt, (er soft ...), one-way-unify, and genvar, and related
 ; utilities to guard-verified :logic mode.
 
-;   77 ; Changes to Existing Features
+;   78 ; Changes to Existing Features
 ;   34 ; New Features
 ;    8 ; Heuristic and Efficiency Improvements
 ;   35 ; Bug Fixes
@@ -105501,6 +105522,10 @@ it."
  <p>The fifth formal of @(tsee do$) now represents the values returned rather
  than a default value.  This change supports a bug fix; see the item below
  regarding &ldquo;About a bug in DO$ in ACL2 Version_8.5&rdquo;.</p>
+
+ <p>In @(see acl2-doc), modified the @('TAB') and @('Shift-TAB') (sometimes
+ known as @('<backtab>')) commands so that they alert the user when
+ wrapping.</p>
 
  <h3>New Features</h3>
 
