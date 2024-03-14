@@ -104521,12 +104521,12 @@ it."
 ; conversion of fmt, (er soft ...), one-way-unify, and genvar, and related
 ; utilities to guard-verified :logic mode.
 
-;   78 ; Changes to Existing Features
+;   77 ; Changes to Existing Features
 ;   34 ; New Features
 ;    8 ; Heuristic and Efficiency Improvements
 ;   35 ; Bug Fixes
-;   17 ; Changes at the System Level
-;    7 ; EMACS Support
+;   18 ; Changes at the System Level
+;    8 ; EMACS Support
 ;    1 ; Experimental Versions
 
 ; Not discussed below are exensions to the constant, *acl2-exports*.
@@ -105523,10 +105523,6 @@ it."
  than a default value.  This change supports a bug fix; see the item below
  regarding &ldquo;About a bug in DO$ in ACL2 Version_8.5&rdquo;.</p>
 
- <p>In @(see acl2-doc), modified the @('TAB') and @('Shift-TAB') (sometimes
- known as @('<backtab>')) commands so that they alert the user when
- wrapping.</p>
-
  <h3>New Features</h3>
 
  <p>ACL2 now supports floating-point operations.  See @(see df).  Regarding
@@ -106206,6 +106202,14 @@ it."
  @('books/system/tests/').  So now, input is cleared on error only when reading
  from the terminal (technically, from @(tsee *standard-oi*)).</p>
 
+ <p>Improved certain build-time error messages.  These improvements are
+ particularly helpful when the host Lisp is SBCL or CMUCL, so that the error
+ message is printed properly into make.log (instead of showing up as an error
+ call at the terminal), and also when the host Lisp is LispWorks, so that
+ verbose debugging information is avoided (since these are ACL2 errors for
+ which that information is very unlikely to be helpful).  Thanks to Alessandro
+ Coglio for a recent Zulip query that led us to make this change.</p>
+
  <h3>EMACS Support</h3>
 
  <p>A set of tools for assisting in the conversion of certain HTML to @(tsee
@@ -106255,6 +106259,10 @@ it."
  <p>For the @(see acl2-doc) browser, the download (@('D')) command now
  accesses, by default, an @('https') address instead of an @('http') address.
  Thanks to Warren Hunt for suggesting this change.</p>
+
+ <p>In @(see acl2-doc), modified the @('TAB') and @('Shift-TAB') (sometimes
+ known as @('<backtab>')) commands so that they alert the user when
+ wrapping.</p>
 
  <h3>Experimental Versions</h3>
 
