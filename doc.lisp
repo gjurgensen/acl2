@@ -102219,9 +102219,6 @@ Changes to Existing Features
   than a default value.  This change supports a bug fix; see the item
   below regarding ``About a bug in DO$ in ACL2 Version_8.5''.
 
-  In [ACL2-doc], modified the [47mTAB[0m and [47mShift-TAB[0m (sometimes known as
-  [47m<backtab>[0m) commands so that they alert the user when wrapping.
-
 
 New Features
 
@@ -102884,6 +102881,15 @@ Changes at the System Level
   only when reading from the terminal (technically, from
   [47m[*standard-oi*][0m).
 
+  Improved certain build-time error messages.  These improvements are
+  particularly helpful when the host Lisp is SBCL or CMUCL, so that
+  the error message is printed properly into make.log (instead of
+  showing up as an error call at the terminal), and also when the
+  host Lisp is LispWorks, so that verbose debugging information is
+  avoided (since these are ACL2 errors for which that information is
+  very unlikely to be helpful).  Thanks to Alessandro Coglio for a
+  recent Zulip query that led us to make this change.
+
 
 EMACS Support
 
@@ -102931,6 +102937,9 @@ EMACS Support
   For the [ACL2-doc] browser, the download ([47mD[0m) command now accesses, by
   default, an [47mhttps[0m address instead of an [47mhttp[0m address.  Thanks to
   Warren Hunt for suggesting this change.
+
+  In [ACL2-doc], modified the [47mTAB[0m and [47mShift-TAB[0m (sometimes known as
+  [47m<backtab>[0m) commands so that they alert the user when wrapping.
 
 
 Experimental Versions
