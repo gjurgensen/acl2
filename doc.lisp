@@ -79085,8 +79085,8 @@ SECTION: Precise documentation for [47mstobj-let[0m
   [47mACC[0m unless the name of [47mACC[0m ends in [47m\"-GET\"[0m (suggesting a hash-table
   field access), in which case the implicit [47mUPDATER[0m is obtained by
   replacing the suffix [47m\"-GET\"[0m with [47m\"-PUT\"[0m.  Finally, [47mACCESSOR[0m has a
-  [signature] specifying a return value that is either [47mVAL[0m or is a
-  stobj that is congruent to [47mVAL[0m. (This means that only stobjs may be
+  [signature] specifying a return value that is either [47mVAR[0m or is a
+  stobj that is congruent to [47mVAR[0m. (This means that only stobjs may be
   bound in these bindings.)
 
   If the conditions above are met, then the General Form expands to one
@@ -79124,8 +79124,12 @@ SECTION: Precise documentation for [47mstobj-let[0m
                 CONSUMER)))
 
   Moreover, ACL2 places restrictions on the resulting expression: [47mST[0m
-  must not occur free in [47mPRODUCER[0m, and every variable in
-  [47mSTOBJ-LET-BOUND-VARIABLES[0m must not occur free in [47mCONSUMER[0m.
+  must not occur free in [47mPRODUCER[0m when at least one variable in
+  [47mSTOBJ-LET-BOUND-VARIABLES[0m occurs in [47mPRODUCER[0m; and every variable in
+  [47mSTOBJ-LET-BOUND-VARIABLES[0m must not occur free in [47mCONSUMER[0m.  If one
+  of these conditions is violated, you will see an error message
+  saying that ``It is forbidden to use'' the variable where it should
+  not occur free.
 
   [47mStobj-let[0m forms can be evaluated using ordinary objects in theorem
   contexts, much as any form.  They can also, of course, appear in
@@ -102218,6 +102222,13 @@ Changes to Existing Features
   The fifth formal of [47m[do$][0m now represents the values returned rather
   than a default value.  This change supports a bug fix; see the item
   below regarding ``About a bug in DO$ in ACL2 Version_8.5''.
+
+  It is now legal for the parent stobj of a [47m[stobj-let][0m expression to
+  occur free in the producer when no producer variable is bound in
+  the bindings.  For an example, see the section ``Allow the parent
+  stobj of a stobj-let expression to occur free in the producer when
+  no variable bound in the bindings occurs in the producer.'' in
+  [community-book] [47mbooks/system/tests/nested-stobj-tests.lisp[0m.
 
 
 New Features

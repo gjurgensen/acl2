@@ -75848,8 +75848,8 @@ it."
  @('ACC') ends in @('\"-GET\"') (suggesting a hash-table field access), in
  which case the implicit @('UPDATER') is obtained by replacing the suffix
  @('\"-GET\"') with @('\"-PUT\"').  Finally, @('ACCESSOR') has a @(see
- signature) specifying a return value that is either @('VAL') or is a stobj
- that is congruent to @('VAL'). (This means that only stobjs may be bound in
+ signature) specifying a return value that is either @('VAR') or is a stobj
+ that is congruent to @('VAR'). (This means that only stobjs may be bound in
  these bindings.)</p>
 
  <p>If the conditions above are met, then the General Form expands to one of
@@ -75899,8 +75899,12 @@ it."
  })
 
  <p>Moreover, ACL2 places restrictions on the resulting expression: @('ST')
- must not occur free in @('PRODUCER'), and every variable in
- @('STOBJ-LET-BOUND-VARIABLES') must not occur free in @('CONSUMER').</p>
+ must not occur free in @('PRODUCER') when at least one variable in
+ @('STOBJ-LET-BOUND-VARIABLES') occurs in @('PRODUCER'); and every variable in
+ @('STOBJ-LET-BOUND-VARIABLES') must not occur free in @('CONSUMER').  If one
+ of these conditions is violated, you will see an error message saying that
+ &ldquo;It is forbidden to use&rdquo; the variable where it should not
+ occur free.</p>
 
  <p>@('Stobj-let') forms can be evaluated using ordinary objects in theorem
  contexts, much as any form.  They can also, of course, appear in function
@@ -104521,7 +104525,7 @@ it."
 ; conversion of fmt, (er soft ...), one-way-unify, and genvar, and related
 ; utilities to guard-verified :logic mode.
 
-;   77 ; Changes to Existing Features
+;   78 ; Changes to Existing Features
 ;   34 ; New Features
 ;    8 ; Heuristic and Efficiency Improvements
 ;   35 ; Bug Fixes
@@ -104950,6 +104954,13 @@ it."
 ;   (defun foo (st st2 st3)
 ;     (declare (xargs :stobjs (st st2 st3)))
 ;     (mv (stp st) (stp st2) st3 (stp (cons 3 4 5))))
+
+; Improved the error message in some cases when stobj-let binds a variable that
+; is illegally used in the consumer.
+
+; Technical change, only user visible in exceptional circumstances: fixed
+; macroexpand1*-cmp to avoid macroexpansion in cases where translate11 could
+; cause an error.
 
   :parents (release-notes)
   :short "ACL2 Version  8.6 (xxx, 20xx) Notes"
@@ -105522,6 +105533,13 @@ it."
  <p>The fifth formal of @(tsee do$) now represents the values returned rather
  than a default value.  This change supports a bug fix; see the item below
  regarding &ldquo;About a bug in DO$ in ACL2 Version_8.5&rdquo;.</p>
+
+ <p>It is now legal for the parent stobj of a @(tsee stobj-let) expression to
+ occur free in the producer when no producer variable is bound in the bindings.
+ For an example, see the section &ldquo;Allow the parent stobj of a stobj-let
+ expression to occur free in the producer when no variable bound in the
+ bindings occurs in the producer.&rdquo; in @(see community-book)
+ @('books/system/tests/nested-stobj-tests.lisp').</p>
 
  <h3>New Features</h3>
 
