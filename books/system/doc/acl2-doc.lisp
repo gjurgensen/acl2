@@ -30111,6 +30111,31 @@ ld) and @(tsee include-book)"
  @(see add-ld-keyword-alias!)) to invoke the similar macro @('xdoc'), which can
  access documentation topics defined in books.</p>")
 
+(defxdoc doc-terminal-test-1
+
+; An earlier version of :DOC displayed the :long section of this topic with the
+; bold (red) test ending after EQUAL.  That was because the SGR terminator (see
+; *sgr-suffix* in books/xdoc/display.lisp) was terminating not only the
+; typewriter font for EQUAL but also the bold font.  Now, when EQUAL ends,
+; function merge-text (see books/xdoc/display.lisp) restarts the stack of font
+; changes other than the one currently being concluded.
+
+  :parents (documentation)
+  :short "Short"
+  :long "<p><b>Symbol @('EQUAL') and the rest is still bold.</b></p>")
+
+(defxdoc doc-terminal-test-2
+
+; See comments in doc-terminal-test-1.  Here, the fixed version of :DOC
+; sometimes has difficulty displaying the fonts properly at the terminal, but
+; they are fine when viewed with acl2-doc.
+
+  :parents (documentation)
+  :short "Short"
+  :long "<p><u>Start underline <b>Start bold <i>Start italics <tt>TYPEWRITER
+ FONT [WHICH ENDS HERE]</tt> Bold italics underlined</i> Bold underlined.</b>
+ Underlined</u> Normal text</p>")
+
 (defxdoc documentation
 
 ; This Lisp comment documents source files that mention locations of various
