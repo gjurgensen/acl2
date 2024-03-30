@@ -102520,6 +102520,17 @@ Heuristic and Efficiency Improvements
   Smith for requesting this enhancement (in particular for generation
   of guard obligations).
 
+  The ACL2 [type-reasoning] mechanism has been strengthened slightly
+  for an [47mif[0m expression being assumed true or false, when that
+  expression has a subterm of the form [47m(equal term 'c)[0m, or [47m(equal 'c
+  term)[0m and [47mc[0m is [47m0[0m, [47m1[0m, [47mt[0m, or [47mnil[0m.  Thanks to Warren Hunt for sending
+  an example involving [forward-chaining] that led to this
+  improvement.  [31;1mIMPORTANT NOTE:[0m If this change causes a proof to fail
+  that formerly succeeded, you can fix it by preceding it with the
+  following (implicitly [local]) event.
+
+    (defattach-system use-enhanced-recognizer constant-nil-function-arity-0)
+
 
 Bug Fixes
 
@@ -138784,6 +138795,12 @@ Summary of attachable system functions
   [47mUPDATE-BRR-DATA-2[0m
   Built-in attachment: [47mUPDATE-BRR-DATA-2-BUILTIN[0m
   Documentation: See [with-brr-data].
+
+  [47mUSE-ENHANCED-RECOGNIZER[0m
+  Built-in attachment: [47mCONSTANT-T-FUNCTION-ARITY-0[0m
+  Documentation: Heuristic for treating [47m(equal TERM nil)[0m and [47m(equal nil
+  TERM)[0m as providing a type for [47mTERM[0m during forward-chaining and
+  other operations that assume such a term to be true.
 
   [47mWORSE-THAN[0m
   Built-in attachment: [47mWORSE-THAN-BUILTIN[0m

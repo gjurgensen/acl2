@@ -104552,7 +104552,7 @@ it."
 
 ;   78 ; Changes to Existing Features
 ;   34 ; New Features
-;    8 ; Heuristic and Efficiency Improvements
+;    9 ; Heuristic and Efficiency Improvements
 ;   35 ; Bug Fixes
 ;   18 ; Changes at the System Level
 ;    8 ; EMACS Support
@@ -105823,6 +105823,19 @@ it."
  was not used on subterms of bodies of @(see lambda) expressions, but now it
  is.  Thanks to Eric Smith for requesting this enhancement (in particular for
  generation of guard obligations).</p>
+
+ <p>The ACL2 @(see type-reasoning) mechanism has been strengthened slightly for
+ an @('if') expression being assumed true or false, when that expression has a
+ subterm of the form @('(equal term 'c)'), or @('(equal 'c term)') and @('c')
+ is @('0'), @('1'), @('t'), or @('nil').  Thanks to Warren Hunt for sending an
+ example involving @(see forward-chaining) that led to this improvement.
+ <b>IMPORTANT NOTE:</b> If this change causes a proof to fail that formerly
+ succeeded, you can fix it by preceding it with the following (implicitly @(see
+ local)) event.</p>
+
+ @({
+ (defattach-system use-enhanced-recognizer constant-nil-function-arity-0)
+ })
 
  <h3>Bug Fixes</h3>
 
@@ -140057,6 +140070,11 @@ work on <tt>(q x)</tt>.</p>
     (UPDATE-BRR-DATA-2
      UPDATE-BRR-DATA-2-BUILTIN
      "See @(see with-brr-data).")
+    (USE-ENHANCED-RECOGNIZER CONSTANT-T-FUNCTION-ARITY-0
+                             "Heuristic for treating @('(equal TERM nil)') and
+                              @('(equal nil TERM)') as providing a type for
+                              @('TERM') during forward-chaining and other
+                              operations that assume such a term to be true.")
     (WORSE-THAN WORSE-THAN-BUILTIN)
     (WORSE-THAN-OR-EQUAL WORSE-THAN-OR-EQUAL-BUILTIN)))
 
