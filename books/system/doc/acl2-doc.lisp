@@ -104550,7 +104550,7 @@ it."
 ; conversion of fmt, (er soft ...), one-way-unify, and genvar, and related
 ; utilities to guard-verified :logic mode.
 
-;   78 ; Changes to Existing Features
+;   79 ; Changes to Existing Features
 ;   34 ; New Features
 ;    9 ; Heuristic and Efficiency Improvements
 ;   35 ; Bug Fixes
@@ -104989,6 +104989,9 @@ it."
 
 ; Fixed a slight performance bug in *1* functions in the invariant-risk case.
 ; (See the use of variable cont-p in the definition of oneify-cltl-code-1.)
+
+; Improved error messages from add-invisible-fns.  Thanks to Eric Smith for
+; pointing out that they could be a bit inscrutable.
 
   :parents (release-notes)
   :short "ACL2 Version  8.6 (xxx, 20xx) Notes"
@@ -105568,6 +105571,10 @@ it."
  expression to occur free in the producer when no variable bound in the
  bindings occurs in the producer.&rdquo; in @(see community-book)
  @('books/system/tests/nested-stobj-tests.lisp').</p>
+
+ <p>Built-in function @('bounded-integer-alistp2') has been modified to remove
+ @(tsee integerp) tests on formals @('i') and @('j') from the body and instead
+ require them to satisfy @(tsee posp) in the @(see guard).</p>
 
  <h3>New Features</h3>
 

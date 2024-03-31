@@ -102248,6 +102248,10 @@ Changes to Existing Features
   no variable bound in the bindings occurs in the producer.'' in
   [community-book] [47mbooks/system/tests/nested-stobj-tests.lisp[0m.
 
+  Built-in function [47mbounded-integer-alistp2[0m has been modified to remove
+  [47m[integerp][0m tests on formals [47mi[0m and [47mj[0m from the body and instead
+  require them to satisfy [47m[posp][0m in the [guard].
+
 
 New Features
 
