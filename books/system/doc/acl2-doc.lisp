@@ -104987,6 +104987,9 @@ it."
 ; macroexpand1*-cmp to avoid macroexpansion in cases where translate11 could
 ; cause an error.
 
+; Fixed a slight performance bug in *1* functions in the invariant-risk case.
+; (See the use of variable cont-p in the definition of oneify-cltl-code-1.)
+
   :parents (release-notes)
   :short "ACL2 Version  8.6 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
