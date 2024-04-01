@@ -30111,6 +30111,31 @@ ld) and @(tsee include-book)"
  @(see add-ld-keyword-alias!)) to invoke the similar macro @('xdoc'), which can
  access documentation topics defined in books.</p>")
 
+(defxdoc doc-terminal-test-1
+
+; An earlier version of :DOC displayed the :long section of this topic with the
+; bold (red) test ending after EQUAL.  That was because the SGR terminator (see
+; *sgr-suffix* in books/xdoc/display.lisp) was terminating not only the
+; typewriter font for EQUAL but also the bold font.  Now, when EQUAL ends,
+; function merge-text (see books/xdoc/display.lisp) restarts the stack of font
+; changes other than the one currently being concluded.
+
+  :parents (documentation)
+  :short "Short"
+  :long "<p><b>Symbol @('EQUAL') and the rest is still bold.</b></p>")
+
+(defxdoc doc-terminal-test-2
+
+; See comments in doc-terminal-test-1.  Here, the fixed version of :DOC
+; sometimes has difficulty displaying the fonts properly at the terminal, but
+; they are fine when viewed with acl2-doc.
+
+  :parents (documentation)
+  :short "Short"
+  :long "<p><u>Start underline <b>Start bold <i>Start italics <tt>TYPEWRITER
+ FONT [WHICH ENDS HERE]</tt> Bold italics underlined</i> Bold underlined.</b>
+ Underlined</u> Normal text</p>")
+
 (defxdoc documentation
 
 ; This Lisp comment documents source files that mention locations of various
@@ -75848,8 +75873,8 @@ it."
  @('ACC') ends in @('\"-GET\"') (suggesting a hash-table field access), in
  which case the implicit @('UPDATER') is obtained by replacing the suffix
  @('\"-GET\"') with @('\"-PUT\"').  Finally, @('ACCESSOR') has a @(see
- signature) specifying a return value that is either @('VAL') or is a stobj
- that is congruent to @('VAL'). (This means that only stobjs may be bound in
+ signature) specifying a return value that is either @('VAR') or is a stobj
+ that is congruent to @('VAR'). (This means that only stobjs may be bound in
  these bindings.)</p>
 
  <p>If the conditions above are met, then the General Form expands to one of
@@ -75899,8 +75924,12 @@ it."
  })
 
  <p>Moreover, ACL2 places restrictions on the resulting expression: @('ST')
- must not occur free in @('PRODUCER'), and every variable in
- @('STOBJ-LET-BOUND-VARIABLES') must not occur free in @('CONSUMER').</p>
+ must not occur free in @('PRODUCER') when at least one variable in
+ @('STOBJ-LET-BOUND-VARIABLES') occurs in @('PRODUCER'); and every variable in
+ @('STOBJ-LET-BOUND-VARIABLES') must not occur free in @('CONSUMER').  If one
+ of these conditions is violated, you will see an error message saying that
+ &ldquo;It is forbidden to use&rdquo; the variable where it should not
+ occur free.</p>
 
  <p>@('Stobj-let') forms can be evaluated using ordinary objects in theorem
  contexts, much as any form.  They can also, of course, appear in function
@@ -104521,9 +104550,9 @@ it."
 ; conversion of fmt, (er soft ...), one-way-unify, and genvar, and related
 ; utilities to guard-verified :logic mode.
 
-;   77 ; Changes to Existing Features
+;   79 ; Changes to Existing Features
 ;   34 ; New Features
-;    8 ; Heuristic and Efficiency Improvements
+;    9 ; Heuristic and Efficiency Improvements
 ;   35 ; Bug Fixes
 ;   18 ; Changes at the System Level
 ;    8 ; EMACS Support
@@ -104950,6 +104979,19 @@ it."
 ;   (defun foo (st st2 st3)
 ;     (declare (xargs :stobjs (st st2 st3)))
 ;     (mv (stp st) (stp st2) st3 (stp (cons 3 4 5))))
+
+; Improved the error message in some cases when stobj-let binds a variable that
+; is illegally used in the consumer.
+
+; Technical change, only user visible in exceptional circumstances: fixed
+; macroexpand1*-cmp to avoid macroexpansion in cases where translate11 could
+; cause an error.
+
+; Fixed a slight performance bug in *1* functions in the invariant-risk case.
+; (See the use of variable cont-p in the definition of oneify-cltl-code-1.)
+
+; Improved error messages from add-invisible-fns.  Thanks to Eric Smith for
+; pointing out that they could be a bit inscrutable.
 
   :parents (release-notes)
   :short "ACL2 Version  8.6 (xxx, 20xx) Notes"
@@ -105523,6 +105565,17 @@ it."
  than a default value.  This change supports a bug fix; see the item below
  regarding &ldquo;About a bug in DO$ in ACL2 Version_8.5&rdquo;.</p>
 
+ <p>It is now legal for the parent stobj of a @(tsee stobj-let) expression to
+ occur free in the producer when no producer variable is bound in the bindings.
+ For an example, see the section &ldquo;Allow the parent stobj of a stobj-let
+ expression to occur free in the producer when no variable bound in the
+ bindings occurs in the producer.&rdquo; in @(see community-book)
+ @('books/system/tests/nested-stobj-tests.lisp').</p>
+
+ <p>Built-in function @('bounded-integer-alistp2') has been modified to remove
+ @(tsee integerp) tests on formals @('i') and @('j') from the body and instead
+ require them to satisfy @(tsee posp) in the @(see guard).</p>
+
  <h3>New Features</h3>
 
  <p>ACL2 now supports floating-point operations.  See @(see df).  Regarding
@@ -105780,6 +105833,19 @@ it."
  was not used on subterms of bodies of @(see lambda) expressions, but now it
  is.  Thanks to Eric Smith for requesting this enhancement (in particular for
  generation of guard obligations).</p>
+
+ <p>The ACL2 @(see type-reasoning) mechanism has been strengthened slightly for
+ an @('if') expression being assumed true or false, when that expression has a
+ subterm of the form @('(equal term 'c)'), or @('(equal 'c term)') and @('c')
+ is @('0'), @('1'), @('t'), or @('nil').  Thanks to Warren Hunt for sending an
+ example involving @(see forward-chaining) that led to this improvement.
+ <b>IMPORTANT NOTE:</b> If this change causes a proof to fail that formerly
+ succeeded, you can fix it by preceding it with the following (implicitly @(see
+ local)) event.</p>
+
+ @({
+ (defattach-system use-enhanced-recognizer constant-nil-function-arity-0)
+ })
 
  <h3>Bug Fixes</h3>
 
@@ -140014,6 +140080,11 @@ work on <tt>(q x)</tt>.</p>
     (UPDATE-BRR-DATA-2
      UPDATE-BRR-DATA-2-BUILTIN
      "See @(see with-brr-data).")
+    (USE-ENHANCED-RECOGNIZER CONSTANT-T-FUNCTION-ARITY-0
+                             "Heuristic for treating @('(equal TERM nil)') and
+                              @('(equal nil TERM)') as providing a type for
+                              @('TERM') during forward-chaining and other
+                              operations that assume such a term to be true.")
     (WORSE-THAN WORSE-THAN-BUILTIN)
     (WORSE-THAN-OR-EQUAL WORSE-THAN-OR-EQUAL-BUILTIN)))
 
