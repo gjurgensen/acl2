@@ -48511,25 +48511,27 @@ current fast alists."
   ACL2 !>
  })
 
- <p>Now, a @(tsee defpkg) event may be executed underneath an @(tsee
- encapsulate) or @(tsee include-book) form that is marked @(tsee local).  In
- that case, traces of the added axiom will disappear after the surrounding
- @(tsee encapsulate) or @(tsee include-book) form is admitted.  This can cause
- inconsistencies.  (You can take our word for it, or you can look at the
- example shown in the ``Essay on Hidden Packages'' in source file
- @('axioms.lisp').)</p>
+ <p>Consider a @(tsee defpkg) event that is introduced during evaluation of an
+ @(tsee include-book) event, where that @('include-book') event occurs @(see
+ local)ly inside a surrounding @(tsee encapsulate) event or another
+ @('include-book') event.  In that case, traces of the axiom added by the
+ @('defpkg') event will disappear after the surrounding event is admitted.  If
+ ACL2 were to allow the same package name to be defined subsequently with a
+ different set of imports, that could cause inconsistencies.  See @(see
+ package-reincarnation-import-restrictions) for relevant discussion, or see the
+ &ldquo;Essay on Hidden Packages&rdquo; in source file @('axioms.lisp')..</p>
 
- <p>In order to prevent unsoundness, then, ACL2 maintains the following
- invariant.  Let us say that a @('defpkg') event is ``hidden'' if it is in
- support of the current logical @(see world) but is not present in that world
- as an event, because it is @(tsee local) as indicated above.  We maintain the
- invariant that all @(tsee defpkg) @(see events), even if ``hidden'', are
- tracked under-the-hood in the current logical @(see world).  Sometimes this
- property causes @(tsee defpkg) events to be written to the @(see portcullis)
- of a book's @(see certificate) (see @(see books)).  At any rate, if you then
- try to define the package in a manner inconsistent with the earlier such
- definition, that is, with a different imports list, you will see an error
- because of the above-mentioned tracking.</p>
+ <p>In order to prevent unsoundness, ACL2 maintains the following invariant.
+ Let us say that a @('defpkg') event is ``hidden'' if it is in support of the
+ current logical @(see world) but is not present in that world as an event,
+ because it is @(tsee local) as indicated above.  We maintain the invariant
+ that all @(tsee defpkg) @(see events), even if ``hidden'', are tracked
+ under-the-hood in the current logical @(see world).  Sometimes this property
+ causes @(tsee defpkg) events to be written to the @(see portcullis) of a
+ book's @(see certificate) (see @(see books)).  This invariant guarantees that
+ if you then try to define a package in a manner inconsistent with its earlier
+ definition &mdash; specifically, with a different imports list &mdash; you
+ will see an error because of the tracking discussed above.</p>
 
  <p>(By the way, this topic's name comes from Holly Bell, who heard \"hidden
  death package\" instead of \"hidden defpkg\".  The description seemed to fit.
@@ -108131,26 +108133,11 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  @(tsee defcong) in @('defthm.lisp').</p>")
 
 (defxdoc package-reincarnation-import-restrictions
-  :parents (packages)
-  :short "Re-defining undone @(tsee defpkg)s"
-  :long "<p>Suppose @('(defpkg \"pkg\" imports)') is the most recently executed
- successful definition of @('\"pkg\"') in this ACL2 session and that it has
- since been undone, as by @(':')@(tsee ubt).  Any future attempt in this
- session to define @('\"pkg\"') as a package must specify an identical imports
- list.</p>
 
- <p>The restriction stems from the need to implement the reinstallation of
- saved logical @(see world)s as in error recovery and the @(':')@(tsee oops)
- @(see command).  Suppose that the new @(tsee defpkg) attempts to import some
- symbol, @('a::sym'), not imported by the previous definition of @('\"pkg\"').
- Because it was not imported in the original package, the symbol @('pkg::sym'),
- different from @('a::sym'), may well have been created and may well be used in
- some saved @(see world)s.  Those saved @(see world)s are Common Lisp objects
- being held for you ``behind the scenes.''  In order to import @('a::sym') into
- @('\"pkg\"') now we would have to unintern @('pkg::sym'), rendering those
- saved @(see world)s ill-formed.  It is because of saved @(see world)s that we
- do not actually clear out a package when it is undone.</p>
+; At one point this :DOC contained the following, but it has been deleted since
+; it doesn't seem to add much to the exposition.
 
+#|
  <p>At one point we thought it was sound to allow the new @(tsee defpkg) to
  import a subset of the old.  But that is incorrect.  Suppose the old
  definition of @('\"pkg\"') imported @('a::sym') but the new one does not.
@@ -108158,7 +108145,148 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  @('\"pkg\"') to the new subset.  Then consider the conjecture @('(eq a::sym
  pkg::sym)').  This ought not be a theorem because we did not import
  @('a::sym') into @('\"pkg\"').  But in fact in AKCL it was a theorem because
- @('pkg::sym') was read as @('a::sym') because of the old imports.</p>")
+ @('pkg::sym') was read as @('a::sym') because of the old imports.</p>
+|#
+
+  :parents (packages)
+  :short "Re-defining undone @(tsee defpkg)s"
+  :long "<p>ACL2 imposes the following restriction on redefining packages.
+ Note that for the notion of a package definition being &ldquo;undone&rdquo;,
+ the undoing might have been by use of @(':')@(tsee ubt), or it might have been
+ because the @('defpkg') form was evaluated by a @(see local) event that
+ disappeared during the second pass of an @(tsee encapsulate) or @(tsee
+ include-book) event.</p>
+
+ <blockquote>
+
+ Suppose @('(defpkg \"pkg\" imports)') has been evaluated successfully and then
+ has been undone.  Then any future attempt in the same session to define
+ @('\"pkg\"') as a package must specify an identical imports list.
+
+ </blockquote>
+
+ <h3>Reasons for the restriction</h3>
+
+ <p>We will see below that the restriction above is necessary for avoiding
+ unsoundness.  But first consider the following simple example, which shows
+ that the package doesn't entirely disappear when undone.</p>
+
+ @({
+ ACL2 !>(defpkg \"FOO\" nil)
+
+ Summary
+ Form:  ( DEFPKG \"FOO\" ...)
+ Rules: NIL
+ Time:  0.00 seconds (prove: 0.00, print: 0.00, other: 0.00)
+  \"FOO\"
+ ACL2 !>(assign x 'foo::a)
+  FOO::A
+ ACL2 !>(u) ; undoes the defpkg event
+            0:x(EXIT-BOOT-STRAP-MODE)
+ ACL2 !>(@ x)
+ FOO::A
+ ACL2 !>(eq (@ x) 'acl2::a)
+ NIL
+ ACL2 !>
+ })
+ 
+ <p>Suppose that (without the restriction) the package @('\"FOO\"') can now be
+ introduced as @('(defpkg \"FOO\" '(a))').  Then will @('(eq (@ x) 'acl2::a)')
+ evaluate to @('nil') as before, since we didn't make another assignment to
+ @('x')?  Or would that equality evaluate to @('t') since the only symbol in
+ package @('\"FOO\"') whose @(tsee symbol-name) is @('\"A\"') is @('acl2::a')?
+ Each result is plausible so to avoid confusion, it might be best if @('(@ x)')
+ is now undefined.  But that would require somehow removing all symbols in the
+ @(see state) whose package is @('\"FOO\"') when undoing the @('defpkg') event,
+ which can be inefficient and &mdash; more importantly &mdash; may not make
+ sense if there are @(see stobj)s that include such symbols.  What a mess!</p>
+
+ <p>A more important reason for the restriction is that it prevents
+ unsoundness.  Consider the following two books.</p>
+
+ @({
+ ;;; book1.lisp
+ ;;; Portcullis command: (defpkg \"FOO\" '())
+ (in-package \"ACL2\")
+ (defthm thm1
+   (equal (symbol-package-name (intern$ \"A\" \"FOO\"))
+          \"FOO\"))
+
+ ;;;;;;
+
+ ;;; book2.lisp
+ ;;; Portcullis command: (defpkg \"FOO\" '(a))
+ (in-package \"ACL2\")
+ (defthm thm2
+   (equal (symbol-package-name (intern$ \"A\" \"FOO\"))
+          \"ACL2\"))
+ })
+
+ <p>After each of these two books is certifiable in a (separate) fresh ACL2
+ session, consider the following two events.</p>
+
+ @({
+ (encapsulate
+   ()
+   (local (include-book \"book1\"))
+   (defthm thm1
+     (equal (symbol-package-name (intern$ \"A\" \"FOO\"))
+            \"FOO\")))
+
+ (encapsulate
+   ()
+   (local (include-book \"book2\"))
+   (defthm thm1
+     (equal (symbol-package-name (intern$ \"A\" \"FOO\"))
+            \"ACL2\")))
+ })
+
+ <p>Each is accepted in a separate, fresh ACL2 session.  But if we could admit
+ the first and then the second in the same session, we could of course prove
+ @('nil').  Fortunately, if we try that, then ACL2 implements the restriction
+ by complaining about the second as follows, when encountering the @('(local
+ (include-book \"book2\"))') form in the second @('encapsulate').</p>
+
+ @({
+ ACL2 Error in ACL2-INTERFACE:  
+ We cannot reincarnate the package \"FOO\" because it was previously defined
+ with a different list of imported symbols.
+ })
+
+ <p>A final reason for the restriction stems from the reinstallation of saved
+ logical @(see world)s, as in error recovery and the @(':')@(tsee oops) @(see
+ command).  Suppose that the new @(tsee defpkg) attempts to import some symbol,
+ @('a::sym'), not imported by the previous definition of @('\"pkg\"').  Because
+ it was not imported in the original package, the symbol @('pkg::sym'),
+ different from @('a::sym'), may well have been created and may well be used in
+ some saved @(see world)s.  Those saved @(see world)s are Common Lisp objects
+ being held for you ``behind the scenes.''  In order to import @('a::sym') into
+ @('\"pkg\"') now we would have to unintern @('pkg::sym'), rendering those
+ saved @(see world)s ill-formed.  So because of saved @(see world)s, we do not
+ clear out a package when it is undone.</p>
+
+ <h3>A logical view of the restriction</h3>
+
+ <p>The restriction on redefining packages is based on the following part of
+ the logical foundation of ACL2.</p>
+
+ <blockquote>
+
+ <b>Logical Persistence of Packages.</b><br/>
+
+ When a package is introduced by @(tsee defpkg) in an ACL2 session, its
+ definition is considered to persist logically even if that @(see defpkg) @(see
+ event) is undone.
+
+ </blockquote>
+ 
+ <p>That principle certainly rules out the new definition of an undone package
+ with different imports.  It also explains why package definitions from @(see
+ local)ly included @(see books) are included in a book's @(see portcullis)
+ commands; see @(see hidden-defpkg).  Note that this is a <i>logical</i>
+ principle; if you undo a @(tsee defpkg) event, then ACL2 will prevent you from
+ referencing that package explicitly unless you first reintroduce it &mdash;
+ with the same imports, because of the restriction.</p>")
 
 (defxdoc packages
   :parents (programming)
