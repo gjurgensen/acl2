@@ -51515,15 +51515,19 @@ Subtopics
     Subclass:     ABBREVIATION
     ACL2 !>
 
-  Now, a [47m[defpkg][0m event may be executed underneath an [47m[encapsulate][0m or
-  [47m[include-book][0m form that is marked [47m[local][0m.  In that case, traces
-  of the added axiom will disappear after the surrounding
-  [47m[encapsulate][0m or [47m[include-book][0m form is admitted.  This can cause
-  inconsistencies.  (You can take our word for it, or you can look at
-  the example shown in the ``Essay on Hidden Packages'' in source
-  file [47maxioms.lisp[0m.)
+  Consider a [47m[defpkg][0m event that is introduced during evaluation of an
+  [47m[include-book][0m event, where that [47minclude-book[0m event occurs
+  [local]ly inside a surrounding [47m[encapsulate][0m event or another
+  [47minclude-book[0m event.  In that case, traces of the axiom added by the
+  [47mdefpkg[0m event will disappear after the surrounding event is
+  admitted.  If ACL2 were to allow the same package name to be
+  defined subsequently with a different set of imports, that could
+  cause inconsistencies.  See
+  [package-reincarnation-import-restrictions] for relevant
+  discussion, or see the ``Essay on Hidden Packages'' in source file
+  [47maxioms.lisp[0m..
 
-  In order to prevent unsoundness, then, ACL2 maintains the following
+  In order to prevent unsoundness, ACL2 maintains the following
   invariant.  Let us say that a [47mdefpkg[0m event is ``hidden'' if it is
   in support of the current logical [world] but is not present in
   that world as an event, because it is [47m[local][0m as indicated above.
@@ -51531,10 +51535,10 @@ Subtopics
   ``hidden'', are tracked under-the-hood in the current logical
   [world].  Sometimes this property causes [47m[defpkg][0m events to be
   written to the [portcullis] of a book's [certificate] (see
-  [books]).  At any rate, if you then try to define the package in a
-  manner inconsistent with the earlier such definition, that is, with
-  a different imports list, you will see an error because of the
-  above-mentioned tracking.
+  [books]).  This invariant guarantees that if you then try to define
+  a package in a manner inconsistent with its earlier definition ---
+  specifically, with a different imports list --- you will see an
+  error because of the tracking discussed above.
 
   (By the way, this topic's name comes from Holly Bell, who heard
   \"hidden death package\" instead of \"hidden defpkg\".  The description
@@ -105293,14 +105297,104 @@ Subtopics
   (PACKAGES)
   "Re-defining undone [47m[defpkg][0ms
 
-  Suppose [47m(defpkg \"pkg\" imports)[0m is the most recently executed
-  successful definition of [47m\"pkg\"[0m in this ACL2 session and that it has
-  since been undone, as by [47m:[0m[47m[ubt][0m.  Any future attempt in this
-  session to define [47m\"pkg\"[0m as a package must specify an identical
-  imports list.
+  ACL2 imposes the following restriction on redefining packages.  Note
+  that for the notion of a package definition being ``undone'', the
+  undoing might have been by use of [47m:[0m[47m[ubt][0m, or it might have been
+  because the [47mdefpkg[0m form was evaluated by a [local] event that
+  disappeared during the second pass of an [47m[encapsulate][0m or
+  [47m[include-book][0m event.
 
-  The restriction stems from the need to implement the reinstallation
-  of saved logical [world]s as in error recovery and the [47m:[0m[47m[oops][0m
+    Suppose [47m(defpkg \"pkg\" imports)[0m has been evaluated successfully and
+    then has been undone.  Then any future attempt in the same
+    session to define [47m\"pkg\"[0m as a package must specify an identical
+    imports list.
+
+
+Reasons for the restriction
+
+  We will see below that the restriction above is necessary for
+  avoiding unsoundness.  But first consider the following simple
+  example, which shows that the package doesn't entirely disappear
+  when undone.
+
+    ACL2 !>(defpkg \"FOO\" nil)
+
+    Summary
+    Form:  ( DEFPKG \"FOO\" ...)
+    Rules: NIL
+    Time:  0.00 seconds (prove: 0.00, print: 0.00, other: 0.00)
+     \"FOO\"
+    ACL2 !>(assign x 'foo::a)
+     FOO::A
+    ACL2 !>(u) ; undoes the defpkg event
+               0:x(EXIT-BOOT-STRAP-MODE)
+    ACL2 !>(@ x)
+    FOO::A
+    ACL2 !>(eq (@ x) 'acl2::a)
+    NIL
+    ACL2 !>
+
+  Suppose that (without the restriction) the package [47m\"FOO\"[0m can now be
+  introduced as [47m(defpkg \"FOO\" '(a))[0m.  Then will [47m(eq (@ x) 'acl2::a)[0m
+  evaluate to [47mnil[0m as before, since we didn't make another assignment
+  to [47mx[0m?  Or would that equality evaluate to [47mt[0m since the only symbol
+  in package [47m\"FOO\"[0m whose [47m[symbol-name][0m is [47m\"A\"[0m is [47macl2::a[0m?  Each
+  result is plausible so to avoid confusion, it might be best if [47m(@
+  x)[0m is now undefined.  But that would require somehow removing all
+  symbols in the [state] whose package is [47m\"FOO\"[0m when undoing the
+  [47mdefpkg[0m event, which can be inefficient and --- more importantly ---
+  may not make sense if there are [stobj]s that include such symbols.
+  What a mess!
+
+  A more important reason for the restriction is that it prevents
+  unsoundness.  Consider the following two books.
+
+    ;;; book1.lisp
+    ;;; Portcullis command: (defpkg \"FOO\" '())
+    (in-package \"ACL2\")
+    (defthm thm1
+      (equal (symbol-package-name (intern$ \"A\" \"FOO\"))
+             \"FOO\"))
+
+    ;;;;;;
+
+    ;;; book2.lisp
+    ;;; Portcullis command: (defpkg \"FOO\" '(a))
+    (in-package \"ACL2\")
+    (defthm thm2
+      (equal (symbol-package-name (intern$ \"A\" \"FOO\"))
+             \"ACL2\"))
+
+  After each of these two books is certifiable in a (separate) fresh
+  ACL2 session, consider the following two events.
+
+    (encapsulate
+      ()
+      (local (include-book \"book1\"))
+      (defthm thm1
+        (equal (symbol-package-name (intern$ \"A\" \"FOO\"))
+               \"FOO\")))
+
+    (encapsulate
+      ()
+      (local (include-book \"book2\"))
+      (defthm thm1
+        (equal (symbol-package-name (intern$ \"A\" \"FOO\"))
+               \"ACL2\")))
+
+  Each is accepted in a separate, fresh ACL2 session.  But if we could
+  admit the first and then the second in the same session, we could
+  of course prove [47mnil[0m.  Fortunately, if we try that, then ACL2
+  implements the restriction by complaining about the second as
+  follows, when encountering the [47m(local (include-book \"book2\"))[0m form
+  in the second [47mencapsulate[0m.
+
+    ACL2 Error in ACL2-INTERFACE:
+    We cannot reincarnate the package \"FOO\" because it was previously defined
+    with a different list of imported symbols.
+
+  A final reason for the restriction stems from the reinstallation of
+  saved logical [world]s, as in error recovery and the [47m:[0m[47m[oops][0m
   [command].  Suppose that the new [47m[defpkg][0m attempts to import some
   symbol, [47ma::sym[0m, not imported by the previous definition of [47m\"pkg\"[0m.
   Because it was not imported in the original package, the symbol
@@ -105308,18 +105402,28 @@ Subtopics
   well be used in some saved [world]s.  Those saved [world]s are
   Common Lisp objects being held for you ``behind the scenes.'' In
   order to import [47ma::sym[0m into [47m\"pkg\"[0m now we would have to unintern
-  [47mpkg::sym[0m, rendering those saved [world]s ill-formed.  It is because
-  of saved [world]s that we do not actually clear out a package when
-  it is undone.
+  [47mpkg::sym[0m, rendering those saved [world]s ill-formed.  So because of
+  saved [world]s, we do not clear out a package when it is undone.
 
-  At one point we thought it was sound to allow the new [47m[defpkg][0m to
-  import a subset of the old.  But that is incorrect.  Suppose the
-  old definition of [47m\"pkg\"[0m imported [47ma::sym[0m but the new one does not.
-  Suppose we allowed that and implemented it simply by setting the
-  imports of [47m\"pkg\"[0m to the new subset.  Then consider the conjecture
-  [47m(eq a::sym pkg::sym)[0m.  This ought not be a theorem because we did
-  not import [47ma::sym[0m into [47m\"pkg\"[0m.  But in fact in AKCL it was a theorem
-  because [47mpkg::sym[0m was read as [47ma::sym[0m because of the old imports.")
+
+A logical view of the restriction
+
+  The restriction on redefining packages is based on the following part
+  of the logical foundation of ACL2.
+
+    [31;1mLogical Persistence of Packages.[0m
+    When a package is introduced by [47m[defpkg][0m in an ACL2 session, its
+    definition is considered to persist logically even if that
+    [defpkg] [event] is undone.
+
+  That principle certainly rules out the new definition of an undone
+  package with different imports.  It also explains why package
+  definitions from [local]ly included [books] are included in a
+  book's [portcullis] commands; see [hidden-defpkg].  Note that this
+  is a [3mlogical[0m principle; if you undo a [47m[defpkg][0m event, then ACL2
+  will prevent you from referencing that package explicitly unless
+  you first reintroduce it --- with the same imports, because of the
+  restriction.")
  (PACKAGES
   (PROGRAMMING)
   "Collections of symbols that act as namespaces.
