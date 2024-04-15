@@ -37155,6 +37155,14 @@ current fast alists."
  then the @(see stobj) inputs for @('defi') are implicitly those of its inputs
  that are declared @(see stobj) inputs of @('f').</li>
 
+ <li>When an expression @('(flet (... defi ...) ...)') occurs in the body of a
+ @('DO') @(tsee loop$) expression, nevertheless constructs such as @('PROGN')
+ and @('SETQ') that ACL2 permits in @('DO') @('loop$') bodies are not permitted
+ in @('defi') (unless they occur within the scope of a @('DO') @('loop$')
+ expression in that body).  (This restriction is only for ACL2; for example, it
+ may be reasonable to call @('RETURN') in such situations but ACL2 does not
+ allow that.)</li>
+
  </ul>
 
  <p>@('Flet') bindings are evaluated in parallel.  Consider the following
@@ -68792,6 +68800,12 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
  In particular, the symbol may not be in the keyword package or the main Lisp
  package.  Moreover, the symbol may not be a built-in ACL2 function or
  macro.</li>
+
+ <li>When an expression @('(macrolet (... defi ...) ...)') occurs in the body
+ of a @('DO') @(tsee loop$) expression, nevertheless constructs such as
+ @('PROGN') and @('SETQ') that ACL2 permits in @('DO') @('loop$') bodies are
+ not permitted in @('defi') (unless they occur within the scope of a @('DO')
+ @('loop$') expression in that body).</li>
 
  </ul>
 
@@ -104994,6 +105008,9 @@ it."
 
 ; Improved error messages from add-invisible-fns.  Thanks to Eric Smith for
 ; pointing out that they could be a bit inscrutable.
+
+; Improved error messages for the use of a DO loop$ construct inside the body
+; of a function defined locally by flet or macrolet.
 
   :parents (release-notes)
   :short "ACL2 Version  8.6 (xxx, 20xx) Notes"

@@ -40597,6 +40597,13 @@ Example 2
     * If the [47mflet[0m-binding [47mdefi[0m is in the body of a function [47mf[0m, then the
       [stobj] inputs for [47mdefi[0m are implicitly those of its inputs that
       are declared [stobj] inputs of [47mf[0m.
+    * When an expression [47m(flet (... defi ...) ...)[0m occurs in the body of a
+      [47mDO[0m [47m[loop$][0m expression, nevertheless constructs such as [47mPROGN[0m
+      and [47mSETQ[0m that ACL2 permits in [47mDO[0m [47mloop$[0m bodies are not permitted
+      in [47mdefi[0m (unless they occur within the scope of a [47mDO[0m [47mloop$[0m
+      expression in that body).  (This restriction is only for ACL2;
+      for example, it may be reasonable to call [47mRETURN[0m in such
+      situations but ACL2 does not allow that.)
 
   [47mFlet[0m bindings are evaluated in parallel.  Consider the following
   example.
@@ -72058,6 +72065,11 @@ Subtopics
       In particular, the symbol may not be in the keyword package or
       the main Lisp package.  Moreover, the symbol may not be a
       built-in ACL2 function or macro.
+    * When an expression [47m(macrolet (... defi ...) ...)[0m occurs in the body
+      of a [47mDO[0m [47m[loop$][0m expression, nevertheless constructs such as
+      [47mPROGN[0m and [47mSETQ[0m that ACL2 permits in [47mDO[0m [47mloop$[0m bodies are not
+      permitted in [47mdefi[0m (unless they occur within the scope of a [47mDO[0m
+      [47mloop$[0m expression in that body).
 
   [47mMacrolet[0m bindings are evaluated in parallel.  Consider the following
   example.
