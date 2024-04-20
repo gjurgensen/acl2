@@ -42146,7 +42146,9 @@ current fast alists."
  <p>6. GCL operations on numbers can sometimes be sped up, perhaps by up to two
  orders of magnitude, by suitable @(tsee declare) forms (also see @(see
  type-spec)).  The following example, developed with Warren Hunt and Serita
- Nelesen, illustrates the use of such declarations.</p>
+ Nelesen, illustrates the use of such declarations.  (This was some years ago,
+ and the sizes of 28 and 29 can probably be increased now that Lisp
+ implementations are 64-bit, with larger bounds on so-called fixnums.)</p>
 
  @({
   ; File iplus.lisp:
@@ -104566,7 +104568,7 @@ it."
 ; conversion of fmt, (er soft ...), one-way-unify, and genvar, and related
 ; utilities to guard-verified :logic mode.
 
-;   79 ; Changes to Existing Features
+;   80 ; Changes to Existing Features
 ;   34 ; New Features
 ;    9 ; Heuristic and Efficiency Improvements
 ;   35 ; Bug Fixes
@@ -105594,6 +105596,25 @@ it."
  <p>Built-in function @('bounded-integer-alistp2') has been modified to remove
  @(tsee integerp) tests on formals @('i') and @('j') from the body and instead
  require them to satisfy @(tsee posp) in the @(see guard).</p>
+
+ <p>ACL2 versions of Lisp &ldquo;fixnum&rdquo; notions have been made more
+ generous.  Specifically, the value of @('*fixnum-bits*') has been increased
+ from 30 to 61, which has increased the value of @('(fixnum-bound)') from
+ 2^29-1 to 2^60-1.  Thanks to Eric Smith for requesting an increase.  One
+ effect of this change is to increase the value of @('*default-step-limit*')
+ accordingly, so that the steps computed by @(see with-prover-step-limit) will
+ no longer be limited to fewer than 2^29.
+
+ <blockquote>
+
+ <b>NOTE</b>.  The previous such &ldquo;fixnum&rdquo; behavior can be obtained
+ by building ACL2 with environment variable @('ACL2_SMALL_FIXNUMS') set to a
+ non-empty value.  In fact, such a setting is necessary for a 32-bit Lisp such
+ as CMUCL.  However, such ACL2 builds are not as fully tested as the usual
+ builds and thus may be less reliable, and they are not guaranteed to work
+ compatibly with ordinary ACL2 builds on the same set of books.
+
+ </blockquote></p>
 
  <h3>New Features</h3>
 

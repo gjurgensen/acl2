@@ -45364,6 +45364,9 @@ Subtopics
   to two orders of magnitude, by suitable [47m[declare][0m forms (also see
   [type-spec]).  The following example, developed with Warren Hunt
   and Serita Nelesen, illustrates the use of such declarations.
+  (This was some years ago, and the sizes of 28 and 29 can probably
+  be increased now that Lisp implementations are 64-bit, with larger
+  bounds on so-called fixnums.)
 
     ; File iplus.lisp:
     ; Operations on naturals together with positive infinity (represented as -1).
@@ -102267,6 +102270,22 @@ Changes to Existing Features
   Built-in function [47mbounded-integer-alistp2[0m has been modified to remove
   [47m[integerp][0m tests on formals [47mi[0m and [47mj[0m from the body and instead
   require them to satisfy [47m[posp][0m in the [guard].
+
+  ACL2 versions of Lisp ``fixnum'' notions have been made more
+  generous.  Specifically, the value of [47m*fixnum-bits*[0m has been
+  increased from 30 to 61, which has increased the value of
+  [47m(fixnum-bound)[0m from 2^29-1 to 2^60-1.  Thanks to Eric Smith for
+  requesting an increase.  One effect of this change is to increase
+  the value of [47m*default-step-limit*[0m accordingly, so that the steps
+  computed by [with-prover-step-limit] will no longer be limited to
+  fewer than 2^29.
+      [31;1mNOTE[0m.  The previous such ``fixnum'' behavior can be obtained by
+      building ACL2 with environment variable [47mACL2_SMALL_FIXNUMS[0m set
+      to a non-empty value.  In fact, such a setting is necessary for
+      a 32-bit Lisp such as CMUCL.  However, such ACL2 builds are not
+      as fully tested as the usual builds and thus may be less
+      reliable, and they are not guaranteed to work compatibly with
+      ordinary ACL2 builds on the same set of books.
 
 
 New Features
@@ -159421,7 +159440,7 @@ Subtopics
   [31;1mFunction: [0m<zpf>
 
     (defun zpf (x)
-      (declare (type (unsigned-byte 29) x))
+      (declare (type (unsigned-byte 60) x))
       (if (integerp x) (<= x 0) t))")
  (ACL2-PC::=
   (PROOF-BUILDER-COMMANDS PROOF-BUILDER-COMMANDS-SHORT-LIST)
