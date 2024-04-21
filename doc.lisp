@@ -15511,7 +15511,7 @@ Subtopics
     :unify-subst[+]    substitution making :lhs equal :target
     :wonp              indicates whether application succeeded (after :eval)
 
-  The form [47m([0m)[47m[brr@][0m[47m :cmd)[0m, when evaluated within a break, will return
+  The form [47m([0m[47m[brr@][0m[47m :cmd)[0m, when evaluated within a break, will return
   the value that is only printed by certain of the keyword commands
   above.  This is particularly useful when programming break
   conditions.  See [47m[monitor][0m.
@@ -78591,11 +78591,13 @@ Subtopics
   for a worked example, which applies nested stobj structures to the
   problem of defining interpreters.  A variety of small additional
   examples may be found in ACL2 community book
-  [47mbooks/system/tests/nested-stobj-tests.lisp[0m.  For further
-  discussion, you are welcome to read the ``Essay on Nested Stobjs'',
-  a long comment in ACL2 source file [47mother-events.lisp[0m.  However,
-  this documentation topic is intended to be self-contained for those
-  familiar with [stobj]s.
+  [47mbooks/system/tests/nested-stobj-tests.lisp[0m; and yet another, this
+  one using [47m[swap-stobjs][0m to exchange stobj fields of a stobj, is in
+  [47mbooks/demos/swap-stobj-fields.lisp[0m.  For further discussion, you
+  are welcome to read the ``Essay on Nested Stobjs'', a long comment
+  in ACL2 source file [47mother-events.lisp[0m.  However, this documentation
+  topic is intended to be self-contained for those familiar with
+  [stobj]s.
 
 
 SECTION: Extension of [47m[defstobj][0m to permit [stobj]s within stobjs
@@ -137749,7 +137751,8 @@ Subtopics
   Those examples illustrate that [47mswap-stobjs[0m has the expected effect
   even when stobjs are involved that are bound by [47m[with-local-stobj][0m
   or [47m[stobj-let][0m.  It also explains subtle interaction with
-  [47m[trans-eval][0m.")
+  [47m[trans-eval][0m.  For another examplle, see
+  [47mbooks/demos/swap-stobj-fields.lisp[0m")
  (SYMBOL-ALISTP
   (ALISTS ACL2-BUILT-INS)
   "Recognizer for association lists with symbols as keys

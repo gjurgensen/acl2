@@ -12506,7 +12506,7 @@ with any questions about building the community books.</p>")
  :wonp              indicates whether application succeeded (after :eval)
  })
 
- <p>The form @('('))@(tsee brr@)@(' :cmd)'), when evaluated within a break,
+ <p>The form @('(')@(tsee brr@)@(' :cmd)'), when evaluated within a break,
  will return the value that is only printed by certain of the keyword commands
  above.  This is particularly useful when programming break conditions.  See
  @(tsee monitor).</p>
@@ -75328,11 +75328,12 @@ it."
  <p>See also ACL2 community book @('demos/modeling/nested-stobj-toy-isa.lisp')
  for a worked example, which applies nested stobj structures to the problem of
  defining interpreters.  A variety of small additional examples may be found in
- ACL2 community book @('books/system/tests/nested-stobj-tests.lisp').  For
- further discussion, you are welcome to read the ``Essay on Nested Stobjs'', a
- long comment in ACL2 source file @('other-events.lisp').  However, this
- documentation topic is intended to be self-contained for those familiar with
- @(see stobj)s.</p>
+ ACL2 community book @('books/system/tests/nested-stobj-tests.lisp'); and yet
+ another, this one using @(tsee swap-stobjs) to exchange stobj fields of a
+ stobj, is in @('books/demos/swap-stobj-fields.lisp').  For further discussion,
+ you are welcome to read the ``Essay on Nested Stobjs'', a long comment in ACL2
+ source file @('other-events.lisp').  However, this documentation topic is
+ intended to be self-contained for those familiar with @(see stobj)s.</p>
 
  <h3>SECTION: Extension of @(tsee defstobj) to permit @(see stobj)s within
  stobjs</h3>
@@ -139138,8 +139139,8 @@ work on <tt>(q x)</tt>.</p>
  the @(see community-book), @('books/system/tests/swap-stobjs.lisp').  Those
  examples illustrate that @('swap-stobjs') has the expected effect even when
  stobjs are involved that are bound by @(tsee with-local-stobj) or @(tsee
- stobj-let).  It also explains subtle interaction with @(tsee
- trans-eval).</p>")
+ stobj-let).  It also explains subtle interaction with @(tsee trans-eval).  For
+ another examplle, see @('books/demos/swap-stobj-fields.lisp')</p>")
 
 (defxdoc symbol-alistp
   :parents (alists acl2-built-ins)
