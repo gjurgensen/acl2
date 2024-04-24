@@ -9527,7 +9527,7 @@ See [arity+] for a variant of [47marity[0m with a stronger [guard].")
               (< 0 (car dimensions))
               (< (car dimensions) maximum-length)
               (<= maximum-length
-                  *maximum-positive-32-bit-integer*)
+                  (array-maximum-length-bound))
               (bounded-integer-alistp l (car dimensions))))))))")
  (ARRAY2P
   (ARRAYS ACL2-BUILT-INS)
@@ -9570,7 +9570,7 @@ See [arity+] for a variant of [47marity[0m with a stronger [guard].")
                      (< 0 d2)
                      (< (* d1 d2) maximum-length)
                      (<= maximum-length
-                         *maximum-positive-32-bit-integer*)
+                         (array-maximum-length-bound))
                      (bounded-integer-alistp2 l d1 d2)))))))))")
  (ARRAYS
   (PROGRAMMING)
@@ -102288,6 +102288,15 @@ Changes to Existing Features
       as fully tested as the usual builds and thus may be less
       reliable, and they are not guaranteed to work compatibly with
       ordinary ACL2 builds on the same set of books.
+
+  Changed the bound [47m*maximum-positive-32-bit-integer*[0m that was used for
+  array lengths (and eliminated that constant), replacing it by the
+  larger value from macro call [47m(array-maximum-length-bound)[0m, which is
+  the same as [47m(fixnum-bound)[0m, i.e., [47m1152921504606846975[0m.  Thanks to
+  Eric Smith for suggesting that we consider such a change and for
+  updating books under [47mbooks/kestrel/[0m.  Note: For CMUCL (or any
+  32-bit Lisp) the bound has actually decreased, since [47m(fixnum-bound)[0m
+  is [47m2^30-1[0m in that case.
 
 
 New Features
