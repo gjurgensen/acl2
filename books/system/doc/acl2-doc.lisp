@@ -12506,7 +12506,7 @@ with any questions about building the community books.</p>")
  :wonp              indicates whether application succeeded (after :eval)
  })
 
- <p>The form @('('))@(tsee brr@)@(' :cmd)'), when evaluated within a break,
+ <p>The form @('(')@(tsee brr@)@(' :cmd)'), when evaluated within a break,
  will return the value that is only printed by certain of the keyword commands
  above.  This is particularly useful when programming break conditions.  See
  @(tsee monitor).</p>
@@ -42146,7 +42146,9 @@ current fast alists."
  <p>6. GCL operations on numbers can sometimes be sped up, perhaps by up to two
  orders of magnitude, by suitable @(tsee declare) forms (also see @(see
  type-spec)).  The following example, developed with Warren Hunt and Serita
- Nelesen, illustrates the use of such declarations.</p>
+ Nelesen, illustrates the use of such declarations.  (This was some years ago,
+ and the sizes of 28 and 29 can probably be increased now that Lisp
+ implementations are 64-bit, with larger bounds on so-called fixnums.)</p>
 
  @({
   ; File iplus.lisp:
@@ -75326,11 +75328,12 @@ it."
  <p>See also ACL2 community book @('demos/modeling/nested-stobj-toy-isa.lisp')
  for a worked example, which applies nested stobj structures to the problem of
  defining interpreters.  A variety of small additional examples may be found in
- ACL2 community book @('books/system/tests/nested-stobj-tests.lisp').  For
- further discussion, you are welcome to read the ``Essay on Nested Stobjs'', a
- long comment in ACL2 source file @('other-events.lisp').  However, this
- documentation topic is intended to be self-contained for those familiar with
- @(see stobj)s.</p>
+ ACL2 community book @('books/system/tests/nested-stobj-tests.lisp'); and yet
+ another, this one using @(tsee swap-stobjs) to exchange stobj fields of a
+ stobj, is in @('books/demos/swap-stobj-fields.lisp').  For further discussion,
+ you are welcome to read the ``Essay on Nested Stobjs'', a long comment in ACL2
+ source file @('other-events.lisp').  However, this documentation topic is
+ intended to be self-contained for those familiar with @(see stobj)s.</p>
 
  <h3>SECTION: Extension of @(tsee defstobj) to permit @(see stobj)s within
  stobjs</h3>
@@ -104566,7 +104569,7 @@ it."
 ; conversion of fmt, (er soft ...), one-way-unify, and genvar, and related
 ; utilities to guard-verified :logic mode.
 
-;   79 ; Changes to Existing Features
+;   81 ; Changes to Existing Features
 ;   34 ; New Features
 ;    9 ; Heuristic and Efficiency Improvements
 ;   35 ; Bug Fixes
@@ -105594,6 +105597,33 @@ it."
  <p>Built-in function @('bounded-integer-alistp2') has been modified to remove
  @(tsee integerp) tests on formals @('i') and @('j') from the body and instead
  require them to satisfy @(tsee posp) in the @(see guard).</p>
+
+ <p>ACL2 versions of Lisp &ldquo;fixnum&rdquo; notions have been made more
+ generous.  Specifically, the value of @('*fixnum-bits*') has been increased
+ from 30 to 61, which has increased the value of @('(fixnum-bound)') from
+ 2^29-1 to 2^60-1.  Thanks to Eric Smith for requesting an increase.  One
+ effect of this change is to increase the value of @('*default-step-limit*')
+ accordingly, so that the steps computed by @(see with-prover-step-limit) will
+ no longer be limited to fewer than 2^29.
+
+ <blockquote>
+
+ <b>NOTE</b>.  The previous such &ldquo;fixnum&rdquo; behavior can be obtained
+ by building ACL2 with environment variable @('ACL2_SMALL_FIXNUMS') set to a
+ non-empty value.  In fact, such a setting is necessary for a 32-bit Lisp such
+ as CMUCL.  However, such ACL2 builds are not as fully tested as the usual
+ builds and thus may be less reliable, and they are not guaranteed to work
+ compatibly with ordinary ACL2 builds on the same set of books.
+
+ </blockquote></p>
+
+ <p>Changed the bound @('*maximum-positive-32-bit-integer*') that was used for
+ array lengths (and eliminated that constant), replacing it by the larger value
+ from macro call @('(array-maximum-length-bound)'), which is the same as
+ @('(fixnum-bound)'), i.e., @(`(fixnum-bound)`).  Thanks to Eric Smith for
+ suggesting that we consider such a change and for updating books under
+ @('books/kestrel/').  Note: For CMUCL (or any 32-bit Lisp) the bound has
+ actually decreased, since @('(fixnum-bound)') is @('2^30-1') in that case.</p>
 
  <h3>New Features</h3>
 
@@ -139117,8 +139147,8 @@ work on <tt>(q x)</tt>.</p>
  the @(see community-book), @('books/system/tests/swap-stobjs.lisp').  Those
  examples illustrate that @('swap-stobjs') has the expected effect even when
  stobjs are involved that are bound by @(tsee with-local-stobj) or @(tsee
- stobj-let).  It also explains subtle interaction with @(tsee
- trans-eval).</p>")
+ stobj-let).  It also explains subtle interaction with @(tsee trans-eval).  For
+ another examplle, see @('books/demos/swap-stobj-fields.lisp')</p>")
 
 (defxdoc symbol-alistp
   :parents (alists acl2-built-ins)

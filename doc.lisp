@@ -9527,7 +9527,7 @@ See [arity+] for a variant of [47marity[0m with a stronger [guard].")
               (< 0 (car dimensions))
               (< (car dimensions) maximum-length)
               (<= maximum-length
-                  *maximum-positive-32-bit-integer*)
+                  (array-maximum-length-bound))
               (bounded-integer-alistp l (car dimensions))))))))")
  (ARRAY2P
   (ARRAYS ACL2-BUILT-INS)
@@ -9570,7 +9570,7 @@ See [arity+] for a variant of [47marity[0m with a stronger [guard].")
                      (< 0 d2)
                      (< (* d1 d2) maximum-length)
                      (<= maximum-length
-                         *maximum-positive-32-bit-integer*)
+                         (array-maximum-length-bound))
                      (bounded-integer-alistp2 l d1 d2)))))))))")
  (ARRAYS
   (PROGRAMMING)
@@ -15511,7 +15511,7 @@ Subtopics
     :unify-subst[+]    substitution making :lhs equal :target
     :wonp              indicates whether application succeeded (after :eval)
 
-  The form [47m([0m)[47m[brr@][0m[47m :cmd)[0m, when evaluated within a break, will return
+  The form [47m([0m[47m[brr@][0m[47m :cmd)[0m, when evaluated within a break, will return
   the value that is only printed by certain of the keyword commands
   above.  This is particularly useful when programming break
   conditions.  See [47m[monitor][0m.
@@ -45364,6 +45364,9 @@ Subtopics
   to two orders of magnitude, by suitable [47m[declare][0m forms (also see
   [type-spec]).  The following example, developed with Warren Hunt
   and Serita Nelesen, illustrates the use of such declarations.
+  (This was some years ago, and the sizes of 28 and 29 can probably
+  be increased now that Lisp implementations are 64-bit, with larger
+  bounds on so-called fixnums.)
 
     ; File iplus.lisp:
     ; Operations on naturals together with positive infinity (represented as -1).
@@ -78588,11 +78591,13 @@ Subtopics
   for a worked example, which applies nested stobj structures to the
   problem of defining interpreters.  A variety of small additional
   examples may be found in ACL2 community book
-  [47mbooks/system/tests/nested-stobj-tests.lisp[0m.  For further
-  discussion, you are welcome to read the ``Essay on Nested Stobjs'',
-  a long comment in ACL2 source file [47mother-events.lisp[0m.  However,
-  this documentation topic is intended to be self-contained for those
-  familiar with [stobj]s.
+  [47mbooks/system/tests/nested-stobj-tests.lisp[0m; and yet another, this
+  one using [47m[swap-stobjs][0m to exchange stobj fields of a stobj, is in
+  [47mbooks/demos/swap-stobj-fields.lisp[0m.  For further discussion, you
+  are welcome to read the ``Essay on Nested Stobjs'', a long comment
+  in ACL2 source file [47mother-events.lisp[0m.  However, this documentation
+  topic is intended to be self-contained for those familiar with
+  [stobj]s.
 
 
 SECTION: Extension of [47m[defstobj][0m to permit [stobj]s within stobjs
@@ -102267,6 +102272,31 @@ Changes to Existing Features
   Built-in function [47mbounded-integer-alistp2[0m has been modified to remove
   [47m[integerp][0m tests on formals [47mi[0m and [47mj[0m from the body and instead
   require them to satisfy [47m[posp][0m in the [guard].
+
+  ACL2 versions of Lisp ``fixnum'' notions have been made more
+  generous.  Specifically, the value of [47m*fixnum-bits*[0m has been
+  increased from 30 to 61, which has increased the value of
+  [47m(fixnum-bound)[0m from 2^29-1 to 2^60-1.  Thanks to Eric Smith for
+  requesting an increase.  One effect of this change is to increase
+  the value of [47m*default-step-limit*[0m accordingly, so that the steps
+  computed by [with-prover-step-limit] will no longer be limited to
+  fewer than 2^29.
+      [31;1mNOTE[0m.  The previous such ``fixnum'' behavior can be obtained by
+      building ACL2 with environment variable [47mACL2_SMALL_FIXNUMS[0m set
+      to a non-empty value.  In fact, such a setting is necessary for
+      a 32-bit Lisp such as CMUCL.  However, such ACL2 builds are not
+      as fully tested as the usual builds and thus may be less
+      reliable, and they are not guaranteed to work compatibly with
+      ordinary ACL2 builds on the same set of books.
+
+  Changed the bound [47m*maximum-positive-32-bit-integer*[0m that was used for
+  array lengths (and eliminated that constant), replacing it by the
+  larger value from macro call [47m(array-maximum-length-bound)[0m, which is
+  the same as [47m(fixnum-bound)[0m, i.e., [47m1152921504606846975[0m.  Thanks to
+  Eric Smith for suggesting that we consider such a change and for
+  updating books under [47mbooks/kestrel/[0m.  Note: For CMUCL (or any
+  32-bit Lisp) the bound has actually decreased, since [47m(fixnum-bound)[0m
+  is [47m2^30-1[0m in that case.
 
 
 New Features
@@ -137730,7 +137760,8 @@ Subtopics
   Those examples illustrate that [47mswap-stobjs[0m has the expected effect
   even when stobjs are involved that are bound by [47m[with-local-stobj][0m
   or [47m[stobj-let][0m.  It also explains subtle interaction with
-  [47m[trans-eval][0m.")
+  [47m[trans-eval][0m.  For another examplle, see
+  [47mbooks/demos/swap-stobj-fields.lisp[0m")
  (SYMBOL-ALISTP
   (ALISTS ACL2-BUILT-INS)
   "Recognizer for association lists with symbols as keys
@@ -159421,7 +159452,7 @@ Subtopics
   [31;1mFunction: [0m<zpf>
 
     (defun zpf (x)
-      (declare (type (unsigned-byte 29) x))
+      (declare (type (unsigned-byte 60) x))
       (if (integerp x) (<= x 0) t))")
  (ACL2-PC::=
   (PROOF-BUILDER-COMMANDS PROOF-BUILDER-COMMANDS-SHORT-LIST)
