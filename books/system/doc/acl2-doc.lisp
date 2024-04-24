@@ -104569,7 +104569,7 @@ it."
 ; conversion of fmt, (er soft ...), one-way-unify, and genvar, and related
 ; utilities to guard-verified :logic mode.
 
-;   80 ; Changes to Existing Features
+;   81 ; Changes to Existing Features
 ;   34 ; New Features
 ;    9 ; Heuristic and Efficiency Improvements
 ;   35 ; Bug Fixes
@@ -105616,6 +105616,14 @@ it."
  compatibly with ordinary ACL2 builds on the same set of books.
 
  </blockquote></p>
+
+ <p>Changed the bound @('*maximum-positive-32-bit-integer*') that was used for
+ array lengths (and eliminated that constant), replacing it by the larger value
+ from macro call @('(array-maximum-length-bound)'), which is the same as
+ @('(fixnum-bound)'), i.e., @(`(fixnum-bound)`).  Thanks to Eric Smith for
+ suggesting that we consider such a change and for updating books under
+ @('books/kestrel/').  Note: For CMUCL (or any 32-bit Lisp) the bound has
+ actually decreased, since @('(fixnum-bound)') is @('2^30-1') in that case.</p>
 
  <h3>New Features</h3>
 
