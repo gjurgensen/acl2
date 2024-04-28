@@ -24217,14 +24217,14 @@ Syntax and Semantics of Defattach.
   [47mdefattach[0m, by permitting use of [47m:[0m[47m[program][0m mode functions and the
   skipping of semantic checks.  Also permitted is [47m:skip-checks nil[0m
   (the default) and [47m:skip-checks :cycles[0m, which turns off only the
-  update of the extended ancestor relation and hence the check for
-  cycles in this relation; see below.  We do not make any logical
-  claims when the value of [47m:skip-checks[0m is non-[47mnil[0m; indeed, a trust
-  tag is then required (see [defttag]).  Note that the interaction of
-  [memoization] and attachments is not tracked for attachments
-  introduced with a non-[47mnil[0m value of [47m:skip-checks[0m.  For more
-  discussion of [47m:skip-checks t[0m, see [defproxy]; we do not discuss
-  [47m:skip-checks[0m further, here.
+  update of the extended ancestor relation (defined below) and hence
+  the check for cycles in this relation (which is discussed below).
+  We do not make any logical claims when the value of [47m:skip-checks[0m is
+  non-[47mnil[0m; indeed, a trust tag is then required (see [defttag]).
+  Note that the interaction of [memoization] and attachments is not
+  tracked for attachments introduced with a non-[47mnil[0m value of
+  [47m:skip-checks[0m.  For more discussion of [47m:skip-checks t[0m, see
+  [defproxy]; we do not discuss [47m:skip-checks[0m further, here.
 
   The argument [47m:system-ok t[0m allows attachment to system functions.
   Without this argument, the [47mdefattach[0m event will fail if any [47mfi[0m is a
@@ -24352,15 +24352,20 @@ Syntax and Semantics of Defattach.
   Also, from a practical perspective, there would be an infinite loop
   resulting from any call of [47mf[0m.
 
-  We consider a function symbol [47mg[0m to be an ``extended immediate
-  ancestor of'' a function symbol [47mf[0m if either of the following two
-  criteria is met: (a) [47mg[0m occurs in the formula that introduces [47mf[0m
-  (i.e., definition body or constraint) and [47mg[0m is introduced by an
-  event different from (earlier than) the event introducing [47mf[0m; or (b)
-  [47mg[0m is attached to [47mf[0m.  For a proposed [47mdefattach[0m event, we check that
-  this relation has no cycles, where for condition (b) we include all
-  attachment pairs that would result, including those remaining from
-  earlier [47mdefattach[0m events.
+  We consider a function symbol [47mg[0m to be an [3mextended immediate ancestor
+  of[0m a function symbol [47mf[0m if either of the following two criteria is
+  met: (a) [47mg[0m occurs in the formula that introduces [47mf[0m (i.e.,
+  definition body or constraint) and [47mg[0m is introduced by an event
+  different from (earlier than) the event introducing [47mf[0m; or (b) [47mg[0m is
+  attached to [47mf[0m.  We also consider [47mg[0m to be an extended immediate
+  ancestor of [47mf[0m if there are function symbols [47mf'[0m and [47mg'[0m that are
+  introduced in the same events as [47mf[0m and [47mg[0m, respectively (such as the
+  same [47m[mutual-recursion][0m or the same [47m[encapsulate][0m with non-empty
+  signatures), such that [47mg'[0m is an extended immediate ancestor of [47mf'[0m
+  in the sense above.  For a proposed [47mdefattach[0m event, we check that
+  the graph defined by this relation has no cycles, where for
+  condition (b) we include all attachment pairs that would result,
+  including those remaining from earlier [47mdefattach[0m events.
 
   Of course, a special case is that no function symbol may be attached
   to itself.  Similarly, no function symbol may be attached to any of
@@ -50452,18 +50457,6 @@ Subtopics
   and address that problem later.  Sometimes you are driven to it,
   even in mathematical projects, because you find that you want to
   run your functions particularly fast or in raw Common Lisp.
-
-  If [47m[certify-book][0m is used to compile a file, and the file contains
-  functions with unverified guard conjectures, then you will be
-  warned that the compiled file cannot be loaded into raw Common Lisp
-  with the expectation that the functions will run correctly.  This
-  is just the same point we have been making: ACL2 and Common Lisp
-  agree only on the restricted domains specified by our guards.  When
-  guards are violated, Common Lisp can do anything.  When you call a
-  compiled function on arguments violating its guards, the chances
-  are only increased that Common Lisp will go berserk, because
-  compiled functions generally check fewer things at runtime and tend
-  to be more fragile than interpreted ones.
 
   Finally, we note that ACL2 collects up [guard]s from [47m[declare][0m forms
   in order of appearance.  So for example, the [47m[declare][0m form
