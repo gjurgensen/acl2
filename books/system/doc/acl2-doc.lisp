@@ -104569,7 +104569,7 @@ it."
 ; conversion of fmt, (er soft ...), one-way-unify, and genvar, and related
 ; utilities to guard-verified :logic mode.
 
-;   81 ; Changes to Existing Features
+;   82 ; Changes to Existing Features
 ;   34 ; New Features
 ;    9 ; Heuristic and Efficiency Improvements
 ;   35 ; Bug Fixes
@@ -105624,6 +105624,22 @@ it."
  suggesting that we consider such a change and for updating books under
  @('books/kestrel/').  Note: For CMUCL (or any 32-bit Lisp) the bound has
  actually decreased, since @('(fixnum-bound)') is @('2^30-1') in that case.</p>
+
+ <p>The @(tsee case-match) macro now generates an @('ignorable') @(tsee
+ declare) form in a clause, for any variable occurring more than once in the
+ pattern.  This can free the user from the need to do so.  The following
+ example illustrates this change: it now evaluates without error, but before
+ this change one needed to add @('(declare (ignorable x))') or
+ @('(declare (ignore x))') as shown.</p>
+
+ @({
+ (let ((e '(a a))) ; same problem for '(a b) instead of '(a a)
+   (case-match e
+     ((x x)
+      ;; Formerly needed (declare (ignorable x)) or (declare (ignore x)) here.
+      t)
+     (& nil)))
+ })
 
  <h3>New Features</h3>
 
@@ -135202,6 +135218,29 @@ work on <tt>(q x)</tt>.</p>
  practice this is often not an issue.)</li>
 
  </ul>
+
+ <p>Here is an example illustrating the last point above, regarding use of a
+ single Lisp.  In ACL2 built on most host Lisp implementations, one can admit
+ the following event.  (See @(see df) for background on floating-point
+ computations with ACL2.)</p>
+
+ @({
+ (defthm usual-sin-2pi
+   (equal (df-sin (df* 2 *df-pi*))
+          #d-2.4492935982947064E-16))
+ })
+
+ <p>But in ACL2 built on LispWorks, one can instead admit the following.</p>
+
+ @({
+ (defthm lispworks-sin-2pi
+   (equal (df-sin (df* 2 *df-pi*))
+          #d-2.4492127076447545E-16))
+ })
+
+ <p>Clearly one could prove @('nil') by including two books, one containing
+ each of these theorems.  (Aside: This does not violate the IEEE-754 spec,
+ since it does not make specific requirements for trigonometric functions.)</p>
 
  <p>This topic has discussed the soundness guarantee from the user perspective.
  Those interested in exploring deeper theoretical and implementation issues are

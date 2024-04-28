@@ -102298,6 +102298,20 @@ Changes to Existing Features
   32-bit Lisp) the bound has actually decreased, since [47m(fixnum-bound)[0m
   is [47m2^30-1[0m in that case.
 
+  The [47m[case-match][0m macro now generates an [47mignorable[0m [47m[declare][0m form in a
+  clause, for any variable occurring more than once in the pattern.
+  This can free the user from the need to do so.  The following
+  example illustrates this change: it now evaluates without error,
+  but before this change one needed to add [47m(declare (ignorable x))[0m or
+  [47m(declare (ignore x))[0m as shown.
+
+    (let ((e '(a a))) ; same problem for '(a b) instead of '(a a)
+      (case-match e
+        ((x x)
+         ;; Formerly needed (declare (ignorable x)) or (declare (ignore x)) here.
+         t)
+        (& nil)))
+
 
 New Features
 
@@ -133655,6 +133669,26 @@ Extended Example
       environment --- in particular, with the same Lisp
       implementation and operating system.  (In practice this is
       often not an issue.)
+
+  Here is an example illustrating the last point above, regarding use
+  of a single Lisp.  In ACL2 built on most host Lisp implementations,
+  one can admit the following event.  (See [df] for background on
+  floating-point computations with ACL2.)
+
+    (defthm usual-sin-2pi
+      (equal (df-sin (df* 2 *df-pi*))
+             #d-2.4492935982947064E-16))
+
+  But in ACL2 built on LispWorks, one can instead admit the following.
+
+    (defthm lispworks-sin-2pi
+      (equal (df-sin (df* 2 *df-pi*))
+             #d-2.4492127076447545E-16))
+
+  Clearly one could prove [47mnil[0m by including two books, one containing
+  each of these theorems.  (Aside: This does not violate the IEEE-754
+  spec, since it does not make specific requirements for
+  trigonometric functions.)
 
   This topic has discussed the soundness guarantee from the user
   perspective.  Those interested in exploring deeper theoretical and
