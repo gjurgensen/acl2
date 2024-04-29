@@ -102266,14 +102266,14 @@ Changes to Existing Features
   [47m[integerp][0m tests on formals [47mi[0m and [47mj[0m from the body and instead
   require them to satisfy [47m[posp][0m in the [guard].
 
-  ACL2 versions of Lisp ``fixnum'' notions have been made more
-  generous.  Specifically, the value of [47m*fixnum-bits*[0m has been
-  increased from 30 to 61, which has increased the value of
-  [47m(fixnum-bound)[0m from 2^29-1 to 2^60-1.  Thanks to Eric Smith for
-  requesting an increase.  One effect of this change is to increase
-  the value of [47m*default-step-limit*[0m accordingly, so that the steps
-  computed by [with-prover-step-limit] will no longer be limited to
-  fewer than 2^29.
+  ACL2 versions of Lisp `fixnum' notions have been made more generous.
+  Specifically, the value of [47m*fixnum-bits*[0m has been increased from 30
+  to 61, which has increased the value of [47m(fixnum-bound)[0m from 2^29-1
+  to 2^60-1.  Thanks to Eric Smith for requesting an increase.  One
+  effect of this change is to increase the value of
+  [47m*default-step-limit*[0m accordingly, so that the steps computed by
+  [with-prover-step-limit] will no longer be limited to fewer than
+  2^29.
       [31;1mNOTE[0m.  The previous such ``fixnum'' behavior can be obtained by
       building ACL2 with environment variable [47mACL2_SMALL_FIXNUMS[0m set
       to a non-empty value.  In fact, such a setting is necessary for

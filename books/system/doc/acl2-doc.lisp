@@ -105011,6 +105011,10 @@ it."
 ; Improved error messages for the use of a DO loop$ construct inside the body
 ; of a function defined locally by flet or macrolet.
 
+; Related to "ACL2 versions of Lisp `fixnum' notions have been made more
+; generous: Code was cleaned up and clarified, in particular by using
+; #.*fixnat-type* in declare forms and THE forms.
+
   :parents (release-notes)
   :short "ACL2 Version  8.6 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -105594,7 +105598,7 @@ it."
  @(tsee integerp) tests on formals @('i') and @('j') from the body and instead
  require them to satisfy @(tsee posp) in the @(see guard).</p>
 
- <p>ACL2 versions of Lisp &ldquo;fixnum&rdquo; notions have been made more
+ <p>ACL2 versions of Lisp &lsquo;fixnum&rsquo; notions have been made more
  generous.  Specifically, the value of @('*fixnum-bits*') has been increased
  from 30 to 61, which has increased the value of @('(fixnum-bound)') from
  2^29-1 to 2^60-1.  Thanks to Eric Smith for requesting an increase.  One
