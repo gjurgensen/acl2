@@ -21047,13 +21047,14 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
  @('defattach'), by permitting use of @(':')@(tsee program) mode functions and
  the skipping of semantic checks.  Also permitted is @(':skip-checks nil') (the
  default) and @(':skip-checks :cycles'), which turns off only the update of the
- extended ancestor relation and hence the check for cycles in this relation;
- see below.  We do not make any logical claims when the value of
- @(':skip-checks') is non-@('nil'); indeed, a trust tag is then required (see
- @(see defttag)).  Note that the interaction of @(see memoization) and
- attachments is not tracked for attachments introduced with a non-@('nil')
- value of @(':skip-checks').  For more discussion of @(':skip-checks t'), see
- @(see defproxy); we do not discuss @(':skip-checks') further, here.</p>
+ extended ancestor relation (defined below) and hence the check for cycles in
+ this relation (which is discussed below).  We do not make any logical claims
+ when the value of @(':skip-checks') is non-@('nil'); indeed, a trust tag is
+ then required (see @(see defttag)).  Note that the interaction of @(see
+ memoization) and attachments is not tracked for attachments introduced with a
+ non-@('nil') value of @(':skip-checks').  For more discussion of
+ @(':skip-checks t'), see @(see defproxy); we do not discuss @(':skip-checks')
+ further, here.</p>
 
  <p>The argument @(':system-ok t') allows attachment to system functions.
  Without this argument, the @('defattach') event will fail if any @('fi') is a
@@ -21188,14 +21189,20 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
  practical perspective, there would be an infinite loop resulting from any call
  of @('f').</p>
 
- <p>We consider a function symbol @('g') to be an ``extended immediate ancestor
- of'' a function symbol @('f') if either of the following two criteria is met:
- (a) @('g') occurs in the formula that introduces @('f') (i.e., definition body
- or constraint) and @('g') is introduced by an event different from (earlier
- than) the event introducing @('f'); or (b) @('g') is attached to @('f').  For
- a proposed @('defattach') event, we check that this relation has no cycles,
- where for condition (b) we include all attachment pairs that would result,
- including those remaining from earlier @('defattach') events.</p>
+ <p>We consider a function symbol @('g') to be an <i>extended immediate
+ ancestor of</i> a function symbol @('f') if either of the following two
+ criteria is met: (a) @('g') occurs in the formula that introduces
+ @('f') (i.e., definition body or constraint) and @('g') is introduced by an
+ event different from (earlier than) the event introducing @('f'); or (b)
+ @('g') is attached to @('f').  We also consider @('g') to be an extended
+ immediate ancestor of @('f') if there are function symbols @('f'') and @('g'')
+ that are introduced in the same events as @('f') and @('g'),
+ respectively (such as the same @(tsee mutual-recursion) or the same @(tsee
+ encapsulate) with non-empty signatures), such that @('g'') is an extended
+ immediate ancestor of @('f'') in the sense above.  For a proposed
+ @('defattach') event, we check that the graph defined by this relation has no
+ cycles, where for condition (b) we include all attachment pairs that would
+ result, including those remaining from earlier @('defattach') events.</p>
 
  <p>Of course, a special case is that no function symbol may be attached to
  itself.  Similarly, no function symbol may be attached to any of its
@@ -47425,17 +47432,6 @@ current fast alists."
  and address that problem later.  Sometimes you are driven to it, even in
  mathematical projects, because you find that you want to run your functions
  particularly fast or in raw Common Lisp.</p>
-
- <p>If @(tsee certify-book) is used to compile a file, and the file contains
- functions with unverified guard conjectures, then you will be warned that the
- compiled file cannot be loaded into raw Common Lisp with the expectation that
- the functions will run correctly.  This is just the same point we have been
- making: ACL2 and Common Lisp agree only on the restricted domains specified by
- our guards.  When guards are violated, Common Lisp can do anything.  When you
- call a compiled function on arguments violating its guards, the chances are
- only increased that Common Lisp will go berserk, because compiled functions
- generally check fewer things at runtime and tend to be more fragile than
- interpreted ones.</p>
 
  <p>Finally, we note that ACL2 collects up @(see guard)s from @(tsee declare)
  forms in order of appearance.  So for example, the @(tsee declare) form</p>
@@ -104569,7 +104565,7 @@ it."
 ; conversion of fmt, (er soft ...), one-way-unify, and genvar, and related
 ; utilities to guard-verified :logic mode.
 
-;   81 ; Changes to Existing Features
+;   82 ; Changes to Existing Features
 ;   34 ; New Features
 ;    9 ; Heuristic and Efficiency Improvements
 ;   35 ; Bug Fixes
@@ -105014,6 +105010,10 @@ it."
 
 ; Improved error messages for the use of a DO loop$ construct inside the body
 ; of a function defined locally by flet or macrolet.
+
+; Related to "ACL2 versions of Lisp `fixnum' notions have been made more
+; generous: Code was cleaned up and clarified, in particular by using
+; #.*fixnat-type* in declare forms and THE forms.
 
   :parents (release-notes)
   :short "ACL2 Version  8.6 (xxx, 20xx) Notes"
@@ -105598,7 +105598,7 @@ it."
  @(tsee integerp) tests on formals @('i') and @('j') from the body and instead
  require them to satisfy @(tsee posp) in the @(see guard).</p>
 
- <p>ACL2 versions of Lisp &ldquo;fixnum&rdquo; notions have been made more
+ <p>ACL2 versions of Lisp &lsquo;fixnum&rsquo; notions have been made more
  generous.  Specifically, the value of @('*fixnum-bits*') has been increased
  from 30 to 61, which has increased the value of @('(fixnum-bound)') from
  2^29-1 to 2^60-1.  Thanks to Eric Smith for requesting an increase.  One
@@ -105624,6 +105624,22 @@ it."
  suggesting that we consider such a change and for updating books under
  @('books/kestrel/').  Note: For CMUCL (or any 32-bit Lisp) the bound has
  actually decreased, since @('(fixnum-bound)') is @('2^30-1') in that case.</p>
+
+ <p>The @(tsee case-match) macro now generates an @('ignorable') @(tsee
+ declare) form in a clause, for any variable occurring more than once in the
+ pattern.  This can free the user from the need to do so.  The following
+ example illustrates this change: it now evaluates without error, but before
+ this change one needed to add @('(declare (ignorable x))') or
+ @('(declare (ignore x))') as shown.</p>
+
+ @({
+ (let ((e '(a a))) ; same problem for '(a b) instead of '(a a)
+   (case-match e
+     ((x x)
+      ;; Formerly needed (declare (ignorable x)) or (declare (ignore x)) here.
+      t)
+     (& nil)))
+ })
 
  <h3>New Features</h3>
 
@@ -135202,6 +135218,29 @@ work on <tt>(q x)</tt>.</p>
  practice this is often not an issue.)</li>
 
  </ul>
+
+ <p>Here is an example illustrating the last point above, regarding use of a
+ single Lisp.  In ACL2 built on most host Lisp implementations, one can admit
+ the following event.  (See @(see df) for background on floating-point
+ computations with ACL2.)</p>
+
+ @({
+ (defthm usual-sin-2pi
+   (equal (df-sin (df* 2 *df-pi*))
+          #d-2.4492935982947064E-16))
+ })
+
+ <p>But in ACL2 built on LispWorks, one can instead admit the following.</p>
+
+ @({
+ (defthm lispworks-sin-2pi
+   (equal (df-sin (df* 2 *df-pi*))
+          #d-2.4492127076447545E-16))
+ })
+
+ <p>Clearly one could prove @('nil') by including two books, one containing
+ each of these theorems.  (Aside: This does not violate the IEEE-754 spec,
+ since it does not make specific requirements for trigonometric functions.)</p>
 
  <p>This topic has discussed the soundness guarantee from the user perspective.
  Those interested in exploring deeper theoretical and implementation issues are

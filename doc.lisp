@@ -24217,14 +24217,14 @@ Syntax and Semantics of Defattach.
   [47mdefattach[0m, by permitting use of [47m:[0m[47m[program][0m mode functions and the
   skipping of semantic checks.  Also permitted is [47m:skip-checks nil[0m
   (the default) and [47m:skip-checks :cycles[0m, which turns off only the
-  update of the extended ancestor relation and hence the check for
-  cycles in this relation; see below.  We do not make any logical
-  claims when the value of [47m:skip-checks[0m is non-[47mnil[0m; indeed, a trust
-  tag is then required (see [defttag]).  Note that the interaction of
-  [memoization] and attachments is not tracked for attachments
-  introduced with a non-[47mnil[0m value of [47m:skip-checks[0m.  For more
-  discussion of [47m:skip-checks t[0m, see [defproxy]; we do not discuss
-  [47m:skip-checks[0m further, here.
+  update of the extended ancestor relation (defined below) and hence
+  the check for cycles in this relation (which is discussed below).
+  We do not make any logical claims when the value of [47m:skip-checks[0m is
+  non-[47mnil[0m; indeed, a trust tag is then required (see [defttag]).
+  Note that the interaction of [memoization] and attachments is not
+  tracked for attachments introduced with a non-[47mnil[0m value of
+  [47m:skip-checks[0m.  For more discussion of [47m:skip-checks t[0m, see
+  [defproxy]; we do not discuss [47m:skip-checks[0m further, here.
 
   The argument [47m:system-ok t[0m allows attachment to system functions.
   Without this argument, the [47mdefattach[0m event will fail if any [47mfi[0m is a
@@ -24352,15 +24352,20 @@ Syntax and Semantics of Defattach.
   Also, from a practical perspective, there would be an infinite loop
   resulting from any call of [47mf[0m.
 
-  We consider a function symbol [47mg[0m to be an ``extended immediate
-  ancestor of'' a function symbol [47mf[0m if either of the following two
-  criteria is met: (a) [47mg[0m occurs in the formula that introduces [47mf[0m
-  (i.e., definition body or constraint) and [47mg[0m is introduced by an
-  event different from (earlier than) the event introducing [47mf[0m; or (b)
-  [47mg[0m is attached to [47mf[0m.  For a proposed [47mdefattach[0m event, we check that
-  this relation has no cycles, where for condition (b) we include all
-  attachment pairs that would result, including those remaining from
-  earlier [47mdefattach[0m events.
+  We consider a function symbol [47mg[0m to be an [3mextended immediate ancestor
+  of[0m a function symbol [47mf[0m if either of the following two criteria is
+  met: (a) [47mg[0m occurs in the formula that introduces [47mf[0m (i.e.,
+  definition body or constraint) and [47mg[0m is introduced by an event
+  different from (earlier than) the event introducing [47mf[0m; or (b) [47mg[0m is
+  attached to [47mf[0m.  We also consider [47mg[0m to be an extended immediate
+  ancestor of [47mf[0m if there are function symbols [47mf'[0m and [47mg'[0m that are
+  introduced in the same events as [47mf[0m and [47mg[0m, respectively (such as the
+  same [47m[mutual-recursion][0m or the same [47m[encapsulate][0m with non-empty
+  signatures), such that [47mg'[0m is an extended immediate ancestor of [47mf'[0m
+  in the sense above.  For a proposed [47mdefattach[0m event, we check that
+  the graph defined by this relation has no cycles, where for
+  condition (b) we include all attachment pairs that would result,
+  including those remaining from earlier [47mdefattach[0m events.
 
   Of course, a special case is that no function symbol may be attached
   to itself.  Similarly, no function symbol may be attached to any of
@@ -50452,18 +50457,6 @@ Subtopics
   and address that problem later.  Sometimes you are driven to it,
   even in mathematical projects, because you find that you want to
   run your functions particularly fast or in raw Common Lisp.
-
-  If [47m[certify-book][0m is used to compile a file, and the file contains
-  functions with unverified guard conjectures, then you will be
-  warned that the compiled file cannot be loaded into raw Common Lisp
-  with the expectation that the functions will run correctly.  This
-  is just the same point we have been making: ACL2 and Common Lisp
-  agree only on the restricted domains specified by our guards.  When
-  guards are violated, Common Lisp can do anything.  When you call a
-  compiled function on arguments violating its guards, the chances
-  are only increased that Common Lisp will go berserk, because
-  compiled functions generally check fewer things at runtime and tend
-  to be more fragile than interpreted ones.
 
   Finally, we note that ACL2 collects up [guard]s from [47m[declare][0m forms
   in order of appearance.  So for example, the [47m[declare][0m form
@@ -102273,14 +102266,14 @@ Changes to Existing Features
   [47m[integerp][0m tests on formals [47mi[0m and [47mj[0m from the body and instead
   require them to satisfy [47m[posp][0m in the [guard].
 
-  ACL2 versions of Lisp ``fixnum'' notions have been made more
-  generous.  Specifically, the value of [47m*fixnum-bits*[0m has been
-  increased from 30 to 61, which has increased the value of
-  [47m(fixnum-bound)[0m from 2^29-1 to 2^60-1.  Thanks to Eric Smith for
-  requesting an increase.  One effect of this change is to increase
-  the value of [47m*default-step-limit*[0m accordingly, so that the steps
-  computed by [with-prover-step-limit] will no longer be limited to
-  fewer than 2^29.
+  ACL2 versions of Lisp `fixnum' notions have been made more generous.
+  Specifically, the value of [47m*fixnum-bits*[0m has been increased from 30
+  to 61, which has increased the value of [47m(fixnum-bound)[0m from 2^29-1
+  to 2^60-1.  Thanks to Eric Smith for requesting an increase.  One
+  effect of this change is to increase the value of
+  [47m*default-step-limit*[0m accordingly, so that the steps computed by
+  [with-prover-step-limit] will no longer be limited to fewer than
+  2^29.
       [31;1mNOTE[0m.  The previous such ``fixnum'' behavior can be obtained by
       building ACL2 with environment variable [47mACL2_SMALL_FIXNUMS[0m set
       to a non-empty value.  In fact, such a setting is necessary for
@@ -102297,6 +102290,20 @@ Changes to Existing Features
   updating books under [47mbooks/kestrel/[0m.  Note: For CMUCL (or any
   32-bit Lisp) the bound has actually decreased, since [47m(fixnum-bound)[0m
   is [47m2^30-1[0m in that case.
+
+  The [47m[case-match][0m macro now generates an [47mignorable[0m [47m[declare][0m form in a
+  clause, for any variable occurring more than once in the pattern.
+  This can free the user from the need to do so.  The following
+  example illustrates this change: it now evaluates without error,
+  but before this change one needed to add [47m(declare (ignorable x))[0m or
+  [47m(declare (ignore x))[0m as shown.
+
+    (let ((e '(a a))) ; same problem for '(a b) instead of '(a a)
+      (case-match e
+        ((x x)
+         ;; Formerly needed (declare (ignorable x)) or (declare (ignore x)) here.
+         t)
+        (& nil)))
 
 
 New Features
@@ -133655,6 +133662,26 @@ Extended Example
       environment --- in particular, with the same Lisp
       implementation and operating system.  (In practice this is
       often not an issue.)
+
+  Here is an example illustrating the last point above, regarding use
+  of a single Lisp.  In ACL2 built on most host Lisp implementations,
+  one can admit the following event.  (See [df] for background on
+  floating-point computations with ACL2.)
+
+    (defthm usual-sin-2pi
+      (equal (df-sin (df* 2 *df-pi*))
+             #d-2.4492935982947064E-16))
+
+  But in ACL2 built on LispWorks, one can instead admit the following.
+
+    (defthm lispworks-sin-2pi
+      (equal (df-sin (df* 2 *df-pi*))
+             #d-2.4492127076447545E-16))
+
+  Clearly one could prove [47mnil[0m by including two books, one containing
+  each of these theorems.  (Aside: This does not violate the IEEE-754
+  spec, since it does not make specific requirements for
+  trigonometric functions.)
 
   This topic has discussed the soundness guarantee from the user
   perspective.  Those interested in exploring deeper theoretical and
