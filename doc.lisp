@@ -102882,6 +102882,10 @@ Bug Fixes
   detail in a comment in ACL2 source file [47mapply.lisp[0m, entitled
   ``About a bug in DO$ in ACL2 Version_8.5''.
 
+  Fixed a bug in [47m[fmt][0m and related functions, where a right square
+  bracket immediately following a [47m~&[0m or [47m~v[0m directive failed to be
+  printed, for example: [47m(fmx \"hello ~&0]~|\" '(world))[0m.
+
 
 Changes at the System Level
 
@@ -112106,7 +112110,9 @@ Subtopics
   [stobj] as with the form [47m(declare (xargs :stobjs state))[0m, then the
   [guard] for that function is considered to include the condition
   [47m(state-p state)[0m.  By default, [guard] verification will then be
-  performed.
+  performed.  (Note for advanced system hackers: There is also a
+  stronger predicate, [47m(state-p+ state)[0m, which for example implies the
+  guards for [47mfmt[0m and related functions.
 
   We can illustrate this point by modifying the example above as
   follows, to read the value of state global [47mgag-mode[0m.
