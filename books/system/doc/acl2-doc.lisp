@@ -104568,7 +104568,7 @@ it."
 ;   82 ; Changes to Existing Features
 ;   34 ; New Features
 ;    9 ; Heuristic and Efficiency Improvements
-;   35 ; Bug Fixes
+;   36 ; Bug Fixes
 ;   18 ; Changes at the System Level
 ;    8 ; EMACS Support
 ;    1 ; Experimental Versions
@@ -105012,8 +105012,14 @@ it."
 ; of a function defined locally by flet or macrolet.
 
 ; Related to "ACL2 versions of Lisp `fixnum' notions have been made more
-; generous: Code was cleaned up and clarified, in particular by using
-; #.*fixnat-type* in declare forms and THE forms.
+; generous": Code was cleaned up and clarified, in particular by using
+; #.*fixnat-type* in declare forms and THE forms and in strengthening the guard
+; for enabled-numep (so the guard for enabled-runep was also strengthened).
+
+; A new predicate state-p+ is intended to hold of every ACL2 state and to
+; contain all the properties of the ACL2 state that might be needed.  It is
+; currently just a sort of placeholder, in case such a predicate turns out to
+; be useful.
 
   :parents (release-notes)
   :short "ACL2 Version  8.6 (xxx, 20xx) Notes"
@@ -106232,6 +106238,10 @@ it."
  which has been fixed, is explained in detail in a comment in ACL2 source file
  @('apply.lisp'), entitled &ldquo;About a bug in DO$ in ACL2
  Version_8.5&rdquo;.</p>
+
+ <p>Fixed a bug in @(tsee fmt) and related functions, where a right square
+ bracket immediately following a @('~&') or @('~v') directive failed to be
+ printed, for example: @('(fmx \"hello ~&0]~|\" '(world))').</p>
 
  <h3>Changes at the System Level</h3>
 
@@ -113030,7 +113040,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  a @(see stobj) as with the form @('(declare (xargs :stobjs state))'), then the
  @(see guard) for that function is considered to include the condition
  @('(state-p state)').  By default, @(see guard) verification will then be
- performed.</p>
+ performed.  (Note for advanced system hackers: There is also a stronger
+ predicate, @('(state-p+ state)'), which for example implies the guards for
+ @('fmt') and related functions.</p>
 
  <p>We can illustrate this point by modifying the example above as follows, to
  read the value of state global @('gag-mode').</p>
