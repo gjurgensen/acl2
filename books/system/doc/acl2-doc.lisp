@@ -105021,6 +105021,11 @@ it."
 ; currently just a sort of placeholder, in case such a predicate turns out to
 ; be useful.
 
+; Fixed a bug in verify-termination-boot-strap (the variant of
+; verify-termination used in the ACL2 sources) that failed to make a necessary
+; check.  (A comment in verify-termination-boot-strap-chk1 explains.)
+; Fortunately, there were probably no violations of that check.
+
   :parents (release-notes)
   :short "ACL2 Version  8.6 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
