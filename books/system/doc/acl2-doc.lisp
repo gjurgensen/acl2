@@ -4503,13 +4503,12 @@ and @(tsee include-book)"
 (defxdoc alpha-char-p
   :parents (characters acl2-built-ins)
   :short "Recognizer for alphabetic characters"
-  :long "<p>@('(Alpha-char-p x)') is true for a standard character @('x') if
- and only if @('x') is alphabetic, i.e., one of the @(see characters)
- @('#\\a'), @('#\\b'), ..., @('#\\z'), @('#\\A'), @('#\\B'), ...,
- @('#\\Z').</p>
+  :long "<p>@('(Alpha-char-p x)') is true for a character @('x') if and only if
+ @('x') is alphabetic, i.e., one of the @(see characters) @('#\\a'), @('#\\b'),
+ ..., @('#\\z'), @('#\\A'), @('#\\B'), ..., @('#\\Z').</p>
 
- <p>The @(see guard) for @('alpha-char-p') requires its argument to be a
- standard character (see @(see standard-char-p)).</p>
+ <p>The @(see guard) for @('alpha-char-p') states that its argument is a
+ character.</p>
 
  <p>@('Alpha-char-p') is a Common Lisp function.  See any Common Lisp
  documentation for more information.</p>
@@ -14807,8 +14806,8 @@ with any questions about building the community books.</p>")
  @('#\\A'), @('#\\b') when @('x') is @('#\\B'), ..., and @('#\\z') when @('x')
  is @('#\\Z'), and is @('x') for any other character.</p>
 
- <p>The @(see guard) for @('char-downcase') requires its argument to be a
- standard character (see @(see standard-char-p)).</p>
+ <p>The @(see guard) for @('char-downcase') states that its argument is a
+ character.</p>
 
  <p>@('Char-downcase') is a Common Lisp function.  See any Common Lisp
  documentation for more information.</p>
@@ -14822,8 +14821,8 @@ with any questions about building the community books.</p>")
  true if and only if @('x') and @('y') are the same except perhaps for their
  case.</p>
 
- <p>The @(see guard) on @('char-equal') requires that its arguments are both
- standard @(see characters) (see @(see standard-char-p)).</p>
+ <p>The @(see guard) on @('char-equal') states that its arguments are both
+ @(see characters).</p>
 
  <p>@('Char-equal') is a Common Lisp function.  See any Common Lisp
  documentation for more information.</p>
@@ -14837,8 +14836,8 @@ with any questions about building the community books.</p>")
  @('#\\a'), @('#\\B') when @('x') is @('#\\b'), ..., and @('#\\Z') when @('x')
  is @('#\\z'), and is @('x') for any other character.</p>
 
- <p>The @(see guard) for @('char-upcase') requires its argument to be a
- standard character (see @(see standard-char-p)).</p>
+ <p>The @(see guard) for @('char-upcase') states that its argument is a
+ character.</p>
 
  <p>@('Char-upcase') is a Common Lisp function.  See any Common Lisp
  documentation for more information.</p>
@@ -23596,16 +23595,15 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
   (defpkg \"name\" term doc-string)
  })
 
- <p>where @('\"name\"') is a non-empty string consisting of standard characters
- (see @(see standard-char-p)), none of which is lower case, that names the
- package to be created; @('term') is a variable-free expression that evaluates
- to a list of symbols, where no two distinct symbols in the list may have the
- same @(tsee symbol-name), to be imported into the newly created package; and
- @('doc-string'), if non-@('nil'), is an optional string that can provide
- documentation but is essentially ignored by ACL2.  The name of the new package
- must be ``new'': the host lisp must not contain any package of that name.
- There are two exceptions to this newness rule, discussed at the end of this
- documentation.</p>
+ <p>where @('\"name\"') is a non-empty string, none of whose characters is
+ lower case, that names the package to be created; @('term') is a variable-free
+ expression that evaluates to a list of symbols, where no two distinct symbols
+ in the list may have the same @(tsee symbol-name), to be imported into the
+ newly created package; and @('doc-string'), if non-@('nil'), is an optional
+ string that can provide documentation but is essentially ignored by ACL2.  The
+ name of the new package must be ``new'': the host lisp must not contain any
+ package of that name.  There are two exceptions to this newness rule,
+ discussed at the end of this documentation.</p>
 
  <p>(There is actually an additional argument, book-path, that is used for
  error reporting but has no logical content.  Users should generally ignore
@@ -23702,14 +23700,12 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
  which can slow down evaluation significantly but checks @(see guard)s on
  @(see primitive)s.</p>
 
- <p>Finally, we explain why we require the package name to contain standard
- characters, none of which is lower case.  We have seen at least one
- implementation that handled lower-case package names incorrectly.  Since we
- see no need for lower-case characters in package names, which can lead to
- confusion anyhow (note for example that @('foo::bar') is a symbol whose @(tsee
- symbol-package-name) is @('\"FOO\"'), not @('\"foo\"')), we simply disallow
- them.  Since the notion of ``lower case'' is only well-specified in Common
- Lisp for standard characters, we restrict to these.</p>
+ <p>Finally, we explain why we require the package name not to contain
+ lower-case characters.  We have seen at least one implementation that handled
+ lower-case package names incorrectly.  Since we see no need for lower-case
+ characters in package names, which can lead to confusion anyhow (note for
+ example that @('foo::bar') is a symbol whose @(tsee symbol-package-name) is
+ @('\"FOO\"'), not @('\"foo\"')), we simply disallow them.</p>
 
  <p>NOTE: Also see @(see managing-acl2-packages) for contributed documentation
  on managing ACL2 packages.</p>")
@@ -68397,8 +68393,8 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
  character, i.e., a member of the list @('#\\A'), @('#\\B'), ...,
  @('#\\Z').</p>
 
- <p>The @(see guard) for @('lower-case-p') requires its argument to be a
- standard character (see @(see standard-char-p)).</p>
+ <p>The @(see guard) for @('lower-case-p') states that its argument is a
+ character.</p>
 
  <p>@('Lower-case-p') is a Common Lisp function.  See any Common Lisp
  documentation for more information.</p>
@@ -78735,7 +78731,7 @@ it."
 
  </blockquote>
 
- <p>Also, function @(tsee standard-string-alistp) replaces function
+ <p>Also, function @('standard-string-alistp') replaces function
  @('string-alistp'), with concomitant changes in the guard to @(tsee
  assoc-string-equal), and in variable @('*acl2-exports*').  Also, lemma
  @('standard-string-alistp-forward-to-alistp') replaces lemma
@@ -79182,7 +79178,7 @@ it."
  very similar to the behavior of previous versions, except that case splits
  will be avoided when these functions are applied to variables.</p>
 
- <p>Function @(tsee standard-string-alistp) replaces function
+ <p>Function @('standard-string-alistp') replaces function
  @('string-alistp').  For further discussion, see @(see note-2-6-guards).</p>
 
  <p>Rules of class @(':')@(tsee rewrite) whose conclusion is a term of the form
@@ -104565,10 +104561,10 @@ it."
 ; conversion of fmt, (er soft ...), one-way-unify, and genvar, and related
 ; utilities to guard-verified :logic mode.
 
-;   82 ; Changes to Existing Features
+;   85 ; Changes to Existing Features
 ;   34 ; New Features
 ;    9 ; Heuristic and Efficiency Improvements
-;   36 ; Bug Fixes
+;   37 ; Bug Fixes
 ;   18 ; Changes at the System Level
 ;    8 ; EMACS Support
 ;    1 ; Experimental Versions
@@ -105025,6 +105021,11 @@ it."
 ; verify-termination used in the ACL2 sources) that failed to make a necessary
 ; check.  (A comment in verify-termination-boot-strap-chk1 explains.)
 ; Fortunately, there were probably no violations of that check.
+
+; The use of skip-proofs was eliminated for several defun events in
+; axioms.lisp, including those for princ$, make-input-channel,
+; make-output-channel, open-input-channel, open-output-channel, and
+; prin1-with-slashes.  Thanks to Eric Smith for encouraging this change.
 
   :parents (release-notes)
   :short "ACL2 Version  8.6 (xxx, 20xx) Notes"
@@ -105652,6 +105653,19 @@ it."
      (& nil)))
  })
 
+ <p>The @(see guard)s for functions that operate on characters or strings
+ sometimes insisted that the inputs contain only standard characters.  That
+ restriction has been lifted, and the definitions of @(tsee alpha-char-p),
+ @(tsee upper-case-p), @(tsee lower-case-p), @(tsee char-downcase), and @(tsee
+ char-upcase) have been adjusted to handle non-standard characters.</p>
+
+ <p>The predicate @('state-p'), which recognizes ACL2 @(see state) objects, now
+ requires that @(tsee print-base-p) hold of state global @('print-base').
+ Also, function @('print-base-p') is now @(see disable)d by default.</p>
+
+ <p>The predicate @('standard-string-alistp') has been deleted, while a related
+ predicate @(tsee string-alistp) has been added.</p>
+
  <h3>New Features</h3>
 
  <p>ACL2 now supports floating-point operations.  See @(see df).  Regarding
@@ -105931,6 +105945,20 @@ it."
  @('nil') in Version_8.5 may be found in the @(see community-books) file,
  @('books/system/tests/transparent-functions-input.lsp'); search for
  this paragraph there.</p>
+
+ <p>Fixed a soundness bug in @(tsee open-input-channel) and @(tsee
+ open-output-channel).  The @(see guard) in each case required the first
+ argument, a file name, to be a string; but these functions pass that argument
+ to a function &mdash; @('make-input-channel') and @('make-output-channel'),
+ respectively &mdash; that required the string to contain only standard
+ characters (see @(see standard-char-p)).  That was possible because
+ @('open-input-channel') and @('open-output-channel') were invoked under @(tsee
+ skip-proofs) in the ACL2 sources.  This bug has been fixed, and those uses of
+ @('skip-proofs') eliminated, with removal of the restriction to standard
+ characters for virtually all guards, including the guards for Common Lisp
+ functions @(tsee char-downcase) and @(tsee char-upcase).  Thanks to Eric Smith
+ for reporting this bug, including a proof of @('nil') by giving a @(':use')
+ hint for an @(':instance') of @('(:guard-theorem open-input-channel)').</p>
 
  <p>It was probably a soundness bug to allow a @(tsee defaxiom) event to
  designate a rule of class @(':')@(tsee meta) or @(':')@(tsee clause-processor)
@@ -128544,8 +128572,7 @@ work on <tt>(q x)</tt>.</p>
  <ul>
 
  <li>The two arguments much both satisfy @(tsee true-listp) or else must both
- be strings, which must consist of standard characters (see @(see
- standard-char-p)) if the @(':test') is @(tsee char-equal).</li>
+ be strings.</li>
 
  <li>The @(':test') must evaluate to one of the symbols @(tsee equal) or
  @(tsee char-equal), where the latter is only allowed if the (first) two
@@ -133042,8 +133069,7 @@ work on <tt>(q x)</tt>.</p>
                   :show t)
 
  (set-table-guard inhibit-warnings-table
-                  (and (stringp key)
-                       (standard-string-p key))
+                  (stringp key)
                   :topic set-inhibit-warnings)
  })")
 
@@ -135236,10 +135262,23 @@ work on <tt>(q x)</tt>.</p>
 
  </ul>
 
- <p>Here is an example illustrating the last point above, regarding use of a
- single Lisp.  In ACL2 built on most host Lisp implementations, one can admit
- the following event.  (See @(see df) for background on floating-point
- computations with ACL2.)</p>
+ <p>Here are examples illustrating the last point above, regarding use of a
+ single Lisp.</p>
+
+ @({
+ ; True in SBCL 2.4.2, about the character it calls #\MICRO_SIGN,
+ ; but false in LispWorks 8.0.1:
+ (alpha-char-p (code-char 181))
+
+ ; False in SBCL 2.4.2, about the character it calls #\CENT_SIGN,
+ ; but true in Allegro CL 10.1:
+ (alpha-char-p (code-char 162))
+ })
+
+ <p>Here is another example illustrating the requirement on a single Lisp.  In
+ ACL2 built on most host Lisp implementations, one can admit the following
+ event.  (See @(see df) for background on floating-point computations with
+ ACL2.)</p>
 
  @({
  (defthm usual-sin-2pi
@@ -135900,17 +135939,6 @@ work on <tt>(q x)</tt>.</p>
   :long "<p>@('(Standard-part x)') is, for a given @(tsee i-limited) number
  @('x'), the unique real number infinitesimally close (see @(see i-close)) to
  @('x').  This function is only defined in ACL2(r) (see @(see real)).</p>")
-
-(defxdoc standard-string-alistp
-  :parents (alists acl2-built-ins)
-  :short "Recognizer for association lists with standard strings as keys"
-  :long "<p>@('(Standard-string-alistp x)') is true if and only if @('x') is a
- list of pairs of the form @('(cons key val)') where @('key') is a string all
- of whose characters are standard (see @(see standard-char-p)).</p>
-
- <p>@('Standard-string-alistp') has a @(see guard) of @('t').</p>
-
- @(def standard-string-alistp)")
 
 (defxdoc standardp
   :parents (real)
@@ -138541,6 +138569,16 @@ work on <tt>(q x)</tt>.</p>
 
  @(def string)")
 
+(defxdoc string-alistp
+  :parents (alists acl2-built-ins)
+  :short "Recognizer for association lists with strings as keys"
+  :long "<p>@('(String-alistp x)') is true if and only if @('x') is a list of
+ pairs of the form @('(cons key val)') where @('key') is a string.</p>
+
+ <p>@('String-alistp') has a @(see guard) of @('t').</p>
+
+ @(def String-alistp)")
+
 (defxdoc string-append
   :parents (strings acl2-built-ins)
   :short "@(see concatenate) two strings"
@@ -138568,8 +138606,8 @@ work on <tt>(q x)</tt>.</p>
   :long "<p>For a string @('x'), @('(string-downcase x)') is the result of
  applying @(tsee char-downcase) to each character in @('x').</p>
 
- <p>The @(see guard) for @('string-downcase') requires its argument to be a
- string containing only standard characters.</p>
+ <p>The @(see guard) for @('string-downcase') states that its argument is a
+ string.</p>
 
  <p>@('String-downcase') is a Common Lisp function.  See any Common Lisp
  documentation for more information.</p>
@@ -138584,8 +138622,7 @@ work on <tt>(q x)</tt>.</p>
  the cases of their @(see characters).</p>
 
  <p>The @(see guard) on @('string-equal') requires that its arguments are
- strings consisting of standard characters (see @(see
- standard-char-listp)).</p>
+ strings.</p>
 
  <p>@('String-equal') is a Common Lisp function.  See any Common Lisp
  documentation for more information.</p>
@@ -138606,8 +138643,8 @@ work on <tt>(q x)</tt>.</p>
   :long "<p>For a string @('x'), @('(string-upcase x)') is the result of
  applying @(tsee char-upcase) to each character in @('x').</p>
 
- <p>The @(see guard) for @('string-upcase') requires its argument to be a
- string containing only standard characters.</p>
+ <p>The @(see guard) for @('string-upcase') states that its argument is a
+ string.</p>
 
  <p>@('String-upcase') is a Common Lisp function.  See any Common Lisp
  documentation for more information.</p>
@@ -151550,8 +151587,8 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  case character, i.e., a member of the list @('#\\A'), @('#\\B'), ...,
  @('#\\Z').</p>
 
- <p>The @(see guard) for @('upper-case-p') requires its argument to be a
- standard character (see @(see standard-char-p)).</p>
+ <p>The @(see guard) for @('upper-case-p') states that its argument is a
+ character.</p>
 
  <p>@('Upper-case-p') is a Common Lisp function.  See any Common Lisp
  documentation for more information.</p>

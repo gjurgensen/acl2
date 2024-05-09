@@ -77,7 +77,7 @@ Subtopics
   [defthm], [in-theory], [xargs], [state], etc., without an [47macl2::[0m
   prefix.
 
-  The constant [47m*acl2-exports*[0m lists [47m1649[0m symbols, including most
+  The constant [47m*acl2-exports*[0m lists [47m1654[0m symbols, including most
   documented ACL2 system constants, functions, and macros.  You will
   typically also want to import many symbols from Common Lisp; see
   [*common-lisp-symbols-from-main-lisp-package*].
@@ -333,7 +333,7 @@ Subtopics
        gag-mode gc$ gc-strategy gc-verbose
        gcs generalize get-check-invariant-risk
        get-command-sequence
-       get-cpu-time get-defun-event
+       get-cpu-time get-defun-event get-dwp
        get-enforce-redundancy get-event-data
        get-global get-guard-checking
        get-in-theory-redundant-okp
@@ -603,6 +603,7 @@ Subtopics
        set-difference-theories
        set-duplicate-keys-action
        set-duplicate-keys-action!
+       set-dwp set-dwp!
        set-enforce-redundancy set-equalp-equal
        set-evisc-tuple set-fast-cert
        set-fc-criteria set-fc-report-on-the-fly
@@ -691,22 +692,21 @@ Subtopics
        standard-char standard-char-listp
        standard-char-listp-append
        standard-char-listp-forward-to-character-listp
-       standard-char-p
-       standard-char-p+ standard-char-p-nth
-       standard-co standard-oi
-       standard-part standard-string-alistp
-       standard-string-alistp-forward-to-alistp
-       standardp
+       standard-char-p standard-char-p+
+       standard-char-p-nth standard-co
+       standard-oi standard-part standardp
        start-proof-tree state state-global-let*
        state-global-let*-cleanup
        state-global-let*-get-globals
-       state-global-let*-put-globals state-p
+       state-global-let*-put-globals
+       state-p state-p+
        state-p-implies-and-forward-to-state-p1
        state-p1 state-p1-forward
        state-p1-update-main-timer
-       state-p1-update-nth-2-world step-limit
-       stobj-let stobj-table stop-proof-tree
-       string string-append string-append-lst
+       state-p1-update-nth-2-world
+       step-limit stobj-let stobj-table
+       stop-proof-tree string string-alistp
+       string-append string-append-lst
        string-downcase string-downcase1
        string-equal string-equal1
        string-is-not-circular string-listp
@@ -757,9 +757,9 @@ Subtopics
        to-df to-dfp
        toggle-inhibit-er toggle-inhibit-er!
        toggle-inhibit-warning
-       toggle-inhibit-warning!
-       toggle-pc-macro top-level trace!
-       trace$ trace* trace-co trans trans!
+       toggle-inhibit-warning! toggle-pc-macro
+       top-level trace! trace$ trace*
+       trace-co trans trans! trans* trans*-
        trans-eval trans-eval-default-warning
        trans-eval-no-warning
        trans1 translam translate-and-test
@@ -4196,14 +4196,14 @@ Subtopics
   [Standard-oi]
       The standard object input ``channel''
 
-  [Standard-string-alistp]
-      Recognizer for association lists with standard strings as keys
-
   [State-global-let*]
       Bind [state] global variables
 
   [String]
       [coerce] to a string
+
+  [String-alistp]
+      Recognizer for association lists with strings as keys
 
   [String-append]
       [concatenate] two strings
@@ -6927,8 +6927,8 @@ Subtopics
   [Remove1-assoc]
       Remove the first pair with a given key from an association list
 
-  [Standard-string-alistp]
-      Recognizer for association lists with standard strings as keys
+  [String-alistp]
+      Recognizer for association lists with strings as keys
 
   [Strip-cars]
       Collect up all first components of pairs in a list
@@ -6973,12 +6973,11 @@ Subtopics
   (CHARACTERS ACL2-BUILT-INS)
   "Recognizer for alphabetic characters
 
-  [47m(Alpha-char-p x)[0m is true for a standard character [47mx[0m if and only if [47mx[0m
-  is alphabetic, i.e., one of the [characters] [47m#\\a[0m, [47m#\\b[0m, ..., [47m#\\z[0m,
-  [47m#\\A[0m, [47m#\\B[0m, ..., [47m#\\Z[0m.
+  [47m(Alpha-char-p x)[0m is true for a character [47mx[0m if and only if [47mx[0m is
+  alphabetic, i.e., one of the [characters] [47m#\\a[0m, [47m#\\b[0m, ..., [47m#\\z[0m, [47m#\\A[0m,
+  [47m#\\B[0m, ..., [47m#\\Z[0m.
 
-  The [guard] for [47malpha-char-p[0m requires its argument to be a standard
-  character (see [standard-char-p]).
+  The [guard] for [47malpha-char-p[0m states that its argument is a character.
 
   [47mAlpha-char-p[0m is a Common Lisp function.  See any Common Lisp
   documentation for more information.
@@ -6986,16 +6985,17 @@ Subtopics
   [31;1mFunction: [0m<alpha-char-p>
 
     (defun alpha-char-p (x)
-      (declare (xargs :guard (and (characterp x)
-                                  (standard-char-p x))))
-      (and (member x
-                   '(#\\a #\\b #\\c
-                         #\\d #\\e #\\f #\\g #\\h #\\i #\\j #\\k #\\l #\\m
-                         #\\n #\\o #\\p #\\q #\\r #\\s #\\t #\\u #\\v #\\w
-                         #\\x #\\y #\\z #\\A #\\B #\\C #\\D #\\E #\\F #\\G
-                         #\\H #\\I #\\J #\\K #\\L #\\M #\\N #\\O #\\P #\\Q
-                         #\\R #\\S #\\T #\\U #\\V #\\W #\\X #\\Y #\\Z))
-           t))")
+      (declare (xargs :guard (characterp x)))
+      (cond ((standard-char-p x)
+             (and (member x
+                          '(#\\a #\\b #\\c
+                                #\\d #\\e #\\f #\\g #\\h #\\i #\\j #\\k #\\l #\\m
+                                #\\n #\\o #\\p #\\q #\\r #\\s #\\t #\\u #\\v #\\w
+                                #\\x #\\y #\\z #\\A #\\B #\\C #\\D #\\E #\\F #\\G
+                                #\\H #\\I #\\J #\\K #\\L #\\M #\\N #\\O #\\P #\\Q
+                                #\\R #\\S #\\T #\\U #\\V #\\W #\\X #\\Y #\\Z))
+                  t))
+            (t (alpha-char-p-non-standard x))))")
  (ALPHORDER
   (<< ACL2-BUILT-INS)
   "Total order on atoms
@@ -10517,8 +10517,7 @@ Subtopics
 
     (defun assoc-string-equal (str alist)
       (declare (xargs :guard (and (stringp str)
-                                  (standard-string-p str)
-                                  (standard-string-alistp alist))))
+                                  (string-alistp alist))))
       (cond ((endp alist) nil)
             ((string-equal str (car (car alist)))
              (car alist))
@@ -17682,8 +17681,8 @@ Subtopics
   [47m(Char-downcase x)[0m is equal to [47m#\\a[0m when [47mx[0m is [47m#\\A[0m, [47m#\\b[0m when [47mx[0m is [47m#\\B[0m,
   ..., and [47m#\\z[0m when [47mx[0m is [47m#\\Z[0m, and is [47mx[0m for any other character.
 
-  The [guard] for [47mchar-downcase[0m requires its argument to be a standard
-  character (see [standard-char-p]).
+  The [guard] for [47mchar-downcase[0m states that its argument is a
+  character.
 
   [47mChar-downcase[0m is a Common Lisp function.  See any Common Lisp
   documentation for more information.
@@ -17691,38 +17690,37 @@ Subtopics
   [31;1mFunction: [0m<char-downcase>
 
     (defun char-downcase (x)
-      (declare (xargs :guard (and (characterp x)
-                                  (standard-char-p x))))
-      (let ((pair (assoc x
-                         '((#\\A . #\\a)
-                           (#\\B . #\\b)
-                           (#\\C . #\\c)
-                           (#\\D . #\\d)
-                           (#\\E . #\\e)
-                           (#\\F . #\\f)
-                           (#\\G . #\\g)
-                           (#\\H . #\\h)
-                           (#\\I . #\\i)
-                           (#\\J . #\\j)
-                           (#\\K . #\\k)
-                           (#\\L . #\\l)
-                           (#\\M . #\\m)
-                           (#\\N . #\\n)
-                           (#\\O . #\\o)
-                           (#\\P . #\\p)
-                           (#\\Q . #\\q)
-                           (#\\R . #\\r)
-                           (#\\S . #\\s)
-                           (#\\T . #\\t)
-                           (#\\U . #\\u)
-                           (#\\V . #\\v)
-                           (#\\W . #\\w)
-                           (#\\X . #\\x)
-                           (#\\Y . #\\y)
-                           (#\\Z . #\\z)))))
-        (cond (pair (cdr pair))
-              ((characterp x) x)
-              (t *null-char*))))")
+      (declare (xargs :guard (characterp x)))
+      (cond ((standard-char-p x)
+             (let ((pair (assoc x
+                                '((#\\A . #\\a)
+                                  (#\\B . #\\b)
+                                  (#\\C . #\\c)
+                                  (#\\D . #\\d)
+                                  (#\\E . #\\e)
+                                  (#\\F . #\\f)
+                                  (#\\G . #\\g)
+                                  (#\\H . #\\h)
+                                  (#\\I . #\\i)
+                                  (#\\J . #\\j)
+                                  (#\\K . #\\k)
+                                  (#\\L . #\\l)
+                                  (#\\M . #\\m)
+                                  (#\\N . #\\n)
+                                  (#\\O . #\\o)
+                                  (#\\P . #\\p)
+                                  (#\\Q . #\\q)
+                                  (#\\R . #\\r)
+                                  (#\\S . #\\s)
+                                  (#\\T . #\\t)
+                                  (#\\U . #\\u)
+                                  (#\\V . #\\v)
+                                  (#\\W . #\\w)
+                                  (#\\X . #\\x)
+                                  (#\\Y . #\\y)
+                                  (#\\Z . #\\z)))))
+               (cond (pair (cdr pair)) (t x))))
+            (t (char-downcase-non-standard x))))")
  (CHAR-EQUAL
   (CHARACTERS ACL2-BUILT-INS)
   "Character equality without regard to case
@@ -17730,8 +17728,8 @@ Subtopics
   For [characters] [47mx[0m and [47my[0m, [47m(char-equal x y)[0m is true if and only if [47mx[0m
   and [47my[0m are the same except perhaps for their case.
 
-  The [guard] on [47mchar-equal[0m requires that its arguments are both
-  standard [characters] (see [standard-char-p]).
+  The [guard] on [47mchar-equal[0m states that its arguments are both
+  [characters].
 
   [47mChar-equal[0m is a Common Lisp function.  See any Common Lisp
   documentation for more information.
@@ -17739,10 +17737,7 @@ Subtopics
   [31;1mFunction: [0m<char-equal>
 
     (defun char-equal (x y)
-      (declare (xargs :guard (and (characterp x)
-                                  (standard-char-p x)
-                                  (characterp y)
-                                  (standard-char-p y))))
+      (declare (xargs :guard (and (characterp x) (characterp y))))
       (eql (char-downcase x)
            (char-downcase y)))")
  (CHAR-UPCASE
@@ -17752,8 +17747,7 @@ Subtopics
   [47m(Char-upcase x)[0m is equal to [47m#\\A[0m when [47mx[0m is [47m#\\a[0m, [47m#\\B[0m when [47mx[0m is [47m#\\b[0m,
   ..., and [47m#\\Z[0m when [47mx[0m is [47m#\\z[0m, and is [47mx[0m for any other character.
 
-  The [guard] for [47mchar-upcase[0m requires its argument to be a standard
-  character (see [standard-char-p]).
+  The [guard] for [47mchar-upcase[0m states that its argument is a character.
 
   [47mChar-upcase[0m is a Common Lisp function.  See any Common Lisp
   documentation for more information.
@@ -17761,38 +17755,37 @@ Subtopics
   [31;1mFunction: [0m<char-upcase>
 
     (defun char-upcase (x)
-      (declare (xargs :guard (and (characterp x)
-                                  (standard-char-p x))))
-      (let ((pair (assoc x
-                         '((#\\a . #\\A)
-                           (#\\b . #\\B)
-                           (#\\c . #\\C)
-                           (#\\d . #\\D)
-                           (#\\e . #\\E)
-                           (#\\f . #\\F)
-                           (#\\g . #\\G)
-                           (#\\h . #\\H)
-                           (#\\i . #\\I)
-                           (#\\j . #\\J)
-                           (#\\k . #\\K)
-                           (#\\l . #\\L)
-                           (#\\m . #\\M)
-                           (#\\n . #\\N)
-                           (#\\o . #\\O)
-                           (#\\p . #\\P)
-                           (#\\q . #\\Q)
-                           (#\\r . #\\R)
-                           (#\\s . #\\S)
-                           (#\\t . #\\T)
-                           (#\\u . #\\U)
-                           (#\\v . #\\V)
-                           (#\\w . #\\W)
-                           (#\\x . #\\X)
-                           (#\\y . #\\Y)
-                           (#\\z . #\\Z)))))
-        (cond (pair (cdr pair))
-              ((characterp x) x)
-              (t *null-char*))))")
+      (declare (xargs :guard (characterp x)))
+      (cond ((standard-char-p x)
+             (let ((pair (assoc x
+                                '((#\\a . #\\A)
+                                  (#\\b . #\\B)
+                                  (#\\c . #\\C)
+                                  (#\\d . #\\D)
+                                  (#\\e . #\\E)
+                                  (#\\f . #\\F)
+                                  (#\\g . #\\G)
+                                  (#\\h . #\\H)
+                                  (#\\i . #\\I)
+                                  (#\\j . #\\J)
+                                  (#\\k . #\\K)
+                                  (#\\l . #\\L)
+                                  (#\\m . #\\M)
+                                  (#\\n . #\\N)
+                                  (#\\o . #\\O)
+                                  (#\\p . #\\P)
+                                  (#\\q . #\\Q)
+                                  (#\\r . #\\R)
+                                  (#\\s . #\\S)
+                                  (#\\t . #\\T)
+                                  (#\\u . #\\U)
+                                  (#\\v . #\\V)
+                                  (#\\w . #\\W)
+                                  (#\\x . #\\X)
+                                  (#\\y . #\\Y)
+                                  (#\\z . #\\Z)))))
+               (cond (pair (cdr pair)) (t x))))
+            (t (char-upcase-non-standard x))))")
  (CHAR<
   (CHARACTERS ACL2-BUILT-INS)
   "Less-than test for [characters]
@@ -26752,17 +26745,16 @@ Subtopics
     General Form:
     (defpkg \"name\" term doc-string)
 
-  where [47m\"name\"[0m is a non-empty string consisting of standard characters
-  (see [standard-char-p]), none of which is lower case, that names
-  the package to be created; [47mterm[0m is a variable-free expression that
-  evaluates to a list of symbols, where no two distinct symbols in
-  the list may have the same [47m[symbol-name][0m, to be imported into the
-  newly created package; and [47mdoc-string[0m, if non-[47mnil[0m, is an optional
-  string that can provide documentation but is essentially ignored by
-  ACL2.  The name of the new package must be ``new'': the host lisp
-  must not contain any package of that name.  There are two
-  exceptions to this newness rule, discussed at the end of this
-  documentation.
+  where [47m\"name\"[0m is a non-empty string, none of whose characters is lower
+  case, that names the package to be created; [47mterm[0m is a variable-free
+  expression that evaluates to a list of symbols, where no two
+  distinct symbols in the list may have the same [47m[symbol-name][0m, to be
+  imported into the newly created package; and [47mdoc-string[0m, if
+  non-[47mnil[0m, is an optional string that can provide documentation but
+  is essentially ignored by ACL2.  The name of the new package must
+  be ``new'': the host lisp must not contain any package of that
+  name.  There are two exceptions to this newness rule, discussed at
+  the end of this documentation.
 
   (There is actually an additional argument, book-path, that is used
   for error reporting but has no logical content.  Users should
@@ -26856,15 +26848,13 @@ Subtopics
   can slow down evaluation significantly but checks [guard]s on
   [primitive]s.
 
-  Finally, we explain why we require the package name to contain
-  standard characters, none of which is lower case.  We have seen at
-  least one implementation that handled lower-case package names
-  incorrectly.  Since we see no need for lower-case characters in
-  package names, which can lead to confusion anyhow (note for example
-  that [47mfoo::bar[0m is a symbol whose [47m[symbol-package-name][0m is [47m\"FOO\"[0m, not
-  [47m\"foo\"[0m), we simply disallow them.  Since the notion of ``lower
-  case'' is only well-specified in Common Lisp for standard
-  characters, we restrict to these.
+  Finally, we explain why we require the package name not to contain
+  lower-case characters.  We have seen at least one implementation
+  that handled lower-case package names incorrectly.  Since we see no
+  need for lower-case characters in package names, which can lead to
+  confusion anyhow (note for example that [47mfoo::bar[0m is a symbol whose
+  [47m[symbol-package-name][0m is [47m\"FOO\"[0m, not [47m\"foo\"[0m), we simply disallow
+  them.
 
   NOTE: Also see [managing-ACL2-packages] for contributed documentation
   on managing ACL2 packages.
@@ -67680,8 +67670,7 @@ Subtopics
   [47m(Lower-case-p x)[0m is true if and only if [47mx[0m is a lower case character,
   i.e., a member of the list [47m#\\A[0m, [47m#\\B[0m, ..., [47m#\\Z[0m.
 
-  The [guard] for [47mlower-case-p[0m requires its argument to be a standard
-  character (see [standard-char-p]).
+  The [guard] for [47mlower-case-p[0m states that its argument is a character.
 
   [47mLower-case-p[0m is a Common Lisp function.  See any Common Lisp
   documentation for more information.
@@ -67689,13 +67678,14 @@ Subtopics
   [31;1mFunction: [0m<lower-case-p>
 
     (defun lower-case-p (x)
-      (declare (xargs :guard (and (characterp x)
-                                  (standard-char-p x))))
-      (and (member x
-                   '(#\\a #\\b #\\c #\\d #\\e #\\f #\\g
-                         #\\h #\\i #\\j #\\k #\\l #\\m #\\n #\\o #\\p #\\q
-                         #\\r #\\s #\\t #\\u #\\v #\\w #\\x #\\y #\\z))
-           t))")
+      (declare (xargs :guard (characterp x)))
+      (cond ((standard-char-p x)
+             (and (member x
+                          '(#\\a #\\b #\\c #\\d #\\e #\\f #\\g
+                                #\\h #\\i #\\j #\\k #\\l #\\m #\\n #\\o #\\p #\\q
+                                #\\r #\\s #\\t #\\u #\\v #\\w #\\x #\\y #\\z))
+                  t))
+            (t (lower-case-p-non-standard x))))")
  (LP
   (LD)
   "The Common Lisp entry to ACL2
@@ -81943,7 +81933,7 @@ Subtopics
       [47mstring-downcase1[0m [47m[string-downcase][0m [47mstring-upcase1[0m
       [47m[string-upcase][0m [47m[char-equal][0m [47mstring-equal1[0m [47m[string-equal][0m
 
-  Also, function [47m[standard-string-alistp][0m replaces function
+  Also, function [47mstandard-string-alistp[0m replaces function
   [47mstring-alistp[0m, with concomitant changes in the guard to
   [47m[assoc-string-equal][0m, and in variable [47m*acl2-exports*[0m.  Also, lemma
   [47mstandard-string-alistp-forward-to-alistp[0m replaces lemma
@@ -82396,8 +82386,8 @@ Subtopics
   that case splits will be avoided when these functions are applied
   to variables.
 
-  Function [47m[standard-string-alistp][0m replaces function [47mstring-alistp[0m.
-  For further discussion, see [note-2-6-guards].
+  Function [47mstandard-string-alistp[0m replaces function [47mstring-alistp[0m.  For
+  further discussion, see [note-2-6-guards].
 
   Rules of class [47m:[0m[47m[rewrite][0m whose conclusion is a term of the form
   [47m(equal lhs rhs)[0m have always been stored in the expected way: [47mlhs[0m
@@ -102305,6 +102295,20 @@ Changes to Existing Features
          t)
         (& nil)))
 
+  The [guard]s for functions that operate on characters or strings
+  sometimes insisted that the inputs contain only standard
+  characters.  That restriction has been lifted, and the definitions
+  of [47m[alpha-char-p][0m, [47m[upper-case-p][0m, [47m[lower-case-p][0m, [47m[char-downcase][0m,
+  and [47m[char-upcase][0m have been adjusted to handle non-standard
+  characters.
+
+  The predicate [47mstate-p[0m, which recognizes ACL2 [state] objects, now
+  requires that [47m[print-base-p][0m hold of state global [47mprint-base[0m.
+  Also, function [47mprint-base-p[0m is now [disable]d by default.
+
+  The predicate [47mstandard-string-alistp[0m has been deleted, while a
+  related predicate [47m[string-alistp][0m has been added.
+
 
 New Features
 
@@ -102597,6 +102601,21 @@ Bug Fixes
   Version_8.5 may be found in the [community-books] file,
   [47mbooks/system/tests/transparent-functions-input.lsp[0m; search for this
   paragraph there.
+
+  Fixed a soundness bug in [47m[open-input-channel][0m and
+  [47m[open-output-channel][0m.  The [guard] in each case required the first
+  argument, a file name, to be a string; but these functions pass
+  that argument to a function --- [47mmake-input-channel[0m and
+  [47mmake-output-channel[0m, respectively --- that required the string to
+  contain only standard characters (see [standard-char-p]).  That was
+  possible because [47mopen-input-channel[0m and [47mopen-output-channel[0m were
+  invoked under [47m[skip-proofs][0m in the ACL2 sources.  This bug has been
+  fixed, and those uses of [47mskip-proofs[0m eliminated, with removal of
+  the restriction to standard characters for virtually all guards,
+  including the guards for Common Lisp functions [47m[char-downcase][0m and
+  [47m[char-upcase][0m.  Thanks to Eric Smith for reporting this bug,
+  including a proof of [47mnil[0m by giving a [47m:use[0m hint for an [47m:instance[0m of
+  [47m(:guard-theorem open-input-channel)[0m.
 
   It was probably a soundness bug to allow a [47m[defaxiom][0m event to
   designate a rule of class [47m:[0m[47m[meta][0m or [47m:[0m[47m[clause-processor][0m in its
@@ -127176,8 +127195,7 @@ Further information
   [47msearch-fn-guard[0m, which has the following requirements.
 
     * The two arguments much both satisfy [47m[true-listp][0m or else must both be
-      strings, which must consist of standard characters (see
-      [standard-char-p]) if the [47m:test[0m is [47m[char-equal][0m.
+      strings.
     * The [47m:test[0m must evaluate to one of the symbols [47m[equal][0m or
       [47m[char-equal][0m, where the latter is only allowed if the (first)
       two arguments are strings.
@@ -131589,8 +131607,7 @@ Subtopics
                      :show t)
 
     (set-table-guard inhibit-warnings-table
-                     (and (stringp key)
-                          (standard-string-p key))
+                     (stringp key)
                      :topic set-inhibit-warnings)")
  (SET-TAU-AUTO-MODE
   (TAU-SYSTEM)
@@ -133669,9 +133686,20 @@ Extended Example
       implementation and operating system.  (In practice this is
       often not an issue.)
 
-  Here is an example illustrating the last point above, regarding use
-  of a single Lisp.  In ACL2 built on most host Lisp implementations,
-  one can admit the following event.  (See [df] for background on
+  Here are examples illustrating the last point above, regarding use of
+  a single Lisp.
+
+    ; True in SBCL 2.4.2, about the character it calls #MICRO_SIGN,
+    ; but false in LispWorks 8.0.1:
+    (alpha-char-p (code-char 181))
+
+    ; False in SBCL 2.4.2, about the character it calls #CENT_SIGN,
+    ; but true in Allegro CL 10.1:
+    (alpha-char-p (code-char 162))
+
+  Here is another example illustrating the requirement on a single
+  Lisp.  In ACL2 built on most host Lisp implementations, one can
+  admit the following event.  (See [df] for background on
   floating-point computations with ACL2.)
 
     (defthm usual-sin-2pi
@@ -134330,25 +134358,6 @@ Subtopics
   [47m(Standard-part x)[0m is, for a given [47m[i-limited][0m number [47mx[0m, the unique
   real number infinitesimally close (see [i-close]) to [47mx[0m.  This
   function is only defined in ACL2(r) (see [real]).")
- (STANDARD-STRING-ALISTP
-  (ALISTS ACL2-BUILT-INS)
-  "Recognizer for association lists with standard strings as keys
-
-  [47m(Standard-string-alistp x)[0m is true if and only if [47mx[0m is a list of
-  pairs of the form [47m(cons key val)[0m where [47mkey[0m is a string all of whose
-  characters are standard (see [standard-char-p]).
-
-  [47mStandard-string-alistp[0m has a [guard] of [47mt[0m.
-
-  [31;1mFunction: [0m<standard-string-alistp>
-
-    (defun standard-string-alistp (x)
-      (declare (xargs :guard t))
-      (cond ((atom x) (eq x nil))
-            (t (and (consp (car x))
-                    (stringp (car (car x)))
-                    (standard-string-p (car (car x)))
-                    (standard-string-alistp (cdr x))))))")
  (STANDARDP
   (REAL)
   "ACL2(r) recognizer for standard objects
@@ -136923,6 +136932,23 @@ Subtopics
       (cond ((stringp x) x)
             ((symbolp x) (symbol-name x))
             (t (coerce (list x) 'string))))")
+ (STRING-ALISTP
+  (ALISTS ACL2-BUILT-INS)
+  "Recognizer for association lists with strings as keys
+
+  [47m(String-alistp x)[0m is true if and only if [47mx[0m is a list of pairs of the
+  form [47m(cons key val)[0m where [47mkey[0m is a string.
+
+  [47mString-alistp[0m has a [guard] of [47mt[0m.
+
+  [31;1mFunction: [0m<string-alistp>
+
+    (defun string-alistp (x)
+      (declare (xargs :guard t))
+      (cond ((atom x) (eq x nil))
+            (t (and (consp (car x))
+                    (stringp (car (car x)))
+                    (string-alistp (cdr x))))))")
  (STRING-APPEND
   (STRINGS ACL2-BUILT-INS)
   "[concatenate] two strings
@@ -136955,8 +136981,7 @@ Subtopics
   For a string [47mx[0m, [47m(string-downcase x)[0m is the result of applying
   [47m[char-downcase][0m to each character in [47mx[0m.
 
-  The [guard] for [47mstring-downcase[0m requires its argument to be a string
-  containing only standard characters.
+  The [guard] for [47mstring-downcase[0m states that its argument is a string.
 
   [47mString-downcase[0m is a Common Lisp function.  See any Common Lisp
   documentation for more information.
@@ -136964,9 +136989,7 @@ Subtopics
   [31;1mFunction: [0m<string-downcase>
 
     (defun string-downcase (x)
-      (declare
-           (xargs :guard (and (stringp x)
-                              (standard-char-listp (coerce x 'list)))))
+      (declare (xargs :guard (stringp x)))
       (coerce (string-downcase1 (coerce x 'list))
               'string))")
  (STRING-EQUAL
@@ -136977,8 +137000,7 @@ Subtopics
   only [47mstr1[0m and [47mstr2[0m are the same except perhaps for the cases of
   their [characters].
 
-  The [guard] on [47mstring-equal[0m requires that its arguments are strings
-  consisting of standard characters (see [standard-char-listp]).
+  The [guard] on [47mstring-equal[0m requires that its arguments are strings.
 
   [47mString-equal[0m is a Common Lisp function.  See any Common Lisp
   documentation for more information.
@@ -136986,10 +137008,7 @@ Subtopics
   [31;1mFunction: [0m<string-equal>
 
     (defun string-equal (str1 str2)
-      (declare (xargs :guard (and (stringp str1)
-                                  (standard-string-p str1)
-                                  (stringp str2)
-                                  (standard-string-p str2))))
+      (declare (xargs :guard (and (stringp str1) (stringp str2))))
       (let ((len1 (length str1)))
         (and (= len1 (length str2))
              (string-equal1 str1 str2 0 len1))))")
@@ -137014,8 +137033,7 @@ Subtopics
   For a string [47mx[0m, [47m(string-upcase x)[0m is the result of applying
   [47m[char-upcase][0m to each character in [47mx[0m.
 
-  The [guard] for [47mstring-upcase[0m requires its argument to be a string
-  containing only standard characters.
+  The [guard] for [47mstring-upcase[0m states that its argument is a string.
 
   [47mString-upcase[0m is a Common Lisp function.  See any Common Lisp
   documentation for more information.
@@ -137023,9 +137041,7 @@ Subtopics
   [31;1mFunction: [0m<string-upcase>
 
     (defun string-upcase (x)
-      (declare
-           (xargs :guard (and (stringp x)
-                              (standard-char-listp (coerce x 'list)))))
+      (declare (xargs :guard (stringp x)))
       (coerce (string-upcase1 (coerce x 'list))
               'string))")
  (STRING<
@@ -150036,8 +150052,7 @@ Subtopics
   [47m(Upper-case-p x)[0m is true if and only if [47mx[0m is an upper case character,
   i.e., a member of the list [47m#\\A[0m, [47m#\\B[0m, ..., [47m#\\Z[0m.
 
-  The [guard] for [47mupper-case-p[0m requires its argument to be a standard
-  character (see [standard-char-p]).
+  The [guard] for [47mupper-case-p[0m states that its argument is a character.
 
   [47mUpper-case-p[0m is a Common Lisp function.  See any Common Lisp
   documentation for more information.
@@ -150045,13 +150060,14 @@ Subtopics
   [31;1mFunction: [0m<upper-case-p>
 
     (defun upper-case-p (x)
-      (declare (xargs :guard (and (characterp x)
-                                  (standard-char-p x))))
-      (and (member x
-                   '(#\\A #\\B #\\C #\\D #\\E #\\F #\\G
-                         #\\H #\\I #\\J #\\K #\\L #\\M #\\N #\\O #\\P #\\Q
-                         #\\R #\\S #\\T #\\U #\\V #\\W #\\X #\\Y #\\Z))
-           t))")
+      (declare (xargs :guard (characterp x)))
+      (cond ((standard-char-p x)
+             (and (member x
+                          '(#\\A #\\B #\\C #\\D #\\E #\\F #\\G
+                                #\\H #\\I #\\J #\\K #\\L #\\M #\\N #\\O #\\P #\\Q
+                                #\\R #\\S #\\T #\\U #\\V #\\W #\\X #\\Y #\\Z))
+                  t))
+            (t (upper-case-p-non-standard x))))")
  (USE (POINTERS)
       "See [hints] for information about the keyword [47m:use[0m.")
  (USELESS-RUNES
