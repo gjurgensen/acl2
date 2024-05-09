@@ -15472,6 +15472,10 @@ Subtopics
                          break afterwards so you can query results
     :eval!             :eval but remove all monitors first (see below)
     :eval$ runes       :eval but first add monitors for runes (see below)
+    :explain-near-miss[+]
+                       print an explanation of why the rule's pattern failed
+                         to match the :target; only relevant in a break caused
+                         by a near miss
     :failure-reason[+] reason rule failed (after :eval)
     :final-ttree[+]    ttree after :eval (see :DOC ttree)
     :frame[+] i        ith frame in :path
@@ -19575,6 +19579,182 @@ Subtopics
   are always created, even when a single function is specified.
   Second, [47mcomp-gcl[0m always leaves files [47m\"TMP.c\"[0m, [47m\"TMP.h\"[0m, [47m\"TMP1.c\"[0m,
   and [47m\"TMP1.h\"[0m when compilation is complete.")
+ (COMPARE-OBJECTS
+  (DEBUGGING)
+  "show differences between two ACL2 objects
+
+  In theorem prover output it can sometimes be difficult to see where
+  two Lisp objects differ.  (Emacs' compare-windows can often help.)
+  This function is an attempt to help while remaining entirely in
+  ACL2.
+
+    General Form:
+    (compare-objects x y)
+
+  where [47mx[0m and [47my[0m are two (almost) arbitrary objects but which must both
+  be [47mcons[0m trees for the comparison to be non-trivial.  The output
+  (described below) might be confusing if either object contains
+  keywords of the form [47m:<|s...|>[0m, where the elipsis is the decimal
+  representation of a natural number.  For example, the output would
+  be confusing if [47mx[0m or [47my[0m contained [47m:|<s1>|[0m because [47mcompare-objects[0m
+  inserts tokens like that to mark differences.
+
+  [47mCompare-objects[0m walks through both ojects to detect where
+  corresponding substructures first differ.  It replaces differences
+  by the keyword symbols [47m:|<s1>|[0m, [47m:|<s2>|[0m, [47m:|<s3>|[0m, ..., which we
+  call ``placeholders.'' It then assembles a ``legend'' that displays
+  triplets of the form [47m(si xi yi)[0m where [47msi[0m is a placeholder marking a
+  position in the common superstructure of both [47mx[0m and [47my[0m and [47mxi[0m and [47myi[0m
+  are the substructures of [47mx[0m and [47my[0m, respectively, at that position
+  that differ.  [47mCompare-objects[0m returns a list consisting of the
+  ``common object'' showing the shared superstructure and the legend.
+
+  For example,
+
+    ACL2 !>(compare-objects '(a b c) '(a b . c))
+    ((:OBJ (A B . :|<s1>|))
+     (:LEGEND ((:|<s1>| (C) C))))
+
+    ACL2 !>(compare-objects '(f x y (g x '(a b c)))
+                            '(f y x (g x '(a b c . d))))
+    ((:OBJ (F :|<s1>|
+              :|<s2>| (G X '(A B C . :|<s3>|))))
+     (:LEGEND ((:|<s1>| X Y)
+               (:|<s2>| Y X)
+               (:|<s3>| NIL D))))
+
+  By the way, the [47mbrr[0m command [47m:[0m[47m[explain-near-miss][0m sometimes calls
+  [47mcompare-objects[0m to show the differences between two unequal quoted
+  constants involved in a mismatch.  When [47m:explain-near-miss[0m
+  prettyprints the output of [47mcompare-object[0m it does so with an
+  [47m[evisc-tuple][0m that simplifies the placeholders.  [47m:Explain-near-miss[0m
+  would display the second example above as
+
+    ((:OBJ '(F <s1> <s2> (G X '(A B C . <s3>))))
+     (:LEGEND ((<s1> X Y) (<s2> Y X) (<s3> NIL D)))).
+
+  [47mCompare-objects[0m might be especially helpful when looking at big
+  [47mlambda[0m objects as produced by translating and rewriting [47m[loop$][0m
+  expressions.  For example, below we use [47mcompare-objects[0m to discover
+  where two large [47mDO$[0m terms differ.
+
+     ACL2 !>(compare-objects
+     '(DO$   ; First term
+      '(LAMBDA (ALIST)
+               (ACL2-COUNT (CDR (ASSOC-EQ-SAFE 'LST ALIST))))
+      (CONS (CONS 'LST LST0) '((ANS . 0)))
+      '(LAMBDA (ALIST)
+               (IF (ENDP (CDR (ASSOC-EQ-SAFE 'LST ALIST)))
+                   (CONS ':RETURN
+                         (CONS (CDR (ASSOC-EQ-SAFE 'ANS ALIST))
+                               (CONS (CONS (CONS 'LST
+                                                 (CDR (ASSOC-EQ-SAFE 'LST ALIST)))
+                                           (CONS (CONS 'ANS
+                                                       (CDR (ASSOC-EQ-SAFE 'ANS ALIST)))
+                                                 'NIL))
+                                     'NIL)))
+                   (CONS
+                    'NIL
+                    (CONS
+                     'NIL
+                     (CONS (CONS (CONS 'LST
+                                       (CDR (CDR (ASSOC-EQ-SAFE 'LST ALIST))))
+                                 (CONS (CONS 'ANS
+                                             (BINARY-+ '1
+                                                       (CDR (ASSOC-EQ-SAFE 'ANS ALIST))))
+                                       'NIL))
+                           'NIL)))))
+      '(LAMBDA (ALIST)
+               (CONS 'NIL
+                     (CONS 'NIL
+                           (CONS (CONS (CONS 'LST
+                                             (CDR (ASSOC-EQ-SAFE 'LST ALIST)))
+                                       (CONS (CONS 'ANS
+                                                   (CDR (ASSOC-EQ-SAFE 'ANS ALIST)))
+                                             'NIL))
+                                 'NIL))))
+      '(NIL)
+      'NIL
+      'NIL)
+     '(DO$   ; Second term
+      '(LAMBDA (ALIST)
+               (ACL2-COUNT (CDR (ASSOC-EQ-SAFE 'LST ALIST))))
+      (CONS (CONS 'LST LST0) '((ANS . 0)))
+      '(LAMBDA (ALIST)
+               (IF (ENDP (CDR (ASSOC-EQ-SAFE 'LST ALIST)))
+                   (CONS ':RETURN
+                         (CONS (CDR (ASSOC-EQ-SAFE 'ANS ALIST))
+                               (CONS (CONS (CONS 'LST
+                                                 (CDR (ASSOC-EQ-SAFE 'LST ALIST)))
+                                           (CONS (CONS 'ANS
+                                                       (CDR (ASSOC-EQ-SAFE 'ANS ALIST)))
+                                                 'NIL))
+                                     'NIL)))
+                   (CONS
+                    'NIL
+                    (CONS
+                     'NIL
+                     (CONS (CONS (CONS 'LST
+                                       (CDR (CDR (ASSOC-EQ-SAFE 'LST ALIST))))
+                                 (CONS (CONS 'ANS
+                                             (BINARY-+ '1
+                                                       (CDR (ASSOC-EQ 'ANS ALIST))))
+                                       'NIL))
+                           'NIL)))))
+      '(LAMBDA (ALIST)
+               (CONS 'NIL
+                     (CONS 'NIL
+                           (CONS (CONS (CONS 'LST
+                                             (CDR (ASSOC-EQ-SAFE 'LST ALIST)))
+                                       (CONS (CONS 'ANS
+                                                   (CDR (ASSOC-EQ-SAFE 'ANS ALIST)))
+                                             'NIL))
+                                 'NIL))))
+      '(NIL)
+      'NIL
+      'NIL))
+    ((:OBJ
+     (DO$
+      '(LAMBDA (ALIST)
+         (ACL2-COUNT (CDR (ASSOC-EQ-SAFE 'LST ALIST))))
+      (CONS (CONS 'LST LST0) '((ANS . 0)))
+      '(LAMBDA (ALIST)
+        (IF
+          (ENDP (CDR (ASSOC-EQ-SAFE 'LST ALIST)))
+          (CONS ':RETURN
+                (CONS (CDR (ASSOC-EQ-SAFE 'ANS ALIST))
+                      (CONS (CONS (CONS 'LST
+                                        (CDR (ASSOC-EQ-SAFE 'LST ALIST)))
+                                  (CONS (CONS 'ANS
+                                              (CDR (ASSOC-EQ-SAFE 'ANS ALIST)))
+                                        'NIL))
+                            'NIL)))
+         (CONS
+            'NIL
+            (CONS 'NIL
+                  (CONS (CONS (CONS 'LST
+                                    (CDR (CDR (ASSOC-EQ-SAFE 'LST ALIST))))
+                              (CONS (CONS 'ANS
+                                          (BINARY-+ '1
+                                                    (CDR (:|<s1>| 'ANS ALIST))))
+                                    'NIL))
+                        'NIL)))))
+      '(LAMBDA (ALIST)
+         (CONS 'NIL
+               (CONS 'NIL
+                     (CONS (CONS (CONS 'LST
+                                       (CDR (ASSOC-EQ-SAFE 'LST ALIST)))
+                                 (CONS (CONS 'ANS
+                                             (CDR (ASSOC-EQ-SAFE 'ANS ALIST)))
+                                       'NIL))
+                           'NIL))))
+      '(NIL)
+      'NIL
+      'NIL))
+     (:LEGEND ((:|<s1>| ASSOC-EQ-SAFE ASSOC-EQ))))
+
+  [47mCompare-objects[0m tells us that a position [47m:|<s1>|[0m the first term calls
+  [47mASSOC-EQ-SAFE[0m while the second one calls [47mASSOC-EQ[0m.")
  (COMPILATION
   (PROGRAMMING)
   "Compiling ACL2 functions
@@ -22950,6 +23130,9 @@ Subtopics
   [Break-rewrite]
       A version of the ACL2 rewriter with interactive breaks
 
+  [Compare-objects]
+      show differences between two ACL2 objects
+
   [Cw-gstack]
       Debug a rewriting loop or stack overflow
 
@@ -22964,6 +23147,9 @@ Subtopics
 
   [Efficiency]
       Efficiency considerations
+
+  [Explain-near-miss]
+      show why a rule's pattern and the :target do not match
 
   [Failed-forcing]
       How to deal with a proof [failure] in a forcing round
@@ -38169,6 +38355,132 @@ Subtopics
   655)[0m when counted naively, but the total number of distinct conses
   is 1,875,653.  So if you build a [47mlambda[0m object containing the value
   of [47m(w state)[0m it will be ``excessively large.''")
+ (EXPLAIN-NEAR-MISS
+  (DEBUGGING)
+  "show why a rule's pattern and the :target do not match
+
+  When a near miss break occurs (see [47m[monitor][0m) the user sees a message
+  like this:
+
+    (1 Breaking (:REWRITE LEMMA) on (F (G A B) A '(A B C D ...)):
+
+    The pattern in this rule failed to match the target.  However, this
+    is considered a NEAR MISS under the break criteria,
+    (:CONDITION 'T :ABSTRACTION ...), specified when this rule was
+    monitored.  The following criterion is satisfied.
+
+    * The :ABSTRACTION pattern provided in your monitor, ...,
+    matches :TARGET.
+
+  It can be difficult to determine why the pattern of the rule, e.g.,
+  the [47m:lhs[0m of a [47m:rewrite[0m rule, fails to match the [47m:target[0m term,
+  especially when large terms, large quoted constants, and [47mlambda[0m
+  expressions are involved.
+
+  Included among the [47m:[0m[47m[brr-commands][0m is the [47m:explain-near-miss[0m command
+  which is intended to help explain.  This command can only operate
+  in a near miss break.  If called in another context an error may
+  occur.
+
+  But in a near miss break, the situation is as follows.  The prover
+  has tried to apply a rule that has been monitored with a break
+  criterion meaning ``cause an interactive break when the target term
+  (the term to currently being rewritten) satisfies this criterion
+  but the triggering pattern of the rule fails to match the target
+  term.'' When inside the resulting break, the target term is given
+  by the [47m[brr][0m command [47m:target[0m.  The ``triggering pattern'' of the
+  rule in question depends on how the rule was stored (see
+  [47m[rule-classes][0m).  The triggering pattern of a [47m:[0m[47m[rewrite][0m rule ---
+  the most common class of rule --- is the left-hand side of the
+  concluding equality and can be obtained from within the break by
+  typing the [47m[brr][0m command [47m:lhs[0m.  The triggering pattern for a
+  [47m:[0m[47m[rewrite-quoted-constant][0m rule is its right-hand side, but as
+  explained in [47m[rewrite-quoted-constant][0m, the [47mbrr[0m command [47m:lhs[0m will
+  display it.  The triggering pattern for a [47m:[0m[47m[linear][0m rule is
+  displayed by the [47m:[0m[47mmax-term[0m [47mbrr[0m command.  The question the user will
+  typically ask in this situation is ``why doesn't the triggering
+  pattern match the target?''
+
+  To understand the answer you have to understand how the ACL2 matching
+  algorithm works.  The matching algorithm is given two terms, [47mt1[0m and
+  [47mt2[0m, and attempts to find a substitution [47ms[0m on the variables in [47mt1[0m
+  such that when [47mt1[0m is instantiated with [47ms[0m the result is [47mt2[0m, i.e.,
+  [47mt1/s[0m = [47mt2[0m.  Note that only the variables in the pattern, [47mt1[0m, can be
+  instantiated by [47ms'[0m.  In the case of a near miss break, no such
+  substitution was found.
+
+  The [47m:explain-near-miss[0m command reruns the matching algorithm on the
+  triggering pattern and the target, expecting failure and collecting
+  information about where the failure occurred.  The output is
+  intended to be self-explanatory.
+
+  The message displays the pattern in question and the target term, but
+  it also displays a version of the pattern in which the first
+  unmatchable subterm is replaced by the expression [47m<pat>[0m.  That
+  [47m<pat>[0m is displayed in lowercase whereas the rest of the pattern and
+  target are in uppercase.  It marks where the matching broke down.
+
+  The message goes on to show the mismatched subterms from the pattern
+  and the target, the substitution that was computed to match
+  everything up to [47m<pat>[0m and what the [47m<pat>[0m subterm of the pattern is
+  when instantiated with that substitution.
+
+  So, for example, suppose the rule's [47m:lhs[0m and the current [47m:target[0m are
+  as shown below.  Then here is what [47m:explain-near-miss[0m would print.
+
+    The ACL2 match algorithm attempted to match :LHS with :TARGET by finding
+    a substitution, s, such that :LHS/s = :TARGET.  That attempt failed
+    when trying to match the subterm of :LHS marked <pat> in :LHS' below.
+
+    :LHS:      (F X (G X Y) (H X))
+    :LHS':     (F X (G <pat> Y) (H X))
+    :TARGET:   (F A (G B A) (H A))
+
+    Below we show the substitution, s, computed prior to the failure; the
+    subterm of :LHS we're calling <pat>; the instantiated subterm, <pat>/s;
+    and the corresponding subterm, <tar>, of :TARGET.
+
+    s:       ((X A))
+    <pat>:   X
+    <pat>/s: A
+    <tar>:   B
+
+    For the rewriter to get past this failure the match algorithm must
+    be able to extend substitution s to s' so that <pat>/s' is equal to
+    <tar> and our match algorithm could not find such an extension.
+
+  Note that the substitution [47ms[0m binds [47mX[0m to [47mA[0m to match the first argument
+  of the [47mF[0m-expression in the [47m:LHS[0m to the corresponding argument in
+  the [47m:TARGET[0m.  Then it tries to match [47m(G X Y)[0m with [47m(G B A)[0m.  It
+  fails on the first argument of that subterm, where [47m<pat>[0m is shown
+  in [47m:LHS'[0m, because [47mX[0m has been bound to [47mA[0m and [47mA[0m and [47mB[0m are different.
+  (Remember: only the variables of the pattern can be bound by the
+  substitution.)
+
+  When [47m<pat>[0m and its corresponding subterm [47m<tar>[0m are ``large'' but
+  unequal quoted constants or [47mlambda[0m expressions, [47m:explain-near-miss[0m
+  will call [47m[compare-objects][0m on those objects.  It can be hard to
+  spot how two large constants differ and [47mcompare-objects[0m points out
+  the differences between two [47mcons[0m trees.  [47m:Explain-near-miss[0m
+  considers an object ``large'' if the number of conses in it is 30
+  or greater.
+
+  The command [47m:explain-near-miss+[0m is like [47m:explain-near-miss[0m except it
+  never eviscerates any term and runs [47mcompare-objects[0m whenever the
+  failure is on two distinct quoted objects or [47mlambda[0m expressions
+  regardless of their sizes.
+
+  But note that [47mcompare-objects[0m is not run by either version of
+  [47mexplain-near-miss[0m when the failure is of the most common kinds:
+
+    * (a) a variable in the pattern has already been bound in the
+      substitution (i.e., bound earlier in the matching process) to a
+      term that is not identical to the corresponding term in the
+      target, or
+    * (b) a term in the pattern has a different function symbol than the
+      corresponding term the target.
+
+  So do not expect the [47mcompare-objects[0m output to appear often!")
  (EXPLODE-ATOM
   (CHARACTERS ACL2-BUILT-INS)
   "Convert any [atom] into a [character-listp] that contains its printed
@@ -77471,6 +77783,30 @@ Criteria for Breaks
       Forms in Loop$ Bodies'' in
       [stating-and-proving-lemmas-about-loop$s].
 
+  When a near miss break is caused it prints a message like this
+
+    (1 Breaking (:REWRITE LEMMA) on (F (G A B) A '(A B C D ...)):
+
+    The pattern in this rule failed to match the target.  However, this
+    is considered a NEAR MISS under the break criteria,
+    (:CONDITION 'T :ABSTRACTION (F X1 X2 X3)), specified when this rule
+    was monitored.
+
+  The message then displays all of the near miss break criteria that
+  were satisfied and then prompts you for input.  This allows you to
+  inspect the pattern (via the [47m[brr-commands][0m [47m:lhs[0m or [47m:max-term[0m
+  depending on whether the monitored lemma is a [47m:rewrite[0m rule or a
+  [47m:linear[0m rule.  You can inspect the target term with the command
+  [47m:target[0m.  The ``+'' versions of those commands, e.g., [47m:lhs+[0m, will
+  print the terms without evisceration.  If you want more information
+  about why the pattern of the rule failed to match the target, use
+  the command [47m:explain-near-miss[0m or its ``+'' version.  You may exit
+  the break with any of the usual commands, e.g., [47m:ok[0m to continue the
+  proof attempt (because perhaps you determined that the lemma was
+  never supposed to match this particular target) or [47m:a![0m to abort
+  back to the top-level to fix the problem (because you figured out
+  why the lemma, as written, will not match the intended target).
+
   On the other hand, suppose the pattern of the rune matches the
   target.  Then the break condition term, i.e., the [47m:condition[0m
   criterion, is evaluated.  The only variable allowed in the break
@@ -102525,6 +102861,13 @@ New Features
   for that array field.  That is the default value, and the other
   legal value is [47mt[0m, but these may change in the future.  See
   [defstobj] and see [defstobj-element-type].
+
+  A new [47mbrr[0m command, [47m:[0m[47m[explain-near-miss][0m, when issued in a break
+  caused by a near miss, will try to pinpoint how the rule's pattern
+  failed to match the current target.
+
+  A new utility, [47m[compare-objects][0m, highlights the differences between
+  two [47mcons[0m-trees.
 
 
 Heuristic and Efficiency Improvements

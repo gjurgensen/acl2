@@ -12466,6 +12466,10 @@ with any questions about building the community books.</p>")
                       break afterwards so you can query results
  :eval!             :eval but remove all monitors first (see below)
  :eval$ runes       :eval but first add monitors for runes (see below)
+ :explain-near-miss[+]
+                    print an explanation of why the rule's pattern failed
+                      to match the :target; only relevant in a break caused
+                      by a near miss
  :failure-reason[+] reason rule failed (after :eval)
  :final-ttree[+]    ttree after :eval (see :DOC ttree)
  :frame[+] i        ith frame in :path
@@ -16506,6 +16510,189 @@ with any questions about building the community books.</p>")
  when a single function is specified.  Second, @('comp-gcl') always leaves
  files @('\"TMP.c\"'), @('\"TMP.h\"'), @('\"TMP1.c\"'), and @('\"TMP1.h\"')
  when compilation is complete.</p>")
+
+(defxdoc compare-objects
+  :parents (debugging)
+  :short "show differences between two ACL2 objects"
+  :long "<p>In theorem prover output it can sometimes be difficult to
+  see where two Lisp objects differ.  (Emacs' compare-windows can often help.)
+  This function is an attempt to help while remaining entirely in ACL2.</p>
+
+  @({
+  General Form:
+  (compare-objects x y)
+  })
+
+  <p>where @('x') and @('y') are two (almost) arbitrary objects but which must
+  both be @('cons') trees for the comparison to be non-trivial.  The output
+  (described below) might be confusing if either object contains keywords of
+  the form @(':<|s...|>'), where the elipsis is the decimal representation of a
+  natural number.  For example, the output would be confusing if @('x') or
+  @('y') contained @(':|<s1>|') because @('compare-objects') inserts tokens
+  like that to mark differences.</p>
+
+  <p>@('Compare-objects') walks through both ojects to detect where
+  corresponding substructures first differ.  It replaces differences by the
+  keyword symbols @(':|<s1>|'), @(':|<s2>|'), @(':|<s3>|'), ..., which we call
+  ``placeholders.''  It then assembles a ``legend'' that displays triplets of
+  the form @('(si xi yi)') where @('si') is a placeholder marking a position in
+  the common superstructure of both @('x') and @('y') and @('xi') and @('yi')
+  are the substructures of @('x') and @('y'), respectively, at that position
+  that differ.  @('Compare-objects') returns a list consisting of the ``common
+  object'' showing the shared superstructure and the legend.</p>
+
+  <p>For example,</p>
+
+  @({
+  ACL2 !>(compare-objects '(a b c) '(a b . c))
+  ((:OBJ (A B . :|<s1>|))
+   (:LEGEND ((:|<s1>| (C) C))))
+
+  ACL2 !>(compare-objects '(f x y (g x '(a b c)))
+                          '(f y x (g x '(a b c . d))))
+  ((:OBJ (F :|<s1>|
+            :|<s2>| (G X '(A B C . :|<s3>|))))
+   (:LEGEND ((:|<s1>| X Y)
+             (:|<s2>| Y X)
+             (:|<s3>| NIL D))))
+  })
+
+  <p>By the way, the @('brr') command @(':')@(tsee explain-near-miss) sometimes
+  calls @('compare-objects') to show the differences between two unequal quoted
+  constants involved in a mismatch.  When @(':explain-near-miss') prettyprints
+  the output of @('compare-object') it does so with an @(tsee evisc-tuple) that
+  simplifies the placeholders.  @(':Explain-near-miss') would display the
+  second example above as</p>
+
+  @({
+  ((:OBJ '(F <s1> <s2> (G X '(A B C . <s3>))))
+   (:LEGEND ((<s1> X Y) (<s2> Y X) (<s3> NIL D)))).
+  })
+
+  <p>@('Compare-objects') might be especially helpful when looking at big
+  @('lambda') objects as produced by translating and rewriting @(tsee loop$)
+  expressions.  For example, below we use @('compare-objects') to discover
+  where two large @('DO$') terms differ.</p>
+
+  @({
+  ACL2 !>(compare-objects
+  '(DO$   ; First term
+   '(LAMBDA (ALIST)
+            (ACL2-COUNT (CDR (ASSOC-EQ-SAFE 'LST ALIST))))
+   (CONS (CONS 'LST LST0) '((ANS . 0)))
+   '(LAMBDA (ALIST)
+            (IF (ENDP (CDR (ASSOC-EQ-SAFE 'LST ALIST)))
+                (CONS ':RETURN
+                      (CONS (CDR (ASSOC-EQ-SAFE 'ANS ALIST))
+                            (CONS (CONS (CONS 'LST
+                                              (CDR (ASSOC-EQ-SAFE 'LST ALIST)))
+                                        (CONS (CONS 'ANS
+                                                    (CDR (ASSOC-EQ-SAFE 'ANS ALIST)))
+                                              'NIL))
+                                  'NIL)))
+                (CONS
+                 'NIL
+                 (CONS
+                  'NIL
+                  (CONS (CONS (CONS 'LST
+                                    (CDR (CDR (ASSOC-EQ-SAFE 'LST ALIST))))
+                              (CONS (CONS 'ANS
+                                          (BINARY-+ '1
+                                                    (CDR (ASSOC-EQ-SAFE 'ANS ALIST))))
+                                    'NIL))
+                        'NIL)))))
+   '(LAMBDA (ALIST)
+            (CONS 'NIL
+                  (CONS 'NIL
+                        (CONS (CONS (CONS 'LST
+                                          (CDR (ASSOC-EQ-SAFE 'LST ALIST)))
+                                    (CONS (CONS 'ANS
+                                                (CDR (ASSOC-EQ-SAFE 'ANS ALIST)))
+                                          'NIL))
+                              'NIL))))
+   '(NIL)
+   'NIL
+   'NIL)
+  '(DO$   ; Second term
+   '(LAMBDA (ALIST)
+            (ACL2-COUNT (CDR (ASSOC-EQ-SAFE 'LST ALIST))))
+   (CONS (CONS 'LST LST0) '((ANS . 0)))
+   '(LAMBDA (ALIST)
+            (IF (ENDP (CDR (ASSOC-EQ-SAFE 'LST ALIST)))
+                (CONS ':RETURN
+                      (CONS (CDR (ASSOC-EQ-SAFE 'ANS ALIST))
+                            (CONS (CONS (CONS 'LST
+                                              (CDR (ASSOC-EQ-SAFE 'LST ALIST)))
+                                        (CONS (CONS 'ANS
+                                                    (CDR (ASSOC-EQ-SAFE 'ANS ALIST)))
+                                              'NIL))
+                                  'NIL)))
+                (CONS
+                 'NIL
+                 (CONS
+                  'NIL
+                  (CONS (CONS (CONS 'LST
+                                    (CDR (CDR (ASSOC-EQ-SAFE 'LST ALIST))))
+                              (CONS (CONS 'ANS
+                                          (BINARY-+ '1
+                                                    (CDR (ASSOC-EQ 'ANS ALIST))))
+                                    'NIL))
+                        'NIL)))))
+   '(LAMBDA (ALIST)
+            (CONS 'NIL
+                  (CONS 'NIL
+                        (CONS (CONS (CONS 'LST
+                                          (CDR (ASSOC-EQ-SAFE 'LST ALIST)))
+                                    (CONS (CONS 'ANS
+                                                (CDR (ASSOC-EQ-SAFE 'ANS ALIST)))
+                                          'NIL))
+                              'NIL))))
+   '(NIL)
+   'NIL
+   'NIL))
+ ((:OBJ
+  (DO$
+   '(LAMBDA (ALIST)
+      (ACL2-COUNT (CDR (ASSOC-EQ-SAFE 'LST ALIST))))
+   (CONS (CONS 'LST LST0) '((ANS . 0)))
+   '(LAMBDA (ALIST)
+     (IF
+       (ENDP (CDR (ASSOC-EQ-SAFE 'LST ALIST)))
+       (CONS ':RETURN
+             (CONS (CDR (ASSOC-EQ-SAFE 'ANS ALIST))
+                   (CONS (CONS (CONS 'LST
+                                     (CDR (ASSOC-EQ-SAFE 'LST ALIST)))
+                               (CONS (CONS 'ANS
+                                           (CDR (ASSOC-EQ-SAFE 'ANS ALIST)))
+                                     'NIL))
+                         'NIL)))
+      (CONS
+         'NIL
+         (CONS 'NIL
+               (CONS (CONS (CONS 'LST
+                                 (CDR (CDR (ASSOC-EQ-SAFE 'LST ALIST))))
+                           (CONS (CONS 'ANS
+                                       (BINARY-+ '1
+                                                 (CDR (:|<s1>| 'ANS ALIST))))
+                                 'NIL))
+                     'NIL)))))
+   '(LAMBDA (ALIST)
+      (CONS 'NIL
+            (CONS 'NIL
+                  (CONS (CONS (CONS 'LST
+                                    (CDR (ASSOC-EQ-SAFE 'LST ALIST)))
+                              (CONS (CONS 'ANS
+                                          (CDR (ASSOC-EQ-SAFE 'ANS ALIST)))
+                                    'NIL))
+                        'NIL))))
+   '(NIL)
+   'NIL
+   'NIL))
+  (:LEGEND ((:|<s1>| ASSOC-EQ-SAFE ASSOC-EQ))))
+  })
+
+  <p>@('Compare-objects') tells us that a position @(':|<s1>|') the first term
+  calls @('ASSOC-EQ-SAFE') while the second one calls @('ASSOC-EQ').</p>")
 
 (defxdoc compilation
   :parents (programming)
@@ -34798,6 +34985,138 @@ ld) and @(tsee include-book)"
   naively, but the total number of distinct conses is 1,875,653.  So if you
   build a @('lambda') object containing the value of @('(w state)') it will be
   &ldquo;excessively large.&rdquo;</p>")
+
+(defxdoc explain-near-miss
+  :parents (debugging)
+  :short "show why a rule's pattern and the :target do not match"
+  :long "<p>When a near miss break occurs (see @(tsee monitor)) the user 
+  sees a message like this:</p>
+
+  @({
+  (1 Breaking (:REWRITE LEMMA) on (F (G A B) A '(A B C D ...)):
+
+  The pattern in this rule failed to match the target.  However, this
+  is considered a NEAR MISS under the break criteria, 
+  (:CONDITION 'T :ABSTRACTION ...), specified when this rule was
+  monitored.  The following criterion is satisfied.
+
+  * The :ABSTRACTION pattern provided in your monitor, ...,
+  matches :TARGET.
+  })
+
+  <p>It can be difficult to determine why the pattern of the rule, e.g., the
+  @(':lhs') of a @(':rewrite') rule, fails to match the @(':target') term,
+  especially when large terms, large quoted constants, and @('lambda')
+  expressions are involved.</p>
+
+  <p>Included among the @(':')@(tsee brr-commands) is the @(':explain-near-miss')
+  command which is intended to help explain.  This command can only operate in
+  a near miss break.  If called in another context an error may occur.</p>
+
+  <p>But in a near miss break, the situation is as follows.  The prover has
+  tried to apply a rule that has been monitored with a break criterion meaning
+  ``cause an interactive break when the target term (the term to currently
+  being rewritten) satisfies this criterion but the triggering pattern of the
+  rule fails to match the target term.''  When inside the resulting break, the
+  target term is given by the @(tsee brr) command @(':target').  The
+  ``triggering pattern'' of the rule in question depends on how the rule was
+  stored (see @(tsee rule-classes)).  The triggering pattern of a @(':')@(tsee
+  rewrite) rule &mdash; the most common class of rule &mdash; is the left-hand
+  side of the concluding equality and can be obtained from within the break by
+  typing the @(tsee brr) command @(':lhs').  The triggering pattern for a
+  @(':')@(tsee rewrite-quoted-constant) rule is its right-hand side, but as
+  explained in @(tsee rewrite-quoted-constant), the @('brr') command @(':lhs')
+  will display it.  The triggering pattern for a @(':')@(tsee linear) rule is
+  displayed by the @(':')@('max-term') @('brr') command.  The question the user
+  will typically ask in this situation is ``why doesn't the triggering pattern
+  match the target?''</p>
+
+  <p>To understand the answer you have to understand how the ACL2 matching
+  algorithm works.  The matching algorithm is given two terms, @('t1') and
+  @('t2'), and attempts to find a substitution @('s') on the variables in
+  @('t1') such that when @('t1') is instantiated with @('s') the result is
+  @('t2'), i.e., @('t1/s') = @('t2').  Note that only the variables in the
+  pattern, @('t1'), can be instantiated by @('s'').  In the case of a near miss
+  break, no such substitution was found.</p>
+
+  <p>The @(':explain-near-miss') command reruns the matching algorithm on the
+  triggering pattern and the target, expecting failure and collecting
+  information about where the failure occurred.  The output is intended to be
+  self-explanatory.</p>
+
+  <p>The message displays the pattern in question and the target term, but it
+  also displays a version of the pattern in which the first unmatchable subterm
+  is replaced by the expression @('<pat>').  That @('<pat>') is displayed
+  in lowercase whereas the rest of the pattern and target are in uppercase.
+  It marks where the matching broke down.</p>
+
+  <p>The message goes on to show the mismatched subterms from the pattern and
+  the target, the substitution that was computed to match everything up to
+  @('<pat>') and what the @('<pat>') subterm of the pattern is when
+  instantiated with that substitution.</p>
+
+  <p>So, for example, suppose the rule's @(':lhs') and the current @(':target')
+  are as shown below.  Then here is what @(':explain-near-miss') would
+  print.</p>
+
+  @({
+  The ACL2 match algorithm attempted to match :LHS with :TARGET by finding
+  a substitution, s, such that :LHS/s = :TARGET.  That attempt failed
+  when trying to match the subterm of :LHS marked <pat> in :LHS' below.
+
+  :LHS:      (F X (G X Y) (H X))
+  :LHS':     (F X (G <pat> Y) (H X))
+  :TARGET:   (F A (G B A) (H A))
+
+  Below we show the substitution, s, computed prior to the failure; the
+  subterm of :LHS we're calling <pat>; the instantiated subterm, <pat>/s;
+  and the corresponding subterm, <tar>, of :TARGET.
+
+  s:       ((X A))
+  <pat>:   X
+  <pat>/s: A
+  <tar>:   B
+
+  For the rewriter to get past this failure the match algorithm must
+  be able to extend substitution s to s' so that <pat>/s' is equal to
+  <tar> and our match algorithm could not find such an extension.
+  })
+
+  <p>Note that the substitution @('s') binds @('X') to @('A') to match the
+  first argument of the @('F')-expression in the @(':LHS') to the corresponding
+  argument in the @(':TARGET').  Then it tries to match @('(G X Y)') with @('(G
+  B A)').  It fails on the first argument of that subterm, where @('<pat>') is
+  shown in @(':LHS''), because @('X') has been bound to @('A') and @('A') and
+  @('B') are different.  (Remember: only the variables of the pattern can be
+  bound by the substitution.)</p>
+
+  <p>When @('<pat>') and its corresponding subterm @('<tar>') are ``large'' but
+  unequal quoted constants or @('lambda') expressions, @(':explain-near-miss')
+  will call @(tsee compare-objects) on those objects.  It can be hard to spot
+  how two large constants differ and @('compare-objects') points out the
+  differences between two @('cons') trees.  @(':Explain-near-miss') considers
+  an object ``large'' if the number of conses in it is 30 or greater.</p>
+
+  <p>The command @(':explain-near-miss+') is like @(':explain-near-miss')
+  except it never eviscerates any term and runs @('compare-objects') whenever
+  the failure is on two distinct quoted objects or @('lambda') expressions
+  regardless of their sizes.</p>
+
+  <p>But note that @('compare-objects') is not run by either version of
+  @('explain-near-miss') when the failure is of the most common kinds:</p>
+
+  <ul>
+
+  <li>(a) a variable in the pattern has already been bound in the
+  substitution (i.e., bound earlier in the matching process) to a term that is
+  not identical to the corresponding term in the target, or</li>
+
+  <li>(b) a term in the pattern has a different function symbol than the
+  corresponding term the target.</li>
+
+  </ul>
+
+  <p>So do not expect the @('compare-objects') output to appear often!</p>")
 
 (defxdoc explode-atom
   :parents (characters acl2-built-ins)
@@ -74130,6 +74449,31 @@ it."
 
  </ul>
 
+ <p>When a near miss break is caused it prints a message like this</p>
+
+ @({
+ (1 Breaking (:REWRITE LEMMA) on (F (G A B) A '(A B C D ...)):
+
+ The pattern in this rule failed to match the target.  However, this
+ is considered a NEAR MISS under the break criteria, 
+ (:CONDITION 'T :ABSTRACTION (F X1 X2 X3)), specified when this rule
+ was monitored.
+ })
+
+ <p>The message then displays all of the near miss break criteria that were
+ satisfied and then prompts you for input.  This allows you to inspect the
+ pattern (via the @(tsee brr-commands) @(':lhs') or @(':max-term') depending on
+ whether the monitored lemma is a @(':rewrite') rule or a @(':linear') rule.
+ You can inspect the target term with the command @(':target').  The ``+''
+ versions of those commands, e.g., @(':lhs+'), will print the terms without
+ evisceration.  If you want more information about why the pattern of the rule
+ failed to match the target, use the command @(':explain-near-miss') or its
+ ``+'' version.  You may exit the break with any of the usual commands, e.g.,
+ @(':ok') to continue the proof attempt (because perhaps you determined that
+ the lemma was never supposed to match this particular target) or @(':a!') to
+ abort back to the top-level to fix the problem (because you figured out why
+ the lemma, as written, will not match the intended target).</p>
+
  <p>On the other hand, suppose the pattern of the rune matches the target.
  Then the break condition term, i.e., the @(':condition') criterion, is
  evaluated.  The only variable allowed in the break condition term is
@@ -104562,7 +104906,7 @@ it."
 ; utilities to guard-verified :logic mode.
 
 ;   85 ; Changes to Existing Features
-;   34 ; New Features
+;   36 ; New Features
 ;    9 ; Heuristic and Efficiency Improvements
 ;   37 ; Bug Fixes
 ;   18 ; Changes at the System Level
@@ -105873,6 +106217,13 @@ it."
  field.  That is the default value, and the other legal value is @('t'), but
  these may change in the future.  See @(see defstobj) and see @(see
  defstobj-element-type).</p>
+
+ <p>A new @('brr') command, @(':')@(tsee explain-near-miss), when issued in a
+ break caused by a near miss, will try to pinpoint how the rule's pattern
+ failed to match the current target.</p>
+
+ <p>A new utility, @(tsee compare-objects), highlights the differences between
+ two @('cons')-trees.</p>
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
