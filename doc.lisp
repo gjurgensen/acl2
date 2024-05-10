@@ -142867,8 +142867,8 @@ Subtopics
      (:induction len)
      (:executable-counterpart len)
      (:executable-counterpart nth)
-     (:elim car-cdr-elim)
-     (:rewrite car-cons)} .
+     (:rewrite car-cons)
+     (:elim car-cdr-elim)} .
 
   Observe that the theory contains five elements but its runic
   correspondent contains six.  That is because runic designators can
