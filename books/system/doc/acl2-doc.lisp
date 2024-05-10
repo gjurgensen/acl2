@@ -34989,14 +34989,14 @@ ld) and @(tsee include-book)"
 (defxdoc explain-near-miss
   :parents (debugging)
   :short "show why a rule's pattern and the :target do not match"
-  :long "<p>When a near miss break occurs (see @(tsee monitor)) the user 
+  :long "<p>When a near miss break occurs (see @(tsee monitor)) the user
   sees a message like this:</p>
 
   @({
   (1 Breaking (:REWRITE LEMMA) on (F (G A B) A '(A B C D ...)):
 
   The pattern in this rule failed to match the target.  However, this
-  is considered a NEAR MISS under the break criteria, 
+  is considered a NEAR MISS under the break criteria,
   (:CONDITION 'T :ABSTRACTION ...), specified when this rule was
   monitored.  The following criterion is satisfied.
 
@@ -74455,7 +74455,7 @@ it."
  (1 Breaking (:REWRITE LEMMA) on (F (G A B) A '(A B C D ...)):
 
  The pattern in this rule failed to match the target.  However, this
- is considered a NEAR MISS under the break criteria, 
+ is considered a NEAR MISS under the break criteria,
  (:CONDITION 'T :ABSTRACTION (F X1 X2 X3)), specified when this rule
  was monitored.
  })
@@ -108646,7 +108646,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  NIL
  ACL2 !>
  })
- 
+
  <p>Suppose that (without the restriction) the package @('\"FOO\"') can now be
  introduced as @('(defpkg \"FOO\" '(a))').  Then will @('(eq (@ x) 'acl2::a)')
  evaluate to @('nil') as before, since we didn't make another assignment to
@@ -108705,7 +108705,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  (include-book \"book2\"))') form in the second @('encapsulate').</p>
 
  @({
- ACL2 Error in ACL2-INTERFACE:  
+ ACL2 Error in ACL2-INTERFACE:
  We cannot reincarnate the package \"FOO\" because it was previously defined
  with a different list of imported symbols.
  })
@@ -108736,7 +108736,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  event) is undone.
 
  </blockquote>
- 
+
  <p>That principle certainly rules out the new definition of an undone package
  with different imports.  It also explains why package definitions from @(see
  local)ly included @(see books) are included in a book's @(see portcullis)
@@ -144373,8 +144373,8 @@ work on <tt>(q x)</tt>.</p>
       (:induction len)
       (:executable-counterpart len)
       (:executable-counterpart nth)
-      (:elim car-cdr-elim)
-      (:rewrite car-cons)} .
+      (:rewrite car-cons)
+      (:elim car-cdr-elim)} .
  })
 
  <p>Observe that the theory contains five elements but its runic correspondent
