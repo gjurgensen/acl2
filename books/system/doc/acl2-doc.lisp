@@ -4503,13 +4503,12 @@ and @(tsee include-book)"
 (defxdoc alpha-char-p
   :parents (characters acl2-built-ins)
   :short "Recognizer for alphabetic characters"
-  :long "<p>@('(Alpha-char-p x)') is true for a standard character @('x') if
- and only if @('x') is alphabetic, i.e., one of the @(see characters)
- @('#\\a'), @('#\\b'), ..., @('#\\z'), @('#\\A'), @('#\\B'), ...,
- @('#\\Z').</p>
+  :long "<p>@('(Alpha-char-p x)') is true for a character @('x') if and only if
+ @('x') is alphabetic, i.e., one of the @(see characters) @('#\\a'), @('#\\b'),
+ ..., @('#\\z'), @('#\\A'), @('#\\B'), ..., @('#\\Z').</p>
 
- <p>The @(see guard) for @('alpha-char-p') requires its argument to be a
- standard character (see @(see standard-char-p)).</p>
+ <p>The @(see guard) for @('alpha-char-p') states that its argument is a
+ character.</p>
 
  <p>@('Alpha-char-p') is a Common Lisp function.  See any Common Lisp
  documentation for more information.</p>
@@ -12467,6 +12466,10 @@ with any questions about building the community books.</p>")
                       break afterwards so you can query results
  :eval!             :eval but remove all monitors first (see below)
  :eval$ runes       :eval but first add monitors for runes (see below)
+ :explain-near-miss[+]
+                    print an explanation of why the rule's pattern failed
+                      to match the :target; only relevant in a break caused
+                      by a near miss
  :failure-reason[+] reason rule failed (after :eval)
  :final-ttree[+]    ttree after :eval (see :DOC ttree)
  :frame[+] i        ith frame in :path
@@ -14807,8 +14810,8 @@ with any questions about building the community books.</p>")
  @('#\\A'), @('#\\b') when @('x') is @('#\\B'), ..., and @('#\\z') when @('x')
  is @('#\\Z'), and is @('x') for any other character.</p>
 
- <p>The @(see guard) for @('char-downcase') requires its argument to be a
- standard character (see @(see standard-char-p)).</p>
+ <p>The @(see guard) for @('char-downcase') states that its argument is a
+ character.</p>
 
  <p>@('Char-downcase') is a Common Lisp function.  See any Common Lisp
  documentation for more information.</p>
@@ -14822,8 +14825,8 @@ with any questions about building the community books.</p>")
  true if and only if @('x') and @('y') are the same except perhaps for their
  case.</p>
 
- <p>The @(see guard) on @('char-equal') requires that its arguments are both
- standard @(see characters) (see @(see standard-char-p)).</p>
+ <p>The @(see guard) on @('char-equal') states that its arguments are both
+ @(see characters).</p>
 
  <p>@('Char-equal') is a Common Lisp function.  See any Common Lisp
  documentation for more information.</p>
@@ -14837,8 +14840,8 @@ with any questions about building the community books.</p>")
  @('#\\a'), @('#\\B') when @('x') is @('#\\b'), ..., and @('#\\Z') when @('x')
  is @('#\\z'), and is @('x') for any other character.</p>
 
- <p>The @(see guard) for @('char-upcase') requires its argument to be a
- standard character (see @(see standard-char-p)).</p>
+ <p>The @(see guard) for @('char-upcase') states that its argument is a
+ character.</p>
 
  <p>@('Char-upcase') is a Common Lisp function.  See any Common Lisp
  documentation for more information.</p>
@@ -16507,6 +16510,189 @@ with any questions about building the community books.</p>")
  when a single function is specified.  Second, @('comp-gcl') always leaves
  files @('\"TMP.c\"'), @('\"TMP.h\"'), @('\"TMP1.c\"'), and @('\"TMP1.h\"')
  when compilation is complete.</p>")
+
+(defxdoc compare-objects
+  :parents (debugging)
+  :short "show differences between two ACL2 objects"
+  :long "<p>In theorem prover output it can sometimes be difficult to
+  see where two Lisp objects differ.  (Emacs' compare-windows can often help.)
+  This function is an attempt to help while remaining entirely in ACL2.</p>
+
+  @({
+  General Form:
+  (compare-objects x y)
+  })
+
+  <p>where @('x') and @('y') are two (almost) arbitrary objects but which must
+  both be @('cons') trees for the comparison to be non-trivial.  The output
+  (described below) might be confusing if either object contains keywords of
+  the form @(':<|s...|>'), where the elipsis is the decimal representation of a
+  natural number.  For example, the output would be confusing if @('x') or
+  @('y') contained @(':|<s1>|') because @('compare-objects') inserts tokens
+  like that to mark differences.</p>
+
+  <p>@('Compare-objects') walks through both ojects to detect where
+  corresponding substructures first differ.  It replaces differences by the
+  keyword symbols @(':|<s1>|'), @(':|<s2>|'), @(':|<s3>|'), ..., which we call
+  ``placeholders.''  It then assembles a ``legend'' that displays triplets of
+  the form @('(si xi yi)') where @('si') is a placeholder marking a position in
+  the common superstructure of both @('x') and @('y') and @('xi') and @('yi')
+  are the substructures of @('x') and @('y'), respectively, at that position
+  that differ.  @('Compare-objects') returns a list consisting of the ``common
+  object'' showing the shared superstructure and the legend.</p>
+
+  <p>For example,</p>
+
+  @({
+  ACL2 !>(compare-objects '(a b c) '(a b . c))
+  ((:OBJ (A B . :|<s1>|))
+   (:LEGEND ((:|<s1>| (C) C))))
+
+  ACL2 !>(compare-objects '(f x y (g x '(a b c)))
+                          '(f y x (g x '(a b c . d))))
+  ((:OBJ (F :|<s1>|
+            :|<s2>| (G X '(A B C . :|<s3>|))))
+   (:LEGEND ((:|<s1>| X Y)
+             (:|<s2>| Y X)
+             (:|<s3>| NIL D))))
+  })
+
+  <p>By the way, the @('brr') command @(':')@(tsee explain-near-miss) sometimes
+  calls @('compare-objects') to show the differences between two unequal quoted
+  constants involved in a mismatch.  When @(':explain-near-miss') prettyprints
+  the output of @('compare-object') it does so with an @(tsee evisc-tuple) that
+  simplifies the placeholders.  @(':Explain-near-miss') would display the
+  second example above as</p>
+
+  @({
+  ((:OBJ '(F <s1> <s2> (G X '(A B C . <s3>))))
+   (:LEGEND ((<s1> X Y) (<s2> Y X) (<s3> NIL D)))).
+  })
+
+  <p>@('Compare-objects') might be especially helpful when looking at big
+  @('lambda') objects as produced by translating and rewriting @(tsee loop$)
+  expressions.  For example, below we use @('compare-objects') to discover
+  where two large @('DO$') terms differ.</p>
+
+  @({
+  ACL2 !>(compare-objects
+  '(DO$   ; First term
+   '(LAMBDA (ALIST)
+            (ACL2-COUNT (CDR (ASSOC-EQ-SAFE 'LST ALIST))))
+   (CONS (CONS 'LST LST0) '((ANS . 0)))
+   '(LAMBDA (ALIST)
+            (IF (ENDP (CDR (ASSOC-EQ-SAFE 'LST ALIST)))
+                (CONS ':RETURN
+                      (CONS (CDR (ASSOC-EQ-SAFE 'ANS ALIST))
+                            (CONS (CONS (CONS 'LST
+                                              (CDR (ASSOC-EQ-SAFE 'LST ALIST)))
+                                        (CONS (CONS 'ANS
+                                                    (CDR (ASSOC-EQ-SAFE 'ANS ALIST)))
+                                              'NIL))
+                                  'NIL)))
+                (CONS
+                 'NIL
+                 (CONS
+                  'NIL
+                  (CONS (CONS (CONS 'LST
+                                    (CDR (CDR (ASSOC-EQ-SAFE 'LST ALIST))))
+                              (CONS (CONS 'ANS
+                                          (BINARY-+ '1
+                                                    (CDR (ASSOC-EQ-SAFE 'ANS ALIST))))
+                                    'NIL))
+                        'NIL)))))
+   '(LAMBDA (ALIST)
+            (CONS 'NIL
+                  (CONS 'NIL
+                        (CONS (CONS (CONS 'LST
+                                          (CDR (ASSOC-EQ-SAFE 'LST ALIST)))
+                                    (CONS (CONS 'ANS
+                                                (CDR (ASSOC-EQ-SAFE 'ANS ALIST)))
+                                          'NIL))
+                              'NIL))))
+   '(NIL)
+   'NIL
+   'NIL)
+  '(DO$   ; Second term
+   '(LAMBDA (ALIST)
+            (ACL2-COUNT (CDR (ASSOC-EQ-SAFE 'LST ALIST))))
+   (CONS (CONS 'LST LST0) '((ANS . 0)))
+   '(LAMBDA (ALIST)
+            (IF (ENDP (CDR (ASSOC-EQ-SAFE 'LST ALIST)))
+                (CONS ':RETURN
+                      (CONS (CDR (ASSOC-EQ-SAFE 'ANS ALIST))
+                            (CONS (CONS (CONS 'LST
+                                              (CDR (ASSOC-EQ-SAFE 'LST ALIST)))
+                                        (CONS (CONS 'ANS
+                                                    (CDR (ASSOC-EQ-SAFE 'ANS ALIST)))
+                                              'NIL))
+                                  'NIL)))
+                (CONS
+                 'NIL
+                 (CONS
+                  'NIL
+                  (CONS (CONS (CONS 'LST
+                                    (CDR (CDR (ASSOC-EQ-SAFE 'LST ALIST))))
+                              (CONS (CONS 'ANS
+                                          (BINARY-+ '1
+                                                    (CDR (ASSOC-EQ 'ANS ALIST))))
+                                    'NIL))
+                        'NIL)))))
+   '(LAMBDA (ALIST)
+            (CONS 'NIL
+                  (CONS 'NIL
+                        (CONS (CONS (CONS 'LST
+                                          (CDR (ASSOC-EQ-SAFE 'LST ALIST)))
+                                    (CONS (CONS 'ANS
+                                                (CDR (ASSOC-EQ-SAFE 'ANS ALIST)))
+                                          'NIL))
+                              'NIL))))
+   '(NIL)
+   'NIL
+   'NIL))
+ ((:OBJ
+  (DO$
+   '(LAMBDA (ALIST)
+      (ACL2-COUNT (CDR (ASSOC-EQ-SAFE 'LST ALIST))))
+   (CONS (CONS 'LST LST0) '((ANS . 0)))
+   '(LAMBDA (ALIST)
+     (IF
+       (ENDP (CDR (ASSOC-EQ-SAFE 'LST ALIST)))
+       (CONS ':RETURN
+             (CONS (CDR (ASSOC-EQ-SAFE 'ANS ALIST))
+                   (CONS (CONS (CONS 'LST
+                                     (CDR (ASSOC-EQ-SAFE 'LST ALIST)))
+                               (CONS (CONS 'ANS
+                                           (CDR (ASSOC-EQ-SAFE 'ANS ALIST)))
+                                     'NIL))
+                         'NIL)))
+      (CONS
+         'NIL
+         (CONS 'NIL
+               (CONS (CONS (CONS 'LST
+                                 (CDR (CDR (ASSOC-EQ-SAFE 'LST ALIST))))
+                           (CONS (CONS 'ANS
+                                       (BINARY-+ '1
+                                                 (CDR (:|<s1>| 'ANS ALIST))))
+                                 'NIL))
+                     'NIL)))))
+   '(LAMBDA (ALIST)
+      (CONS 'NIL
+            (CONS 'NIL
+                  (CONS (CONS (CONS 'LST
+                                    (CDR (ASSOC-EQ-SAFE 'LST ALIST)))
+                              (CONS (CONS 'ANS
+                                          (CDR (ASSOC-EQ-SAFE 'ANS ALIST)))
+                                    'NIL))
+                        'NIL))))
+   '(NIL)
+   'NIL
+   'NIL))
+  (:LEGEND ((:|<s1>| ASSOC-EQ-SAFE ASSOC-EQ))))
+  })
+
+  <p>@('Compare-objects') tells us that a position @(':|<s1>|') the first term
+  calls @('ASSOC-EQ-SAFE') while the second one calls @('ASSOC-EQ').</p>")
 
 (defxdoc compilation
   :parents (programming)
@@ -23596,16 +23782,15 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
   (defpkg \"name\" term doc-string)
  })
 
- <p>where @('\"name\"') is a non-empty string consisting of standard characters
- (see @(see standard-char-p)), none of which is lower case, that names the
- package to be created; @('term') is a variable-free expression that evaluates
- to a list of symbols, where no two distinct symbols in the list may have the
- same @(tsee symbol-name), to be imported into the newly created package; and
- @('doc-string'), if non-@('nil'), is an optional string that can provide
- documentation but is essentially ignored by ACL2.  The name of the new package
- must be ``new'': the host lisp must not contain any package of that name.
- There are two exceptions to this newness rule, discussed at the end of this
- documentation.</p>
+ <p>where @('\"name\"') is a non-empty string, none of whose characters is
+ lower case, that names the package to be created; @('term') is a variable-free
+ expression that evaluates to a list of symbols, where no two distinct symbols
+ in the list may have the same @(tsee symbol-name), to be imported into the
+ newly created package; and @('doc-string'), if non-@('nil'), is an optional
+ string that can provide documentation but is essentially ignored by ACL2.  The
+ name of the new package must be ``new'': the host lisp must not contain any
+ package of that name.  There are two exceptions to this newness rule,
+ discussed at the end of this documentation.</p>
 
  <p>(There is actually an additional argument, book-path, that is used for
  error reporting but has no logical content.  Users should generally ignore
@@ -23702,14 +23887,12 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
  which can slow down evaluation significantly but checks @(see guard)s on
  @(see primitive)s.</p>
 
- <p>Finally, we explain why we require the package name to contain standard
- characters, none of which is lower case.  We have seen at least one
- implementation that handled lower-case package names incorrectly.  Since we
- see no need for lower-case characters in package names, which can lead to
- confusion anyhow (note for example that @('foo::bar') is a symbol whose @(tsee
- symbol-package-name) is @('\"FOO\"'), not @('\"foo\"')), we simply disallow
- them.  Since the notion of ``lower case'' is only well-specified in Common
- Lisp for standard characters, we restrict to these.</p>
+ <p>Finally, we explain why we require the package name not to contain
+ lower-case characters.  We have seen at least one implementation that handled
+ lower-case package names incorrectly.  Since we see no need for lower-case
+ characters in package names, which can lead to confusion anyhow (note for
+ example that @('foo::bar') is a symbol whose @(tsee symbol-package-name) is
+ @('\"FOO\"'), not @('\"foo\"')), we simply disallow them.</p>
 
  <p>NOTE: Also see @(see managing-acl2-packages) for contributed documentation
  on managing ACL2 packages.</p>")
@@ -34802,6 +34985,138 @@ ld) and @(tsee include-book)"
   naively, but the total number of distinct conses is 1,875,653.  So if you
   build a @('lambda') object containing the value of @('(w state)') it will be
   &ldquo;excessively large.&rdquo;</p>")
+
+(defxdoc explain-near-miss
+  :parents (debugging)
+  :short "show why a rule's pattern and the :target do not match"
+  :long "<p>When a near miss break occurs (see @(tsee monitor)) the user
+  sees a message like this:</p>
+
+  @({
+  (1 Breaking (:REWRITE LEMMA) on (F (G A B) A '(A B C D ...)):
+
+  The pattern in this rule failed to match the target.  However, this
+  is considered a NEAR MISS under the break criteria,
+  (:CONDITION 'T :ABSTRACTION ...), specified when this rule was
+  monitored.  The following criterion is satisfied.
+
+  * The :ABSTRACTION pattern provided in your monitor, ...,
+  matches :TARGET.
+  })
+
+  <p>It can be difficult to determine why the pattern of the rule, e.g., the
+  @(':lhs') of a @(':rewrite') rule, fails to match the @(':target') term,
+  especially when large terms, large quoted constants, and @('lambda')
+  expressions are involved.</p>
+
+  <p>Included among the @(':')@(tsee brr-commands) is the @(':explain-near-miss')
+  command which is intended to help explain.  This command can only operate in
+  a near miss break.  If called in another context an error may occur.</p>
+
+  <p>But in a near miss break, the situation is as follows.  The prover has
+  tried to apply a rule that has been monitored with a break criterion meaning
+  ``cause an interactive break when the target term (the term to currently
+  being rewritten) satisfies this criterion but the triggering pattern of the
+  rule fails to match the target term.''  When inside the resulting break, the
+  target term is given by the @(tsee brr) command @(':target').  The
+  ``triggering pattern'' of the rule in question depends on how the rule was
+  stored (see @(tsee rule-classes)).  The triggering pattern of a @(':')@(tsee
+  rewrite) rule &mdash; the most common class of rule &mdash; is the left-hand
+  side of the concluding equality and can be obtained from within the break by
+  typing the @(tsee brr) command @(':lhs').  The triggering pattern for a
+  @(':')@(tsee rewrite-quoted-constant) rule is its right-hand side, but as
+  explained in @(tsee rewrite-quoted-constant), the @('brr') command @(':lhs')
+  will display it.  The triggering pattern for a @(':')@(tsee linear) rule is
+  displayed by the @(':')@('max-term') @('brr') command.  The question the user
+  will typically ask in this situation is ``why doesn't the triggering pattern
+  match the target?''</p>
+
+  <p>To understand the answer you have to understand how the ACL2 matching
+  algorithm works.  The matching algorithm is given two terms, @('t1') and
+  @('t2'), and attempts to find a substitution @('s') on the variables in
+  @('t1') such that when @('t1') is instantiated with @('s') the result is
+  @('t2'), i.e., @('t1/s') = @('t2').  Note that only the variables in the
+  pattern, @('t1'), can be instantiated by @('s'').  In the case of a near miss
+  break, no such substitution was found.</p>
+
+  <p>The @(':explain-near-miss') command reruns the matching algorithm on the
+  triggering pattern and the target, expecting failure and collecting
+  information about where the failure occurred.  The output is intended to be
+  self-explanatory.</p>
+
+  <p>The message displays the pattern in question and the target term, but it
+  also displays a version of the pattern in which the first unmatchable subterm
+  is replaced by the expression @('<pat>').  That @('<pat>') is displayed
+  in lowercase whereas the rest of the pattern and target are in uppercase.
+  It marks where the matching broke down.</p>
+
+  <p>The message goes on to show the mismatched subterms from the pattern and
+  the target, the substitution that was computed to match everything up to
+  @('<pat>') and what the @('<pat>') subterm of the pattern is when
+  instantiated with that substitution.</p>
+
+  <p>So, for example, suppose the rule's @(':lhs') and the current @(':target')
+  are as shown below.  Then here is what @(':explain-near-miss') would
+  print.</p>
+
+  @({
+  The ACL2 match algorithm attempted to match :LHS with :TARGET by finding
+  a substitution, s, such that :LHS/s = :TARGET.  That attempt failed
+  when trying to match the subterm of :LHS marked <pat> in :LHS' below.
+
+  :LHS:      (F X (G X Y) (H X))
+  :LHS':     (F X (G <pat> Y) (H X))
+  :TARGET:   (F A (G B A) (H A))
+
+  Below we show the substitution, s, computed prior to the failure; the
+  subterm of :LHS we're calling <pat>; the instantiated subterm, <pat>/s;
+  and the corresponding subterm, <tar>, of :TARGET.
+
+  s:       ((X A))
+  <pat>:   X
+  <pat>/s: A
+  <tar>:   B
+
+  For the rewriter to get past this failure the match algorithm must
+  be able to extend substitution s to s' so that <pat>/s' is equal to
+  <tar> and our match algorithm could not find such an extension.
+  })
+
+  <p>Note that the substitution @('s') binds @('X') to @('A') to match the
+  first argument of the @('F')-expression in the @(':LHS') to the corresponding
+  argument in the @(':TARGET').  Then it tries to match @('(G X Y)') with @('(G
+  B A)').  It fails on the first argument of that subterm, where @('<pat>') is
+  shown in @(':LHS''), because @('X') has been bound to @('A') and @('A') and
+  @('B') are different.  (Remember: only the variables of the pattern can be
+  bound by the substitution.)</p>
+
+  <p>When @('<pat>') and its corresponding subterm @('<tar>') are ``large'' but
+  unequal quoted constants or @('lambda') expressions, @(':explain-near-miss')
+  will call @(tsee compare-objects) on those objects.  It can be hard to spot
+  how two large constants differ and @('compare-objects') points out the
+  differences between two @('cons') trees.  @(':Explain-near-miss') considers
+  an object ``large'' if the number of conses in it is 30 or greater.</p>
+
+  <p>The command @(':explain-near-miss+') is like @(':explain-near-miss')
+  except it never eviscerates any term and runs @('compare-objects') whenever
+  the failure is on two distinct quoted objects or @('lambda') expressions
+  regardless of their sizes.</p>
+
+  <p>But note that @('compare-objects') is not run by either version of
+  @('explain-near-miss') when the failure is of the most common kinds:</p>
+
+  <ul>
+
+  <li>(a) a variable in the pattern has already been bound in the
+  substitution (i.e., bound earlier in the matching process) to a term that is
+  not identical to the corresponding term in the target, or</li>
+
+  <li>(b) a term in the pattern has a different function symbol than the
+  corresponding term the target.</li>
+
+  </ul>
+
+  <p>So do not expect the @('compare-objects') output to appear often!</p>")
 
 (defxdoc explode-atom
   :parents (characters acl2-built-ins)
@@ -68397,8 +68712,8 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
  character, i.e., a member of the list @('#\\A'), @('#\\B'), ...,
  @('#\\Z').</p>
 
- <p>The @(see guard) for @('lower-case-p') requires its argument to be a
- standard character (see @(see standard-char-p)).</p>
+ <p>The @(see guard) for @('lower-case-p') states that its argument is a
+ character.</p>
 
  <p>@('Lower-case-p') is a Common Lisp function.  See any Common Lisp
  documentation for more information.</p>
@@ -74134,6 +74449,31 @@ it."
 
  </ul>
 
+ <p>When a near miss break is caused it prints a message like this</p>
+
+ @({
+ (1 Breaking (:REWRITE LEMMA) on (F (G A B) A '(A B C D ...)):
+
+ The pattern in this rule failed to match the target.  However, this
+ is considered a NEAR MISS under the break criteria,
+ (:CONDITION 'T :ABSTRACTION (F X1 X2 X3)), specified when this rule
+ was monitored.
+ })
+
+ <p>The message then displays all of the near miss break criteria that were
+ satisfied and then prompts you for input.  This allows you to inspect the
+ pattern (via the @(tsee brr-commands) @(':lhs') or @(':max-term') depending on
+ whether the monitored lemma is a @(':rewrite') rule or a @(':linear') rule.
+ You can inspect the target term with the command @(':target').  The ``+''
+ versions of those commands, e.g., @(':lhs+'), will print the terms without
+ evisceration.  If you want more information about why the pattern of the rule
+ failed to match the target, use the command @(':explain-near-miss') or its
+ ``+'' version.  You may exit the break with any of the usual commands, e.g.,
+ @(':ok') to continue the proof attempt (because perhaps you determined that
+ the lemma was never supposed to match this particular target) or @(':a!') to
+ abort back to the top-level to fix the problem (because you figured out why
+ the lemma, as written, will not match the intended target).</p>
+
  <p>On the other hand, suppose the pattern of the rune matches the target.
  Then the break condition term, i.e., the @(':condition') criterion, is
  evaluated.  The only variable allowed in the break condition term is
@@ -78735,7 +79075,7 @@ it."
 
  </blockquote>
 
- <p>Also, function @(tsee standard-string-alistp) replaces function
+ <p>Also, function @('standard-string-alistp') replaces function
  @('string-alistp'), with concomitant changes in the guard to @(tsee
  assoc-string-equal), and in variable @('*acl2-exports*').  Also, lemma
  @('standard-string-alistp-forward-to-alistp') replaces lemma
@@ -79182,7 +79522,7 @@ it."
  very similar to the behavior of previous versions, except that case splits
  will be avoided when these functions are applied to variables.</p>
 
- <p>Function @(tsee standard-string-alistp) replaces function
+ <p>Function @('standard-string-alistp') replaces function
  @('string-alistp').  For further discussion, see @(see note-2-6-guards).</p>
 
  <p>Rules of class @(':')@(tsee rewrite) whose conclusion is a term of the form
@@ -104565,10 +104905,10 @@ it."
 ; conversion of fmt, (er soft ...), one-way-unify, and genvar, and related
 ; utilities to guard-verified :logic mode.
 
-;   82 ; Changes to Existing Features
-;   34 ; New Features
+;   85 ; Changes to Existing Features
+;   36 ; New Features
 ;    9 ; Heuristic and Efficiency Improvements
-;   36 ; Bug Fixes
+;   37 ; Bug Fixes
 ;   18 ; Changes at the System Level
 ;    8 ; EMACS Support
 ;    1 ; Experimental Versions
@@ -105025,6 +105365,11 @@ it."
 ; verify-termination used in the ACL2 sources) that failed to make a necessary
 ; check.  (A comment in verify-termination-boot-strap-chk1 explains.)
 ; Fortunately, there were probably no violations of that check.
+
+; The use of skip-proofs was eliminated for several defun events in
+; axioms.lisp, including those for princ$, make-input-channel,
+; make-output-channel, open-input-channel, open-output-channel, and
+; prin1-with-slashes.  Thanks to Eric Smith for encouraging this change.
 
   :parents (release-notes)
   :short "ACL2 Version  8.6 (xxx, 20xx) Notes"
@@ -105652,6 +105997,19 @@ it."
      (& nil)))
  })
 
+ <p>The @(see guard)s for functions that operate on characters or strings
+ sometimes insisted that the inputs contain only standard characters.  That
+ restriction has been lifted, and the definitions of @(tsee alpha-char-p),
+ @(tsee upper-case-p), @(tsee lower-case-p), @(tsee char-downcase), and @(tsee
+ char-upcase) have been adjusted to handle non-standard characters.</p>
+
+ <p>The predicate @('state-p'), which recognizes ACL2 @(see state) objects, now
+ requires that @(tsee print-base-p) hold of state global @('print-base').
+ Also, function @('print-base-p') is now @(see disable)d by default.</p>
+
+ <p>The predicate @('standard-string-alistp') has been deleted, while a related
+ predicate @(tsee string-alistp) has been added.</p>
+
  <h3>New Features</h3>
 
  <p>ACL2 now supports floating-point operations.  See @(see df).  Regarding
@@ -105860,6 +106218,13 @@ it."
  these may change in the future.  See @(see defstobj) and see @(see
  defstobj-element-type).</p>
 
+ <p>A new @('brr') command, @(':')@(tsee explain-near-miss), when issued in a
+ break caused by a near miss, will try to pinpoint how the rule's pattern
+ failed to match the current target.</p>
+
+ <p>A new utility, @(tsee compare-objects), highlights the differences between
+ two @('cons')-trees.</p>
+
  <h3>Heuristic and Efficiency Improvements</h3>
 
  <p>Added a &ldquo;desperation heuristic&rdquo; to compute a stronger context,
@@ -105931,6 +106296,20 @@ it."
  @('nil') in Version_8.5 may be found in the @(see community-books) file,
  @('books/system/tests/transparent-functions-input.lsp'); search for
  this paragraph there.</p>
+
+ <p>Fixed a soundness bug in @(tsee open-input-channel) and @(tsee
+ open-output-channel).  The @(see guard) in each case required the first
+ argument, a file name, to be a string; but these functions pass that argument
+ to a function &mdash; @('make-input-channel') and @('make-output-channel'),
+ respectively &mdash; that required the string to contain only standard
+ characters (see @(see standard-char-p)).  That was possible because
+ @('open-input-channel') and @('open-output-channel') were invoked under @(tsee
+ skip-proofs) in the ACL2 sources.  This bug has been fixed, and those uses of
+ @('skip-proofs') eliminated, with removal of the restriction to standard
+ characters for virtually all guards, including the guards for Common Lisp
+ functions @(tsee char-downcase) and @(tsee char-upcase).  Thanks to Eric Smith
+ for reporting this bug, including a proof of @('nil') by giving a @(':use')
+ hint for an @(':instance') of @('(:guard-theorem open-input-channel)').</p>
 
  <p>It was probably a soundness bug to allow a @(tsee defaxiom) event to
  designate a rule of class @(':')@(tsee meta) or @(':')@(tsee clause-processor)
@@ -108267,7 +108646,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  NIL
  ACL2 !>
  })
- 
+
  <p>Suppose that (without the restriction) the package @('\"FOO\"') can now be
  introduced as @('(defpkg \"FOO\" '(a))').  Then will @('(eq (@ x) 'acl2::a)')
  evaluate to @('nil') as before, since we didn't make another assignment to
@@ -108326,7 +108705,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  (include-book \"book2\"))') form in the second @('encapsulate').</p>
 
  @({
- ACL2 Error in ACL2-INTERFACE:  
+ ACL2 Error in ACL2-INTERFACE:
  We cannot reincarnate the package \"FOO\" because it was previously defined
  with a different list of imported symbols.
  })
@@ -108357,7 +108736,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  event) is undone.
 
  </blockquote>
- 
+
  <p>That principle certainly rules out the new definition of an undone package
  with different imports.  It also explains why package definitions from @(see
  local)ly included @(see books) are included in a book's @(see portcullis)
@@ -128544,8 +128923,7 @@ work on <tt>(q x)</tt>.</p>
  <ul>
 
  <li>The two arguments much both satisfy @(tsee true-listp) or else must both
- be strings, which must consist of standard characters (see @(see
- standard-char-p)) if the @(':test') is @(tsee char-equal).</li>
+ be strings.</li>
 
  <li>The @(':test') must evaluate to one of the symbols @(tsee equal) or
  @(tsee char-equal), where the latter is only allowed if the (first) two
@@ -133042,8 +133420,7 @@ work on <tt>(q x)</tt>.</p>
                   :show t)
 
  (set-table-guard inhibit-warnings-table
-                  (and (stringp key)
-                       (standard-string-p key))
+                  (stringp key)
                   :topic set-inhibit-warnings)
  })")
 
@@ -135236,10 +135613,23 @@ work on <tt>(q x)</tt>.</p>
 
  </ul>
 
- <p>Here is an example illustrating the last point above, regarding use of a
- single Lisp.  In ACL2 built on most host Lisp implementations, one can admit
- the following event.  (See @(see df) for background on floating-point
- computations with ACL2.)</p>
+ <p>Here are examples illustrating the last point above, regarding use of a
+ single Lisp.</p>
+
+ @({
+ ; True in SBCL 2.4.2, about the character it calls #\MICRO_SIGN,
+ ; but false in LispWorks 8.0.1:
+ (alpha-char-p (code-char 181))
+
+ ; False in SBCL 2.4.2, about the character it calls #\CENT_SIGN,
+ ; but true in Allegro CL 10.1:
+ (alpha-char-p (code-char 162))
+ })
+
+ <p>Here is another example illustrating the requirement on a single Lisp.  In
+ ACL2 built on most host Lisp implementations, one can admit the following
+ event.  (See @(see df) for background on floating-point computations with
+ ACL2.)</p>
 
  @({
  (defthm usual-sin-2pi
@@ -135900,17 +136290,6 @@ work on <tt>(q x)</tt>.</p>
   :long "<p>@('(Standard-part x)') is, for a given @(tsee i-limited) number
  @('x'), the unique real number infinitesimally close (see @(see i-close)) to
  @('x').  This function is only defined in ACL2(r) (see @(see real)).</p>")
-
-(defxdoc standard-string-alistp
-  :parents (alists acl2-built-ins)
-  :short "Recognizer for association lists with standard strings as keys"
-  :long "<p>@('(Standard-string-alistp x)') is true if and only if @('x') is a
- list of pairs of the form @('(cons key val)') where @('key') is a string all
- of whose characters are standard (see @(see standard-char-p)).</p>
-
- <p>@('Standard-string-alistp') has a @(see guard) of @('t').</p>
-
- @(def standard-string-alistp)")
 
 (defxdoc standardp
   :parents (real)
@@ -138541,6 +138920,16 @@ work on <tt>(q x)</tt>.</p>
 
  @(def string)")
 
+(defxdoc string-alistp
+  :parents (alists acl2-built-ins)
+  :short "Recognizer for association lists with strings as keys"
+  :long "<p>@('(String-alistp x)') is true if and only if @('x') is a list of
+ pairs of the form @('(cons key val)') where @('key') is a string.</p>
+
+ <p>@('String-alistp') has a @(see guard) of @('t').</p>
+
+ @(def String-alistp)")
+
 (defxdoc string-append
   :parents (strings acl2-built-ins)
   :short "@(see concatenate) two strings"
@@ -138568,8 +138957,8 @@ work on <tt>(q x)</tt>.</p>
   :long "<p>For a string @('x'), @('(string-downcase x)') is the result of
  applying @(tsee char-downcase) to each character in @('x').</p>
 
- <p>The @(see guard) for @('string-downcase') requires its argument to be a
- string containing only standard characters.</p>
+ <p>The @(see guard) for @('string-downcase') states that its argument is a
+ string.</p>
 
  <p>@('String-downcase') is a Common Lisp function.  See any Common Lisp
  documentation for more information.</p>
@@ -138584,8 +138973,7 @@ work on <tt>(q x)</tt>.</p>
  the cases of their @(see characters).</p>
 
  <p>The @(see guard) on @('string-equal') requires that its arguments are
- strings consisting of standard characters (see @(see
- standard-char-listp)).</p>
+ strings.</p>
 
  <p>@('String-equal') is a Common Lisp function.  See any Common Lisp
  documentation for more information.</p>
@@ -138606,8 +138994,8 @@ work on <tt>(q x)</tt>.</p>
   :long "<p>For a string @('x'), @('(string-upcase x)') is the result of
  applying @(tsee char-upcase) to each character in @('x').</p>
 
- <p>The @(see guard) for @('string-upcase') requires its argument to be a
- string containing only standard characters.</p>
+ <p>The @(see guard) for @('string-upcase') states that its argument is a
+ string.</p>
 
  <p>@('String-upcase') is a Common Lisp function.  See any Common Lisp
  documentation for more information.</p>
@@ -143985,8 +144373,8 @@ work on <tt>(q x)</tt>.</p>
       (:induction len)
       (:executable-counterpart len)
       (:executable-counterpart nth)
-      (:elim car-cdr-elim)
-      (:rewrite car-cons)} .
+      (:rewrite car-cons)
+      (:elim car-cdr-elim)} .
  })
 
  <p>Observe that the theory contains five elements but its runic correspondent
@@ -151550,8 +151938,8 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  case character, i.e., a member of the list @('#\\A'), @('#\\B'), ...,
  @('#\\Z').</p>
 
- <p>The @(see guard) for @('upper-case-p') requires its argument to be a
- standard character (see @(see standard-char-p)).</p>
+ <p>The @(see guard) for @('upper-case-p') states that its argument is a
+ character.</p>
 
  <p>@('Upper-case-p') is a Common Lisp function.  See any Common Lisp
  documentation for more information.</p>
