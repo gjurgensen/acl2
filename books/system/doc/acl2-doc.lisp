@@ -105369,7 +105369,10 @@ it."
 ; The use of skip-proofs was eliminated for several defun events in
 ; axioms.lisp, including those for princ$, make-input-channel,
 ; make-output-channel, open-input-channel, open-output-channel, and
-; prin1-with-slashes.  Thanks to Eric Smith for encouraging this change.
+; prin1-with-slashes, open-output-channel!, and get-output-stream-string$-fn.
+; Thanks to Eric Smith for encouraging this change and for implementing the
+; changes supporting the elimination of skip-proofs for the last two of these
+; (open-output-channel! and get-output-stream-string$-fn).
 
   :parents (release-notes)
   :short "ACL2 Version  8.6 (xxx, 20xx) Notes"
@@ -106309,7 +106312,11 @@ it."
  characters for virtually all guards, including the guards for Common Lisp
  functions @(tsee char-downcase) and @(tsee char-upcase).  Thanks to Eric Smith
  for reporting this bug, including a proof of @('nil') by giving a @(':use')
- hint for an @(':instance') of @('(:guard-theorem open-input-channel)').</p>
+ hint for an @(':instance') of @('(:guard-theorem open-input-channel)').  Eric
+ also supplied events, incorporated into ACL2 source file @('axioms.lisp'),
+ that removed the @(tsee skip-proofs) wrappers from the definitions of @(tsee
+ open-output-channel!) and @('get-output-stream-string$-fn') (which supports
+ the macro, @(tsee get-output-stream-string$)').</p>
 
  <p>It was probably a soundness bug to allow a @(tsee defaxiom) event to
  designate a rule of class @(':')@(tsee meta) or @(':')@(tsee clause-processor)
