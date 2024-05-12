@@ -102960,9 +102960,7 @@ Bug Fixes
   including a proof of [47mnil[0m by giving a [47m:use[0m hint for an [47m:instance[0m of
   [47m(:guard-theorem open-input-channel)[0m.  Eric also supplied events,
   incorporated into ACL2 source file [47maxioms.lisp[0m, that removed the
-  [47m[skip-proofs][0m wrappers from the definitions of
-  [47m[open-output-channel!][0m and [47mget-output-stream-string$-fn[0m (which
-  supports the macro, [47m[get-output-stream-string$][0m').
+  [47m[skip-proofs][0m wrappers from five definitions.
 
   It was probably a soundness bug to allow a [47m[defaxiom][0m event to
   designate a rule of class [47m:[0m[47m[meta][0m or [47m:[0m[47m[clause-processor][0m in its
