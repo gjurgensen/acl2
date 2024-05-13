@@ -105368,11 +105368,16 @@ it."
 
 ; The use of skip-proofs was eliminated for several defun events in
 ; axioms.lisp, including those for princ$, make-input-channel,
-; make-output-channel, open-input-channel, open-output-channel, and
-; prin1-with-slashes, open-output-channel!, and get-output-stream-string$-fn.
-; Thanks to Eric Smith for encouraging this change and for implementing the
-; changes supporting the elimination of skip-proofs for the last two of these
-; (open-output-channel! and get-output-stream-string$-fn).
+; make-output-channel, open-input-channel, open-output-channel,
+; prin1-with-slashes, open-output-channel!, and get-output-stream-string$-fn,
+; prin1-with-slashes1, print-rational-as-decimal, and prin1$.  Thanks to Eric
+; Smith for encouraging this change and for implementing the changes supporting
+; the elimination of skip-proofs for the last five of these.
+
+; Eliminated package-lock violation when calling defthmd in axioms.lisp, for
+; example using SBCL.  Thanks to Eric Smith for pointing out this problem,
+; which resulted in an unhelpful error instead of a clean translate error (from
+; push-inhibit-output-lst-stack being not yet defined).
 
   :parents (release-notes)
   :short "ACL2 Version  8.6 (xxx, 20xx) Notes"
@@ -106314,9 +106319,7 @@ it."
  for reporting this bug, including a proof of @('nil') by giving a @(':use')
  hint for an @(':instance') of @('(:guard-theorem open-input-channel)').  Eric
  also supplied events, incorporated into ACL2 source file @('axioms.lisp'),
- that removed the @(tsee skip-proofs) wrappers from the definitions of @(tsee
- open-output-channel!) and @('get-output-stream-string$-fn') (which supports
- the macro, @(tsee get-output-stream-string$)').</p>
+ that removed the @(tsee skip-proofs) wrappers from five definitions.</p>
 
  <p>It was probably a soundness bug to allow a @(tsee defaxiom) event to
  designate a rule of class @(':')@(tsee meta) or @(':')@(tsee clause-processor)
