@@ -105379,6 +105379,11 @@ it."
 ; which resulted in an unhelpful error instead of a clean translate error (from
 ; push-inhibit-output-lst-stack being not yet defined).
 
+; Use of the illegal xargs keyword :measure-hints now results in an enhanced
+; error message that suggests considering the use of :hints instead of
+; :measure-hints.  Thanks to Warren Hunt for suggesting more direct attention
+; to attempts to use :measure-hints.
+
   :parents (release-notes)
   :short "ACL2 Version  8.6 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
