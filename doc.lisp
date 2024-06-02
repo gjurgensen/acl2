@@ -103250,6 +103250,11 @@ Bug Fixes
   bracket immediately following a [47m~&[0m or [47m~v[0m directive failed to be
   printed, for example: [47m(fmx \"hello ~&0]~|\" '(world))[0m.
 
+  Fixed a bug that could cause an implementation error during a proof,
+  when printing a term with a [47m[do$][0m call.  (The bug was in
+  untranslating certain applications of [47m[nth][0m, [47m[update-nth][0m, or
+  [47m[update-nth-array][0m during a proof.)
+
 
 Changes at the System Level
 
