@@ -104908,7 +104908,7 @@ it."
 ;   85 ; Changes to Existing Features
 ;   36 ; New Features
 ;    9 ; Heuristic and Efficiency Improvements
-;   37 ; Bug Fixes
+;   38 ; Bug Fixes
 ;   18 ; Changes at the System Level
 ;    8 ; EMACS Support
 ;    1 ; Experimental Versions
@@ -106641,6 +106641,11 @@ it."
  <p>Fixed a bug in @(tsee fmt) and related functions, where a right square
  bracket immediately following a @('~&') or @('~v') directive failed to be
  printed, for example: @('(fmx \"hello ~&0]~|\" '(world))').</p>
+
+ <p>Fixed a bug that could cause an implementation error during a proof, when
+ printing a term with a @(tsee do$) call.  (The bug was in untranslating
+ certain applications of @(tsee nth), @(tsee update-nth), or @(tsee
+ update-nth-array) during a proof.)</p>
 
  <h3>Changes at the System Level</h3>
 
