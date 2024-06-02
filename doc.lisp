@@ -6980,7 +6980,10 @@ Subtopics
   The [guard] for [47malpha-char-p[0m states that its argument is a character.
 
   [47mAlpha-char-p[0m is a Common Lisp function.  See any Common Lisp
-  documentation for more information.
+  documentation for more information.  Note that the value returned
+  may depend on the host Lisp; see [soundness], specifically Example
+  1 in the Section, ``Examples of divergence among Lisp
+  implementations''.
 
   [31;1mFunction: [0m<alpha-char-p>
 
@@ -17689,7 +17692,10 @@ Subtopics
   character.
 
   [47mChar-downcase[0m is a Common Lisp function.  See any Common Lisp
-  documentation for more information.
+  documentation for more information.  Note that the value returned
+  may depend on the host Lisp; see [soundness], specifically Example
+  1 in the Section, ``Examples of divergence among Lisp
+  implementations''.
 
   [31;1mFunction: [0m<char-downcase>
 
@@ -17736,7 +17742,10 @@ Subtopics
   [characters].
 
   [47mChar-equal[0m is a Common Lisp function.  See any Common Lisp
-  documentation for more information.
+  documentation for more information.  Note that the value returned
+  may depend on the host Lisp; see [soundness], specifically Example
+  1 in the Section, ``Examples of divergence among Lisp
+  implementations''.
 
   [31;1mFunction: [0m<char-equal>
 
@@ -17754,7 +17763,10 @@ Subtopics
   The [guard] for [47mchar-upcase[0m states that its argument is a character.
 
   [47mChar-upcase[0m is a Common Lisp function.  See any Common Lisp
-  documentation for more information.
+  documentation for more information.  Note that the value returned
+  may depend on the host Lisp; see [soundness], specifically Example
+  1 in the Section, ``Examples of divergence among Lisp
+  implementations''.
 
   [31;1mFunction: [0m<char-upcase>
 
@@ -67985,7 +67997,10 @@ Subtopics
   The [guard] for [47mlower-case-p[0m states that its argument is a character.
 
   [47mLower-case-p[0m is a Common Lisp function.  See any Common Lisp
-  documentation for more information.
+  documentation for more information.  Note that the value returned
+  may depend on the host Lisp; see [soundness], specifically Example
+  1 in the Section, ``Examples of divergence among Lisp
+  implementations''.
 
   [31;1mFunction: [0m<lower-case-p>
 
@@ -133961,6 +133976,9 @@ Extended Example
   compute the value of an expression?  This topic provides a
   high-level sketch of an answer.
 
+
+Overview of the ACL2 logic
+
   Any notion of correctness of ACL2 necessarily depends on the logic
   that it is intended to implement.  At its core, the ACL2 logic is
   just classical first-order logic.  The first-order theory for a
@@ -134000,10 +134018,13 @@ Extended Example
       https://www.cs.utexas.edu/users/moore/publications/encap-story.pdf},
       [3mJournal of Automated Reasoning[0m 26, no. 2 (2001) 161-203.
 
+
+The soundness property for ACL2 sessions
+
   The following soundness property is key for a given ACL2 session.
 
-    * The theorem prover proves only formulas that are theorems in the
-      corresponding prover's theory in that session.
+    The theorem prover proves only formulas that are theorems in the
+    corresponding prover's theory in that session.
 
   Note that the theorem prover uses evaluation during proofs.  The
   soundness property thus encompasses the following: when such
@@ -134014,10 +134035,14 @@ Extended Example
   respect to a larger ``evaluation theory''; see
   [guarantees-of-the-top-level-loop].
 
-  Here is a list of general restrictions on the soundness guarantee.
 
-    * The prover's theory of a session includes all axioms introduced by
-      hidden [defpkg] events.  See [hidden-death-package].
+Constraints on the soundness guarantee
+
+  Here is a list of constraints on the soundness guarantee.
+
+    * The prover's theory of a session is construed to include all axioms
+      introduced by hidden [defpkg] events.  See
+      [hidden-death-package].
     * There is no soundness guarantee for a session in which there is raw
       Lisp evaluation with side effects.  (ACL2 normally avoids
       putting the user into raw Lisp, but this can happen with an
@@ -134036,8 +134061,40 @@ Extended Example
       implementation and operating system.  (In practice this is
       often not an issue.)
 
-  Here are examples illustrating the last point above, regarding use of
-  a single Lisp.
+
+Examples of divergence among Lisp implementations
+
+  Next, we provide examples illustrating the last point above,
+  restricting to the use of a single Lisp.
+
+  [31;1mExample 1: Divergences involving character and string operations.[0m
+
+  Consider the following log in raw Lisp using SBCL, which introduces
+  versions of characters ``[47mA[0m'' and ``[47ma[0m'' that are augmented with an
+  ``acute'' accent.
+
+    * (code-char 193)
+    #LATIN_CAPITAL_LETTER_A_WITH_ACUTE
+    * (code-char 225)
+    #LATIN_SMALL_LETTER_A_WITH_ACUTE
+    *
+
+  While most Lisps that host ACL2 consider these two characters to be
+  alphabetic characters with case (upper and lower, respectively),
+  GCL does not (at least, a version available as of this writing).
+
+    (alpha-char-p (code-char 193)) ; T except NIL in GCL
+    (alpha-char-p (code-char 225)) ; T except NIL in GCL
+    (upper-case-p (code-char 193)) ; T except NIL in GCL
+    (lower-case-p (code-char 225)) ; T except NIL in GCL
+    (char-code (char-downcase (code-char 193))) ; 225 except 193 in GCL
+    (char-code (char-upcase (code-char 225)))   ; 193 except 225 in GCL
+    (let ((s (string-downcase (string (code-char 193)))))
+      (char-code (char s 0)))      ; 225 except 193 in GCL
+    (let ((s (string-upcase (string (code-char 225)))))
+      (char-code (char s 0)))      ; 193 except 225 in GCL
+
+  [31;1mExample 2: Another divergence for [47m[alpha-char-p][0m[31;1m.[0m
 
     ; True in SBCL 2.4.2, about the character it calls #MICRO_SIGN,
     ; but false in LispWorks 8.0.1:
@@ -134046,6 +134103,8 @@ Extended Example
     ; False in SBCL 2.4.2, about the character it calls #CENT_SIGN,
     ; but true in Allegro CL 10.1:
     (alpha-char-p (code-char 162))
+
+  [31;1mExample 3: A divergence involving a floating-point computation.[0m
 
   Here is another example illustrating the requirement on a single
   Lisp.  In ACL2 built on most host Lisp implementations, one can
@@ -134066,6 +134125,9 @@ Extended Example
   each of these theorems.  (Aside: This does not violate the IEEE-754
   spec, since it does not make specific requirements for
   trigonometric functions.)
+
+
+Further reading for those interested in drilling down
 
   This topic has discussed the soundness guarantee from the user
   perspective.  Those interested in exploring deeper theoretical and
@@ -137334,7 +137396,10 @@ Subtopics
   The [guard] for [47mstring-downcase[0m states that its argument is a string.
 
   [47mString-downcase[0m is a Common Lisp function.  See any Common Lisp
-  documentation for more information.
+  documentation for more information.  Note that the value returned
+  may depend on the host Lisp; see [soundness], specifically Example
+  1 in the Section, ``Examples of divergence among Lisp
+  implementations''.
 
   [31;1mFunction: [0m<string-downcase>
 
@@ -137353,7 +137418,10 @@ Subtopics
   The [guard] on [47mstring-equal[0m requires that its arguments are strings.
 
   [47mString-equal[0m is a Common Lisp function.  See any Common Lisp
-  documentation for more information.
+  documentation for more information.  Note that the value returned
+  may depend on the host Lisp; see [soundness], specifically Example
+  1 in the Section, ``Examples of divergence among Lisp
+  implementations''.
 
   [31;1mFunction: [0m<string-equal>
 
@@ -137386,7 +137454,10 @@ Subtopics
   The [guard] for [47mstring-upcase[0m states that its argument is a string.
 
   [47mString-upcase[0m is a Common Lisp function.  See any Common Lisp
-  documentation for more information.
+  documentation for more information.  Note that the value returned
+  may depend on the host Lisp; see [soundness], specifically Example
+  1 in the Section, ``Examples of divergence among Lisp
+  implementations''.
 
   [31;1mFunction: [0m<string-upcase>
 
@@ -150405,7 +150476,10 @@ Subtopics
   The [guard] for [47mupper-case-p[0m states that its argument is a character.
 
   [47mUpper-case-p[0m is a Common Lisp function.  See any Common Lisp
-  documentation for more information.
+  documentation for more information.  Note that the value returned
+  may depend on the host Lisp; see [soundness], specifically Example
+  1 in the Section, ``Examples of divergence among Lisp
+  implementations''.
 
   [31;1mFunction: [0m<upper-case-p>
 
