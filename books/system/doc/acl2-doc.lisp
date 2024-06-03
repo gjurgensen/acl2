@@ -105394,6 +105394,11 @@ it."
 ; :measure-hints.  Thanks to Warren Hunt for suggesting more direct attention
 ; to attempts to use :measure-hints.
 
+; Redefined char-upcase and string-upcase in CMUCL, and string-downcase in
+; SBCL, when necessary to avoid Lisp bugs reported for CMUCL and SBCL in,
+; respectively, https://gitlab.common-lisp.net/cmucl/cmucl/-/issues/316 and
+; https://bugs.launchpad.net/sbcl/+bug/2067841.
+
   :parents (release-notes)
   :short "ACL2 Version  8.6 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
