@@ -4511,7 +4511,9 @@ and @(tsee include-book)"
  character.</p>
 
  <p>@('Alpha-char-p') is a Common Lisp function.  See any Common Lisp
- documentation for more information.</p>
+ documentation for more information.  Note that the value returned may depend
+ on the host Lisp; see @(see soundness), specifically Example 1 in the Section,
+ &ldquo;Examples of divergence among Lisp implementations&rdquo;.</p>
 
  @(def alpha-char-p)")
 
@@ -14814,7 +14816,9 @@ with any questions about building the community books.</p>")
  character.</p>
 
  <p>@('Char-downcase') is a Common Lisp function.  See any Common Lisp
- documentation for more information.</p>
+ documentation for more information.  Note that the value returned may depend
+ on the host Lisp; see @(see soundness), specifically Example 1 in the Section,
+ &ldquo;Examples of divergence among Lisp implementations&rdquo;.</p>
 
  @(def char-downcase)")
 
@@ -14829,7 +14833,9 @@ with any questions about building the community books.</p>")
  @(see characters).</p>
 
  <p>@('Char-equal') is a Common Lisp function.  See any Common Lisp
- documentation for more information.</p>
+ documentation for more information.  Note that the value returned may depend
+ on the host Lisp; see @(see soundness), specifically Example 1 in the Section,
+ &ldquo;Examples of divergence among Lisp implementations&rdquo;.</p>
 
  @(def char-equal)")
 
@@ -14844,7 +14850,9 @@ with any questions about building the community books.</p>")
  character.</p>
 
  <p>@('Char-upcase') is a Common Lisp function.  See any Common Lisp
- documentation for more information.</p>
+ documentation for more information.  Note that the value returned may depend
+ on the host Lisp; see @(see soundness), specifically Example 1 in the Section,
+ &ldquo;Examples of divergence among Lisp implementations&rdquo;.</p>
 
  @(def char-upcase)")
 
@@ -68716,7 +68724,9 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
  character.</p>
 
  <p>@('Lower-case-p') is a Common Lisp function.  See any Common Lisp
- documentation for more information.</p>
+ documentation for more information.  Note that the value returned may depend
+ on the host Lisp; see @(see soundness), specifically Example 1 in the Section,
+ &ldquo;Examples of divergence among Lisp implementations&rdquo;.</p>
 
  @(def lower-case-p)")
 
@@ -104908,7 +104918,7 @@ it."
 ;   85 ; Changes to Existing Features
 ;   36 ; New Features
 ;    9 ; Heuristic and Efficiency Improvements
-;   37 ; Bug Fixes
+;   38 ; Bug Fixes
 ;   18 ; Changes at the System Level
 ;    8 ; EMACS Support
 ;    1 ; Experimental Versions
@@ -106641,6 +106651,11 @@ it."
  <p>Fixed a bug in @(tsee fmt) and related functions, where a right square
  bracket immediately following a @('~&') or @('~v') directive failed to be
  printed, for example: @('(fmx \"hello ~&0]~|\" '(world))').</p>
+
+ <p>Fixed a bug that could cause an implementation error during a proof, when
+ printing a term with a @(tsee do$) call.  (The bug was in untranslating
+ certain applications of @(tsee nth), @(tsee update-nth), or @(tsee
+ update-nth-array) during a proof.)</p>
 
  <h3>Changes at the System Level</h3>
 
@@ -135531,6 +135546,8 @@ work on <tt>(q x)</tt>.</p>
  compute the value of an expression?  This topic provides a high-level sketch
  of an answer.</p>
 
+ <h3>Overview of the ACL2 logic</h3>
+
  <p>Any notion of correctness of ACL2 necessarily depends on the logic that it
  is intended to implement.  At its core, the ACL2 logic is just classical
  first-order logic.  The first-order theory for a given ACL2 session, which we
@@ -135584,14 +135601,16 @@ work on <tt>(q x)</tt>.</p>
 
  </ul>
 
+ <h3>The soundness property for ACL2 sessions</h3>
+
  <p>The following soundness property is key for a given ACL2 session.</p>
 
- <ul>
+ <blockquote>
 
- <li>The theorem prover proves only formulas that are theorems in the
- corresponding prover's theory in that session.</li>
+ The theorem prover proves only formulas that are theorems in the corresponding
+ prover's theory in that session.
 
- </ul>
+ </blockquote>
 
  <p>Note that the theorem prover uses evaluation during proofs.  The soundness
  property thus encompasses the following: when such evaluation of a term
@@ -135601,12 +135620,15 @@ work on <tt>(q x)</tt>.</p>
  apply$), provability is with respect to a larger &ldquo;evaluation
  theory&rdquo;; see @(see guarantees-of-the-top-level-loop).</p>
 
- <p>Here is a list of general restrictions on the soundness guarantee.</p>
+ <h3>Constraints on the soundness guarantee</h3>
+
+ <p>Here is a list of constraints on the soundness guarantee.</p>
 
  <ul>
 
- <li>The prover's theory of a session includes all axioms introduced by hidden
- @(see defpkg) events.  See @(see hidden-death-package).</li>
+ <li>The prover's theory of a session is construed to include all axioms
+ introduced by hidden @(see defpkg) events.  See @(see
+ hidden-death-package).</li>
 
  <li>There is no soundness guarantee for a session in which there is raw Lisp
  evaluation with side effects.  (ACL2 normally avoids putting the user into raw
@@ -135628,8 +135650,44 @@ work on <tt>(q x)</tt>.</p>
 
  </ul>
 
- <p>Here are examples illustrating the last point above, regarding use of a
- single Lisp.</p>
+ <h3>Examples of divergence among Lisp implementations</h3>
+
+ <p>Next, we provide examples illustrating the last point above, restricting to
+ the use of a single Lisp.</p>
+
+ <p><b>Example 1: Divergences involving character and string
+ operations.</b></p>
+
+ <p>Consider the following log in raw Lisp using SBCL, which introduces
+ versions of characters &ldquo;@('A')&rdquo; and &ldquo;@('a')&rdquo; that are
+ augmented with an &ldquo;acute&rdquo; accent.</p>
+
+ @({
+ * (code-char 193)
+ #\LATIN_CAPITAL_LETTER_A_WITH_ACUTE
+ * (code-char 225)
+ #\LATIN_SMALL_LETTER_A_WITH_ACUTE
+ * 
+ })
+
+ <p>While most Lisps that host ACL2 consider these two characters to be
+ alphabetic characters with case (upper and lower, respectively), GCL does
+ not (at least, a version available as of this writing).</p>
+
+ @({
+ (alpha-char-p (code-char 193)) ; T except NIL in GCL
+ (alpha-char-p (code-char 225)) ; T except NIL in GCL
+ (upper-case-p (code-char 193)) ; T except NIL in GCL
+ (lower-case-p (code-char 225)) ; T except NIL in GCL
+ (char-code (char-downcase (code-char 193))) ; 225 except 193 in GCL
+ (char-code (char-upcase (code-char 225)))   ; 193 except 225 in GCL
+ (let ((s (string-downcase (string (code-char 193)))))
+   (char-code (char s 0)))      ; 225 except 193 in GCL
+ (let ((s (string-upcase (string (code-char 225)))))
+   (char-code (char s 0)))      ; 193 except 225 in GCL
+ })
+
+ <p><b>Example 2: Another divergence for @(tsee alpha-char-p).</b></p>
 
  @({
  ; True in SBCL 2.4.2, about the character it calls #\MICRO_SIGN,
@@ -135640,6 +135698,8 @@ work on <tt>(q x)</tt>.</p>
  ; but true in Allegro CL 10.1:
  (alpha-char-p (code-char 162))
  })
+
+ <p><b>Example 3: A divergence involving a floating-point computation.</b></p>
 
  <p>Here is another example illustrating the requirement on a single Lisp.  In
  ACL2 built on most host Lisp implementations, one can admit the following
@@ -135663,6 +135723,8 @@ work on <tt>(q x)</tt>.</p>
  <p>Clearly one could prove @('nil') by including two books, one containing
  each of these theorems.  (Aside: This does not violate the IEEE-754 spec,
  since it does not make specific requirements for trigonometric functions.)</p>
+
+ <h3>Further reading for those interested in drilling down</h3>
 
  <p>This topic has discussed the soundness guarantee from the user perspective.
  Those interested in exploring deeper theoretical and implementation issues are
@@ -138976,7 +139038,9 @@ work on <tt>(q x)</tt>.</p>
  string.</p>
 
  <p>@('String-downcase') is a Common Lisp function.  See any Common Lisp
- documentation for more information.</p>
+ documentation for more information.  Note that the value returned may depend
+ on the host Lisp; see @(see soundness), specifically Example 1 in the Section,
+ &ldquo;Examples of divergence among Lisp implementations&rdquo;.</p>
 
  @(def string-downcase)")
 
@@ -138991,7 +139055,9 @@ work on <tt>(q x)</tt>.</p>
  strings.</p>
 
  <p>@('String-equal') is a Common Lisp function.  See any Common Lisp
- documentation for more information.</p>
+ documentation for more information.  Note that the value returned may depend
+ on the host Lisp; see @(see soundness), specifically Example 1 in the Section,
+ &ldquo;Examples of divergence among Lisp implementations&rdquo;.</p>
 
  @(def string-equal)")
 
@@ -139013,7 +139079,9 @@ work on <tt>(q x)</tt>.</p>
  string.</p>
 
  <p>@('String-upcase') is a Common Lisp function.  See any Common Lisp
- documentation for more information.</p>
+ documentation for more information.  Note that the value returned may depend
+ on the host Lisp; see @(see soundness), specifically Example 1 in the Section,
+ &ldquo;Examples of divergence among Lisp implementations&rdquo;.</p>
 
  @(def string-upcase)")
 
@@ -151957,7 +152025,9 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  character.</p>
 
  <p>@('Upper-case-p') is a Common Lisp function.  See any Common Lisp
- documentation for more information.</p>
+ documentation for more information.  Note that the value returned may depend
+ on the host Lisp; see @(see soundness), specifically Example 1 in the Section,
+ &ldquo;Examples of divergence among Lisp implementations&rdquo;.</p>
 
  @(def upper-case-p)")
 
