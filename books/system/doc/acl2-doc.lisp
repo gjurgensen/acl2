@@ -105399,6 +105399,11 @@ it."
 ; respectively, https://gitlab.common-lisp.net/cmucl/cmucl/-/issues/316 and
 ; https://bugs.launchpad.net/sbcl/+bug/2067841.
 
+; Clarified code for certify-book and include-book-fn1 by introducing function
+; calls for chunks of code.  This reduced the lines of code for certify-book-fn
+; from 1171 to 273 and for include-book-fn from 817 to 344.  Thanks to Sol
+; Swords for a request that motivated these changes.
+
   :parents (release-notes)
   :short "ACL2 Version  8.6 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
