@@ -19686,7 +19686,6 @@ Subtopics
                                              'NIL))
                                  'NIL))))
       '(NIL)
-      'NIL
       'NIL)
      '(DO$   ; Second term
       '(LAMBDA (ALIST)
@@ -19723,7 +19722,6 @@ Subtopics
                                              'NIL))
                                  'NIL))))
       '(NIL)
-      'NIL
       'NIL))
     ((:OBJ
      (DO$
@@ -19761,7 +19759,6 @@ Subtopics
                                        'NIL))
                            'NIL))))
       '(NIL)
-      'NIL
       'NIL))
      (:LEGEND ((:|<s1>| ASSOC-EQ-SAFE ASSOC-EQ))))
 
@@ -32370,8 +32367,8 @@ Subtopics
   [47mDo$[0m is the logical function that interprets [47mdo[0m [47mloop$[0ms.  See
   [do-loop$] for a discussion of [47mdo$[0m.
 
-  The function takes seven arguments but only the first five are
-  relevant to its logical value.
+  The function takes six arguments but only the first five are relevant
+  to its logical value.
 
     * [47mmeasure-fn[0m --- a [47m[lambda][0m object that computes the measure that
       supposedly decreases (under [47m[l<][0m) on each iteration of the
@@ -32389,11 +32386,11 @@ Subtopics
 
   [31;1mFunction: [0m<do$>
 
-    (defun do$ (measure-fn alist do-fn finally-fn
-                           values untrans-measure untrans-do-loop$)
+    (defun do$ (measure-fn alist do-fn finally-fn values dolia)
      (declare (xargs :guard (and (apply$-guard measure-fn '(nil))
                                  (apply$-guard do-fn '(nil))
-                                 (apply$-guard finally-fn '(nil)))))
+                                 (apply$-guard finally-fn '(nil))
+                                 (weak-dolia-p dolia))))
      (let* ((triple (true-list-fix (apply$ do-fn (list alist))))
             (exit-token (car triple))
             (val (cadr triple))
@@ -32408,34 +32405,45 @@ Subtopics
          (if (eq exit-token :return) val nil)))
        ((l< (lex-fix (apply$ measure-fn (list new-alist)))
             (lex-fix (apply$ measure-fn (list alist))))
-        (do$ measure-fn
-             new-alist do-fn finally-fn values
-             untrans-measure untrans-do-loop$))
+        (do$ measure-fn new-alist
+             do-fn finally-fn values dolia))
        (t
         (prog2$
-         (er
-          hard? 'do$
-          \"The measure, ~x0, used in the do loop$ statement~%~Y12~%failed to ~
-                decrease!  Recall that do$ tracks the values of do loop$ ~
-                variables in an alist.  The measure is computed using the values ~
-                in the alist from before and after execution of the body.  We ~
-                cannot print the values of double floats and live stobjs, if any ~
-                are found in the alist, because they are raw Lisp objects, not ~
-                ACL2 objects.  Before execution of the do body the alist ~
-                was~%~Y32.~|After the execution of the do body the alist ~
-                was~%~Y42.~|Before the execution of the body the measure ~
-                was~%~x5.~|After the execution of the body the measure ~
-                was~%~x6.~|~%Logically, in this situation the do$ returns the ~
-                value of a term whose output signature is ~x7, where the value of ~
-                any component of type :df is #d0.0 and the value of any stobj ~
-                component is the last latched value of that stobj.\"
-          untrans-measure untrans-do-loop$
-          nil (eviscerate-do$-alist alist)
-          (eviscerate-do$-alist new-alist)
-          (apply$ measure-fn (list alist))
-          (apply$ measure-fn (list new-alist))
-          values)
-         (loop$-default-values values new-alist))))))")
+         (let
+           ((all-stobj-names
+                 (true-list-fix (access dolia dolia :all-stobj-names)))
+            (untrans-measure (access dolia dolia :untrans-measure))
+            (untrans-do-loop$ (access dolia dolia :untrans-do-loop$)))
+          (er
+           hard? 'do$
+           \"The measure, ~x0, used in the do loop$ ~
+                    statement~%~Y12~%failed to decrease!  Recall that do$ tracks ~
+                    the values of do loop$ variables in an alist.  The measure is ~
+                    computed using the values in the alist from before and after ~
+                    execution of the body.  We cannot print the values of double ~
+                    floats and live stobjs, if any are found in the alist, ~
+                    because they are raw Lisp objects, not ACL2 objects.  We ~
+                    print any double float as its corresponding rational and ~
+                    simply print the name of any live stobj (as a ~
+                    string).~%~%Before execution of the do body the alist ~
+                    was~%~Y32.~|After the execution of the do body the alist ~
+                    was~%~Y42.~|Before the execution of the body the measure ~
+                    was~%~x5.~|After the execution of the body the measure ~
+                    was~%~x6.~|~%Logically, in this situation the do$ returns the ~
+                    value of a term whose output signature is ~x7, where the ~
+                    value of any component of type :df is #d0.0 and the value of ~
+                    any stobj component is the last latched value of that stobj.\"
+           untrans-measure untrans-do-loop$ nil
+           (eviscerate-do$-alist alist all-stobj-names)
+           (eviscerate-do$-alist new-alist all-stobj-names)
+           (apply$ measure-fn (list alist))
+           (apply$ measure-fn (list new-alist))
+           values))
+         (loop$-default-values values new-alist))))))
+
+  The last argument is only relevant in the error message printed if
+  the [47mdo$[0m fails to terminate and that message is not part of the
+  returned value.")
  (DO-LOOP$
   (LOOP$)
   "Iteration with [47m[loop$][0m using local variables and [stobj]s
@@ -32873,15 +32881,14 @@ INFORMAL INTRODUCTION
     variables in an alist.  The measure is computed using the values in
     the alist from before and after execution of the body.  We cannot print
     the values of double floats and live stobjs, if any are found in the
-    alist, because they are raw Lisp objects, not ACL2 objects.  Before
-    execution of the do body the alist was
-    ((X 100 200 300)
-     (STATE .
-            ACL2_INVISIBLE::|The Live State Itself|)).
+    alist, because they are raw Lisp objects, not ACL2 objects.  We print
+    any double float as its corresponding rational and simply print the
+    name of any live stobj (as a string).
+
+    Before execution of the do body the alist was
+    ((X 100 200 300) (STATE . \"<state>\")).
     After the execution of the do body the alist was
-    ((X 100 200 300)
-     (STATE .
-            ACL2_INVISIBLE::|The Live State Itself|)).
+    ((X 100 200 300) (STATE . \"<state>\")).
     Before the execution of the body the measure was
     603.
     After the execution of the body the measure was
@@ -32891,8 +32898,6 @@ INFORMAL INTRODUCTION
     output signature is (STATE), where the value of any component of type
     :df is #d0.0 and the value of any stobj component is the last latched
     value of that stobj.
-
-
 
     ACL2 Error in TOP-LEVEL:  Evaluation aborted.  To debug see :DOC print-
     gv, see :DOC trace, and see :DOC wet.
@@ -33303,7 +33308,7 @@ SEMANTICS
                              (LIST (CONS 'X X) (CONS 'Y Y)))))
          ; Values (output signature)
          '(NIL)
-         ... ; Other arguments are omitted here.
+         ... ; Last argument omitted here.
     )
 
   Above, we also took the opportunity to show the fifth argument of
@@ -33325,11 +33330,11 @@ SEMANTICS
 
   [31;1mFunction: [0m<do$>
 
-    (defun do$ (measure-fn alist do-fn finally-fn
-                           values untrans-measure untrans-do-loop$)
+    (defun do$ (measure-fn alist do-fn finally-fn values dolia)
      (declare (xargs :guard (and (apply$-guard measure-fn '(nil))
                                  (apply$-guard do-fn '(nil))
-                                 (apply$-guard finally-fn '(nil)))))
+                                 (apply$-guard finally-fn '(nil))
+                                 (weak-dolia-p dolia))))
      (let* ((triple (true-list-fix (apply$ do-fn (list alist))))
             (exit-token (car triple))
             (val (cadr triple))
@@ -33344,33 +33349,40 @@ SEMANTICS
          (if (eq exit-token :return) val nil)))
        ((l< (lex-fix (apply$ measure-fn (list new-alist)))
             (lex-fix (apply$ measure-fn (list alist))))
-        (do$ measure-fn
-             new-alist do-fn finally-fn values
-             untrans-measure untrans-do-loop$))
+        (do$ measure-fn new-alist
+             do-fn finally-fn values dolia))
        (t
         (prog2$
-         (er
-          hard? 'do$
-          \"The measure, ~x0, used in the do loop$ statement~%~Y12~%failed to ~
-                decrease!  Recall that do$ tracks the values of do loop$ ~
-                variables in an alist.  The measure is computed using the values ~
-                in the alist from before and after execution of the body.  We ~
-                cannot print the values of double floats and live stobjs, if any ~
-                are found in the alist, because they are raw Lisp objects, not ~
-                ACL2 objects.  Before execution of the do body the alist ~
-                was~%~Y32.~|After the execution of the do body the alist ~
-                was~%~Y42.~|Before the execution of the body the measure ~
-                was~%~x5.~|After the execution of the body the measure ~
-                was~%~x6.~|~%Logically, in this situation the do$ returns the ~
-                value of a term whose output signature is ~x7, where the value of ~
-                any component of type :df is #d0.0 and the value of any stobj ~
-                component is the last latched value of that stobj.\"
-          untrans-measure untrans-do-loop$
-          nil (eviscerate-do$-alist alist)
-          (eviscerate-do$-alist new-alist)
-          (apply$ measure-fn (list alist))
-          (apply$ measure-fn (list new-alist))
-          values)
+         (let
+           ((all-stobj-names
+                 (true-list-fix (access dolia dolia :all-stobj-names)))
+            (untrans-measure (access dolia dolia :untrans-measure))
+            (untrans-do-loop$ (access dolia dolia :untrans-do-loop$)))
+          (er
+           hard? 'do$
+           \"The measure, ~x0, used in the do loop$ ~
+                    statement~%~Y12~%failed to decrease!  Recall that do$ tracks ~
+                    the values of do loop$ variables in an alist.  The measure is ~
+                    computed using the values in the alist from before and after ~
+                    execution of the body.  We cannot print the values of double ~
+                    floats and live stobjs, if any are found in the alist, ~
+                    because they are raw Lisp objects, not ACL2 objects.  We ~
+                    print any double float as its corresponding rational and ~
+                    simply print the name of any live stobj (as a ~
+                    string).~%~%Before execution of the do body the alist ~
+                    was~%~Y32.~|After the execution of the do body the alist ~
+                    was~%~Y42.~|Before the execution of the body the measure ~
+                    was~%~x5.~|After the execution of the body the measure ~
+                    was~%~x6.~|~%Logically, in this situation the do$ returns the ~
+                    value of a term whose output signature is ~x7, where the ~
+                    value of any component of type :df is #d0.0 and the value of ~
+                    any stobj component is the last latched value of that stobj.\"
+           untrans-measure untrans-do-loop$ nil
+           (eviscerate-do$-alist alist all-stobj-names)
+           (eviscerate-do$-alist new-alist all-stobj-names)
+           (apply$ measure-fn (list alist))
+           (apply$ measure-fn (list new-alist))
+           values))
          (loop$-default-values values new-alist))))))
 
   We conclude by returning to an earlier example that illustrates
@@ -33393,30 +33405,30 @@ SEMANTICS
     ACL2 !>(f '(a b c d))
     1> (ACL2_*1*_ACL2::DO$ ((X A B C D)))
       2> (DO$ ((X A B C D)))
-        3> (DO-BODY-GUARD-WRAPPER T)
+        3> (DO-BODY-GUARD-WRAPPER T NIL)
         <3 (DO-BODY-GUARD-WRAPPER T)
-        3> (DO-BODY-GUARD-WRAPPER T)
+        3> (DO-BODY-GUARD-WRAPPER T NIL)
         <3 (DO-BODY-GUARD-WRAPPER T)
-        3> (DO-BODY-GUARD-WRAPPER T)
+        3> (DO-BODY-GUARD-WRAPPER T NIL)
         <3 (DO-BODY-GUARD-WRAPPER T)
         3> (DO$ ((X B C D)))
-          4> (DO-BODY-GUARD-WRAPPER T)
+          4> (DO-BODY-GUARD-WRAPPER T NIL)
           <4 (DO-BODY-GUARD-WRAPPER T)
-          4> (DO-BODY-GUARD-WRAPPER T)
+          4> (DO-BODY-GUARD-WRAPPER T NIL)
           <4 (DO-BODY-GUARD-WRAPPER T)
-          4> (DO-BODY-GUARD-WRAPPER T)
+          4> (DO-BODY-GUARD-WRAPPER T NIL)
           <4 (DO-BODY-GUARD-WRAPPER T)
           4> (DO$ ((X C D)))
-            5> (DO-BODY-GUARD-WRAPPER T)
+            5> (DO-BODY-GUARD-WRAPPER T NIL)
             <5 (DO-BODY-GUARD-WRAPPER T)
-            5> (DO-BODY-GUARD-WRAPPER T)
+            5> (DO-BODY-GUARD-WRAPPER T NIL)
             <5 (DO-BODY-GUARD-WRAPPER T)
-            5> (DO-BODY-GUARD-WRAPPER T)
+            5> (DO-BODY-GUARD-WRAPPER T NIL)
             <5 (DO-BODY-GUARD-WRAPPER T)
             5> (DO$ ((X D)))
-              6> (DO-BODY-GUARD-WRAPPER T)
+              6> (DO-BODY-GUARD-WRAPPER T NIL)
               <6 (DO-BODY-GUARD-WRAPPER T)
-              6> (DO-BODY-GUARD-WRAPPER NIL)
+              6> (DO-BODY-GUARD-WRAPPER NIL NIL)
               <6 (DO-BODY-GUARD-WRAPPER NIL)
 
 
@@ -33434,8 +33446,8 @@ SEMANTICS
   some parts of this form are simplified, untranslated, or elided.
   (You can see the exact translation by applying [47m:[0m[47m[trans][0m to the [47mdo$[0m
   call.)  Note that [47mdo-body-guard-wrapper[0m is just an identity
-  function used by the implementation, but it is handy here for the
-  explanation that follows.
+  function (on its first argument) used by the implementation, but it
+  is handy here for the explanation that follows.
 
     (DO$
       ;; measure:
@@ -33444,7 +33456,8 @@ SEMANTICS
          (XARGS :GUARD
                 (DO-BODY-GUARD-WRAPPER
                  (AND (ALISTP ALIST)
-                      (CONSP (CDR (ASSOC-EQ-SAFE 'X ALIST)))))))
+                      (CONSP (CDR (ASSOC-EQ-SAFE 'X ALIST))))
+                 NIL)))
         ((LAMBDA (X) (ACL2-COUNT X))
          (CDR (ASSOC-EQ-SAFE 'X ALIST))))
       ;; alist:
@@ -33455,7 +33468,8 @@ SEMANTICS
          (XARGS :GUARD
                 (DO-BODY-GUARD-WRAPPER
                  (AND (ALISTP ALIST)
-                      (CONSP (CDR (ASSOC-EQ-SAFE 'X ALIST)))))))
+                      (CONSP (CDR (ASSOC-EQ-SAFE 'X ALIST))))
+                 NIL)))
         ((LAMBDA (X)
                  (IF (CONSP X)
                      (LIST NIL NIL
@@ -33477,9 +33491,9 @@ SEMANTICS
   above.
 
     5> (DO$ ((X D)))
-      6> (DO-BODY-GUARD-WRAPPER T)
+      6> (DO-BODY-GUARD-WRAPPER T NIL)
       <6 (DO-BODY-GUARD-WRAPPER T)
-      6> (DO-BODY-GUARD-WRAPPER NIL)
+      6> (DO-BODY-GUARD-WRAPPER NIL NIL)
       <6 (DO-BODY-GUARD-WRAPPER NIL)
 
   The first [47mDO-BODY-GUARD-WRAPPER[0m call comes from the guard of the
@@ -50628,8 +50642,8 @@ Subtopics
 
     (df1)                            ==>  1
 
-    (do$ x1 x2 x3 x4 x5 'u1 'u2)     ==> (do$ x1 x2 x3 x4 x5 'nil 'nil)
-                                         ; only when u1 and u2 are non-nil
+    (do$ x1 x2 x3 x4 x5 'u1)         ==> (do$ x1 x2 x3 x4 x5 'nil)
+                                         ; only when u1 is non-nil
 
     ; For replacing a term (the type term) by term:
     ((lambda (y) (the-check guard x y))
@@ -70404,8 +70418,7 @@ LP15: Informal Syntax and Semantics of [47mDO[0m [47mLoop$[0ms
          do-body-lambda
          fin-body-lambda
          a5
-         a6
-         a7)
+         a6)
 
   where [47mm-lambda[0m, [47mdo-body-lambda[0m, and [47mfin-body-lambda[0m are quoted [47mLAMBDA[0m
   objects derived from the respective terms in the [47mloop$[0m statement.
@@ -70432,10 +70445,10 @@ LP15: Informal Syntax and Semantics of [47mDO[0m [47mLoop$[0ms
   double-float, or a [stobj].)  However, in execution, an error is
   signaled if the measure fails to decrease.  Such runtime errors
   (including [47mOF-TYPE[0m and guard violations if guards are being
-  checked) are reported using [47ma6[0m and [47ma7[0m which are just quoted
-  constants about the original [47mloop$[0m statement.  (In fact, [47ma6[0m and [47ma7[0m
-  are logically irrelevant and the theorem prover replaces those
-  quoted constants by [47mnil[0m in proofs as part of the cleaning-up
+  checked) are reported using [47ma6[0m which is just a quoted constant
+  about the original [47mloop$[0m statement.  (In fact, [47ma6[0m is logically
+  irrelevant and the theorem prover replaces quoted non-[47mnil[0m final
+  argument to [47mdo$[0m by [47mnil[0m in proofs as part of the cleaning-up
   process.)
 
   Consider this simple [47mDO[0m [47mloop$[0m and its cleaned-up semantics as shown
@@ -70477,8 +70490,8 @@ LP15: Informal Syntax and Semantics of [47mDO[0m [47mLoop$[0ms
                  (LIST (CONS 'I (CDR (ASSOC-EQ-SAFE 'I ALIST)))
                        (CONS 'ANS (CDR (ASSOC-EQ-SAFE 'ANS ALIST))))))
 
-    ;    irrelevant args a5, a6, a7
-         '(NIL) NIL NIL)
+    ;    irrelevant args a5 and a6
+         '(NIL) NIL)
 
   [47mASSOC-EQ-SAFE[0m is just [47mASSOC-EQ[0m with a slightly weaker guard.  Think
   of [47m(CDR (ASSOC-EQ-SAFE 'var ALIST))[0m as the current value of the
@@ -70655,7 +70668,7 @@ LP16: Proving Theorems about [47mDO[0m [47mLoop$[0ms
                         (LIST (CONS 'I (CDR (ASSOC-EQ-SAFE 'I ALIST)))
                               (CONS 'ANS
                                     (CDR (ASSOC-EQ-SAFE 'ANS ALIST))))))
-         NIL NIL NIL)
+         '(NIL) NIL)
       N))
 
   Look carefully at the [47mdo-body[0m [47mlambda[0m, the second [47mlambda[0m object in the
@@ -70740,7 +70753,7 @@ LP16: Proving Theorems about [47mDO[0m [47mLoop$[0ms
                         (LIST (CONS 'I (CDR (ASSOC-EQ-SAFE 'I ALIST)))
                               (CONS 'ANS
                                     (CDR (ASSOC-EQ-SAFE 'ANS ALIST))))))
-         NIL NIL NIL)
+         '(NIL) NIL)
         (copy-nat-ac n ans0)))).
 
   The UPPERCASE part above was just copied from the checkpoint and then
@@ -102596,6 +102609,13 @@ Changes to Existing Features
   than a default value.  This change supports a bug fix; see the item
   below regarding ``About a bug in DO$ in ACL2 Version_8.5''.
 
+  The sixth and seventh arguments of [47m[do$][0m have been combined into a
+  record that also contains a list of the names of all the [47m[stobj][0ms
+  in the [47mDO[0m [47mloop$[0m.  In the new record, the measure term is stored in
+  untranslated form.  The record is only used in the hard error
+  produced when the evaluation of a [47mDO$[0m term fails to terminate and
+  is not relevant to the logical value of the [47mDO$[0m term.
+
   It is now legal for the parent stobj of a [47m[stobj-let][0m expression to
   occur free in the producer when no producer variable is bound in
   the bindings.  For an example, see the section ``Allow the parent
@@ -103053,10 +103073,6 @@ Bug Fixes
 
   Fixed bugs in the definition of source macro [47mposition-ac[0m.  Thanks to
   Eric Smith for pointing them out.
-
-  Fixed translation of [47mDO[0m [47m[loop$][0m expressions, so that the next-to-last
-  argument of the resulting [47m[do$][0m call quotes the untranslated
-  measure instead of the translated measure.
 
   Several improvements were made to the [47mFOR[0m [47m[loop$][0m utility (also see
   [for-loop$], to reflect more accurately the Common Lisp [47mloop[0m
@@ -124114,10 +124130,10 @@ Restrictions During Rewriting of a [47mLambda[0m Body
   compiler-related tags introduced by translation of [47mlambda$[0m and
   [47mloop$[0m.  It does beta reduction, which eliminates local variable
   names (other than the formals of the [47mlambda[0m object).  And it
-  replaces the last two arguments of calls of [47m[do$][0m by [47mnil[0m if those
-  two arguments are quoted constants other than [47mnil[0m.  (Those two
-  arguments are irrelevant to the value of the [47mdo$[0m term and only used
-  in error reporting.)
+  replaces the last argument of calls of [47m[do$][0m by [47mnil[0m if that
+  argument is a quoted constant other than [47mnil[0m.  (This argument is
+  irrelevant to the value of the [47mdo$[0m term and only used in error
+  reporting.)
 
 
 What Happens After Rewriting a [47mLambda[0m Body
@@ -124985,16 +125001,16 @@ Subtopics
   compiler-related tags introduced by translation of [47mlambda$[0m and
   [47mloop$[0m.  It does beta reduction, which eliminates local variable
   names (other than the formals of the [47mlambda[0m object).  And it
-  replaces the last two arguments of calls of [47m[do$][0m by [47mnil[0m if those
-  two arguments are quoted constants other than [47mnil[0m.  (Those two
-  arguments are irrelevant to the value of the [47mdo$[0m term and only used
-  in error reporting.)  The logical semantics of [47mloop$[0m is best
-  understood not by looking at its translation as we did above but by
-  looking at the result of syntactically cleaning its translation.
-  That is done by the command [47m:[0m[47m[tc][0m.  [47mTc[0m translates its argument, in
-  this case the [47mloop$[0m statement we've been studying, obtaining the
-  large form shown above, and then syntactically cleans it, returning
-  the internal representation of the logical semantics.
+  replaces the last argument of calls of [47m[do$][0m by [47mnil[0m if that
+  argument is a quoted constant other than [47mnil[0m.  (That argument is
+  irrelevant to the value of the [47mdo$[0m term and only used in error
+  reporting.)  The logical semantics of [47mloop$[0m is best understood not
+  by looking at its translation as we did above but by looking at the
+  result of syntactically cleaning its translation.  That is done by
+  the command [47m:[0m[47m[tc][0m.  [47mTc[0m translates its argument, in this case the
+  [47mloop$[0m statement we've been studying, obtaining the large form shown
+  above, and then syntactically cleans it, returning the internal
+  representation of the logical semantics.
 
     ACL2 !>:tc (loop$ for x on a
                       thereis
@@ -135680,7 +135696,7 @@ The Secret [47mSetq[0m Problem
                       (LIST (CONS 'X (CDR (ASSOC-EQ-SAFE 'X ALIST)))
                             (CONS 'J (CDR (ASSOC-EQ-SAFE 'J ALIST)))
                             (CONS 'K (CDR (ASSOC-EQ-SAFE 'K ALIST))))))
-                (NIL) NIL NIL)
+                (NIL) NIL)
     Rhs:     'GOOD
     Backchain-limit-lst: NIL
     Subclass: BACKCHAIN
@@ -135716,7 +135732,7 @@ The Secret [47mSetq[0m Problem
              (LIST (CONS 'X (CDR (ASSOC-EQ-SAFE 'X ALIST)))
                    (CONS 'J (CDR (ASSOC-EQ-SAFE 'J ALIST)))
                    (CONS 'K (CDR (ASSOC-EQ-SAFE 'K ALIST))))))
-       (NIL) NIL NIL)
+       (NIL) NIL)
 
   Note that the [47mLhs[0m matches the actual term, when [47mJ[0m is instantiated
   with [47m0[0m, [3mexcept[0m in one place: the alist constructed in the [47m(LIST
