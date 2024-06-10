@@ -16619,7 +16619,6 @@ with any questions about building the community books.</p>")
                                           'NIL))
                               'NIL))))
    '(NIL)
-   'NIL
    'NIL)
   '(DO$   ; Second term
    '(LAMBDA (ALIST)
@@ -16656,7 +16655,6 @@ with any questions about building the community books.</p>")
                                           'NIL))
                               'NIL))))
    '(NIL)
-   'NIL
    'NIL))
  ((:OBJ
   (DO$
@@ -16694,7 +16692,6 @@ with any questions about building the community books.</p>")
                                     'NIL))
                         'NIL))))
    '(NIL)
-   'NIL
    'NIL))
   (:LEGEND ((:|<s1>| ASSOC-EQ-SAFE ASSOC-EQ))))
   })
@@ -29128,7 +29125,7 @@ ld) and @(tsee include-book)"
   :long "<p>@('Do$') is the logical function that interprets @('do')
   @('loop$')s.  See @(see do-loop$) for a discussion of @('do$').</p>
 
-  <p>The function takes seven arguments but only the first five are
+  <p>The function takes six arguments but only the first five are
   relevant to its logical value.</p>
 
   <ul>
@@ -29154,7 +29151,10 @@ ld) and @(tsee include-book)"
   </ul>
 
   @(def do$)
-  ")
+
+  <p>The last argument is only relevant in the error message printed if the
+  @('do$') fails to terminate and that message is not part of the returned
+  value.</p>")
 
 (defxdoc do-loop$
   :parents (loop$)
@@ -29624,15 +29624,14 @@ ld) and @(tsee include-book)"
  variables in an alist.  The measure is computed using the values in
  the alist from before and after execution of the body.  We cannot print
  the values of double floats and live stobjs, if any are found in the
- alist, because they are raw Lisp objects, not ACL2 objects.  Before
- execution of the do body the alist was
- ((X 100 200 300)
-  (STATE .
-         ACL2_INVISIBLE::|The Live State Itself|)).
+ alist, because they are raw Lisp objects, not ACL2 objects.  We print
+ any double float as its corresponding rational and simply print the
+ name of any live stobj (as a string).
+
+ Before execution of the do body the alist was
+ ((X 100 200 300) (STATE . \"<state>\")).
  After the execution of the do body the alist was
- ((X 100 200 300)
-  (STATE .
-         ACL2_INVISIBLE::|The Live State Itself|)).
+ ((X 100 200 300) (STATE . \"<state>\")).
  Before the execution of the body the measure was
  603.
  After the execution of the body the measure was
@@ -29642,8 +29641,6 @@ ld) and @(tsee include-book)"
  output signature is (STATE), where the value of any component of type
  :df is #d0.0 and the value of any stobj component is the last latched
  value of that stobj.
-
-
 
  ACL2 Error in TOP-LEVEL:  Evaluation aborted.  To debug see :DOC print-
  gv, see :DOC trace, and see :DOC wet.
@@ -30094,7 +30091,7 @@ ld) and @(tsee include-book)"
                           (LIST (CONS 'X X) (CONS 'Y Y)))))
       ; Values (output signature)
       '(NIL)
-      ... ; Other arguments are omitted here.
+      ... ; Last argument omitted here.
  )
  })
 
@@ -30138,30 +30135,30 @@ ld) and @(tsee include-book)"
  ACL2 !>(f '(a b c d))
  1> (ACL2_*1*_ACL2::DO$ ((X A B C D)))
    2> (DO$ ((X A B C D)))
-     3> (DO-BODY-GUARD-WRAPPER T)
+     3> (DO-BODY-GUARD-WRAPPER T NIL)
      <3 (DO-BODY-GUARD-WRAPPER T)
-     3> (DO-BODY-GUARD-WRAPPER T)
+     3> (DO-BODY-GUARD-WRAPPER T NIL)
      <3 (DO-BODY-GUARD-WRAPPER T)
-     3> (DO-BODY-GUARD-WRAPPER T)
+     3> (DO-BODY-GUARD-WRAPPER T NIL)
      <3 (DO-BODY-GUARD-WRAPPER T)
      3> (DO$ ((X B C D)))
-       4> (DO-BODY-GUARD-WRAPPER T)
+       4> (DO-BODY-GUARD-WRAPPER T NIL)
        <4 (DO-BODY-GUARD-WRAPPER T)
-       4> (DO-BODY-GUARD-WRAPPER T)
+       4> (DO-BODY-GUARD-WRAPPER T NIL)
        <4 (DO-BODY-GUARD-WRAPPER T)
-       4> (DO-BODY-GUARD-WRAPPER T)
+       4> (DO-BODY-GUARD-WRAPPER T NIL)
        <4 (DO-BODY-GUARD-WRAPPER T)
        4> (DO$ ((X C D)))
-         5> (DO-BODY-GUARD-WRAPPER T)
+         5> (DO-BODY-GUARD-WRAPPER T NIL)
          <5 (DO-BODY-GUARD-WRAPPER T)
-         5> (DO-BODY-GUARD-WRAPPER T)
+         5> (DO-BODY-GUARD-WRAPPER T NIL)
          <5 (DO-BODY-GUARD-WRAPPER T)
-         5> (DO-BODY-GUARD-WRAPPER T)
+         5> (DO-BODY-GUARD-WRAPPER T NIL)
          <5 (DO-BODY-GUARD-WRAPPER T)
          5> (DO$ ((X D)))
-           6> (DO-BODY-GUARD-WRAPPER T)
+           6> (DO-BODY-GUARD-WRAPPER T NIL)
            <6 (DO-BODY-GUARD-WRAPPER T)
-           6> (DO-BODY-GUARD-WRAPPER NIL)
+           6> (DO-BODY-GUARD-WRAPPER NIL NIL)
            <6 (DO-BODY-GUARD-WRAPPER NIL)
 
 
@@ -30179,9 +30176,9 @@ ld) and @(tsee include-book)"
  corresponding @('do$') form with @(tsee declare) forms included, but as
  before some parts of this form are simplified, untranslated, or elided.  (You
  can see the exact translation by applying @(':')@(tsee trans) to the @('do$')
- call.)  Note that @('do-body-guard-wrapper') is just an identity function used
- by the implementation, but it is handy here for the explanation that
- follows.</p>
+ call.)  Note that @('do-body-guard-wrapper') is just an identity function (on
+ its first argument) used by the implementation, but it is handy here for the
+ explanation that follows.</p>
 
  @({
  (DO$
@@ -30191,7 +30188,8 @@ ld) and @(tsee include-book)"
       (XARGS :GUARD
              (DO-BODY-GUARD-WRAPPER
               (AND (ALISTP ALIST)
-                   (CONSP (CDR (ASSOC-EQ-SAFE 'X ALIST)))))))
+                   (CONSP (CDR (ASSOC-EQ-SAFE 'X ALIST))))
+              NIL)))
      ((LAMBDA (X) (ACL2-COUNT X))
       (CDR (ASSOC-EQ-SAFE 'X ALIST))))
    ;; alist:
@@ -30202,7 +30200,8 @@ ld) and @(tsee include-book)"
       (XARGS :GUARD
              (DO-BODY-GUARD-WRAPPER
               (AND (ALISTP ALIST)
-                   (CONSP (CDR (ASSOC-EQ-SAFE 'X ALIST)))))))
+                   (CONSP (CDR (ASSOC-EQ-SAFE 'X ALIST))))
+              NIL)))
      ((LAMBDA (X)
               (IF (CONSP X)
                   (LIST NIL NIL
@@ -30225,9 +30224,9 @@ ld) and @(tsee include-book)"
 
  @({
          5> (DO$ ((X D)))
-           6> (DO-BODY-GUARD-WRAPPER T)
+           6> (DO-BODY-GUARD-WRAPPER T NIL)
            <6 (DO-BODY-GUARD-WRAPPER T)
-           6> (DO-BODY-GUARD-WRAPPER NIL)
+           6> (DO-BODY-GUARD-WRAPPER NIL NIL)
            <6 (DO-BODY-GUARD-WRAPPER NIL)
  })
 
@@ -47611,8 +47610,8 @@ current fast alists."
 
  (df1)                            ==>  1
 
- (do$ x1 x2 x3 x4 x5 'u1 'u2)     ==> (do$ x1 x2 x3 x4 x5 'nil 'nil)
-                                      ; only when u1 and u2 are non-nil
+ (do$ x1 x2 x3 x4 x5 'u1)         ==> (do$ x1 x2 x3 x4 x5 'nil)
+                                      ; only when u1 is non-nil
 
  ; For replacing a term (the type term) by term:
  ((lambda (y) (the-check guard x y))
@@ -66240,8 +66239,7 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
        do-body-lambda
        fin-body-lambda
        a5
-       a6
-       a7)
+       a6)
   })
 
   <p>where @('m-lambda'), @('do-body-lambda'), and @('fin-body-lambda') are
@@ -66268,10 +66266,10 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
   whether each value is an ordinary object, a double-float, or a @(see stobj).)
   However, in execution, an error is signaled if the measure fails to decrease.
   Such runtime errors (including @('OF-TYPE') and guard violations if guards
-  are being checked) are reported using @('a6') and @('a7') which are just
-  quoted constants about the original @('loop$') statement.  (In fact, @('a6')
-  and @('a7') are logically irrelevant and the theorem prover replaces those
-  quoted constants by @('nil') in proofs as part of the cleaning-up
+  are being checked) are reported using @('a6') which is just a
+  quoted constant about the original @('loop$') statement.  (In fact, @('a6')
+  is logically irrelevant and the theorem prover replaces quoted non-@('nil')
+  final argument to @('do$') by @('nil') in proofs as part of the cleaning-up
   process.)</p>
 
   <p>Consider this simple @('DO') @('loop$') and its cleaned-up semantics as
@@ -66314,8 +66312,8 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
              (LIST (CONS 'I (CDR (ASSOC-EQ-SAFE 'I ALIST)))
                    (CONS 'ANS (CDR (ASSOC-EQ-SAFE 'ANS ALIST))))))
 
-;    irrelevant args a5, a6, a7
-     '(NIL) NIL NIL)
+;    irrelevant args a5 and a6
+     '(NIL) NIL)
   })
 
   <p>@('ASSOC-EQ-SAFE') is just @('ASSOC-EQ') with a slightly weaker guard.
@@ -66510,7 +66508,7 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
                       (LIST (CONS 'I (CDR (ASSOC-EQ-SAFE 'I ALIST)))
                             (CONS 'ANS
                                   (CDR (ASSOC-EQ-SAFE 'ANS ALIST))))))
-       NIL NIL NIL)
+       '(NIL) NIL)
     N))
   })
 
@@ -66601,7 +66599,7 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
                       (LIST (CONS 'I (CDR (ASSOC-EQ-SAFE 'I ALIST)))
                             (CONS 'ANS
                                   (CDR (ASSOC-EQ-SAFE 'ANS ALIST))))))
-       NIL NIL NIL)
+       '(NIL) NIL)
       (copy-nat-ac n ans0)))).
   })
 
@@ -105976,6 +105974,13 @@ it."
  than a default value.  This change supports a bug fix; see the item below
  regarding &ldquo;About a bug in DO$ in ACL2 Version_8.5&rdquo;.</p>
 
+ <p>The sixth and seventh arguments of @(tsee do$) have been combined into a
+ record that also contains a list of the names of all the @(tsee stobj)s in the
+ @('DO') @('loop$').  In the new record, the measure term is stored in
+ untranslated form.  The record is only used in the hard error produced when
+ the evaluation of a @('DO$') term fails to terminate and is not relevant to
+ the logical value of the @('DO$') term.</p>
+
  <p>It is now legal for the parent stobj of a @(tsee stobj-let) expression to
  occur free in the producer when no producer variable is bound in the bindings.
  For an example, see the section &ldquo;Allow the parent stobj of a stobj-let
@@ -106435,10 +106440,6 @@ it."
 
  <p>Fixed bugs in the definition of source macro @('position-ac').  Thanks
  to Eric Smith for pointing them out.</p>
-
- <p>Fixed translation of @('DO') @(tsee loop$) expressions, so that the
- next-to-last argument of the resulting @(tsee do$) call quotes the
- untranslated measure instead of the translated measure.</p>
 
  <p>Several improvements were made to the @('FOR') @(tsee loop$) utility (also
  see @(see for-loop$), to reflect more accurately the Common Lisp @('loop')
@@ -125265,9 +125266,9 @@ work on <tt>(q x)</tt>.</p>
   described, eliminates declarations, guards, and other compiler-related tags
   introduced by translation of @('lambda$') and @('loop$').  It does beta
   reduction, which eliminates local variable names (other than the formals of
-  the @('lambda') object).  And it replaces the last two arguments of calls of
-  @(tsee do$) by @('nil') if those two arguments are quoted constants other
-  than @('nil').  (Those two arguments are irrelevant to the value of the
+  the @('lambda') object).  And it replaces the last argument of calls of
+  @(tsee do$) by @('nil') if that argument is a quoted constant other
+  than @('nil').  (This argument is irrelevant to the value of the
   @('do$') term and only used in error reporting.)</p>
 
   <h3>What Happens After Rewriting a @('Lambda') Body</h3>
@@ -126185,8 +126186,8 @@ work on <tt>(q x)</tt>.</p>
   compiler-related tags introduced by translation of @('lambda$') and
   @('loop$').  It does beta reduction, which eliminates local variable
   names (other than the formals of the @('lambda') object).  And it replaces
-  the last two arguments of calls of @(tsee do$) by @('nil') if those two
-  arguments are quoted constants other than @('nil').  (Those two arguments are
+  the last argument of calls of @(tsee do$) by @('nil') if that
+  argument is a quoted constant other than @('nil').  (That argument is
   irrelevant to the value of the @('do$') term and only used in error
   reporting.)  The logical semantics of @('loop$') is best understood not by
   looking at its translation as we did above but by looking at the result of
@@ -137315,7 +137316,7 @@ work on <tt>(q x)</tt>.</p>
                     (LIST (CONS 'X (CDR (ASSOC-EQ-SAFE 'X ALIST)))
                           (CONS 'J (CDR (ASSOC-EQ-SAFE 'J ALIST)))
                           (CONS 'K (CDR (ASSOC-EQ-SAFE 'K ALIST))))))
-              (NIL) NIL NIL)
+              (NIL) NIL)
   Rhs:     'GOOD
   Backchain-limit-lst: NIL
   Subclass: BACKCHAIN
@@ -137353,7 +137354,7 @@ work on <tt>(q x)</tt>.</p>
            (LIST (CONS 'X (CDR (ASSOC-EQ-SAFE 'X ALIST)))
                  (CONS 'J (CDR (ASSOC-EQ-SAFE 'J ALIST)))
                  (CONS 'K (CDR (ASSOC-EQ-SAFE 'K ALIST))))))
-     (NIL) NIL NIL)
+     (NIL) NIL)
   })
 
   <p>Note that the @('Lhs') matches the actual term, when @('J') is
