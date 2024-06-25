@@ -36585,32 +36585,33 @@ current fast alists."
  </ul>
 
  @({
- General Forms:
+ Example Forms:
 
  (set-fast-cert t state)       ; enter fast-cert active mode
  (set-fast-cert nil state)     ; disable fast-cert mode
- (set-fast-cert :accept state) ; enter fast-cert ACCEPT mode
+ (set-fast-cert :accept state) ; enter fast-cert accept mode
+
+ General Form:
+
+ (set-fast-cert expr state)
  })
 
- <p>When a form @('(set-fast-cert expr state)') is evaluated, @('expr') should
- evaluate to a Boolean value, @('val').  If @('val') is @('t') then fast-cert
- mode becomes (or remains) active.  If @('val') is @('nil'), then fast-cert
- mode becomes (or remains) disabled.  The other legal value for @('val') is
- @(':accept'), which is a sort of intermediate mode: ACL2 behaves as though
- fast-cert mode is disabled &mdash; we also say ``not enabled'' for
- ``disabled'' &mdash; but books can be considered certified even if they were
- certified with fast-cert mode enabled.  We say more about these three modes in
- Section &ldquo;Fast-cert modes&rdquo; below.</p>
+ <p>where if @('expr') evaluates to @('val'), then: if @('val') is @('t') then
+ fast-cert mode becomes (or remains) active; if @('val') is @('nil'), then
+ fast-cert mode becomes (or remains) disabled; and otherwise @('val') must be
+ @(':accept').  In the last case, ACL2 behaves as though fast-cert mode is
+ disabled &mdash; we also say ``not enabled'' for ``disabled'' &mdash; but
+ books can be considered certified even if they were certified with fast-cert
+ mode enabled.  We say more about these three modes in Section &ldquo;Fast-cert
+ modes&rdquo; below.</p>
 
  <p>Another way to enter fast-cert mode is to set environment variable
  @('ACL2_FAST_CERT') to a non-empty value before starting ACL2.  The
  case-insensitive value, @('\"accept\"'), causes @('(set-fast-cert :accept
- state)') is evaluated at startup; otherwise, a non-empty value causes
+ state)') to be evaluated at startup; otherwise, a non-empty value causes
  @('(set-fast-cert t state)') to be evaluated at startup.</p>
 
- <p>We turn now to the two sections promised above, on unsoundness and effects
- of fast-cert mode, followed by a section on miscellaneous restrictions, and
- concluding with a suggested application of fast-cert mode.</p>
+ <p>We turn now to sections that include those promised above.</p>
 
  <h3>Fast-cert modes</h3>
 
@@ -36623,12 +36624,12 @@ current fast alists."
  book, and the book's @(see certificate) marks it as a &ldquo;fast-cert
  book&rdquo;.</li>
 
- <li><b>Disabled</b>: entered with @('(set-fast-cert t state)'), though this is
- the default mode.  In this mode the usual @(see local-incompatibility) checks
- are performed during book certification, and every fast-cert book is
- considered to be uncertified.</li>
+ <li><b>Disabled</b>: entered with @('(set-fast-cert nil state)'), though this
+ is the default mode.  In this mode the usual @(see local-incompatibility)
+ checks are performed during book certification, and every fast-cert book (as
+ defined just above) is considered to be uncertified.</li>
 
- <li><b>ACCEPT</b>: entered with @('(set-fast-cert :accept state)').  When ACL2
+ <li><b>Accept</b>: entered with @('(set-fast-cert :accept state)').  When ACL2
  is in this mode, @(see local-incompatibility) checks are performed just as
  when fast-cert mode is disabled, but a fast-cert book is treated as certified
  just like any other book.</li>
@@ -36636,10 +36637,10 @@ current fast alists."
  </ul>
 
  <p>Fast-cert mode is considered to be &ldquo;enabled&rdquo; exactly when it is
- not disabled.</p>
+ not disabled, that is, when fast-cert mode is active or accept.</p>
 
  <p>The discussion above leaves open the question of whether a book that is
- certified in ACCEPT mode is marked as a fast-cert book.  That happens only if
+ certified in accept mode is marked as a fast-cert book.  That happens only if
  at least one fast-cert book has been included during the session, either
  before the book's certification began or during evaluation of the book's
  events.</p>
@@ -36678,7 +36679,7 @@ current fast alists."
  (certify-book \"fast-cert-unsound\")
  })
 
- <p>To see what went wrong, consider what happens if we try this without
+ <p>To see what went wrong, consider what happens if we try this without first
  evaluating @('(set-fast-cert t state)').  In that case, we can see that an
  attempt to certify @('\"fast-cert-unsound-sub\"') fails the @(see
  local-incompatibility) check.</p>
@@ -36698,8 +36699,8 @@ current fast alists."
 
  <p>That is, the attempt in Step 3 to include
  @('\"fast-cert-unsound-sub.lisp\"') fails the local-incompatibility check
- because the definition of @('f') is local, hence skipped, so the definition of
- @('g') is illegal.  Without the use of fast-cert mode, the
+ because the definition of @('f') is @(see local), hence skipped, so the
+ definition of @('g') is illegal.  Without the use of fast-cert mode, the
  local-incompatibility check would catch this problem.</p>
 
  <p>(Technical note: if the book is certified while fast-cert mode is active,
@@ -36735,11 +36736,10 @@ current fast alists."
  use of @(tsee defttag) but also when entering fast-cert mode.</p>
 
  <p>We conclude this section by mentioning other potential sources of
- unsoundness when fast-cert mode is enabled.  There are probably others, but
- again, it is probably rare for fast-cert mode to exhibit unsoundness.  These
- behaviors are due to avoiding the @(see local-incompatibility) check during
- certification when fast-cert mode is active.  Here are two key potential
- sources of unsoundness.</p>
+ unsoundness when fast-cert mode is enabled.  There are probably yet others,
+ but again, it is probably rare for fast-cert mode to exhibit unsoundness.
+ These behaviors are due to avoiding the @(see local-incompatibility) check
+ during certification when fast-cert mode is active.</p>
 
  <ul>
 
@@ -36785,8 +36785,9 @@ current fast alists."
 
  <li>When a book is successfully certified with fast-cert mode active, its
  @(see certificate) records this fact.  Let's call such a certificate (or book)
- a &ldquo;fast-cert certificate&rdquo; (or&ldquo;fast-cert book&rdquo;);
- otherwise it is a &ldquo;normal&ldquo; certificate.</li>
+ a &ldquo;fast-cert certificate&rdquo; (or &ldquo;fast-cert book&rdquo;);
+ otherwise it is a &ldquo;normal&ldquo; certificate (or &ldquo;normal
+ book&rdquo;).</li>
 
  <li>When a book is successfully certified with fast-cert in accept mode, the
  book is a normal book only if no fast-cert book is included before or during
@@ -36811,9 +36812,9 @@ current fast alists."
  make that message very long.</li>
 
  <li>When a fast-cert book is included while fast-cert mode is enabled, then
- the rest of that ACL2 session must remain in fast-cert mode.  This restriction
- guarantees that any book then certified during that session will be given a
- fast-mode certificate.</li>
+ the rest of that ACL2 session must have fast-cert mode enabled.  This
+ restriction guarantees that any book then certified during that session will
+ be given a fast-mode certificate.</li>
 
  <li>It is illegal to call @('set-fast-cert') during @('make-event') expansion
  (see @(see make-event)).  There is also an explicit check to prohibit calls of
@@ -104915,7 +104916,7 @@ it."
 
 ;   85 ; Changes to Existing Features
 ;   36 ; New Features
-;    9 ; Heuristic and Efficiency Improvements
+;   10 ; Heuristic and Efficiency Improvements
 ;   38 ; Bug Fixes
 ;   18 ; Changes at the System Level
 ;    8 ; EMACS Support
@@ -106325,6 +106326,16 @@ it."
  @({
  (defattach-system use-enhanced-recognizer constant-nil-function-arity-0)
  })
+
+ <p>For a book's event of the form @('(defconst *NAME* (quote VAL))') that
+ results from @(tsee make-event) expansion, @('VAL') is no longer duplicated
+ between that book's @(see certificate) file and its compiled file.  Thanks to
+ Sol Swords for requesting this enhancement.  This lack of duplication also
+ applies to any such @('defconst') event in a book that is in the scope of a
+ @(tsee progn) or @(tsee encapsulate) event when there is at one
+ @('make-event') call in that scope; similarly for such @('defconst') events
+ within calls of @(tsee skip-proofs), @(tsee with-output), @(tsee
+ with-guard-checking), or @(tsee with-prover-step-limit).</p>
 
  <h3>Bug Fixes</h3>
 
