@@ -40061,32 +40061,32 @@ Subtopics
       executed with fast-cert mode enabled.  See Section ``Effects of
       fast-cert mode...'' below.
 
-    General Forms:
+    Example Forms:
 
     (set-fast-cert t state)       ; enter fast-cert active mode
     (set-fast-cert nil state)     ; disable fast-cert mode
-    (set-fast-cert :accept state) ; enter fast-cert ACCEPT mode
+    (set-fast-cert :accept state) ; enter fast-cert accept mode
 
-  When a form [47m(set-fast-cert expr state)[0m is evaluated, [47mexpr[0m should
-  evaluate to a Boolean value, [47mval[0m.  If [47mval[0m is [47mt[0m then fast-cert mode
-  becomes (or remains) active.  If [47mval[0m is [47mnil[0m, then fast-cert mode
-  becomes (or remains) disabled.  The other legal value for [47mval[0m is
-  [47m:accept[0m, which is a sort of intermediate mode: ACL2 behaves as
-  though fast-cert mode is disabled --- we also say ``not enabled''
-  for ``disabled'' --- but books can be considered certified even if
-  they were certified with fast-cert mode enabled.  We say more about
-  these three modes in Section ``Fast-cert modes'' below.
+    General Form:
+
+    (set-fast-cert expr state)
+
+  where if [47mexpr[0m evaluates to [47mval[0m, then: if [47mval[0m is [47mt[0m then fast-cert mode
+  becomes (or remains) active; if [47mval[0m is [47mnil[0m, then fast-cert mode
+  becomes (or remains) disabled; and otherwise [47mval[0m must be [47m:accept[0m.
+  In the last case, ACL2 behaves as though fast-cert mode is disabled
+  --- we also say ``not enabled'' for ``disabled'' --- but books can
+  be considered certified even if they were certified with fast-cert
+  mode enabled.  We say more about these three modes in Section
+  ``Fast-cert modes'' below.
 
   Another way to enter fast-cert mode is to set environment variable
   [47mACL2_FAST_CERT[0m to a non-empty value before starting ACL2.  The
   case-insensitive value, [47m\"accept\"[0m, causes [47m(set-fast-cert :accept
-  state)[0m is evaluated at startup; otherwise, a non-empty value causes
-  [47m(set-fast-cert t state)[0m to be evaluated at startup.
+  state)[0m to be evaluated at startup; otherwise, a non-empty value
+  causes [47m(set-fast-cert t state)[0m to be evaluated at startup.
 
-  We turn now to the two sections promised above, on unsoundness and
-  effects of fast-cert mode, followed by a section on miscellaneous
-  restrictions, and concluding with a suggested application of
-  fast-cert mode.
+  We turn now to sections that include those promised above.
 
 
 Fast-cert modes
@@ -40097,20 +40097,21 @@ Fast-cert modes
       mode, the [local-incompatibility] check is skipped when
       certifying a book, and the book's [certificate] marks it as a
       ``fast-cert book''.
-    * [31;1mDisabled[0m: entered with [47m(set-fast-cert t state)[0m, though this is the
+    * [31;1mDisabled[0m: entered with [47m(set-fast-cert nil state)[0m, though this is the
       default mode.  In this mode the usual [local-incompatibility]
       checks are performed during book certification, and every
-      fast-cert book is considered to be uncertified.
-    * [31;1mACCEPT[0m: entered with [47m(set-fast-cert :accept state)[0m.  When ACL2 is in
+      fast-cert book (as defined just above) is considered to be
+      uncertified.
+    * [31;1mAccept[0m: entered with [47m(set-fast-cert :accept state)[0m.  When ACL2 is in
       this mode, [local-incompatibility] checks are performed just as
       when fast-cert mode is disabled, but a fast-cert book is
       treated as certified just like any other book.
 
   Fast-cert mode is considered to be ``enabled'' exactly when it is not
-  disabled.
+  disabled, that is, when fast-cert mode is active or accept.
 
   The discussion above leaves open the question of whether a book that
-  is certified in ACCEPT mode is marked as a fast-cert book.  That
+  is certified in accept mode is marked as a fast-cert book.  That
   happens only if at least one fast-cert book has been included
   during the session, either before the book's certification began or
   during evaluation of the book's events.
@@ -40148,8 +40149,8 @@ Potential for unsoundness
     (certify-book \"fast-cert-unsound\")
 
   To see what went wrong, consider what happens if we try this without
-  evaluating [47m(set-fast-cert t state)[0m.  In that case, we can see that
-  an attempt to certify [47m\"fast-cert-unsound-sub\"[0m fails the
+  first evaluating [47m(set-fast-cert t state)[0m.  In that case, we can see
+  that an attempt to certify [47m\"fast-cert-unsound-sub\"[0m fails the
   [local-incompatibility] check.
 
     * Step 3:  That completes the admissibility check.  Each form read
@@ -40165,7 +40166,7 @@ Potential for unsoundness
 
   That is, the attempt in Step 3 to include
   [47m\"fast-cert-unsound-sub.lisp\"[0m fails the local-incompatibility check
-  because the definition of [47mf[0m is local, hence skipped, so the
+  because the definition of [47mf[0m is [local], hence skipped, so the
   definition of [47mg[0m is illegal.  Without the use of fast-cert mode, the
   local-incompatibility check would catch this problem.
 
@@ -40200,11 +40201,11 @@ Potential for unsoundness
   with the use of [47m[defttag][0m but also when entering fast-cert mode.
 
   We conclude this section by mentioning other potential sources of
-  unsoundness when fast-cert mode is enabled.  There are probably
+  unsoundness when fast-cert mode is enabled.  There are probably yet
   others, but again, it is probably rare for fast-cert mode to
   exhibit unsoundness.  These behaviors are due to avoiding the
   [local-incompatibility] check during certification when fast-cert
-  mode is active.  Here are two key potential sources of unsoundness.
+  mode is active.
 
     * Hidden [47m[defpkg][0m events are not recorded in a book's [certificate]
       when fast-cert mode is active.  See [hidden-death-package].
@@ -40239,8 +40240,8 @@ Interactions involving fast-cert mode
 
     * When a book is successfully certified with fast-cert mode active, its
       [certificate] records this fact.  Let's call such a certificate
-      (or book) a ``fast-cert certificate'' (or``fast-cert book'');
-      otherwise it is a ``normal`` certificate.
+      (or book) a ``fast-cert certificate'' (or ``fast-cert book'');
+      otherwise it is a ``normal`` certificate (or ``normal book'').
     * When a book is successfully certified with fast-cert in accept mode,
       the book is a normal book only if no fast-cert book is included
       before or during certification.
@@ -40261,9 +40262,10 @@ Interactions involving fast-cert mode
       mode is active, because local [47minclude-book[0m forms in the
       certification world can make that message very long.
     * When a fast-cert book is included while fast-cert mode is enabled,
-      then the rest of that ACL2 session must remain in fast-cert
-      mode.  This restriction guarantees that any book then certified
-      during that session will be given a fast-mode certificate.
+      then the rest of that ACL2 session must have fast-cert mode
+      enabled.  This restriction guarantees that any book then
+      certified during that session will be given a fast-mode
+      certificate.
     * It is illegal to call [47mset-fast-cert[0m during [47mmake-event[0m expansion (see
       [make-event]).  There is also an explicit check to prohibit
       calls of [47mset-fast-cert[0m during [47mcertify-book[0m, though that is
@@ -102969,6 +102971,16 @@ Heuristic and Efficiency Improvements
   following (implicitly [local]) event.
 
     (defattach-system use-enhanced-recognizer constant-nil-function-arity-0)
+
+  For a book's event of the form [47m(defconst *NAME* (quote VAL))[0m that
+  results from [47m[make-event][0m expansion, [47mVAL[0m is no longer duplicated
+  between that book's [certificate] file and its compiled file.
+  Thanks to Sol Swords for requesting this enhancement.  This lack of
+  duplication also applies to any such [47mdefconst[0m event in a book that
+  is in the scope of a [47m[progn][0m or [47m[encapsulate][0m event when there is
+  at one [47mmake-event[0m call in that scope; similarly for such [47mdefconst[0m
+  events within calls of [47m[skip-proofs][0m, [47m[with-output][0m,
+  [47m[with-guard-checking][0m, or [47m[with-prover-step-limit][0m.
 
 
 Bug Fixes
