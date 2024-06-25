@@ -4,11 +4,9 @@
 ; For development:
 ; (ld "concrete-21.lisp" :ld-pre-eval-print t)
 
-; Should be removed
-; (include-book "misc/disassemble" :dir :system :ttags (:disassemble$))
-
 ; Contact
-;   Intel Corporation, ACL2 Formal Verification Group
+;   ACL2 Formal Verification Group
+;   Intel Corporation
 ;   1300 South MoPac Expy,  Austin, TX  78746, USA
 ;   https://www.intel.com/
 
@@ -34,16 +32,18 @@
 
 ;   Original Author(s): Warren A. Hunt, Jr <warren.hunt@intel.com>
 
-; (in-package "ACL2")
-(in-package "BIGMEM")
+(in-package "BIGMEM-ASYMMETRIC")
 
 (include-book "std/util/define"  :dir :system)
 (include-book "xdoc/top"         :dir :system)
 
+; Should be removed
+; (include-book "misc/disassemble" :dir :system :ttags (:disassemble$))
+
 
 (defxdoc bigmem-concrete-asymmetric
-  :pkg "BIGMEM"
-  :parents (acl2::projects)
+  :pkg "BIGMEM-ASYMMETRIC"
+  :parents (bigmem-asymmetric)
   :short "A byte memory model that is logically a record but provides
   array-like performance for a (low-address) region of memory and association
   list lookup and update for memory modeled above a certain address limit."

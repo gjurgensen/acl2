@@ -38,7 +38,7 @@
 ;     fixed (at build time) size of memory and slower access to the rest
 ;     of the memory; this helps when emulating memory when running Linux.
 
-(in-package "BIGMEM")
+(in-package "BIGMEM-ASYMMETRIC")
 
 (include-book "concrete-asymmetric")  ;; Contents replaced with what is below...
 
@@ -65,8 +65,8 @@
 (def-multityped-record ubp8
   :elem-p       (unsigned-byte-p 8 x)
   :elem-default 0
-  :elem-fix     (bigmem::ubp8-fix x)
-  :in-package-of bigmem::bigmem-pkg)
+  :elem-fix     (bigmem-asymmetric::ubp8-fix x)
+  :in-package-of bigmem-asymmetric::bigmem-pkg)
 
 (defn mem$ap (mem$a)
   (declare (ignore mem$a))
@@ -788,7 +788,7 @@
 ;; ----------------------------------------------------------------------
 
 (defxdoc bigmem-asymmetric
-  :pkg "BIGMEM"
+  :pkg "BIGMEM-ASYMMETRIC"
   :parents (acl2::projects)
   :short "A @('2^64')-byte memory model that is logically a record but
   provides array-like performance for a fixed amount of emulated memory

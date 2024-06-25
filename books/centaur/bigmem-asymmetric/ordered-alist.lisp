@@ -5,7 +5,8 @@
 ; (ld "ordered-alist.lisp" :ld-pre-eval-print t)
 
 ; Contact
-;   Intel Corporation, ACL2 Formal Verification Group
+;   ACL2 Formal Verification Group
+;   Intel Corporation
 ;   1300 South MoPac Expy,  Austin, TX  78746, USA
 ;   https://www.intel.com/
 
@@ -29,10 +30,9 @@
 ;   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 ;   DEALINGS IN THE SOFTWARE.
 
-;   Original Author(s): Warren A. Hunt, Jr <warren.hunt@intel.com>
+;   Original Author(s): "Warren A. Hunt, Jr." <warren.hunt@intel.com>
 
-; (in-package "ACL2")
-(in-package "BIGMEM")
+(in-package "BIGMEM-ASYMMETRIC")
 
 ; "xdoc/top" appears to be included by the "std/util/define" book.
 (include-book "xdoc/top"         :dir :system)
@@ -41,9 +41,9 @@
 ; Should be removed
 ; (include-book "misc/disassemble" :dir :system :ttags (:disassemble$))
 
+
 (defxdoc ordered-bytes
-;  :pkg "ORDERED-ALIST"
-  :parents (acl2::projects)
+  :parents (bigmem-asymmetric)
   :short "Alists with ordered keys."
 
   :long "<p>The @('ordered-list') library is simply the definition
