@@ -99162,7 +99162,7 @@ it."
 
  <li>The utilities @(tsee verify-guards-formula) and @(tsee guard-obligation)
  take a new argument, @('rrp') (``return redundant p'').  When this argument
- is ('nil'), which is the default for @('verify-guards-formula'), these
+ is @('nil'), which is the default for @('verify-guards-formula'), these
  utilities will avoid returning the symbol @(''redundant') even in the case
  that the given function symbol is already guard-verified.  Thanks to Eric
  Smith for requesting this enhancement.</li>
@@ -135689,7 +135689,7 @@ work on <tt>(q x)</tt>.</p>
  #\LATIN_CAPITAL_LETTER_A_WITH_ACUTE
  * (code-char 225)
  #\LATIN_SMALL_LETTER_A_WITH_ACUTE
- * 
+ *
  })
 
  <p>While most Lisps that host ACL2 consider these two characters to be

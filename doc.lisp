@@ -97361,9 +97361,9 @@ Changes to Existing Features
       enhancement.
     * The utilities [47m[verify-guards-formula][0m and [47m[guard-obligation][0m take a
       new argument, [47mrrp[0m (``return redundant p'').  When this argument
-      is ('nil'), which is the default for [47mverify-guards-formula[0m,
-      these utilities will avoid returning the symbol [47m'redundant[0m even
-      in the case that the given function symbol is already
+      is [47mnil[0m, which is the default for [47mverify-guards-formula[0m, these
+      utilities will avoid returning the symbol [47m'redundant[0m even in
+      the case that the given function symbol is already
       guard-verified.  Thanks to Eric Smith for requesting this
       enhancement.
     * Documentation has been improved for utilities that show guard proof
