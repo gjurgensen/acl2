@@ -11934,10 +11934,22 @@ with any questions about building the community books.</p>")
   :short "A version of the ACL2 rewriter with interactive breaks"
   :long "<p>ACL2 allows the user to @(see monitor) the application of @(see
  rewrite), @(see definition), and @(see linear) rules.  When the rewriter is
- about to try to apply a @(see monitor)ed rule, it can trigger an interactive
- break managed by a version of the rewriter called &ldquo;break-rewrite&rdquo;.
- From within this read-eval-print loop you can inspect the context, attempt to
- apply the rule, and see what happens.  This interactive loop is technically
+ about to try to apply an @(tsee enable)d @(see monitor)ed rule, it can trigger
+ an interactive break managed by a version of the rewriter called
+ &ldquo;break-rewrite&rdquo;.  These breaks can be caused by</p>
+
+ <ul>
+ <li><p>failure of a rewrite rule's equivalence relation
+ to be a known refinement of the permitted relations,</p></li>
+ <li><p>failure of
+ a rule's triggering pattern to match the target term while &ldquo;almost&rdquo;
+ matching,</p></li>
+ <li><p>failure to relieve the hypotheses of the rule, or</p></li>
+ <li><p>failure of any of several heuristic checks to prevent looping in the rewriter.</p></li>
+ </ul>
+
+ <p>From within this read-eval-print loop you can inspect the context, attempt
+ to apply the rule, and see what happens.  This interactive loop is technically
  just a call of the standard ACL2 read-eval-print loop, @(tsee ld), on a
  ``@(see wormhole) @(see state)'' (see @(see wormhole)).  While in
  break-rewrite, certain keyword commands are available for accessing
@@ -12076,6 +12088,16 @@ with any questions about building the community books.</p>")
                             ; starting at the top-level clause being simplified
                             ; and ending with the current application
  })
+
+ <p>The output of the @(':path') command shows a stack of simplification and
+ rewriting ``frames'' starting with the current top-level goal (in clausal form
+ as a list of literals) and ending with the current target.  Frames should be
+ self-explanatory.  Frames describing the attempt to apply a rewrite rule will
+ display the name of the equivalence relation the rule uses (unless the
+ relation is @('equal')).  All rewrite frames (including the attempt to apply a
+ given rewrite rule) will display the current @(see geneqv) (the sense of
+ equivalence the rewriter is obligated to maintain) unless the geneqv denotes
+ just the @('equal')ity relation.</p>
 
  <p>At this point in the interaction the system has not yet tried to apply the
  @(see monitor)ed rule.  That is, it has not tried to establish the hypotheses,
@@ -12475,6 +12497,7 @@ with any questions about building the community books.</p>")
  :failure-reason[+] reason rule failed (after :eval)
  :final-ttree[+]    ttree after :eval (see :DOC ttree)
  :frame[+] i        ith frame in :path
+ :geneqv[+]         generated equivalence relation to be maintained
  :go                :eval but don't return to this break, just
                       print the result of the try
  :go!               :go but first remove all monitors (see below)
@@ -12755,6 +12778,11 @@ with any questions about building the community books.</p>")
                       the current context.  (See also the documentation for
                       type-alist.)  The type-alist may be used to determine
                       the current assumptions, e.g., whether A is a CONSP.
+
+  :geneqv          *  the generated equivalence relation that specifies
+                      what equivalence relations may be used to rewrite
+                      the target.  (See the documentation for geneqv and
+                      refinement-failure.)
 
   :ancestors       *  a stack of frames indicating the backchain history
                       of the current context.  The theorem prover is in
@@ -17526,7 +17554,9 @@ with any questions about building the community books.</p>")
  two (or more) congruence rules for the same slot of a function.  The result is
  that the system uses a new, ``generated'' equivalence relation for that slot
  with the result that rules of both (or all) kinds are available while
- rewriting.</p>
+ rewriting.  See @(see geneqv) for a discussion of how generated equivalence
+ relations are derived using congruence rules and how generated equivalence
+ relations are represented.</p>
 
  <p>Congruence rules can be @(see disable)d.  For example, if you have two
  different inside equivalences for a given argument position and you find that
@@ -42531,6 +42561,305 @@ current fast alists."
  exceeding what is available.  Consider dividing 1.0 by the number of threads;
  so for example, for 4 threads (i.e., using &ldquo;@('-j 4')&rdquo; in your
  @('make') command), you may want to specify @('GCL_MEM_MULTIPLE=0.25').</p>")
+
+(defxdoc geneqv
+  :parents (introduction-to-the-theorem-prover break-rewrite)
+  :short "the rewriter's generated equivalence relation"
+  :long "<p>As the rewriter descends through a term, rewriting the subterms, it
+  uses @(see congruence) rules to determine which @(see equivalence)s may be
+  used to rewrite one subterm to another while ensuring that each rewrite
+  maintains a given equivalence.  Generally speaking multiple equivalences may
+  be used to rewrite subterms.  A ``generated equivalence'' or
+  ``geneqv'' (pronounced ``genequiv'') is the way we encode which equivalences
+  may be used by the rewriter at any given subterm position.</p>
+
+  <p>The outline of this discussion is as follows.</p>
+
+  <ul>
+
+  <li><p>Basic Support for Equivalence Relations: a review of equivalence
+  relations, refinement, and congruence</p></li>
+
+  <li><p>Salient Facts about the ACL2 Rewriter: a review of how the rewriter
+  works</p></li>
+
+  <li><p>Using Congruence Rules to Generate Acceptable Equivalences for
+  Subterms: an illustration of how congruence rules are used to determine the
+  equivalences the rewriter is permitted to use</p></li>
+
+  <li><p>Debugging Tools: How to see what equivalences are permitted while
+  rewriting the current target and how to see how the set evolved as the
+  rewriter descended from the top-level goal.</p></li>
+
+  </ul>
+
+  <h3>Basic Support for Equivalence Relations</h3>
+
+  <p>If you do not know what the following ACL2 macro forms do, you should
+  see their documentation.</p>
+
+  <code>
+  ; prove and store that eqv is an equivalence relation:
+
+  (defequiv eqv)
+
+  ; prove and store that the equivalence relation eqv1
+  ; refines the equivalence relation eqv2
+
+  (defrefinement eqv1 eqv2)
+
+  ; prove and store that the equivalence relation eqv1 is a congruence relation
+  ; for the kth argument of the function f, preserving the equivalence relation
+  ; eqv2.
+
+  (defcong eqv1 eqv2 (f x1 ... xn) k)
+  </code>
+
+  <p>An example of the last form is</p>
+
+  <code>
+  (defcong set-equal iff (member e x) 2)
+  </code>
+
+  <p>which essentially expands to</p>
+
+  <code>
+  (defthm set-equal-implies-iff-member-2
+    (implies (set-equal x y)
+             (iff (member e x)
+                  (member e y)))
+    :rule-classes (:congruence))
+  </code>
+
+  <p>(ACL2 actually generates a different variable name in place of @('y')
+  above.)</p>
+
+  <p>Helpful documentation topics include @(see equivalence), @(see
+  refinement), @(see congruence), @(tsee defequiv), @(tsee defrefinement), and
+  @(tsee defcong).</p>
+
+  <h3>Salient Facts about the ACL2 Rewriter</h3>
+
+  <ul>
+
+  <li><p>Goals, which are represented as clauses, are simplified by rewriting each
+  literal in turn, assuming the other literals false.</p></li>
+
+  <li><p>When a term is rewritten (under some assumptions) the rewriter is given
+  an @(see equivalence) relation to maintain, i.e., the output of the rewriter
+  must be equivalent in that sense to the input, under the assumptions.</p></li>
+
+  <li><p>The initial equivalence relation to be maintained while rewriting a
+  literal is @(tsee iff).</p></li>
+
+  <li><p>Each @(':')@(tsee rewrite) rule in ACL2 effectively concludes with a
+  term of the form @('(@('eqv lhs rhs)'), where @('eqv') is an equivalence
+  relation.  Such a rule may be used to replace instances of @('lhs') by the
+  corresponding instance of @('rhs'), and maintains the equivalence relation
+  @('eqv').  But the rule is only applicable if @('eqv') <i>refines</i> the
+  equivalence relation to be maintained by rewrite.  See @(see
+  refinement).</p></li>
+
+  <li><p>If the term to be rewritten is a function call, @('(fn a1 ... ak)'),
+  the rewriter rewrites each @('ai') to, say, @('ai''), before applying rules
+  to @('(fn a1' ... ak')').  To be more precise, when the ACL2 rewriter is
+  asked to rewrite @('(fn a1 ... an)') maintaining some equivalence @('eqv'),
+  it first rewrites each @('ai'), maintaining an equivalence generated from the
+  congruence rules about how to rewrite the @('i')th argument of @('fn')
+  maintaining @('eqv').  Suppose each @('ai') is thus rewritten to some other
+  term @('ai'').  That is, @('(fn a1 ... an)') is transformed to @('(fn a1'
+  ... an')') which is known to be @('eqv')-equivalent to @('(fn a1 ... an)').
+  Then the rewriter applies all the @('eqv') rules it knows to @('(fn b1
+  ... bn)').</p></li>
+
+  <li><p>How the rewriter uses the known @(see congruence) rules to determine
+  the equivalence relation to be maintained while rewriting each @('ai') is
+  illustrated below.</p></li>
+
+  <li><p>@('Equal') refines all equivalence relations.</p></li>
+
+  <li><p>@('Equal') maintains all equivalence relations across all argument
+  positions of all functions.</p></li>
+
+  </ul>
+
+  <h3>Using Congruence Rules to Generate Acceptable Equivalences for
+  Subterms</h3>
+
+  <p>In this section show how ACL2 generates the equivalence relation it will
+  maintain when diving into subterms.  We do so by discussing a couple of
+  contrived examples.  The actual script for these examples is in
+  @('books/demos/geneqv.lisp').</p>
+
+  <p>Our examples use the following functions.</p>
+
+  <ul>
+
+  <li><p>@('Len') is an ACL2 primitive that determines the number of elements
+  in a list.</p></li>
+
+  <li><p>@('(perm x y)') determines whether @('x') is a permutation of @('y'),
+  i.e., whether each element that occurs in either @('x') or @('y') occurs in
+  both the same number of times.  For example @('(perm '(A B A C) '(C B A A))')
+  is true, but @('(perm '(A B A C) '(A B B C))') is false.</p></li>
+
+  <li><p>@('(pairwise-iff x y)') determines whether corresponding elements of
+  @('x') and @('y') are propositionally equivalent (i.e., @('IFF')-equivalent).
+  For example, @('(pairwise-iff '(T NIL T) '(1 NIL A))') is true (since both
+  @('1') and @('A') are non-@('NIL') and thus propositionally equivalent to
+  @('T')), but @('(pairwise-iff '(T NIL T) '(1 NIL NIL))') is false.</p></li>
+
+  <li><p>Both @('perm') and @('pairwise-iff') can be proved to be @(see
+  equivalence) relations.</p></li>
+
+  <li><p>Both @('perm') and @('pairwise-iff') are congruence relations for the
+  first argument of @('len') that maintain @('equal')ity of @('len').</p>
+
+  <code>
+  (defthm perm-implies-equal-len-1
+    (implies (perm x y)
+             (equal (len x)
+                    (len y)))
+    :rule-classes (:congruence))
+
+  (defthm pairwise-iff-implies-equal-len-1
+    (implies (pairwise-iff x y)
+             (equal (len x)
+                    (len y)))
+    :rule-classes (:congruence))
+  </code>
+  </li>
+  </ul>
+
+  <p>Now consider proving</p>
+
+  <code>
+  (defthm example-thm-1
+    (equal (len (isort (norml x)))
+           (len x))
+    :rule-classes nil)
+  </code>
+
+  <p>Before we start you should understand that there are many ways to prove
+  this little theorem.  The most straightforward is just to prove that
+  @('(len (isort x))') is @('(len x)') and to prove @('(len (norml x))') is
+  @('(len x)').  In this case, where the functions involved are @('isort') and
+  @('norml'), those theorems are easy to prove.  But for some functions in
+  those roles of a problem like this it is easier to appeal to the properties
+  of certain equivalence relations.  That's what we'll do here.</p>
+
+  <p>If you run the @('defthm') above, the prover (after preprocessing)
+  eventually calls the rewriter on the @('equal') term, requiring it to
+  maintain @('iff').  The rewriter then dives into the two arguments, rewriting
+  @('(len (isort (norml x)))') first, maintaining @('equal')ity.</p>
+
+  <p>The rewriter then dives into the first argument of the @('len') term,
+  @('(isort (norml x))').  The congruence rule @('perm-implies-equal-len-1')
+  above tells it that @('equal')ity of the @('len') term is maintained if the
+  first argument is rewritten maintaining the @('perm') equivalence.  In
+  addition, the congruence rule @('pairwise-iff-implies-equal-len-1') tells it
+  that @('equal')ity of the @('len') term is also maintained if the first
+  argument is rewritten maintaining the @('pairwise-iff') equivalence.</p>
+
+  <p>Thus, when rewriting @('(isort (norml x))') the rewriter can use any
+  rewrite rule that maintains @('perm'), any rewrite rule that maintains
+  @('pairwise-iff'), and, of course, any rewrite rule that maintains
+  @('equal').  In addition, of course, it can use any rewrite rule that
+  maintains a refinement of any of these equivalence relations.  This
+  ``generated equivalence'' or ``geneqv'' is denoted by a set containing the
+  named equivalence relations and the justifying congruence rules.</p>
+
+  <p>The geneqv just derived is represented internally as</p>
+
+  <code>
+  ((5658 PAIRWISE-IFF
+         :CONGRUENCE PAIRWISE-IFF-IMPLIES-EQUAL-LEN-1)
+   (5651 PERM
+         :CONGRUENCE PERM-IMPLIES-EQUAL-LEN-1))
+  </code>
+
+  <p>Ignoring the two numbers, we see two pairs, each naming an equivalence
+  relation and the @(see rune) that justifies its use here.  The numbers are
+  session-specific indices uniquely associated with the two runes that allow
+  ACL2 to determine quickly if the runes are enabled.  Note that we do not
+  include an entry for @('EQUAL') since it maintains every equivalence relation
+  in every argument position of every function.  Indeed, if you see a geneqv of
+  @('NIL') it means @('EQUAL') is the only acceptable equivalence relation in
+  that context.</p>
+
+  <p>Debugging tools in ACL2 typically display the geneqv above as</p>
+
+  <code>
+  ((PAIRWISE-IFF PAIRWISE-IFF-IMPLIES-EQUAL-LEN-1)
+   (PERM PERM-IMPLIES-EQUAL-LEN-1))
+  </code>
+
+  <p>or even</p>
+
+  <code>
+  (PAIRWISE-IFF PERM).
+  </code>
+
+  <p>We discuss debugging tools that display geneqvs below.</p>
+
+  <p>But what does this geneqv buy us during this proof?  Recall where we were
+  in the proof discussed above.  We're rewriting @('(isort (norml x))')
+  maintaining @('(PAIRWISE-IFF PERM)').  If the user had proved the following
+  two rewrite rules</p>
+
+  <code>
+  (defthm perm-isort                ; isort perserves perm
+    (perm (isort X) X))
+
+  (defthm pairwise-iff-norml        ; norml preserves pairwise-iff
+     (pairwise-iff (norml x) x))
+  </code>
+
+  <p>then the rewriter would replace @('(isort (norml x))') by @('(norml
+  x)') using the first rule, since @('perm') is a refinement of the geneqv, and
+  then the rewriter would rewrite that and replace it by @('x') using the
+  second rule, since @('pairwise-iff') is also a refinement of the geneqv.
+  Note that neither of these replacements preserve @('equal')ity, but they are
+  permitted because they preserve the @('equal')ity of the @('len')s.</p>
+
+  <p>Thus, @('(equal (len (isort (norml x))) (len x))') has been simplified to
+  @('(equal (len x) (len x))') which further simplifies to @('t') and the proof
+  is done.</p>
+
+  <p>The Community Book @('\"books/demos/geneqv-test-book.lisp\"') (which
+  executes the commands in books/demos/geneqv-test-input.lsp) contains this and
+  other examples.</p>
+
+  <h3>Debugging Tools</h3>
+
+  <p>Generated equivalence relations are never mentioned or displayed in the
+  prover output.  But of course they are crucial since they determine which
+  rewrite rules can be used.  If a rule was expected to be used in a proof or
+  proof attempt but was not used it might be because the rule's equivalence
+  relation failed to be a refinement of the geneqv in effect when the intended
+  target was encountered.  If @(tsee brr) is enabled and a @(tsee monitor)ed
+  rule is tried by the rewriter but does not fire because it failed the
+  refinement test, a @(see break-rewrite) interactive break occur.  See @(see
+  refinement-failure) for some advice for how you might respond to such a
+  failure.</p>
+
+  <p>From within a break-rewrite break the @(tsee brr-commands) @(':path') will
+  print the ``path'' from the current top-level goal down to the call of the
+  rewriter on current @(':target') term.  Like a call stack, the path is
+  composed of ``frames,'' most of which describe calls of the rewriter but some
+  of which are calls of other system functions (like the @(tsee
+  linear-arithmetic) procedure) that orchestrate other calls to the rewriter.
+  As of Version 8.6, each frame of the @(':path') that describes the attempt to
+  apply a particular rewrite rule will display the name of the equivalence
+  relation used by the rule (unless that name is @('equal')).  Every frame
+  describing a call of the rewriter includes the geneqv to be maintained as the
+  target is rewritten (unless the geneqv is @('nil') which denotes the
+  @('equal')ity relation).  The noted exceptions are intended to shorten the
+  output in the most common cases: rewriting with @('equal') and maintaining
+  equality.</p>
+
+  <p>In addition, from within such a break the brr-command @(':geneqv') will
+  print the geneqv for the current target.</p>")
 
 (defxdoc generalize
   :parents (rule-classes)
@@ -74255,10 +74584,12 @@ it."
   (monitor '(:r assoc-of-app) t)
   (monitor 'assoc-of-app t)
   (monitor '(rewrite assoc-of-app) '(:condition t :depth 2))
+  (monitor '(rewrite assoc-of-app) '(:condition t :rf t :depth 2))
 
   Keyword Command Examples:
   :monitor assoc-of-app t
   :monitor lemma42 (:condition (equal (brr@ :target) '(F A (G A (H B))))
+                    :rf t
                     :depth 2
                     :abstraction (F x (G x y))
                     :lambda t))
@@ -74281,6 +74612,9 @@ it."
 
  <ul>
 
+ <li>@(':rf') &mdash; value must be @('T') or @('NIL'), defaults to
+ @('NIL')</li>
+
  <li>@(':depth') &mdash; value must be a natural number</li>
 
  <li>@(':abstraction') &mdash; value must be a term and it is most often an
@@ -74291,21 +74625,32 @@ it."
 
  <li>@(':condition') &mdash; value must be a term, called the &ldquo;break
  condition&rdquo; which contains at most one free variable and that variable
- must be @(tsee state).</li>
+ must be @(tsee state).  An interactive break is initiated only if the
+ @(':condition') term evaluates to non-@('nil').  If not provided, the
+ @(':condition') value defaults to @(''T').</li>
 
  </ul>
 
  <p>The keys @(':depth'), @(':abstraction'), and @(':lambda') are only relevant
- when the &ldquo;pattern&rdquo; that may trigger the rule named by @('x')
+ when the rule named by @('x') rewrites with an equivalence relation that is a
+ refinement of the equivalence relation the rewriter is obligated to maintain
+ on the current target (see @(see geneqv)) and the rule's &ldquo;pattern&rdquo;
  <b>does not match</b> the target.  They specify criteria under which a failed
- match is to be considered a &ldquo;near miss.&rdquo; Details are given below.
- However, other keywords are allowed with no constraints on their values.  The
- purpose of this allowance is so that the user who wants to attach his or her
- own function to ACL2's @(tsee brr-near-missp) predicate can pass information
- to that function.</p>
+ match is to be considered a &ldquo;near miss.&rdquo; Details are given
+ below.</p>
 
- <p>The @(':condition') key is only relevant when the pattern of the monitored
- rune <b>matches</b> the target to which the rewriter tried to apply it.</p>
+ <p>The key @(':rf') with value @('T') indicates that breaks are to also
+ occur (if the @(':condition') evaluates to non-@('nil') and) the rune's
+ equivalence relation has failed to be a refinement of the equivalence relation
+ the rewriter is obligated to maintain on the current target.  See @(see
+ refinement-failure).  If @(':rf') is @('nil') or not provided, refinement
+ failures do not trigger breaks but the other kinds of breaks may occur.</p>
+
+ <p>Keywords other than @(':condition'), @(':rf'), @(':depth'),
+ @(':abstraction'), and @(':lambda') are allowed with no constraints on their
+ values.  The purpose of this allowance is so that the user who wants to attach
+ his or her own function to ACL2's @(tsee brr-near-missp) predicate can pass
+ information to that function.</p>
 
  <p>When successful, @('monitor') arranges for the rewriter to trigger an
  interactive break when any rule named by @('x') and of the above classes is
@@ -104914,7 +105259,7 @@ it."
 ; conversion of fmt, (er soft ...), one-way-unify, and genvar, and related
 ; utilities to guard-verified :logic mode.
 
-;   85 ; Changes to Existing Features
+;   86 ; Changes to Existing Features
 ;   36 ; New Features
 ;   10 ; Heuristic and Efficiency Improvements
 ;   38 ; Bug Fixes
@@ -106048,6 +106393,14 @@ it."
 
  <p>The predicate @('standard-string-alistp') has been deleted, while a related
  predicate @(tsee string-alistp) has been added.</p>
+
+ <p>The break-rewrite facility will now cause an interactive break on a
+ monitored rewrite rule if the rule's equivalence relation fails to refine the
+ any of the equivalence relations known to be permitted while rewriting the
+ target.  See @(see geneqv) for a discussion of how @('congruence') rules are
+ used to compute permitted equivalence relations and @(see refinement-failure)
+ for advice about how to investigate and fix refinement failures during
+ rewriting.</p>
 
  <h3>New Features</h3>
 
@@ -123498,12 +123851,398 @@ work on <tt>(q x)</tt>.</p>
  equivalence, then @('bag-equality') will automatically be known as a refinement
  of that third equivalence.</p>
 
+ <p>A rewrite rule may fail to fire because its equivalence relation is not
+ known to be a refinement of any of those known to be permitted.  See @(tsee
+ geneqv) for a discussion of how ACL2 uses @(tsee congruence) rules to derive
+ the permitted equivalences and how those equivalences are represented.  See
+ @(see refinement-failure) for advice on how to use @(see break-rewrite) to
+ determine that a rule failed the refinement check and for advice about how to
+ ``fix'' such a problem.</p>
+
  <p>@(':refinement') lemmas cannot be disabled.  That is, once one equivalence
  relation has been shown to be a refinement of another, there is no way to
- prevent the system from using that information.  Of course, individual
- @(':')@(tsee rewrite) rules can be disabled.</p>
+ prevent the system from using that information.  Furthermore, @(':refinement')
+ lemmas are not tracked and are thus not reported in the @(see summary).  Of
+ course, individual @(':')@(tsee rewrite) rules can be disabled.</p>
 
  <p>More will be written about this as we develop the techniques.</p>")
+
+(defxdoc refinement-failure
+  :parents (introduction-to-the-theorem-prover break-rewrite)
+  :short "what to do when a rewrite rule fails the refinement check"
+  :long "<p>One reason a @(':')@(tsee rewrite) rule may fail to fire is that
+  its equivalence relation fails to be a known refinement of the generated
+  equivalence relation (or ``@(see geneqv)'') governing the current target of the
+  rewriter.  In the following discussion we assume you are familiar with the
+  notion of the generated equivalence relation.  If not, please see @(tsee
+  geneqv) for the necessary background and details.</p>
+
+  <h3>Is a Rule Not Firing Because of a Refinement Failure?</h3>
+
+  <p>To determine whether refinement failure is the cause of a rule's failure
+  to fire, enable @(see break-rewrite) with @('(brr t)') and install a @(tsee
+  monitor) with @(':rf') set to @('t') on the rule, e.g., @('(monitor rune
+  '(:rf t))'), where @('rune') evaluates to the @(tsee rune) of the rule in
+  question.  You might also specify a @(':condition') so that a break occurs
+  only if the target is the translated term, @('tterm'), you expected the rule
+  to hit,</p>
+
+  @({
+  (monitor rune '(:condition (equal (brr@ :target) 'tterm) :rf t)).
+  })
+
+  <p>Then try the proof again.  (Note: if the rule being monitored is a @(see
+  simple) abbreviation rule, be sure to supply the hint @(':DO-NOT
+  '(PREPROCESS)') as discussed in @(tsee monitor).)  If a monitored rule fails
+  to fire (under the monitored condition) because its equivalence relation is
+  not known to refine the geneqv derived for that occurrence of the target, an
+  interactive break will occur.  The break header will name the rule, print the
+  target, show the rule's equivalence relation, and show the geneqv.  The
+  header tells you the equivalence relation is not a refinement of the geneqv.
+  You might wish to use the break-rewrite command @(':path') or @(':path+') to
+  print the path down to the target from the top-level goal.  That will show
+  the geneqv derived for each active call of the rewriter and will help you
+  understand why the current geneqv is what it is.  While looking at the path
+  make sure that the current occurrence of the target is the one you expected
+  the rule to hit.  If it is not, proceed to the next break with @(':ok').</p>
+
+  <p>When you find the target you're looking for, focus your attention on the
+  equivalence relation and geneqv.  To fix the problem you need the former to
+  be a refinement of the latter.  When you understand how to make that happen,
+  abort the failing proof attempt with @(':a!') and try to fix the problem.</p>
+
+  <h3>How to Fix a Refinement Failure</h3>
+
+  <p>There are two basic ways to ``fix'' a refinement failure:</p>
+
+  <ul>
+
+  <li><p>(a) prove a @(tsee refinement) rule that establishes that the
+  equivalence relation used in the rule indeed refines one of the equivalence
+  relations displayed in the geneqv, or</p></li>
+
+  <li><p>(b) prove a @(tsee congruence) rule that will extend the geneqv
+  derived for the current occurrence of the target.</p></li>
+
+  </ul>
+
+  <p>We illustrate these approaches below.  But first you must keep in mind
+  that the equivalence relation in the rule may not refine any possible geneqv
+  derivable along the path.  You may have to find a different proof or, at
+  least, you may have to define some additional equivalence relations,
+  refinement rules, and congruence rules, and prove a version of your lemma
+  that uses a new relation.  After all, this is a theorem proving problem and
+  not all fixes are trivial!</p>
+
+  <h3>How Geneqvs Are Displayed</h3>
+
+  <p>As illustrated in the discusson of @(see geneqv), a generated equivalence
+  is essentially a set of equivalence relations.  ACL2 prints geneqvs in three
+  different ways depending on the utility doing the printing.</p>
+
+  <p>When reporting that an equivalence relation is not a refinement of a
+  geneqv, the geneqv is printed simply as a list of equivalence relation names,
+  e.g., @('(EQV1 EQV2)').  Order is unimportant as this list represents a
+  set.</p>
+
+  <p>When reporting the path the rewriter took to the current target and the
+  geneqvs for each active call of the rewriter along that path, each geneqv is
+  printed as a list of doublets, where the first component of the doublet is
+  the name of an equivalence relation and the second component is the name of
+  the @(see congruence) rule responsible for adding that relation to the
+  geneqv, e.g.,</p>
+
+  <code>
+  ((EQV1 EQV1-IFF-CONGRUENCE-FOR-F)
+   (EQV2 EQV2-IFF-CONGRUENCE-FOR-F))
+  </code>
+
+  <p>This is just another presentation of @('(eqv1 eqv2)') but we believe
+  the congruence rule names may help you recall how equivalence relations get
+  into the set.</p>
+
+  <p>Finally, in @(tsee trace$), or the value returned by (brr@ :geneqv) or any
+  other system utility that displays the actual internal representation of a
+  geneqv you will see something like this:</p>
+
+  <code>
+  ((5603 EQV1 . (:congruence EQV1-IFF-CONGRUENCE-FOR-F))
+   (4957 EQV2 . (:congruence EQV2-IFF-CONGRUENCE-FOR-F)))
+  </code>
+
+  <p>where the equivalence relation names are paired with the runes (not just the names)
+  of the responsible congruence rules and the numbers are unique session-dependent indices
+  for those runes allowing quick determination of the enabled status of the rules.</p>
+
+  <p>You will see the first two print conventions in the examples below.</p>
+
+  <h3>Some Generic Examples</h3>
+
+  <p>In the following discussion we introduce some functions that will allow us
+  to explore refinement failures.  The experiements reported below are carried
+  out in the community book @('books/demos/refinement-failure-test-book.lisp')
+  whose input/output log may be found in
+  @('books/demos/refinement-failure-test-log.txt').</p>
+
+  <p>We're going to attempt to prove @('(P (F (G A (BETA B))))') by rewriting
+  the occurrence of @('(BETA B)') to @('(GAMMA B)') and appealing to a rule
+  that establishes @('(P (F (G A (GAMMA B))))').  But at every subterm level in
+  the conjecture different equivalence relations are involved.  Thus, many
+  equivalence and congruence relations are involved and that makes this example
+  hard to follow.  Assume that @('PEQ'), @('FEQ'), @('G2EQ1'), @('G2EQ2'), and
+  @('G2EQ1!') are known equivalence relations.</p>
+
+  <p>Possibly Distracting Aside: In this section of this documentation we use
+  names that follow a certain convention.  These conventions help the authors
+  keep the names straight!  Perhaps they'll help you too.  Names containing
+  ``@('EQ')'' are equivalence relations; they will serve as ``inside''
+  equivalences for the function symbol indicated by the first character in the
+  name, ``@('P')'', ``@('F')'' or ``@('G')''; if that first character is
+  followed by ``2'' it means they apply to the second argument of the function,
+  otherwise they apply to the first (and only) argument; and if there is more
+  than one such inside equivalence relation for that function the name is
+  suffixed with ``@('1')'' or ``@('2')''.  The exclamation mark at the end of
+  ``G2EQ1!'' is to remind us that the function is a refinement of @('G2EQ1').
+  Thus @('PEQ') is the inside equivalence for the first (only) argument of
+  @('P')-terms and @('G2EQ1') is the inside equivalence for the second argument
+  of @('G')-terms and is one of two such relations.</p>
+
+  <p>Imagine that we've proved two rewrite rules:</p>
+
+  <ul>
+
+  <li>@('(DEFTHM RULE (G2EQ1! (BETA X) (GAMMA X)))')</li>
+
+  <li>@('(DEFTHM DONE (P (F (G X (GAMMA Y)))))')
+
+      <p>which is actually stored as</p>
+
+     @('(DEFTHM DONE (IFF (P (F (G X (GAMMA Y)))) T))').</li>
+
+  </ul>
+
+  <p>Clearly, our strategy to prove @('(P (F (G A (BETA B))))') is to use
+  @('RULE') to replace the @('(BETA B)') by @('(GAMMA B)'), and then use
+  @('DONE') to reduce the conjecture to @('T').</p>
+
+  <p>However, the problem is that @('RULE') uses the equivalence relation
+  @('G2EQ1!').  So the rewriter, which starts by maintaining @('IFF') on the
+  top-level @('P') term, will have to evolve a geneqv so that by the time it
+  reaches the occurrence of @('(BETA B)') the geneqv at that target admits
+  @('G2EQ1!') as a refinement.  To do so we'll provide the following @(tsee
+  congruence) rules.  As you read them, remember that the term we'll be working
+  on is @('(P (F (G A (BETA B))))'), i.e., our conjecture is a call of @('P'),
+  in which the 1st (and only) argument is a call of @('F'), in which the 1st
+  (and only) argument is a call of @('G'), in which the 2nd argument is call of
+  @('BETA').</p>
+
+  <ul>
+
+  <li><p>@('IFF') is maintained on a call of @('P') provided @('PEQ') is maintained on
+  the 1st argument of @('P'):
+    <ul>
+    <li><i>event</i>:  @('(DEFCONG PEQ IFF (P X) 1)')</li>
+    <li><i>name</i>: @('PEQ-IMPLIES-IFF-P-1')</li>
+    </ul>
+    </p></li>
+
+  <li><p>@('PEQ') is maintained on a call of @('F') provided @('FEQ') is maintained on
+  the 1st argument of @('F'):
+    <ul>
+    <li><i>event</i>:  @('(DEFCONG FEQ PEQ (F X) 1)')</li>
+    <li><i>name</i>: @('FEQ-IMPLIES-PEQ-F-1')</li>
+    </ul>
+    </p></li>
+
+  <li><p>@('FEQ') is maintained on a call of @('G') provided @('G2EQ1') is maintained on
+  the 2nd argument of @('G'):
+    <ul>
+    <li><i>event</i>:  @('(DEFCONG G2EQ1 FEQ (G X Y) 2)')</li>
+    <li><i>name</i>: @('G2EQ1-IMPLIES-FEQ-G-2')</li>
+    </ul>
+    </p></li>
+
+  <li><p>@('FEQ') is <i>also</i> maintained on a call of @('G') provided @('G2EQ2') is maintained on
+  the 2nd argument of @('G'):
+    <ul>
+    <li><i>event</i>:  @('(DEFCONG G2EQ2 FEQ (G X Y) 2)')</li>
+    <li><i>name</i>: @('G2EQ2-IMPLIES-FEQ-G-2')</li>
+    </ul>
+    </p></li>
+
+  </ul>
+
+  <p>Note that there are two ways to maintain @('FEQ') on a call of @('G'):
+  maintain either @('G2EQ1') or @('G2EQ2') on the second argument of @('G').
+  But neither of those equivalence relations is used in our rewrite @('RULE').
+  Our @('RULE') uses @('G2EQ1!'), so assume we've proved:</p>
+
+  <ul>
+
+  <li><p>@('G2EQ1!') refines @('G2EQ1'):
+    <ul>
+    <li><i>event</i>: @('(DEFREFINEMENT G2EQ1! G2EQ1)')</li>
+    <li><i>name</i>: @('G2EQ1!-REFINES-G2EQ1')</li>
+   </ul>
+   </p></li>
+
+  </ul>
+
+  <p>Having arranged all of the above, imagine issuing the commands</p>
+
+  @({
+  (brr T)
+  (monitor '(:REWRITE RULE)
+           '(:condition (and (equal (brr@ :target) '(BETA B))
+                             '(:path+ :go))
+             :rf t))
+  (thm (P (F (G A (BETA B))))
+       :hints ((\"Goal\" :do-not '(preprocess))))
+  })
+
+  <p>Note: The @(':condition') value above will cause a break only if the
+  @(':target') is @('(BETA B)'), but when the break occurs it will issue the
+  command @(':PATH+') to print the path and then issue the command @(':GO') to
+  proceed from the break.  Because we've just monitored a @(see simple)
+  abbreviation rule, we include in the @(tsee thm) command the hint to avoid
+  preprocessing, as advised in the documentation for @(tsee monitor).</p>
+
+  <p>Because we've done the equivalence, congruence, and refinement setup
+  perfectly, our @('RULE') will fire and we will get a break like this:</p>
+
+  @({
+  (1 Breaking (:REWRITE RULE) on (BETA B):
+  1 ACL2 >
+  })
+
+  <p>The subsequent @(':PATH+') command will show how the rewriter descended to
+  here from the top-level goal and will display the geneqvs derived for each
+  rewrite.</p>
+
+  @({
+  1 ACL2 >:path+
+  1. Simplifying the clause
+       ((P (F (G A (BETA B)))))
+  2. Rewriting (to simplify) the atom of the first literal,
+       (P (F (G A (BETA B)))),
+     Geneqv: (IFF)
+  3. Rewriting (to simplify) the first argument,
+       (F (G A (BETA B))),
+     Geneqv: ((PEQ PEQ-IMPLIES-IFF-P-1))
+  4. Rewriting (to simplify) the first argument,
+       (G A (BETA B)),
+     Geneqv: ((FEQ FEQ-IMPLIES-PEQ-F-1))
+  5. Rewriting (to simplify) the second argument,
+       (BETA B),
+     Geneqv: ((G2EQ2 G2EQ2-IMPLIES-FEQ-G-2)
+              (G2EQ1 G2EQ1-IMPLIES-FEQ-G-2))
+  6. Attempting to apply (:REWRITE RULE) to
+       (BETA B)
+     Preserving: G2EQ1!
+     Geneqv: ((G2EQ2 G2EQ2-IMPLIES-FEQ-G-2)
+              (G2EQ1 G2EQ1-IMPLIES-FEQ-G-2))
+  1 ACL2 >
+  })
+
+  <p>Recall, from the discussion above, that sometimes geneqvs are printed
+  merely as a list of equivalence relations, e.g., @('(G2EQ2 G2EQ1)'), and
+  other times, as above, are printed so as to include the name of the
+  congruence relation responsible for each equivalence.</p>
+
+  <p>Notice that in frame 4, where the rewriter is working on @('(G A (BETA
+  B))') it is to maintain the @('FEQ') equivalence relation (which was
+  justified from frame 3 by the rule @('FEQ-IMPLIES-PEQ-F-1') where the
+  rewriter was to maintain @('PEQ')).  But when the rewriter stepped from frame
+  4 to the second argument of @('(G A (BETA B))') in frame 5, it used both
+  @('G2EQ1-IMPLIES-FEQ-G-2') and @('G2EQ2-IMPLIES-FEQ-G-2') to derive the
+  geneqv @('(G2EQ2 G2EQ1)').  Then, when it attempted to apply @('RULE'), whose
+  equivalence relation is @('G2EQ1!'), it passed the refinement test because
+  @('G2EQ1!') refines @('G2EQ1'), which is one of the equivalences listed in
+  the geneqv.</p>
+
+  <p>When we proceed from the break, the proof completes successfully.</p>
+
+  <p>But now imagine that we had failed to prove @('(DEFREFINEMENT G2EQ1!
+  G2EQ1)').  The @('thm') command above would have caused this break:</p>
+
+  @({
+  (1 Breaking (:REWRITE RULE) on (BETA B):
+
+  The equivalence relation, G2EQ1!, of this rule is not a refinement
+  of the current geneqv, (G2EQ2 G2EQ1).  Use :path or :path+ to see how
+  the geneqv evolved.  See :DOC refinement-failure for advice about how
+  to deal with this kind of problem.
+
+  1 ACL2 >
+  })
+
+  <p>The break header explains the problem: the rewriter does not know that
+  @('G2EQ1!') refines @('G2EQ1') or @('G2EQ2').  Of course, <i>we</i> do know
+  that and the fix is simply to prove the ``forgotten'' @(tsee
+  defrefinement).</p>
+
+  <p>On the other hand, suppose we had proved the @('defrefinement') but had
+  forgotten to prove that @('FEQ') is maintained on a call of @('G') when
+  @('G2EQ1') is maintained on the 2nd argument of @('G'), i.e., @('(DEFCONG
+  G2EQ1 FEQ (G X Y) 2)'), aka @('G2EQ1-IMPLIES-FEQ-G-2').  Then the @('thm')
+  command would produce the following break.</p>
+
+  @({
+  (1 Breaking (:REWRITE RULE) on (BETA B):
+
+  The equivalence relation, G2EQ1!, of this rule is not a refinement
+  of the current geneqv, (G2EQ2).  Use :path or :path+ to see how the
+  geneqv evolved.  See :DOC refinement-failure for advice about how to
+  deal with this kind of problem.
+  })
+
+  <p>Note that the geneqv is printed in its simplest form, as a list of
+  equivalence relation names; in this case only one name is included:
+  @('G2EQ2').  Of course, if we believed @('G2EQ1!') does refine @('G2EQ2'), it
+  would suffice to prove the corresponding refinement rule.  But let's suppose
+  we know @('G2EQ1!') doesn't refine @('G2EQ2').  Instead, we know @('G2EQ1!')
+  refines @('G2EQ1'), which is not in the geneqv.  Our problem then is to
+  arrange for @('G2EQ1') to be in the geneqv.  Look at the path that got us
+  here.</p>
+
+  @({
+  1 ACL2 >:path+
+  1. Simplifying the clause
+       ((P (F (G A (BETA B)))))
+  2. Rewriting (to simplify) the atom of the first literal,
+       (P (F (G A (BETA B)))),
+     Geneqv: (IFF)
+  3. Rewriting (to simplify) the first argument,
+       (F (G A (BETA B))),
+     Geneqv: ((PEQ PEQ-IMPLIES-IFF-P-1))
+  4. Rewriting (to simplify) the first argument,
+       (G A (BETA B)),
+     Geneqv: ((FEQ FEQ-IMPLIES-PEQ-F-1))
+  5. Rewriting (to simplify) the second argument,
+       (BETA B),
+     Geneqv: ((G2EQ2 G2EQ2-IMPLIES-FEQ-G-2))
+  6. Attempting to apply (:REWRITE RULE) to
+       (BETA B)
+     Preserving: G2EQ1!
+     Geneqv: ((G2EQ2 G2EQ2-IMPLIES-FEQ-G-2))
+  1 ACL2 >
+  })
+
+  <p>In frame 4 we are to maintain @('FEQ') on a call of @('G').  In frame 5 we
+  are rewritting the second argument of @('G') and used
+  @('G2EQ2-IMPLIES-FEQ-G-2') to derive the new geneqv containing @('G2EQ2').
+  We could get @('G2EQ1') into that new geneqv is only we had a congruence rule
+  that says @('FEQ') is maintained on @('G') when rewriting the second argument
+  of @('G') maintaining @('G2EQ1').  That's just the ``forgotten'' @('(DEFCONG
+  G2EQ1 FEQ (G X Y) 2)').  Of course we could alternatively have chosen to
+  prove @('(DEFCONG G2EQ1! FEQ (G X Y) 2)'), but it is generally better to
+  prove the strongest congruence rules we know.</p>
+
+  <p>Finally, as documented in @(see refinement) and @(see congruence),
+  refinement and congruence rules are not (always) tracked and usually do
+  not show up in the @(see summary) printed at the end of proof attempts.
+  The decision not to track every use of these rules was made to improve
+  prover efficiency.</p>")
 
 (defxdoc regenerate-tau-database
   :parents (events introduction-to-the-tau-system)
@@ -157737,7 +158476,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
    nil)
 
  (defrec brr-data-1
-   (((lemma . target) . (unify-subst . type-alist))
+   (((lemma . target) . (unify-subst type-alist . geneqv))
     .
     ((pot-list . ancestors) . (rcnst initial-ttree . gstack)))
    nil)
