@@ -19121,7 +19121,7 @@ Subtopics
   call under a call of [47m[hide][0m.
 
 
-Evaluation during proofs
+Evaluation during rewriting
 
   Forms:
 
@@ -19132,18 +19132,22 @@ Evaluation during proofs
 
     (defstub f (x) t)
     (defun g (x) (cons (f x) x))
-    (defun h (x) (cons x (cdr (g x))))
+    (defund h (x) (cons x (cdr (g x))))
     (thm (equal (h 3) '(3 . 3)))
 
-  The proof attempt fails for the [47m[thm][0m call, indicating the checkpoint
-  shown below.
+  Note that the [definition] of [47mh[0m is disabled, but its
+  [executable-counterpart] is not.  The proof attempt fails for the
+  [47m[thm][0m call, indicating the checkpoint shown below.
 
     *** Key checkpoint at the top level: ***
 
     Goal'
-    (EQUAL (HIDE (COMMENT \"Failed attempt to call constrained function F\"
-                          (H 3)))
-           '(3 . 3))
+    (EQUAL
+     (HIDE
+       (COMMENT \"Failed attempt to call constrained function F;
+    see :DOC comment\"
+                (H 3)))
+     '(3 . 3))
 
   The first argument of [47mequal[0m is logically just [47m(h 3)[0m.  But the [47mcomment[0m
   and [47mhide[0m wrappers are telling us that evaluation of [47m(h 3)[0m failed
@@ -19188,19 +19192,20 @@ Evaluation during proofs
   (It actually suffices to disable only [47m(:e h)[0m, but the workings of the
   ACL2 rewriter are out of scope here.)
 
-  Note that if the offending function is [non-executable] rather than
-  constrained, in particular if that function is defined using
-  [47m[defun-nx][0m, then in the first argument of comment you will see
-  ``non-executable'' instead of ``constrained''.
+  If the offending function (here, [47mf[0m) is introduced as [non-executable]
+  rather than constrained, in particular if that function is defined
+  using [47m[defun-nx][0m or [47m[defund-nx][0m, then in the first argument of
+  comment you will see ``non-executable'' instead of ``constrained''.
 
 
-Evaluation during building a term
+Evaluation during substitution
 
   Form:
 
     (HIDE
      (COMMENT
-      \"Failed attempt (when building a term) to call constrained function <fn>\"
+      \"Failed attempt (during substitution) to call constrained function <fn>;
+    see :DOC comment\"
       <term>))
 
   Consider how ACL2 approaches the proof of the non-theorem below.
@@ -19210,14 +19215,15 @@ Evaluation during building a term
     (thm (implies (equal x 3) (equal (bar x) yyy)))
 
   The prover attacks the [47m[thm][0m event by substituting the constant [47m'3[0m
-  for [47mx[0m.  But the prover attempts to evaluate [47m(bar 3)[0m when doing that
-  substitution, and the evaluation fails because [47mbar[0m calls the
-  undefined function [47mfoo[0m.  The checkpoint is as follows.
+  for [47mx[0m, which results in an attempt to evaluate [47m(bar 3)[0m.  This
+  evaluation fails because [47mbar[0m calls the undefined function [47mfoo[0m.  The
+  checkpoint is as follows.
 
     (EQUAL
      (HIDE
       (COMMENT
-         \"Failed attempt (when building a term) to call constrained function FOO\"
+         \"Failed attempt (during substitution) to call constrained function FOO;
+    see :DOC comment\"
          (BAR 3)))
      YYY)
 
@@ -19226,7 +19232,8 @@ Failure to expand using a rule
 
   Form:
 
-    (HIDE (COMMENT \"Unable to expand using the rule <name>\"
+    (HIDE (COMMENT \"Unable to expand using the rule <name>;
+    see :DOC comment\"
                    <term>))
 
   Consider how ACL2 approaches the proof for the second event below.
@@ -19238,22 +19245,27 @@ Failure to expand using a rule
          :hints ((\"Goal\" :expand (nth i y) :do-not-induct t)))
 
   The checkpoint is as follows.  What happened is that the rule
-  [47mnth-open[0m had a hypothesis that was false when the rule was
-  attempted for the term [47m(nth i y)[0m.
+  [47mnth-open[0m had a hypothesis that was false when an attempt was made
+  to apply it to the term [47m(nth i y)[0m.
 
-    (IMPLIES (NOT (CONSP Y))
-             (EQUAL (HIDE (COMMENT \"Unable to expand using the rule NTH-OPEN\"
-                                   (NTH I Y)))
-                    ZZZ))
+    (IMPLIES
+     (NOT (CONSP Y))
+     (EQUAL
+      (HIDE (COMMENT \"Unable to expand using the rule NTH-OPEN;
+    see :DOC comment\"
+                     (NTH I Y)))
+      ZZZ))
 
 
 Failure due to disabled or missing warrants
 
   Forms:
 
-    (HIDE (COMMENT \"Call failed because the rule apply$-<fn> is disabled\"
+    (HIDE (COMMENT \"Call failed because the rule apply$-<fn> is disabled;
+    see :DOC comment\"
           <term>))
-    (HIDE (COMMENT \"Call failed because the warrant for <fn> is not known to be true\"
+    (HIDE (COMMENT \"Call failed because the warrant for <fn> is not known to be true;
+    see :DOC comment\"
           <term>))
 
   The first of these forms may appear when an attempt to evaluate a
@@ -19265,9 +19277,8 @@ Failure due to disabled or missing warrants
   [47mapply$[0m in the theorem ultimately leads to an attempt to evaluate a
   call of [47m[ev$][0m, which ultimately fails because it leads to a call to
   evaluate [47m(apply$ 'bar '(3))[0m [47mbar[0m.  That call causes an error because
-  the warrant is unavailable, because the rule [47mapply$-bar[0m is
-  disabled, hence cannot rewrite a term [47m(apply$ 'bar args)[0m to [47m(bar
-  (car args))[0m.
+  the warrant is unavailable since the rule [47mapply$-bar[0m is disabled,
+  hence cannot rewrite a term [47m(apply$ 'bar args)[0m to [47m(bar (car args))[0m.
 
     (include-book \"projects/apply/top\" :dir :system)
     (defun$ bar (x) x)
@@ -19278,10 +19289,14 @@ Failure due to disabled or missing warrants
   The checkpoint in the proof for the [47mthm[0m just above is as follows.
 
     (IMPLIES
-      (APPLY$-WARRANT-BAR)
-      (EQUAL (HIDE (COMMENT \"Call failed because the rule APPLY$-BAR is disabled\"
-                            (EV$ '(BAR Y) '((Y . 3)))))
-             3))
+     (APPLY$-WARRANT-BAR)
+     (EQUAL
+      (HIDE
+       (COMMENT
+          \"Call failed because the rule APPLY$-BAR is disabled;
+    see :DOC comment\"
+          (EV$ '(BAR Y) '((Y . 3)))))
+      3))
 
   Similarly, if we instead submit the following event, we see the other
   such message, in this case about a false warrant.
@@ -19294,9 +19309,13 @@ Failure due to disabled or missing warrants
 
     (IMPLIES
      (NOT (APPLY$-WARRANT-BAR))
-     (EQUAL (HIDE (COMMENT \"Call failed because the warrant for BAR is not known to be true\"
-                           (EV$ '(BAR Y) '((Y . 3)))))
-            3))
+     (EQUAL
+      (HIDE
+       (COMMENT
+        \"Call failed because the warrant for BAR is not known to be true;
+    see :DOC comment\"
+        (EV$ '(BAR Y) '((Y . 3)))))
+      3))
 
   Our final example illustrates a failure due to forcing being
   disabled.  The use of [47m[loop$][0m in the definition of [47mbar[0m expands to
@@ -19322,12 +19341,13 @@ Failure due to disabled or missing warrants
     (EQUAL
      (HIDE
       (COMMENT
-       \"Call failed because the warrant for HELLO is not known to be true\"
+       \"Call failed because the warrant for HELLO is not known to be true;
+    see :DOC comment\"
        (EV$ '(RETURN-LAST 'PROGN
                           '(LAMBDA$ (LOOP$-IVAR)
-                                    (LET ((NAME LOOP$-IVAR))
-                                      (DECLARE (IGNORABLE NAME))
-                                      (HELLO NAME)))
+                             (LET ((NAME LOOP$-IVAR))
+                               (DECLARE (IGNORABLE NAME))
+                               (HELLO NAME)))
                           ((LAMBDA (NAME) (HELLO NAME))
                            LOOP$-IVAR))
             '((LOOP$-IVAR . JOHN)))))
@@ -103039,13 +103059,19 @@ Changes to Existing Features
   The predicate [47mstandard-string-alistp[0m has been deleted, while a
   related predicate [47m[string-alistp][0m has been added.
 
-  The break-rewrite facility will now cause an interactive break on a
+  The [break-rewrite] facility will now cause an interactive break on a
   monitored rewrite rule if the rule's equivalence relation fails to
-  refine the any of the equivalence relations known to be permitted
-  while rewriting the target.  See [geneqv] for a discussion of how
-  [47mcongruence[0m rules are used to compute permitted equivalence
+  refine any of the equivalence relations known to be permitted while
+  rewriting the target.  See [geneqv] for a discussion of how
+  [congruence] rules are used to compute permitted equivalence
   relations and [refinement-failure] for advice about how to
   investigate and fix refinement failures during rewriting.
+
+  The message for evaluation failures during proofs has been modified
+  slightly, clarifying the case of substitution and, especially,
+  suggesting :DOC [comment] for explanations (which has been updated
+  accordingly).  Thanks to David Russinoff for an acl2-help list
+  query leading to this improvement.
 
 
 New Features
