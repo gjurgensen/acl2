@@ -20839,6 +20839,7 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
     :creator creator
     :corr-fn corr-fn
     :congruent-to congruent-to
+    :non-executable non-executable
     :protect-default protect-default
     :exports (e1 ... ek))
  })
@@ -20904,6 +20905,12 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
  @(':EXEC') symbols.  See @(see defstobj) for more about congruent stobjs.
  Note that if two names are congruent, then they are either both ordinary
  stobjs or both abstract stobjs.</p>
+
+ <p>@('Non-executable') should either be @('nil') (the default) or @('t').
+ When @('t'), the live stobj is not created; see @(see defstobj), Section
+ &ldquo;Specifying Non-executable Stobjs&rdquo;, for details, since the meaning
+ of @(':non-executable') is the same for @('defabsstobj') as it is for
+ @('defstobj').</p>
 
  <p>@('Protect-default') should either be @('nil') (the default) or @('t').  It
  provides the value of keyword @(':PROTECT') for each member of @('exports')
@@ -105281,8 +105288,8 @@ it."
 ; conversion of fmt, (er soft ...), one-way-unify, and genvar, and related
 ; utilities to guard-verified :logic mode.
 
-;   87 ; Changes to Existing Features
-;   36 ; New Features
+;   88 ; Changes to Existing Features
+;   37 ; New Features
 ;   10 ; Heuristic and Efficiency Improvements
 ;   38 ; Bug Fixes
 ;   18 ; Changes at the System Level
@@ -106430,6 +106437,10 @@ it."
  Thanks to David Russinoff for an acl2-help list query leading to this
  improvement.</p>
 
+ <p>It is no longer illegal for a @(tsee defstobj) event both to specify
+ keyword argument @(':NON-EXECUTABLE T') and to use the @(':CONGRUENT-TO')
+ keyword argument.</p>
+
  <h3>New Features</h3>
 
  <p>ACL2 now supports floating-point operations.  See @(see df).  Regarding
@@ -106644,6 +106655,10 @@ it."
 
  <p>A new utility, @(tsee compare-objects), highlights the differences between
  two @('cons')-trees.</p>
+
+ <p>Now @(tsee defabsstobj) accepts the @(':non-executable') keyword, in
+ analogy to support for that keyword by defstobj.  Thanks to Yahya Sohail and
+ Warren Hunt for discussions leading to this enhancement.</p>
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
