@@ -16109,7 +16109,7 @@ with any questions about building the community books.</p>")
  failures, and for how to keep the prover from inserting a @('comment') call
  under a call of @(tsee hide).</p>
 
- <h3>Evaluation during proofs</h3>
+ <h3>Evaluation during rewriting</h3>
 
  <p>Forms:</p>
 
@@ -16123,20 +16123,24 @@ with any questions about building the community books.</p>")
  @({
  (defstub f (x) t)
  (defun g (x) (cons (f x) x))
- (defun h (x) (cons x (cdr (g x))))
+ (defund h (x) (cons x (cdr (g x))))
  (thm (equal (h 3) '(3 . 3)))
  })
 
- <p>The proof attempt fails for the @(tsee thm) call, indicating the checkpoint
- shown below.</p>
+ <p>Note that the @(see definition) of @('h') is disabled, but its @(see
+ executable-counterpart) is not.  The proof attempt fails for the @(tsee thm)
+ call, indicating the checkpoint shown below.</p>
 
  @({
  *** Key checkpoint at the top level: ***
 
  Goal'
- (EQUAL (HIDE (COMMENT \"Failed attempt to call constrained function F\"
-                       (H 3)))
-        '(3 . 3))
+ (EQUAL
+  (HIDE
+    (COMMENT \"Failed attempt to call constrained function F;
+ see :DOC comment\"
+             (H 3)))
+  '(3 . 3))
  })
 
  <p>The first argument of @('equal') is logically just @('(h 3)').  But the
@@ -16193,19 +16197,21 @@ with any questions about building the community books.</p>")
  <p>(It actually suffices to disable only @('(:e h)'), but the workings of the
  ACL2 rewriter are out of scope here.)</p>
 
- <p>Note that if the offending function is @(see non-executable) rather than
- constrained, in particular if that function is defined using @(tsee defun-nx),
- then in the first argument of comment you will see ``non-executable'' instead
- of ``constrained''.</p>
+ <p>If the offending function (here, @('f')) is introduced as @(see
+ non-executable) rather than constrained, in particular if that function is
+ defined using @(tsee defun-nx) or @(tsee defund-nx), then in the first
+ argument of comment you will see ``non-executable'' instead of
+ ``constrained''.</p>
 
- <h3>Evaluation during building a term</h3>
+ <h3>Evaluation during substitution</h3>
 
  <p>Form:</p>
 
  @({
  (HIDE
   (COMMENT
-   \"Failed attempt (when building a term) to call constrained function <fn>\"
+   \"Failed attempt (during substitution) to call constrained function <fn>;
+ see :DOC comment\"
    <term>))
  })
 
@@ -16218,15 +16224,16 @@ with any questions about building the community books.</p>")
  })
 
  <p>The prover attacks the @(tsee thm) event by substituting the constant
- @(''3') for @('x').  But the prover attempts to evaluate @('(bar 3)') when
- doing that substitution, and the evaluation fails because @('bar') calls the
- undefined function @('foo').  The checkpoint is as follows.</p>
+ @(''3') for @('x'), which results in an attempt to evaluate @('(bar 3)').
+ This evaluation fails because @('bar') calls the undefined function @('foo').
+ The checkpoint is as follows.</p>
 
  @({
  (EQUAL
   (HIDE
    (COMMENT
-      \"Failed attempt (when building a term) to call constrained function FOO\"
+      \"Failed attempt (during substitution) to call constrained function FOO;
+ see :DOC comment\"
       (BAR 3)))
   YYY)
  })
@@ -16236,7 +16243,8 @@ with any questions about building the community books.</p>")
  <p>Form:</p>
 
  @({
- (HIDE (COMMENT \"Unable to expand using the rule <name>\"
+ (HIDE (COMMENT \"Unable to expand using the rule <name>;
+ see :DOC comment\"
                 <term>))
  })
 
@@ -16251,14 +16259,17 @@ with any questions about building the community books.</p>")
  })
 
  <p>The checkpoint is as follows.  What happened is that the rule @('nth-open')
- had a hypothesis that was false when the rule was attempted for the term
- @('(nth i y)').</p>
+ had a hypothesis that was false when an attempt was made to apply it to the
+ term @('(nth i y)').</p>
 
  @({
- (IMPLIES (NOT (CONSP Y))
-          (EQUAL (HIDE (COMMENT \"Unable to expand using the rule NTH-OPEN\"
-                                (NTH I Y)))
-                 ZZZ))
+ (IMPLIES
+  (NOT (CONSP Y))
+  (EQUAL
+   (HIDE (COMMENT \"Unable to expand using the rule NTH-OPEN;
+ see :DOC comment\"
+                  (NTH I Y)))
+   ZZZ))
  })
 
  <h3>Failure due to disabled or missing warrants</h3>
@@ -16266,9 +16277,11 @@ with any questions about building the community books.</p>")
  <p>Forms:</p>
 
  @({
- (HIDE (COMMENT \"Call failed because the rule apply$-<fn> is disabled\"
+ (HIDE (COMMENT \"Call failed because the rule apply$-<fn> is disabled;
+ see :DOC comment\"
        <term>))
- (HIDE (COMMENT \"Call failed because the warrant for <fn> is not known to be true\"
+ (HIDE (COMMENT \"Call failed because the warrant for <fn> is not known to be true;
+ see :DOC comment\"
        <term>))
  })
 
@@ -16280,7 +16293,7 @@ with any questions about building the community books.</p>")
  the attempt to simplify the call of @('apply$') in the theorem ultimately
  leads to an attempt to evaluate a call of @(tsee ev$), which ultimately fails
  because it leads to a call to evaluate @('(apply$ 'bar '(3))') @('bar').  That
- call causes an error because the warrant is unavailable, because the rule
+ call causes an error because the warrant is unavailable since the rule
  @('apply$-bar') is disabled, hence cannot rewrite a term @('(apply$ 'bar
  args)') to @('(bar (car args))').</p>
 
@@ -16296,10 +16309,14 @@ with any questions about building the community books.</p>")
 
  @({
  (IMPLIES
-   (APPLY$-WARRANT-BAR)
-   (EQUAL (HIDE (COMMENT \"Call failed because the rule APPLY$-BAR is disabled\"
-                         (EV$ '(BAR Y) '((Y . 3)))))
-          3))
+  (APPLY$-WARRANT-BAR)
+  (EQUAL
+   (HIDE
+    (COMMENT
+       \"Call failed because the rule APPLY$-BAR is disabled;
+ see :DOC comment\"
+       (EV$ '(BAR Y) '((Y . 3)))))
+   3))
  })
 
  <p>Similarly, if we instead submit the following event, we see the other such
@@ -16316,9 +16333,13 @@ with any questions about building the community books.</p>")
  @({
  (IMPLIES
   (NOT (APPLY$-WARRANT-BAR))
-  (EQUAL (HIDE (COMMENT \"Call failed because the warrant for BAR is not known to be true\"
-                        (EV$ '(BAR Y) '((Y . 3)))))
-         3))
+  (EQUAL
+   (HIDE
+    (COMMENT
+     \"Call failed because the warrant for BAR is not known to be true;
+ see :DOC comment\"
+     (EV$ '(BAR Y) '((Y . 3)))))
+   3))
  })
 
  <p>Our final example illustrates a failure due to forcing being disabled.  The
@@ -16344,19 +16365,20 @@ with any questions about building the community books.</p>")
  <p>Here is the resulting checkpoint.</p>
 
  @({
-  (EQUAL
-   (HIDE
-    (COMMENT
-     \"Call failed because the warrant for HELLO is not known to be true\"
-     (EV$ '(RETURN-LAST 'PROGN
-                        '(LAMBDA$ (LOOP$-IVAR)
-                                  (LET ((NAME LOOP$-IVAR))
-                                    (DECLARE (IGNORABLE NAME))
-                                    (HELLO NAME)))
-                        ((LAMBDA (NAME) (HELLO NAME))
-                         LOOP$-IVAR))
-          '((LOOP$-IVAR . JOHN)))))
-   '(HI JOHN))
+ (EQUAL
+  (HIDE
+   (COMMENT
+    \"Call failed because the warrant for HELLO is not known to be true;
+ see :DOC comment\"
+    (EV$ '(RETURN-LAST 'PROGN
+                       '(LAMBDA$ (LOOP$-IVAR)
+                          (LET ((NAME LOOP$-IVAR))
+                            (DECLARE (IGNORABLE NAME))
+                            (HELLO NAME)))
+                       ((LAMBDA (NAME) (HELLO NAME))
+                        LOOP$-IVAR))
+         '((LOOP$-IVAR . JOHN)))))
+  '(HI JOHN))
  })")
 
 (defxdoc common-lisp
@@ -105259,7 +105281,7 @@ it."
 ; conversion of fmt, (er soft ...), one-way-unify, and genvar, and related
 ; utilities to guard-verified :logic mode.
 
-;   86 ; Changes to Existing Features
+;   87 ; Changes to Existing Features
 ;   36 ; New Features
 ;   10 ; Heuristic and Efficiency Improvements
 ;   38 ; Bug Fixes
@@ -106394,13 +106416,19 @@ it."
  <p>The predicate @('standard-string-alistp') has been deleted, while a related
  predicate @(tsee string-alistp) has been added.</p>
 
- <p>The break-rewrite facility will now cause an interactive break on a
- monitored rewrite rule if the rule's equivalence relation fails to refine the
- any of the equivalence relations known to be permitted while rewriting the
- target.  See @(see geneqv) for a discussion of how @('congruence') rules are
- used to compute permitted equivalence relations and @(see refinement-failure)
- for advice about how to investigate and fix refinement failures during
+ <p>The @(see break-rewrite) facility will now cause an interactive break on a
+ monitored rewrite rule if the rule's equivalence relation fails to refine any
+ of the equivalence relations known to be permitted while rewriting the target.
+ See @(see geneqv) for a discussion of how @(see congruence) rules are used to
+ compute permitted equivalence relations and @(see refinement-failure) for
+ advice about how to investigate and fix refinement failures during
  rewriting.</p>
+
+ <p>The message for evaluation failures during proofs has been modified
+ slightly, clarifying the case of substitution and, especially, suggesting
+ :DOC @(see comment) for explanations (which has been updated accordingly).
+ Thanks to David Russinoff for an acl2-help list query leading to this
+ improvement.</p>
 
  <h3>New Features</h3>
 
