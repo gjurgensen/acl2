@@ -14773,20 +14773,36 @@ Subtopics
 
   ACL2 allows the user to [monitor] the application of [rewrite],
   [definition], and [linear] rules.  When the rewriter is about to
-  try to apply a [monitor]ed rule, it can trigger an interactive
-  break managed by a version of the rewriter called
-  ``break-rewrite''.  From within this read-eval-print loop you can
-  inspect the context, attempt to apply the rule, and see what
-  happens.  This interactive loop is technically just a call of the
-  standard ACL2 read-eval-print loop, [47m[ld][0m, on a ``[wormhole]
-  [state]'' (see [wormhole]).  While in break-rewrite, certain
-  keyword commands are available for accessing information about the
-  context in which the lemma is being tried.  These keywords are
-  called break-rewrite ``commands''; see [brr-commands].  Interactive
-  breaks occur only if the [47mbreak-rewrite[0m utility is turned on (see
-  [47m[brr][0m), a monitored rune is being considered by the rewriter, and
-  the break conditions specified in the monitor are satisfied (see
-  [47m[monitor][0m).
+  try to apply an [47m[enable][0md [monitor]ed rule, it can trigger an
+  interactive break managed by a version of the rewriter called
+  ``break-rewrite''.  These breaks can be caused by
+
+    *
+        failure of a rewrite rule's equivalence relation to be a known
+        refinement of the permitted relations,
+
+    *
+        failure of a rule's triggering pattern to match the target term while
+        ``almost'' matching,
+
+    *
+        failure to relieve the hypotheses of the rule, or
+
+    *
+        failure of any of several heuristic checks to prevent looping in the
+        rewriter.
+
+  From within this read-eval-print loop you can inspect the context,
+  attempt to apply the rule, and see what happens.  This interactive
+  loop is technically just a call of the standard ACL2
+  read-eval-print loop, [47m[ld][0m, on a ``[wormhole] [state]'' (see
+  [wormhole]).  While in break-rewrite, certain keyword commands are
+  available for accessing information about the context in which the
+  lemma is being tried.  These keywords are called break-rewrite
+  ``commands''; see [brr-commands].  Interactive breaks occur only if
+  the [47mbreak-rewrite[0m utility is turned on (see [47m[brr][0m), a monitored
+  rune is being considered by the rewriter, and the break conditions
+  specified in the monitor are satisfied (see [47m[monitor][0m).
 
   The following utilities can also be helpful for proof [debugging].
 
@@ -14902,6 +14918,17 @@ Subtopics
     3 ACL2 >:path             ; the stack of goals pursued by the rewriter
                               ; starting at the top-level clause being simplified
                               ; and ending with the current application
+
+  The output of the [47m:path[0m command shows a stack of simplification and
+  rewriting ``frames'' starting with the current top-level goal (in
+  clausal form as a list of literals) and ending with the current
+  target.  Frames should be self-explanatory.  Frames describing the
+  attempt to apply a rewrite rule will display the name of the
+  equivalence relation the rule uses (unless the relation is [47mequal[0m).
+  All rewrite frames (including the attempt to apply a given rewrite
+  rule) will display the current [geneqv] (the sense of equivalence
+  the rewriter is obligated to maintain) unless the geneqv denotes
+  just the [47mequal[0mity relation.
 
   At this point in the interaction the system has not yet tried to
   apply the [monitor]ed rule.  That is, it has not tried to establish
@@ -15140,6 +15167,9 @@ Subtopics
   [Dmr]
       Dynamically monitor rewrites and other prover activity
 
+  [Geneqv]
+      the rewriter's generated equivalence relation
+
   [Monitor]
       To monitor attempted applications of certain rules by the rewriter
 
@@ -15151,6 +15181,9 @@ Subtopics
 
   [Ok-if]
       Conditional exit from [47mbreak-rewrite[0m
+
+  [Refinement-failure]
+      what to do when a rewrite rule fails the refinement check
 
   [Unmonitor]
       To stop monitoring a rule name
@@ -15482,6 +15515,7 @@ Subtopics
     :failure-reason[+] reason rule failed (after :eval)
     :final-ttree[+]    ttree after :eval (see :DOC ttree)
     :frame[+] i        ith frame in :path
+    :geneqv[+]         generated equivalence relation to be maintained
     :go                :eval but don't return to this break, just
                          print the result of the try
     :go!               :go but first remove all monitors (see below)
@@ -15759,6 +15793,11 @@ Subtopics
                         the current context.  (See also the documentation for
                         type-alist.)  The type-alist may be used to determine
                         the current assumptions, e.g., whether A is a CONSP.
+
+    :geneqv          *  the generated equivalence relation that specifies
+                        what equivalence relations may be used to rewrite
+                        the target.  (See the documentation for geneqv and
+                        refinement-failure.)
 
     :ancestors       *  a stack of frames indicating the backchain history
                         of the current context.  The theorem prover is in
@@ -19082,7 +19121,7 @@ Subtopics
   call under a call of [47m[hide][0m.
 
 
-Evaluation during proofs
+Evaluation during rewriting
 
   Forms:
 
@@ -19093,18 +19132,22 @@ Evaluation during proofs
 
     (defstub f (x) t)
     (defun g (x) (cons (f x) x))
-    (defun h (x) (cons x (cdr (g x))))
+    (defund h (x) (cons x (cdr (g x))))
     (thm (equal (h 3) '(3 . 3)))
 
-  The proof attempt fails for the [47m[thm][0m call, indicating the checkpoint
-  shown below.
+  Note that the [definition] of [47mh[0m is disabled, but its
+  [executable-counterpart] is not.  The proof attempt fails for the
+  [47m[thm][0m call, indicating the checkpoint shown below.
 
     *** Key checkpoint at the top level: ***
 
     Goal'
-    (EQUAL (HIDE (COMMENT \"Failed attempt to call constrained function F\"
-                          (H 3)))
-           '(3 . 3))
+    (EQUAL
+     (HIDE
+       (COMMENT \"Failed attempt to call constrained function F;
+    see :DOC comment\"
+                (H 3)))
+     '(3 . 3))
 
   The first argument of [47mequal[0m is logically just [47m(h 3)[0m.  But the [47mcomment[0m
   and [47mhide[0m wrappers are telling us that evaluation of [47m(h 3)[0m failed
@@ -19149,19 +19192,20 @@ Evaluation during proofs
   (It actually suffices to disable only [47m(:e h)[0m, but the workings of the
   ACL2 rewriter are out of scope here.)
 
-  Note that if the offending function is [non-executable] rather than
-  constrained, in particular if that function is defined using
-  [47m[defun-nx][0m, then in the first argument of comment you will see
-  ``non-executable'' instead of ``constrained''.
+  If the offending function (here, [47mf[0m) is introduced as [non-executable]
+  rather than constrained, in particular if that function is defined
+  using [47m[defun-nx][0m or [47m[defund-nx][0m, then in the first argument of
+  comment you will see ``non-executable'' instead of ``constrained''.
 
 
-Evaluation during building a term
+Evaluation during substitution
 
   Form:
 
     (HIDE
      (COMMENT
-      \"Failed attempt (when building a term) to call constrained function <fn>\"
+      \"Failed attempt (during substitution) to call constrained function <fn>;
+    see :DOC comment\"
       <term>))
 
   Consider how ACL2 approaches the proof of the non-theorem below.
@@ -19171,14 +19215,15 @@ Evaluation during building a term
     (thm (implies (equal x 3) (equal (bar x) yyy)))
 
   The prover attacks the [47m[thm][0m event by substituting the constant [47m'3[0m
-  for [47mx[0m.  But the prover attempts to evaluate [47m(bar 3)[0m when doing that
-  substitution, and the evaluation fails because [47mbar[0m calls the
-  undefined function [47mfoo[0m.  The checkpoint is as follows.
+  for [47mx[0m, which results in an attempt to evaluate [47m(bar 3)[0m.  This
+  evaluation fails because [47mbar[0m calls the undefined function [47mfoo[0m.  The
+  checkpoint is as follows.
 
     (EQUAL
      (HIDE
       (COMMENT
-         \"Failed attempt (when building a term) to call constrained function FOO\"
+         \"Failed attempt (during substitution) to call constrained function FOO;
+    see :DOC comment\"
          (BAR 3)))
      YYY)
 
@@ -19187,7 +19232,8 @@ Failure to expand using a rule
 
   Form:
 
-    (HIDE (COMMENT \"Unable to expand using the rule <name>\"
+    (HIDE (COMMENT \"Unable to expand using the rule <name>;
+    see :DOC comment\"
                    <term>))
 
   Consider how ACL2 approaches the proof for the second event below.
@@ -19199,22 +19245,27 @@ Failure to expand using a rule
          :hints ((\"Goal\" :expand (nth i y) :do-not-induct t)))
 
   The checkpoint is as follows.  What happened is that the rule
-  [47mnth-open[0m had a hypothesis that was false when the rule was
-  attempted for the term [47m(nth i y)[0m.
+  [47mnth-open[0m had a hypothesis that was false when an attempt was made
+  to apply it to the term [47m(nth i y)[0m.
 
-    (IMPLIES (NOT (CONSP Y))
-             (EQUAL (HIDE (COMMENT \"Unable to expand using the rule NTH-OPEN\"
-                                   (NTH I Y)))
-                    ZZZ))
+    (IMPLIES
+     (NOT (CONSP Y))
+     (EQUAL
+      (HIDE (COMMENT \"Unable to expand using the rule NTH-OPEN;
+    see :DOC comment\"
+                     (NTH I Y)))
+      ZZZ))
 
 
 Failure due to disabled or missing warrants
 
   Forms:
 
-    (HIDE (COMMENT \"Call failed because the rule apply$-<fn> is disabled\"
+    (HIDE (COMMENT \"Call failed because the rule apply$-<fn> is disabled;
+    see :DOC comment\"
           <term>))
-    (HIDE (COMMENT \"Call failed because the warrant for <fn> is not known to be true\"
+    (HIDE (COMMENT \"Call failed because the warrant for <fn> is not known to be true;
+    see :DOC comment\"
           <term>))
 
   The first of these forms may appear when an attempt to evaluate a
@@ -19226,9 +19277,8 @@ Failure due to disabled or missing warrants
   [47mapply$[0m in the theorem ultimately leads to an attempt to evaluate a
   call of [47m[ev$][0m, which ultimately fails because it leads to a call to
   evaluate [47m(apply$ 'bar '(3))[0m [47mbar[0m.  That call causes an error because
-  the warrant is unavailable, because the rule [47mapply$-bar[0m is
-  disabled, hence cannot rewrite a term [47m(apply$ 'bar args)[0m to [47m(bar
-  (car args))[0m.
+  the warrant is unavailable since the rule [47mapply$-bar[0m is disabled,
+  hence cannot rewrite a term [47m(apply$ 'bar args)[0m to [47m(bar (car args))[0m.
 
     (include-book \"projects/apply/top\" :dir :system)
     (defun$ bar (x) x)
@@ -19239,10 +19289,14 @@ Failure due to disabled or missing warrants
   The checkpoint in the proof for the [47mthm[0m just above is as follows.
 
     (IMPLIES
-      (APPLY$-WARRANT-BAR)
-      (EQUAL (HIDE (COMMENT \"Call failed because the rule APPLY$-BAR is disabled\"
-                            (EV$ '(BAR Y) '((Y . 3)))))
-             3))
+     (APPLY$-WARRANT-BAR)
+     (EQUAL
+      (HIDE
+       (COMMENT
+          \"Call failed because the rule APPLY$-BAR is disabled;
+    see :DOC comment\"
+          (EV$ '(BAR Y) '((Y . 3)))))
+      3))
 
   Similarly, if we instead submit the following event, we see the other
   such message, in this case about a false warrant.
@@ -19255,9 +19309,13 @@ Failure due to disabled or missing warrants
 
     (IMPLIES
      (NOT (APPLY$-WARRANT-BAR))
-     (EQUAL (HIDE (COMMENT \"Call failed because the warrant for BAR is not known to be true\"
-                           (EV$ '(BAR Y) '((Y . 3)))))
-            3))
+     (EQUAL
+      (HIDE
+       (COMMENT
+        \"Call failed because the warrant for BAR is not known to be true;
+    see :DOC comment\"
+        (EV$ '(BAR Y) '((Y . 3)))))
+      3))
 
   Our final example illustrates a failure due to forcing being
   disabled.  The use of [47m[loop$][0m in the definition of [47mbar[0m expands to
@@ -19283,12 +19341,13 @@ Failure due to disabled or missing warrants
     (EQUAL
      (HIDE
       (COMMENT
-       \"Call failed because the warrant for HELLO is not known to be true\"
+       \"Call failed because the warrant for HELLO is not known to be true;
+    see :DOC comment\"
        (EV$ '(RETURN-LAST 'PROGN
                           '(LAMBDA$ (LOOP$-IVAR)
-                                    (LET ((NAME LOOP$-IVAR))
-                                      (DECLARE (IGNORABLE NAME))
-                                      (HELLO NAME)))
+                             (LET ((NAME LOOP$-IVAR))
+                               (DECLARE (IGNORABLE NAME))
+                               (HELLO NAME)))
                           ((LAMBDA (NAME) (HELLO NAME))
                            LOOP$-IVAR))
             '((LOOP$-IVAR . JOHN)))))
@@ -20648,7 +20707,9 @@ Subtopics
   two (or more) congruence rules for the same slot of a function.
   The result is that the system uses a new, ``generated'' equivalence
   relation for that slot with the result that rules of both (or all)
-  kinds are available while rewriting.
+  kinds are available while rewriting.  See [geneqv] for a discussion
+  of how generated equivalence relations are derived using congruence
+  rules and how generated equivalence relations are represented.
 
   Congruence rules can be [disable]d.  For example, if you have two
   different inside equivalences for a given argument position and you
@@ -45755,6 +45816,301 @@ Subtopics
   [47mGCL_MEM_MULTIPLE=0.25[0m.")
  (GCS (POINTERS)
       "See [get-command-sequence].")
+ (GENEQV
+  (INTRODUCTION-TO-THE-THEOREM-PROVER BREAK-REWRITE)
+  "the rewriter's generated equivalence relation
+
+  As the rewriter descends through a term, rewriting the subterms, it
+  uses [congruence] rules to determine which [equivalence]s may be
+  used to rewrite one subterm to another while ensuring that each
+  rewrite maintains a given equivalence.  Generally speaking multiple
+  equivalences may be used to rewrite subterms.  A ``generated
+  equivalence'' or ``geneqv'' (pronounced ``genequiv'') is the way we
+  encode which equivalences may be used by the rewriter at any given
+  subterm position.
+
+  The outline of this discussion is as follows.
+
+    *
+        Basic Support for Equivalence Relations: a review of equivalence
+        relations, refinement, and congruence
+
+    *
+        Salient Facts about the ACL2 Rewriter: a review of how the rewriter
+        works
+
+    *
+        Using Congruence Rules to Generate Acceptable Equivalences for
+        Subterms: an illustration of how congruence rules are used to
+        determine the equivalences the rewriter is permitted to use
+
+    *
+        Debugging Tools: How to see what equivalences are permitted while
+        rewriting the current target and how to see how the set
+        evolved as the rewriter descended from the top-level goal.
+
+
+Basic Support for Equivalence Relations
+
+  If you do not know what the following ACL2 macro forms do, you should
+  see their documentation.
+
+    ; prove and store that eqv is an equivalence relation:
+
+    (defequiv eqv)
+
+    ; prove and store that the equivalence relation eqv1
+    ; refines the equivalence relation eqv2
+
+    (defrefinement eqv1 eqv2)
+
+    ; prove and store that the equivalence relation eqv1 is a congruence relation
+    ; for the kth argument of the function f, preserving the equivalence relation
+    ; eqv2.
+
+    (defcong eqv1 eqv2 (f x1 ... xn) k)
+
+  An example of the last form is
+
+    (defcong set-equal iff (member e x) 2)
+
+  which essentially expands to
+
+    (defthm set-equal-implies-iff-member-2
+      (implies (set-equal x y)
+               (iff (member e x)
+                    (member e y)))
+      :rule-classes (:congruence))
+
+  (ACL2 actually generates a different variable name in place of [47my[0m
+  above.)
+
+  Helpful documentation topics include [equivalence], [refinement],
+  [congruence], [47m[defequiv][0m, [47m[defrefinement][0m, and [47m[defcong][0m.
+
+
+Salient Facts about the ACL2 Rewriter
+
+    *
+        Goals, which are represented as clauses, are simplified by rewriting
+        each literal in turn, assuming the other literals false.
+
+    *
+        When a term is rewritten (under some assumptions) the rewriter is
+        given an [equivalence] relation to maintain, i.e., the output
+        of the rewriter must be equivalent in that sense to the
+        input, under the assumptions.
+
+    *
+        The initial equivalence relation to be maintained while rewriting a
+        literal is [47m[iff][0m.
+
+    *
+        Each [47m:[0m[47m[rewrite][0m rule in ACL2 effectively concludes with a term of the
+        form [47m(@('eqv lhs rhs)[0m, where [47meqv[0m is an equivalence relation.
+        Such a rule may be used to replace instances of [47mlhs[0m by the
+        corresponding instance of [47mrhs[0m, and maintains the equivalence
+        relation [47meqv[0m.  But the rule is only applicable if [47meqv[0m [3mrefines[0m
+        the equivalence relation to be maintained by rewrite.  See
+        [refinement].
+
+    *
+        If the term to be rewritten is a function call, [47m(fn a1 ... ak)[0m, the
+        rewriter rewrites each [47mai[0m to, say, [47mai'[0m, before applying rules
+        to [47m(fn a1' ... ak[0m').  To be more precise, when the ACL2
+        rewriter is asked to rewrite [47m(fn a1 ... an)[0m maintaining some
+        equivalence [47meqv[0m, it first rewrites each [47mai[0m, maintaining an
+        equivalence generated from the congruence rules about how to
+        rewrite the [47mi[0mth argument of [47mfn[0m maintaining [47meqv[0m.  Suppose each
+        [47mai[0m is thus rewritten to some other term [47mai'[0m.  That is, [47m(fn a1
+        ... an)[0m is transformed to [47m(fn a1' ... an[0m') which is known to
+        be [47meqv[0m-equivalent to [47m(fn a1 ... an)[0m.  Then the rewriter
+        applies all the [47meqv[0m rules it knows to [47m(fn b1 ... bn)[0m.
+
+    *
+        How the rewriter uses the known [congruence] rules to determine the
+        equivalence relation to be maintained while rewriting each [47mai[0m
+        is illustrated below.
+
+    *
+        [47mEqual[0m refines all equivalence relations.
+
+    *
+        [47mEqual[0m maintains all equivalence relations across all argument
+        positions of all functions.
+
+
+Using Congruence Rules to Generate Acceptable Equivalences for
+Subterms
+
+  In this section show how ACL2 generates the equivalence relation it
+  will maintain when diving into subterms.  We do so by discussing a
+  couple of contrived examples.  The actual script for these examples
+  is in [47mbooks/demos/geneqv.lisp[0m.
+
+  Our examples use the following functions.
+
+    *
+        [47mLen[0m is an ACL2 primitive that determines the number of elements in a
+        list.
+
+    *
+        [47m(perm x y)[0m determines whether [47mx[0m is a permutation of [47my[0m, i.e., whether
+        each element that occurs in either [47mx[0m or [47my[0m occurs in both the
+        same number of times.  For example [47m(perm '(A B A C) '(C B A
+        A))[0m is true, but [47m(perm '(A B A C) '(A B B C))[0m is false.
+
+    *
+        [47m(pairwise-iff x y)[0m determines whether corresponding elements of [47mx[0m and
+        [47my[0m are propositionally equivalent (i.e., [47mIFF[0m-equivalent).  For
+        example, [47m(pairwise-iff '(T NIL T) '(1 NIL A))[0m is true (since
+        both [47m1[0m and [47mA[0m are non-[47mNIL[0m and thus propositionally equivalent
+        to [47mT[0m), but [47m(pairwise-iff '(T NIL T) '(1 NIL NIL))[0m is false.
+
+    *
+        Both [47mperm[0m and [47mpairwise-iff[0m can be proved to be [equivalence]
+        relations.
+
+    *
+        Both [47mperm[0m and [47mpairwise-iff[0m are congruence relations for the first
+        argument of [47mlen[0m that maintain [47mequal[0mity of [47mlen[0m.
+
+          (defthm perm-implies-equal-len-1
+            (implies (perm x y)
+                     (equal (len x)
+                            (len y)))
+            :rule-classes (:congruence))
+
+          (defthm pairwise-iff-implies-equal-len-1
+            (implies (pairwise-iff x y)
+                     (equal (len x)
+                            (len y)))
+            :rule-classes (:congruence))
+
+  Now consider proving
+
+    (defthm example-thm-1
+      (equal (len (isort (norml x)))
+             (len x))
+      :rule-classes nil)
+
+  Before we start you should understand that there are many ways to
+  prove this little theorem.  The most straightforward is just to
+  prove that [47m(len (isort x))[0m is [47m(len x)[0m and to prove [47m(len (norml x))[0m
+  is [47m(len x)[0m.  In this case, where the functions involved are [47misort[0m
+  and [47mnorml[0m, those theorems are easy to prove.  But for some
+  functions in those roles of a problem like this it is easier to
+  appeal to the properties of certain equivalence relations.  That's
+  what we'll do here.
+
+  If you run the [47mdefthm[0m above, the prover (after preprocessing)
+  eventually calls the rewriter on the [47mequal[0m term, requiring it to
+  maintain [47miff[0m.  The rewriter then dives into the two arguments,
+  rewriting [47m(len (isort (norml x)))[0m first, maintaining [47mequal[0mity.
+
+  The rewriter then dives into the first argument of the [47mlen[0m term,
+  [47m(isort (norml x))[0m.  The congruence rule [47mperm-implies-equal-len-1[0m
+  above tells it that [47mequal[0mity of the [47mlen[0m term is maintained if the
+  first argument is rewritten maintaining the [47mperm[0m equivalence.  In
+  addition, the congruence rule [47mpairwise-iff-implies-equal-len-1[0m
+  tells it that [47mequal[0mity of the [47mlen[0m term is also maintained if the
+  first argument is rewritten maintaining the [47mpairwise-iff[0m
+  equivalence.
+
+  Thus, when rewriting [47m(isort (norml x))[0m the rewriter can use any
+  rewrite rule that maintains [47mperm[0m, any rewrite rule that maintains
+  [47mpairwise-iff[0m, and, of course, any rewrite rule that maintains
+  [47mequal[0m.  In addition, of course, it can use any rewrite rule that
+  maintains a refinement of any of these equivalence relations.  This
+  ``generated equivalence'' or ``geneqv'' is denoted by a set
+  containing the named equivalence relations and the justifying
+  congruence rules.
+
+  The geneqv just derived is represented internally as
+
+    ((5658 PAIRWISE-IFF
+           :CONGRUENCE PAIRWISE-IFF-IMPLIES-EQUAL-LEN-1)
+     (5651 PERM
+           :CONGRUENCE PERM-IMPLIES-EQUAL-LEN-1))
+
+  Ignoring the two numbers, we see two pairs, each naming an
+  equivalence relation and the [rune] that justifies its use here.
+  The numbers are session-specific indices uniquely associated with
+  the two runes that allow ACL2 to determine quickly if the runes are
+  enabled.  Note that we do not include an entry for [47mEQUAL[0m since it
+  maintains every equivalence relation in every argument position of
+  every function.  Indeed, if you see a geneqv of [47mNIL[0m it means [47mEQUAL[0m
+  is the only acceptable equivalence relation in that context.
+
+  Debugging tools in ACL2 typically display the geneqv above as
+
+    ((PAIRWISE-IFF PAIRWISE-IFF-IMPLIES-EQUAL-LEN-1)
+     (PERM PERM-IMPLIES-EQUAL-LEN-1))
+
+  or even
+
+    (PAIRWISE-IFF PERM).
+
+  We discuss debugging tools that display geneqvs below.
+
+  But what does this geneqv buy us during this proof?  Recall where we
+  were in the proof discussed above.  We're rewriting [47m(isort (norml
+  x))[0m maintaining [47m(PAIRWISE-IFF PERM)[0m.  If the user had proved the
+  following two rewrite rules
+
+    (defthm perm-isort                ; isort perserves perm
+      (perm (isort X) X))
+
+    (defthm pairwise-iff-norml        ; norml preserves pairwise-iff
+       (pairwise-iff (norml x) x))
+
+  then the rewriter would replace [47m(isort (norml x))[0m by [47m(norml x)[0m using
+  the first rule, since [47mperm[0m is a refinement of the geneqv, and then
+  the rewriter would rewrite that and replace it by [47mx[0m using the
+  second rule, since [47mpairwise-iff[0m is also a refinement of the geneqv.
+  Note that neither of these replacements preserve [47mequal[0mity, but they
+  are permitted because they preserve the [47mequal[0mity of the [47mlen[0ms.
+
+  Thus, [47m(equal (len (isort (norml x))) (len x))[0m has been simplified to
+  [47m(equal (len x) (len x))[0m which further simplifies to [47mt[0m and the proof
+  is done.
+
+  The Community Book [47m\"books/demos/geneqv-test-book.lisp\"[0m (which
+  executes the commands in books/demos/geneqv-test-input.lsp)
+  contains this and other examples.
+
+
+Debugging Tools
+
+  Generated equivalence relations are never mentioned or displayed in
+  the prover output.  But of course they are crucial since they
+  determine which rewrite rules can be used.  If a rule was expected
+  to be used in a proof or proof attempt but was not used it might be
+  because the rule's equivalence relation failed to be a refinement
+  of the geneqv in effect when the intended target was encountered.
+  If [47m[brr][0m is enabled and a [47m[monitor][0med rule is tried by the rewriter
+  but does not fire because it failed the refinement test, a
+  [break-rewrite] interactive break occur.  See [refinement-failure]
+  for some advice for how you might respond to such a failure.
+
+  From within a break-rewrite break the [47m[brr-commands][0m [47m:path[0m will print
+  the ``path'' from the current top-level goal down to the call of
+  the rewriter on current [47m:target[0m term.  Like a call stack, the path
+  is composed of ``frames,'' most of which describe calls of the
+  rewriter but some of which are calls of other system functions
+  (like the [47m[linear-arithmetic][0m procedure) that orchestrate other
+  calls to the rewriter.  As of Version 8.6, each frame of the [47m:path[0m
+  that describes the attempt to apply a particular rewrite rule will
+  display the name of the equivalence relation used by the rule
+  (unless that name is [47mequal[0m).  Every frame describing a call of the
+  rewriter includes the geneqv to be maintained as the target is
+  rewritten (unless the geneqv is [47mnil[0m which denotes the [47mequal[0mity
+  relation).  The noted exceptions are intended to shorten the output
+  in the most common cases: rewriting with [47mequal[0m and maintaining
+  equality.
+
+  In addition, from within such a break the brr-command [47m:geneqv[0m will
+  print the geneqv for the current target.")
  (GENERALIZE
   (RULE-CLASSES)
   "Make a rule to restrict generalizations
@@ -59779,6 +60135,9 @@ Subtopics
   [Further-information-on-rewriting]
       A grab bag of advice and information on rewriting
 
+  [Geneqv]
+      the rewriter's generated equivalence relation
+
   [Generalizing-key-checkpoints]
       Getting rid of unnecessary specificity
 
@@ -59892,6 +60251,9 @@ Subtopics
 
   [Programming-knowledge-taken-for-granted]
       Background knowledge in ACL2 programming for theorem prover tutorial
+
+  [Refinement-failure]
+      what to do when a rewrite rule fails the refinement check
 
   [Special-cases-for-rewrite-rules]
       Convenient short forms for rewrite rule formulas
@@ -77618,10 +77980,12 @@ Example and General Forms
     (monitor '(:r assoc-of-app) t)
     (monitor 'assoc-of-app t)
     (monitor '(rewrite assoc-of-app) '(:condition t :depth 2))
+    (monitor '(rewrite assoc-of-app) '(:condition t :rf t :depth 2))
 
     Keyword Command Examples:
     :monitor assoc-of-app t
     :monitor lemma42 (:condition (equal (brr@ :target) '(F A (G A (H B))))
+                      :rf t
                       :depth 2
                       :abstraction (F x (G x y))
                       :lambda t))
@@ -77641,6 +78005,7 @@ Example and General Forms
   following keywords and values are supported but the details are
   discussed below.
 
+    * [47m:rf[0m --- value must be [47mT[0m or [47mNIL[0m, defaults to [47mNIL[0m
     * [47m:depth[0m --- value must be a natural number
     * [47m:abstraction[0m --- value must be a term and it is most often an
       abstraction of the pattern that triggers [47mx[0m obtained by
@@ -77648,19 +78013,31 @@ Example and General Forms
     * [47m:lambda[0m --- value must be [47mt[0m or [47mnil[0m
     * [47m:condition[0m --- value must be a term, called the ``break condition''
       which contains at most one free variable and that variable must
-      be [47m[state][0m.
+      be [47m[state][0m.  An interactive break is initiated only if the
+      [47m:condition[0m term evaluates to non-[47mnil[0m.  If not provided, the
+      [47m:condition[0m value defaults to [47m'T[0m.
 
   The keys [47m:depth[0m, [47m:abstraction[0m, and [47m:lambda[0m are only relevant when the
-  ``pattern'' that may trigger the rule named by [47mx[0m [31;1mdoes not match[0m the
-  target.  They specify criteria under which a failed match is to be
-  considered a ``near miss.'' Details are given below.  However,
-  other keywords are allowed with no constraints on their values.
-  The purpose of this allowance is so that the user who wants to
-  attach his or her own function to ACL2's [47m[brr-near-missp][0m predicate
-  can pass information to that function.
+  rule named by [47mx[0m rewrites with an equivalence relation that is a
+  refinement of the equivalence relation the rewriter is obligated to
+  maintain on the current target (see [geneqv]) and the rule's
+  ``pattern'' [31;1mdoes not match[0m the target.  They specify criteria under
+  which a failed match is to be considered a ``near miss.'' Details
+  are given below.
 
-  The [47m:condition[0m key is only relevant when the pattern of the monitored
-  rune [31;1mmatches[0m the target to which the rewriter tried to apply it.
+  The key [47m:rf[0m with value [47mT[0m indicates that breaks are to also occur (if
+  the [47m:condition[0m evaluates to non-[47mnil[0m and) the rune's equivalence
+  relation has failed to be a refinement of the equivalence relation
+  the rewriter is obligated to maintain on the current target.  See
+  [refinement-failure].  If [47m:rf[0m is [47mnil[0m or not provided, refinement
+  failures do not trigger breaks but the other kinds of breaks may
+  occur.
+
+  Keywords other than [47m:condition[0m, [47m:rf[0m, [47m:depth[0m, [47m:abstraction[0m, and
+  [47m:lambda[0m are allowed with no constraints on their values.  The
+  purpose of this allowance is so that the user who wants to attach
+  his or her own function to ACL2's [47m[brr-near-missp][0m predicate can
+  pass information to that function.
 
   When successful, [47mmonitor[0m arranges for the rewriter to trigger an
   interactive break when any rule named by [47mx[0m and of the above classes
@@ -102682,6 +103059,20 @@ Changes to Existing Features
   The predicate [47mstandard-string-alistp[0m has been deleted, while a
   related predicate [47m[string-alistp][0m has been added.
 
+  The [break-rewrite] facility will now cause an interactive break on a
+  monitored rewrite rule if the rule's equivalence relation fails to
+  refine any of the equivalence relations known to be permitted while
+  rewriting the target.  See [geneqv] for a discussion of how
+  [congruence] rules are used to compute permitted equivalence
+  relations and [refinement-failure] for advice about how to
+  investigate and fix refinement failures during rewriting.
+
+  The message for evaluation failures during proofs has been modified
+  slightly, clarifying the case of substitution and, especially,
+  suggesting :DOC [comment] for explanations (which has been updated
+  accordingly).  Thanks to David Russinoff for an acl2-help list
+  query leading to this improvement.
+
 
 New Features
 
@@ -121972,12 +122363,365 @@ Subtopics
   sense of equivalence, then [47mbag-equality[0m will automatically be known
   as a refinement of that third equivalence.
 
+  A rewrite rule may fail to fire because its equivalence relation is
+  not known to be a refinement of any of those known to be permitted.
+  See [47m[geneqv][0m for a discussion of how ACL2 uses [47m[congruence][0m rules
+  to derive the permitted equivalences and how those equivalences are
+  represented.  See [refinement-failure] for advice on how to use
+  [break-rewrite] to determine that a rule failed the refinement
+  check and for advice about how to ``fix'' such a problem.
+
   [47m:refinement[0m lemmas cannot be disabled.  That is, once one equivalence
   relation has been shown to be a refinement of another, there is no
-  way to prevent the system from using that information.  Of course,
-  individual [47m:[0m[47m[rewrite][0m rules can be disabled.
+  way to prevent the system from using that information.
+  Furthermore, [47m:refinement[0m lemmas are not tracked and are thus not
+  reported in the [summary].  Of course, individual [47m:[0m[47m[rewrite][0m rules
+  can be disabled.
 
   More will be written about this as we develop the techniques.")
+ (REFINEMENT-FAILURE
+  (INTRODUCTION-TO-THE-THEOREM-PROVER BREAK-REWRITE)
+  "what to do when a rewrite rule fails the refinement check
+
+  One reason a [47m:[0m[47m[rewrite][0m rule may fail to fire is that its equivalence
+  relation fails to be a known refinement of the generated
+  equivalence relation (or ``[geneqv]'') governing the current target
+  of the rewriter.  In the following discussion we assume you are
+  familiar with the notion of the generated equivalence relation.  If
+  not, please see [47m[geneqv][0m for the necessary background and details.
+
+
+Is a Rule Not Firing Because of a Refinement Failure?
+
+  To determine whether refinement failure is the cause of a rule's
+  failure to fire, enable [break-rewrite] with [47m(brr t)[0m and install a
+  [47m[monitor][0m with [47m:rf[0m set to [47mt[0m on the rule, e.g., [47m(monitor rune '(:rf
+  t))[0m, where [47mrune[0m evaluates to the [47m[rune][0m of the rule in question.
+  You might also specify a [47m:condition[0m so that a break occurs only if
+  the target is the translated term, [47mtterm[0m, you expected the rule to
+  hit,
+
+    (monitor rune '(:condition (equal (brr@ :target) 'tterm) :rf t)).
+
+  Then try the proof again.  (Note: if the rule being monitored is a
+  [simple] abbreviation rule, be sure to supply the hint [47m:DO-NOT
+  '(PREPROCESS)[0m as discussed in [47m[monitor][0m.)  If a monitored rule
+  fails to fire (under the monitored condition) because its
+  equivalence relation is not known to refine the geneqv derived for
+  that occurrence of the target, an interactive break will occur.
+  The break header will name the rule, print the target, show the
+  rule's equivalence relation, and show the geneqv.  The header tells
+  you the equivalence relation is not a refinement of the geneqv.
+  You might wish to use the break-rewrite command [47m:path[0m or [47m:path+[0m to
+  print the path down to the target from the top-level goal.  That
+  will show the geneqv derived for each active call of the rewriter
+  and will help you understand why the current geneqv is what it is.
+  While looking at the path make sure that the current occurrence of
+  the target is the one you expected the rule to hit.  If it is not,
+  proceed to the next break with [47m:ok[0m.
+
+  When you find the target you're looking for, focus your attention on
+  the equivalence relation and geneqv.  To fix the problem you need
+  the former to be a refinement of the latter.  When you understand
+  how to make that happen, abort the failing proof attempt with [47m:a![0m
+  and try to fix the problem.
+
+
+How to Fix a Refinement Failure
+
+  There are two basic ways to ``fix'' a refinement failure:
+
+    *
+        (a) prove a [47m[refinement][0m rule that establishes that the equivalence
+        relation used in the rule indeed refines one of the
+        equivalence relations displayed in the geneqv, or
+
+    *
+        (b) prove a [47m[congruence][0m rule that will extend the geneqv derived for
+        the current occurrence of the target.
+
+  We illustrate these approaches below.  But first you must keep in
+  mind that the equivalence relation in the rule may not refine any
+  possible geneqv derivable along the path.  You may have to find a
+  different proof or, at least, you may have to define some
+  additional equivalence relations, refinement rules, and congruence
+  rules, and prove a version of your lemma that uses a new relation.
+  After all, this is a theorem proving problem and not all fixes are
+  trivial!
+
+
+How Geneqvs Are Displayed
+
+  As illustrated in the discusson of [geneqv], a generated equivalence
+  is essentially a set of equivalence relations.  ACL2 prints geneqvs
+  in three different ways depending on the utility doing the
+  printing.
+
+  When reporting that an equivalence relation is not a refinement of a
+  geneqv, the geneqv is printed simply as a list of equivalence
+  relation names, e.g., [47m(EQV1 EQV2)[0m.  Order is unimportant as this
+  list represents a set.
+
+  When reporting the path the rewriter took to the current target and
+  the geneqvs for each active call of the rewriter along that path,
+  each geneqv is printed as a list of doublets, where the first
+  component of the doublet is the name of an equivalence relation and
+  the second component is the name of the [congruence] rule
+  responsible for adding that relation to the geneqv, e.g.,
+
+    ((EQV1 EQV1-IFF-CONGRUENCE-FOR-F)
+     (EQV2 EQV2-IFF-CONGRUENCE-FOR-F))
+
+  This is just another presentation of [47m(eqv1 eqv2)[0m but we believe the
+  congruence rule names may help you recall how equivalence relations
+  get into the set.
+
+  Finally, in [47m[trace$][0m, or the value returned by (brr@ :geneqv) or any
+  other system utility that displays the actual internal
+  representation of a geneqv you will see something like this:
+
+    ((5603 EQV1 . (:congruence EQV1-IFF-CONGRUENCE-FOR-F))
+     (4957 EQV2 . (:congruence EQV2-IFF-CONGRUENCE-FOR-F)))
+
+  where the equivalence relation names are paired with the runes (not
+  just the names) of the responsible congruence rules and the numbers
+  are unique session-dependent indices for those runes allowing quick
+  determination of the enabled status of the rules.
+
+  You will see the first two print conventions in the examples below.
+
+
+Some Generic Examples
+
+  In the following discussion we introduce some functions that will
+  allow us to explore refinement failures.  The experiements reported
+  below are carried out in the community book
+  [47mbooks/demos/refinement-failure-test-book.lisp[0m whose input/output
+  log may be found in [47mbooks/demos/refinement-failure-test-log.txt[0m.
+
+  We're going to attempt to prove [47m(P (F (G A (BETA B))))[0m by rewriting
+  the occurrence of [47m(BETA B)[0m to [47m(GAMMA B)[0m and appealing to a rule
+  that establishes [47m(P (F (G A (GAMMA B))))[0m.  But at every subterm
+  level in the conjecture different equivalence relations are
+  involved.  Thus, many equivalence and congruence relations are
+  involved and that makes this example hard to follow.  Assume that
+  [47mPEQ[0m, [47mFEQ[0m, [47mG2EQ1[0m, [47mG2EQ2[0m, and [47mG2EQ1![0m are known equivalence relations.
+
+  Possibly Distracting Aside: In this section of this documentation we
+  use names that follow a certain convention.  These conventions help
+  the authors keep the names straight!  Perhaps they'll help you too.
+  Names containing ``[47mEQ[0m'' are equivalence relations; they will serve
+  as ``inside'' equivalences for the function symbol indicated by the
+  first character in the name, ``[47mP[0m'', ``[47mF[0m'' or ``[47mG[0m''; if that first
+  character is followed by ``2'' it means they apply to the second
+  argument of the function, otherwise they apply to the first (and
+  only) argument; and if there is more than one such inside
+  equivalence relation for that function the name is suffixed with
+  ``[47m1[0m'' or ``[47m2[0m''.  The exclamation mark at the end of ``G2EQ1!'' is
+  to remind us that the function is a refinement of [47mG2EQ1[0m.  Thus [47mPEQ[0m
+  is the inside equivalence for the first (only) argument of [47mP[0m-terms
+  and [47mG2EQ1[0m is the inside equivalence for the second argument of
+  [47mG[0m-terms and is one of two such relations.
+
+  Imagine that we've proved two rewrite rules:
+
+    * [47m(DEFTHM RULE (G2EQ1! (BETA X) (GAMMA X)))[0m
+    * [47m(DEFTHM DONE (P (F (G X (GAMMA Y)))))[0m
+        which is actually stored as
+
+      [47m(DEFTHM DONE (IFF (P (F (G X (GAMMA Y)))) T))[0m.
+
+  Clearly, our strategy to prove [47m(P (F (G A (BETA B))))[0m is to use [47mRULE[0m
+  to replace the [47m(BETA B)[0m by [47m(GAMMA B)[0m, and then use [47mDONE[0m to reduce
+  the conjecture to [47mT[0m.
+
+  However, the problem is that [47mRULE[0m uses the equivalence relation
+  [47mG2EQ1![0m.  So the rewriter, which starts by maintaining [47mIFF[0m on the
+  top-level [47mP[0m term, will have to evolve a geneqv so that by the time
+  it reaches the occurrence of [47m(BETA B)[0m the geneqv at that target
+  admits [47mG2EQ1![0m as a refinement.  To do so we'll provide the
+  following [47m[congruence][0m rules.  As you read them, remember that the
+  term we'll be working on is [47m(P (F (G A (BETA B))))[0m, i.e., our
+  conjecture is a call of [47mP[0m, in which the 1st (and only) argument is
+  a call of [47mF[0m, in which the 1st (and only) argument is a call of [47mG[0m,
+  in which the 2nd argument is call of [47mBETA[0m.
+
+    *
+        [47mIFF[0m is maintained on a call of [47mP[0m provided [47mPEQ[0m is maintained on the
+        1st argument of [47mP[0m:
+          * [3mevent[0m: [47m(DEFCONG PEQ IFF (P X) 1)[0m
+          * [3mname[0m: [47mPEQ-IMPLIES-IFF-P-1[0m
+
+    *
+        [47mPEQ[0m is maintained on a call of [47mF[0m provided [47mFEQ[0m is maintained on the
+        1st argument of [47mF[0m:
+          * [3mevent[0m: [47m(DEFCONG FEQ PEQ (F X) 1)[0m
+          * [3mname[0m: [47mFEQ-IMPLIES-PEQ-F-1[0m
+
+    *
+        [47mFEQ[0m is maintained on a call of [47mG[0m provided [47mG2EQ1[0m is maintained on the
+        2nd argument of [47mG[0m:
+          * [3mevent[0m: [47m(DEFCONG G2EQ1 FEQ (G X Y) 2)[0m
+          * [3mname[0m: [47mG2EQ1-IMPLIES-FEQ-G-2[0m
+
+    *
+        [47mFEQ[0m is [3malso[0m maintained on a call of [47mG[0m provided [47mG2EQ2[0m is maintained on
+        the 2nd argument of [47mG[0m:
+          * [3mevent[0m: [47m(DEFCONG G2EQ2 FEQ (G X Y) 2)[0m
+          * [3mname[0m: [47mG2EQ2-IMPLIES-FEQ-G-2[0m
+
+  Note that there are two ways to maintain [47mFEQ[0m on a call of [47mG[0m: maintain
+  either [47mG2EQ1[0m or [47mG2EQ2[0m on the second argument of [47mG[0m.  But neither of
+  those equivalence relations is used in our rewrite [47mRULE[0m.  Our [47mRULE[0m
+  uses [47mG2EQ1![0m, so assume we've proved:
+
+    *
+        [47mG2EQ1![0m refines [47mG2EQ1[0m:
+          * [3mevent[0m: [47m(DEFREFINEMENT G2EQ1! G2EQ1)[0m
+          * [3mname[0m: [47mG2EQ1!-REFINES-G2EQ1[0m
+
+  Having arranged all of the above, imagine issuing the commands
+
+    (brr T)
+    (monitor '(:REWRITE RULE)
+             '(:condition (and (equal (brr@ :target) '(BETA B))
+                               '(:path+ :go))
+               :rf t))
+    (thm (P (F (G A (BETA B))))
+         :hints ((\"Goal\" :do-not '(preprocess))))
+
+  Note: The [47m:condition[0m value above will cause a break only if the
+  [47m:target[0m is [47m(BETA B)[0m, but when the break occurs it will issue the
+  command [47m:PATH+[0m to print the path and then issue the command [47m:GO[0m to
+  proceed from the break.  Because we've just monitored a [simple]
+  abbreviation rule, we include in the [47m[thm][0m command the hint to
+  avoid preprocessing, as advised in the documentation for [47m[monitor][0m.
+
+  Because we've done the equivalence, congruence, and refinement setup
+  perfectly, our [47mRULE[0m will fire and we will get a break like this:
+
+    (1 Breaking (:REWRITE RULE) on (BETA B):
+    1 ACL2 >
+
+  The subsequent [47m:PATH+[0m command will show how the rewriter descended to
+  here from the top-level goal and will display the geneqvs derived
+  for each rewrite.
+
+    1 ACL2 >:path+
+    1. Simplifying the clause
+         ((P (F (G A (BETA B)))))
+    2. Rewriting (to simplify) the atom of the first literal,
+         (P (F (G A (BETA B)))),
+       Geneqv: (IFF)
+    3. Rewriting (to simplify) the first argument,
+         (F (G A (BETA B))),
+       Geneqv: ((PEQ PEQ-IMPLIES-IFF-P-1))
+    4. Rewriting (to simplify) the first argument,
+         (G A (BETA B)),
+       Geneqv: ((FEQ FEQ-IMPLIES-PEQ-F-1))
+    5. Rewriting (to simplify) the second argument,
+         (BETA B),
+       Geneqv: ((G2EQ2 G2EQ2-IMPLIES-FEQ-G-2)
+                (G2EQ1 G2EQ1-IMPLIES-FEQ-G-2))
+    6. Attempting to apply (:REWRITE RULE) to
+         (BETA B)
+       Preserving: G2EQ1!
+       Geneqv: ((G2EQ2 G2EQ2-IMPLIES-FEQ-G-2)
+                (G2EQ1 G2EQ1-IMPLIES-FEQ-G-2))
+    1 ACL2 >
+
+  Recall, from the discussion above, that sometimes geneqvs are printed
+  merely as a list of equivalence relations, e.g., [47m(G2EQ2 G2EQ1)[0m, and
+  other times, as above, are printed so as to include the name of the
+  congruence relation responsible for each equivalence.
+
+  Notice that in frame 4, where the rewriter is working on [47m(G A (BETA
+  B))[0m it is to maintain the [47mFEQ[0m equivalence relation (which was
+  justified from frame 3 by the rule [47mFEQ-IMPLIES-PEQ-F-1[0m where the
+  rewriter was to maintain [47mPEQ[0m).  But when the rewriter stepped from
+  frame 4 to the second argument of [47m(G A (BETA B))[0m in frame 5, it
+  used both [47mG2EQ1-IMPLIES-FEQ-G-2[0m and [47mG2EQ2-IMPLIES-FEQ-G-2[0m to derive
+  the geneqv [47m(G2EQ2 G2EQ1)[0m.  Then, when it attempted to apply [47mRULE[0m,
+  whose equivalence relation is [47mG2EQ1![0m, it passed the refinement test
+  because [47mG2EQ1![0m refines [47mG2EQ1[0m, which is one of the equivalences
+  listed in the geneqv.
+
+  When we proceed from the break, the proof completes successfully.
+
+  But now imagine that we had failed to prove [47m(DEFREFINEMENT G2EQ1!
+  G2EQ1)[0m.  The [47mthm[0m command above would have caused this break:
+
+    (1 Breaking (:REWRITE RULE) on (BETA B):
+
+    The equivalence relation, G2EQ1!, of this rule is not a refinement
+    of the current geneqv, (G2EQ2 G2EQ1).  Use :path or :path+ to see how
+    the geneqv evolved.  See :DOC refinement-failure for advice about how
+    to deal with this kind of problem.
+
+    1 ACL2 >
+
+  The break header explains the problem: the rewriter does not know
+  that [47mG2EQ1![0m refines [47mG2EQ1[0m or [47mG2EQ2[0m.  Of course, [3mwe[0m do know that and
+  the fix is simply to prove the ``forgotten'' [47m[defrefinement][0m.
+
+  On the other hand, suppose we had proved the [47mdefrefinement[0m but had
+  forgotten to prove that [47mFEQ[0m is maintained on a call of [47mG[0m when [47mG2EQ1[0m
+  is maintained on the 2nd argument of [47mG[0m, i.e., [47m(DEFCONG G2EQ1 FEQ (G
+  X Y) 2)[0m, aka [47mG2EQ1-IMPLIES-FEQ-G-2[0m.  Then the [47mthm[0m command would
+  produce the following break.
+
+    (1 Breaking (:REWRITE RULE) on (BETA B):
+
+    The equivalence relation, G2EQ1!, of this rule is not a refinement
+    of the current geneqv, (G2EQ2).  Use :path or :path+ to see how the
+    geneqv evolved.  See :DOC refinement-failure for advice about how to
+    deal with this kind of problem.
+
+  Note that the geneqv is printed in its simplest form, as a list of
+  equivalence relation names; in this case only one name is included:
+  [47mG2EQ2[0m.  Of course, if we believed [47mG2EQ1![0m does refine [47mG2EQ2[0m, it
+  would suffice to prove the corresponding refinement rule.  But
+  let's suppose we know [47mG2EQ1![0m doesn't refine [47mG2EQ2[0m.  Instead, we
+  know [47mG2EQ1![0m refines [47mG2EQ1[0m, which is not in the geneqv.  Our problem
+  then is to arrange for [47mG2EQ1[0m to be in the geneqv.  Look at the path
+  that got us here.
+
+    1 ACL2 >:path+
+    1. Simplifying the clause
+         ((P (F (G A (BETA B)))))
+    2. Rewriting (to simplify) the atom of the first literal,
+         (P (F (G A (BETA B)))),
+       Geneqv: (IFF)
+    3. Rewriting (to simplify) the first argument,
+         (F (G A (BETA B))),
+       Geneqv: ((PEQ PEQ-IMPLIES-IFF-P-1))
+    4. Rewriting (to simplify) the first argument,
+         (G A (BETA B)),
+       Geneqv: ((FEQ FEQ-IMPLIES-PEQ-F-1))
+    5. Rewriting (to simplify) the second argument,
+         (BETA B),
+       Geneqv: ((G2EQ2 G2EQ2-IMPLIES-FEQ-G-2))
+    6. Attempting to apply (:REWRITE RULE) to
+         (BETA B)
+       Preserving: G2EQ1!
+       Geneqv: ((G2EQ2 G2EQ2-IMPLIES-FEQ-G-2))
+    1 ACL2 >
+
+  In frame 4 we are to maintain [47mFEQ[0m on a call of [47mG[0m.  In frame 5 we are
+  rewritting the second argument of [47mG[0m and used [47mG2EQ2-IMPLIES-FEQ-G-2[0m
+  to derive the new geneqv containing [47mG2EQ2[0m.  We could get [47mG2EQ1[0m into
+  that new geneqv is only we had a congruence rule that says [47mFEQ[0m is
+  maintained on [47mG[0m when rewriting the second argument of [47mG[0m maintaining
+  [47mG2EQ1[0m.  That's just the ``forgotten'' [47m(DEFCONG G2EQ1 FEQ (G X Y)
+  2)[0m.  Of course we could alternatively have chosen to prove [47m(DEFCONG
+  G2EQ1! FEQ (G X Y) 2)[0m, but it is generally better to prove the
+  strongest congruence rules we know.
+
+  Finally, as documented in [refinement] and [congruence], refinement
+  and congruence rules are not (always) tracked and usually do not
+  show up in the [summary] printed at the end of proof attempts.  The
+  decision not to track every use of these rules was made to improve
+  prover efficiency.")
  (REGENERATE-TAU-DATABASE
   (EVENTS INTRODUCTION-TO-THE-TAU-SYSTEM)
   "Regenerate the tau database relative to the current enabled theory
@@ -155987,7 +156731,7 @@ Low-level details (optional)
       nil)
 
     (defrec brr-data-1
-      (((lemma . target) . (unify-subst . type-alist))
+      (((lemma . target) . (unify-subst type-alist . geneqv))
        .
        ((pot-list . ancestors) . (rcnst initial-ttree . gstack)))
       nil)
