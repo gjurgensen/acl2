@@ -24024,6 +24024,7 @@ Subtopics
       :creator creator
       :corr-fn corr-fn
       :congruent-to congruent-to
+      :non-executable non-executable
       :protect-default protect-default
       :exports (e1 ... ek))
 
@@ -24088,6 +24089,12 @@ Subtopics
       [defstobj] for more about congruent stobjs.  Note that if two
       names are congruent, then they are either both ordinary stobjs
       or both abstract stobjs.
+
+      [47mNon-executable[0m should either be [47mnil[0m (the default) or [47mt[0m.  When [47mt[0m, the
+      live stobj is not created; see [defstobj], Section ``Specifying
+      Non-executable Stobjs'', for details, since the meaning of
+      [47m:non-executable[0m is the same for [47mdefabsstobj[0m as it is for
+      [47mdefstobj[0m.
 
       [47mProtect-default[0m should either be [47mnil[0m (the default) or [47mt[0m.  It provides
       the value of keyword [47m:PROTECT[0m for each member of [47mexports[0m that
@@ -103073,6 +103080,10 @@ Changes to Existing Features
   accordingly).  Thanks to David Russinoff for an acl2-help list
   query leading to this improvement.
 
+  It is no longer illegal for a [47m[defstobj][0m event both to specify
+  keyword argument [47m:NON-EXECUTABLE T[0m and to use the [47m:CONGRUENT-TO[0m
+  keyword argument.
+
 
 New Features
 
@@ -103296,6 +103307,10 @@ New Features
 
   A new utility, [47m[compare-objects][0m, highlights the differences between
   two [47mcons[0m-trees.
+
+  Now [47m[defabsstobj][0m accepts the [47m:non-executable[0m keyword, in analogy to
+  support for that keyword by defstobj.  Thanks to Yahya Sohail and
+  Warren Hunt for discussions leading to this enhancement.
 
 
 Heuristic and Efficiency Improvements
