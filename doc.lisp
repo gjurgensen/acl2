@@ -6135,6 +6135,105 @@ Subtopics
   This feature is used so that the interactive [proof-builder]'s [47mDV[0m
   command and numeric diving commands (e.g., [47m3[0m) will dive properly
   into subterms.  Please see [dive-into-macros-table].")
+ (ADD-GLOBAL-STOBJ
+  (EVENTS STOBJ)
+  "Add a global [stobj] with a given name
+
+  See [stobj] for background on stobjs, and see [defstobj] and
+  [defabsstobj] for further background.
+
+  We start with the General Form and an Example Form, which are
+  followed by discussions of global stobjs and the effect of this
+  utility.
+
+    General Form:
+    (add-global-stobj x state)
+
+  where [47mx[0m evaluates to the name of a stobj that does not already have a
+  global value, either because it was introduced by [47m[defstobj][0m or
+  [47m[defabsstobj][0m with keyword value [47m:non-executable t[0m or because
+  [47m[remove-global-stobj][0m was previously applied to that name.
+
+    Example Form:
+    (add-global-stobj 'st state) ; st non-global from defstobj or defabsstobj
+
+  By default, [47mdefstobj[0m and [47mdefabsstobj[0m create a ``live'', mutable
+  object for the given name that can be referenced at the top level,
+  which we call a ``global'' stobj.  This is illustrated by the
+  following log.
+
+    ACL2 !>(defstobj st fld)
+
+    Summary
+    Form:  ( DEFSTOBJ ST ...)
+    Rules: NIL
+    Time:  0.02 seconds (prove: 0.00, print: 0.00, other: 0.02)
+     ST
+    ACL2 !>st ; global stobj for the name, ST
+    <st>
+    ACL2 !>(fld st)
+    NIL
+    ACL2 !>(update-fld 3 st)
+    <st>
+    ACL2 !>(fld st)
+    3
+    ACL2 !>
+
+  However, the following log shows that we can introduce a stobj
+  without creating a global stobj, by using the keyword value
+  [47m:non-executable t[0m.
+
+    ACL2 !>(defstobj st2 fld2 :non-executable t)
+
+    Summary
+    Form:  ( DEFSTOBJ ST2 ...)
+    Rules: NIL
+    Time:  0.02 seconds (prove: 0.00, print: 0.00, other: 0.02)
+     ST2
+    ACL2 !>(fld2 st2)
+
+
+    ACL2 Error [Evaluation] in TOP-LEVEL:  Unbound var ST2.  Note that
+    ST2 is a non-executable stobj.
+
+    ACL2 !>
+
+  The function [47madd-global-stobj[0m creates a global stobj for a given
+  stobj name when one does not already exist.  Let's continue the log
+  started immediately above.
+
+    ACL2 !>(add-global-stobj 'st2 state)
+     ST2
+    ACL2 !>(fld2 st2)
+    NIL
+    ACL2 !>(update-fld2 3 st2)
+    <st2>
+    ACL2 !>(fld2 st2)
+    3
+    ACL2 !>
+
+  The function [47mremove-global-stobj[0m removes the indicated global stobj.
+  We continue the log above.
+
+    ACL2 !>(remove-global-stobj 'st2 state)
+     ST2
+    ACL2 !>(fld2 st2)
+
+
+    ACL2 Error [Evaluation] in TOP-LEVEL:  Unbound var ST2.  Note that
+    ST2 is a non-executable stobj.
+
+    ACL2 !>
+
+  If we remove a global stobj, as shown just above, and then add the
+  corresponding global stobj, we get a fresh copy of that stobj; all
+  previous updates are discarded.
+
+    ACL2 !>(add-global-stobj 'st2 state)
+     ST2
+    ACL2 !>(fld2 st2)
+    NIL
+    ACL2 !>")
  (ADD-INCLUDE-BOOK-DIR
   (BOOKS-REFERENCE)
   "Link keyword for [47m:dir[0m argument of [47m[ld][0m and [47m[include-book][0m
@@ -24090,11 +24189,11 @@ Subtopics
       names are congruent, then they are either both ordinary stobjs
       or both abstract stobjs.
 
-      [47mNon-executable[0m should either be [47mnil[0m (the default) or [47mt[0m.  When [47mt[0m, the
-      live stobj is not created; see [defstobj], Section ``Specifying
-      Non-executable Stobjs'', for details, since the meaning of
-      [47m:non-executable[0m is the same for [47mdefabsstobj[0m as it is for
-      [47mdefstobj[0m.
+      [47mNon-executable[0m should either be [47mnil[0m (the default) or [47mt[0m.  When [47mt[0m, a
+      global stobj is not created for the given name; see [defstobj],
+      Section ``Specifying Non-executable Stobjs'', for details, as
+      the meaning of [47m:non-executable[0m is the same for [47mdefabsstobj[0m as
+      it is for [47mdefstobj[0m.
 
       [47mProtect-default[0m should either be [47mnil[0m (the default) or [47mt[0m.  It provides
       the value of keyword [47m:PROTECT[0m for each member of [47mexports[0m that
@@ -27612,7 +27711,7 @@ Subtopics
   [47mnil[0m, but otherwise: the former instructs ACL2 to lay down faster
   code for functions that return the new stobj but disallows
   [memoization] of any function that takes the new stobj as an
-  argument; and the latter avoids actually creating the stobj
+  argument; and the latter avoids actually creating a global stobj
   (details follow later below).  We describe further restrictions on
   the [47mfieldi[0m, [47mtypei[0m, [47mvali[0m, and on [47mdoublets[0m below.  We recommend that
   you read about single-threaded objects (stobjs) in ACL2 before
@@ -28198,18 +28297,19 @@ Specifying Congruent Stobjs
 Specifying Non-executable Stobjs
 
   As noted above, if keyword argument [47m:non-executable t[0m is specified
-  then the stobj is not created.  More precisely, the ``live'',
-  mutable stobj is not created.  So why use this keyword argument?
-  Perhaps you would like to do your computation on several stobjs
-  that are all congruent to a given stobj, [47mst[0m.  Then by using
+  then no global stobj for the given name is created.  See
+  [add-global-stobj] for a discussion of global stobjs, but in a
+  nutshell, a global stobj is a ``live'', mutable stobj that can be
+  referenced in the top-level loop.  So why use this keyword
+  argument?  Perhaps you would like to do your computation on several
+  stobjs that are all congruent to a given stobj, [47mst[0m.  Then by using
   [47m:non-executable t[0m to introduce [47mst[0m, you avoid allocating memory for
   [47mst[0m that you never intend to use.  Similarly, you can avoid
   allocating such memory when your intended use of [47mst[0m is only as a
   local stobj (see [with-local-stobj]) or as the type of a stobj
-  field of another stobj.
-
-  When [47m:non-executable t[0m is specified, it is illegal to supply a
-  [47m:congruent-to[0m argument.
+  field of another stobj.  But see [add-global-stobj] and
+  [remove-global-stobj] for utilities that change whether or not
+  there is a global stobj for a given name.
 
 
 Subtopics
@@ -37327,6 +37427,9 @@ Subtopics
   [Add-custom-keyword-hint]
       Add a new custom keyword hint
 
+  [Add-global-stobj]
+      Add a global [stobj] with a given name
+
   [Assert-event]
       Assert that a given form returns a non-[47mnil[0m value
 
@@ -37514,6 +37617,9 @@ Subtopics
 
   [Remove-custom-keyword-hint]
       Remove a custom keyword hint
+
+  [Remove-global-stobj]
+      Remove a global [stobj] with a given name
 
   [Set-body]
       Set the definition body
@@ -103312,6 +103418,12 @@ New Features
   support for that keyword by defstobj.  Thanks to Yahya Sohail and
   Warren Hunt for discussions leading to this enhancement.
 
+  New functions [47m[add-global-stobj][0m and [47m[remove-global-stobj][0m change
+  whether there is a global (``live'') stobj for a given stobj name,
+  thus modifying the effect of the keyword [47m:non-executable[0m of events
+  [47m[defstobj][0m and [47m[defabsstobj][0m.  Thanks to Yahya Sohail and Warren
+  Hunt for discussions leading to the addition of these utilities.
+
 
 Heuristic and Efficiency Improvements
 
@@ -103703,6 +103815,17 @@ Bug Fixes
   when printing a term with a [47m[do$][0m call.  (The bug was in
   untranslating certain applications of [47m[nth][0m, [47m[update-nth][0m, or
   [47m[update-nth-array][0m during a proof.)
+
+  [47m[With-global-stobj][0m no longer produces an invalid result when its
+  first argument names a non-executable [stobj].  Previously, the
+  call of [47mread-state[0m below could return the nonsensical result
+  637624320.
+
+    (defstobj st fld :non-executable t)
+    (defun read-state (state)
+      (declare (xargs :stobjs state))
+      (with-global-stobj st (fld st)))
+    (read-state state)
 
 
 Changes at the System Level
@@ -123323,6 +123446,21 @@ Subtopics
  (REMOVE-EQ (POINTERS) "See [remove].")
  (REMOVE-EQUAL (POINTERS)
                "See [remove].")
+ (REMOVE-GLOBAL-STOBJ
+  (EVENTS STOBJ)
+  "Remove a global [stobj] with a given name
+
+  See [47m[add-global-stobj][0m for relevant background and terminlogy
+  together with an explanation of [47mremove-global-stobj[0m.  Here we give
+  only a brief summary.
+
+    General Form:
+    (remove-global-stobj x state)
+
+  where [47mx[0m evaluates to the name of a stobj that has a global value.
+
+    Example Form:
+    (remove-global-stobj 'st state)")
  (REMOVE-GUARD-HOLDERS (POINTERS)
                        "See [guard-holders].")
  (REMOVE-INVISIBLE-FNS
@@ -136867,8 +137005,8 @@ Other Relevant :DOC Topics
   The consequences of this simple rule are far-reaching and require
   some getting used to.  For example, if [47mOBJ[0m has been declared as a
   single-threaded object name, then the following consequences ensue
-  (but see the discussion of congruent stobjs below for a slight
-  relaxation).
+  (but see the discussion at the end of this topic for some
+  relaxations).
 
     * [47mOBJ[0m is a top-level global variable that contains the current object,
       obj.
@@ -136920,13 +137058,17 @@ Other Relevant :DOC Topics
   there.  The idea is to allow a stobj, [47mst2[0m, of the same ``shape'' as
   a given stobj, [47mst1[0m, to be used in place of [47mst1[0m.  Other [47m[defstobj][0m
   keywords allow inlining and renaming of stobj accessors and
-  updaters.
+  updaters, and a [47m:non-executable[0m keyword can be used to defer or
+  totally avoid creating a ``global'' stobj for the given stobj name.
 
   But we are getting ahead of ourselves.  To start the stobj tour
   recommended earlier in this topic, see [stobj-example-1].
 
 
 Subtopics
+
+  [Add-global-stobj]
+      Add a global [stobj] with a given name
 
   [Count-keys]
       Count the number of keys in association list
@@ -136945,6 +137087,9 @@ Subtopics
 
   [Nth-aliases-table]
       A [table] used to associate names for nth/update-nth printing
+
+  [Remove-global-stobj]
+      Remove a global [stobj] with a given name
 
   [Resize-list]
       List resizer in support of [stobj]s
