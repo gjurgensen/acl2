@@ -2773,8 +2773,8 @@
      Quit the current ACL2-Doc buffer.
 
   K             acl2-doc-kill-buffers
-     Kill all background ACL2-Doc buffers.  If invoked in an ACl2-Doc buffer,
-     all ACl2-Doc buffers except the current one will be killed.  If invoked in
+     Kill all background ACL2-Doc buffers.  If invoked in an ACL2-Doc buffer,
+     all ACL2-Doc buffers except the current one will be killed.  If invoked in
      any other buffer, all ACL2-Doc buffers will be killed.  With prefix
      argument, avoid a query that asks for confirmation.
 
@@ -46272,7 +46272,7 @@ current fast alists."
   inference akin to second order instantiation), and a variety of other ways of
   conservatively adding new function symbols.</p>
 
-  <p>The ACl2 prover proves theorems in the extension of the above theory
+  <p>The ACL2 prover proves theorems in the extension of the above theory
   obtained by adding the axioms introduced by @(see events) successfully
   carried out in the user's session.  The most common such axiom-adding events
   are @(tsee defun), @(tsee defchoose), and @(tsee encapsulate), which all
