@@ -3637,6 +3637,118 @@
  command and numeric diving commands (e.g., @('3')) will dive properly into
  subterms.  Please see @(see dive-into-macros-table).</p>")
 
+(defxdoc add-global-stobj
+  :parents (events stobj)
+  :short "Add a global @(see stobj) with a given name"
+  :long "<p>See @(see stobj) for background on stobjs, and see @(see defstobj)
+ and @(see defabsstobj) for further background.</p>
+
+ <p>We start with the General Form and an Example Form, which are followed by
+ discussions of global stobjs and the effect of this utility.</p>
+
+ @({
+ General Form:
+ (add-global-stobj x state)
+ })
+
+ <p>where @('x') evaluates to the name of a stobj that does not already have a
+ global value, either because it was introduced by @(tsee defstobj) or @(tsee
+ defabsstobj) with keyword value @(':non-executable t') or because @(tsee
+ remove-global-stobj) was previously applied to that name.</p>
+
+ @({
+ Example Form:
+ (add-global-stobj 'st state) ; st non-global from defstobj or defabsstobj
+ })
+
+ <p>By default, @('defstobj') and @('defabsstobj') create a &ldquo;live&rdquo;,
+ mutable object for the given name that can be referenced at the top level,
+ which we call a &ldquo;global&rdquo; stobj.  This is illustrated by the
+ following log.</p>
+
+ @({
+ ACL2 !>(defstobj st fld)
+
+ Summary
+ Form:  ( DEFSTOBJ ST ...)
+ Rules: NIL
+ Time:  0.02 seconds (prove: 0.00, print: 0.00, other: 0.02)
+  ST
+ ACL2 !>st ; global stobj for the name, ST
+ <st>
+ ACL2 !>(fld st)
+ NIL
+ ACL2 !>(update-fld 3 st)
+ <st>
+ ACL2 !>(fld st)
+ 3
+ ACL2 !>
+ })
+
+ <p>However, the following log shows that we can introduce a stobj without
+ creating a global stobj, by using the keyword value @(':non-executable
+ t').</p>
+
+ @({
+ ACL2 !>(defstobj st2 fld2 :non-executable t)
+
+ Summary
+ Form:  ( DEFSTOBJ ST2 ...)
+ Rules: NIL
+ Time:  0.02 seconds (prove: 0.00, print: 0.00, other: 0.02)
+  ST2
+ ACL2 !>(fld2 st2)
+
+
+ ACL2 Error [Evaluation] in TOP-LEVEL:  Unbound var ST2.  Note that
+ ST2 is a non-executable stobj.
+
+ ACL2 !>
+ })
+
+ <p>The function @('add-global-stobj') creates a global stobj for a given stobj
+ name when one does not already exist.  Let's continue the log started
+ immediately above.</p>
+
+ @({
+ ACL2 !>(add-global-stobj 'st2 state)
+  ST2
+ ACL2 !>(fld2 st2)
+ NIL
+ ACL2 !>(update-fld2 3 st2)
+ <st2>
+ ACL2 !>(fld2 st2)
+ 3
+ ACL2 !>
+ })
+
+ <p>The function @('remove-global-stobj') removes the indicated global stobj.
+ We continue the log above.</p>
+
+ @({
+ ACL2 !>(remove-global-stobj 'st2 state)
+  ST2
+ ACL2 !>(fld2 st2)
+
+
+ ACL2 Error [Evaluation] in TOP-LEVEL:  Unbound var ST2.  Note that
+ ST2 is a non-executable stobj.
+
+ ACL2 !>
+ })
+
+ <p>If we remove a global stobj, as shown just above, and then add the
+ corresponding global stobj, we get a fresh copy of that stobj; all previous
+ updates are discarded.</p>
+
+ @({
+ ACL2 !>(add-global-stobj 'st2 state)
+  ST2
+ ACL2 !>(fld2 st2)
+ NIL
+ ACL2 !>
+ })")
+
 (defxdoc add-include-book-dir
   :parents (books-reference)
   :short "Link keyword for @(':dir') argument of @(tsee ld) and @(tsee
@@ -20907,10 +21019,10 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
  stobjs or both abstract stobjs.</p>
 
  <p>@('Non-executable') should either be @('nil') (the default) or @('t').
- When @('t'), the live stobj is not created; see @(see defstobj), Section
- &ldquo;Specifying Non-executable Stobjs&rdquo;, for details, since the meaning
- of @(':non-executable') is the same for @('defabsstobj') as it is for
- @('defstobj').</p>
+ When @('t'), a global stobj is not created for the given name; see @(see
+ defstobj), Section &ldquo;Specifying Non-executable Stobjs&rdquo;, for
+ details, as the meaning of @(':non-executable') is the same for
+ @('defabsstobj') as it is for @('defstobj').</p>
 
  <p>@('Protect-default') should either be @('nil') (the default) or @('t').  It
  provides the value of keyword @(':PROTECT') for each member of @('exports')
@@ -24456,7 +24568,7 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
  are ignored when @('nm-flg') and @('ne-flg') are @('nil'), but otherwise: the
  former instructs ACL2 to lay down faster code for functions that return the
  new stobj but disallows @(see memoization) of any function that takes the new
- stobj as an argument; and the latter avoids actually creating the
+ stobj as an argument; and the latter avoids actually creating a global
  stobj (details follow later below).  We describe further restrictions on the
  @('fieldi'), @('typei'), @('vali'), and on @('doublets') below.  We recommend
  that you read about single-threaded objects (stobjs) in ACL2 before
@@ -25053,17 +25165,18 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
  <h3>Specifying Non-executable Stobjs</h3>
 
  <p>As noted above, if keyword argument @(':non-executable t') is specified
- then the stobj is not created.  More precisely, the ``live'', mutable stobj is
- not created.  So why use this keyword argument?  Perhaps you would like to do
- your computation on several stobjs that are all congruent to a given stobj,
+ then no global stobj for the given name is created.  See @(see
+ add-global-stobj) for a discussion of global stobjs, but in a nutshell, a
+ global stobj is a ``live'', mutable stobj that can be referenced in the
+ top-level loop.  So why use this keyword argument?  Perhaps you would like to
+ do your computation on several stobjs that are all congruent to a given stobj,
  @('st').  Then by using @(':non-executable t') to introduce @('st'), you avoid
  allocating memory for @('st') that you never intend to use.  Similarly, you
  can avoid allocating such memory when your intended use of @('st') is only as
  a local stobj (see @(see with-local-stobj)) or as the type of a stobj field of
- another stobj.</p>
-
- <p>When @(':non-executable t') is specified, it is illegal to supply a
- @(':congruent-to') argument.</p>")
+ another stobj.  But see @(see add-global-stobj) and @(see remove-global-stobj)
+ for utilities that change whether or not there is a global stobj for a given
+ name.</p>")
 
 (defxdoc defstobj-element-type
   :parents (defstobj)
@@ -105289,9 +105402,9 @@ it."
 ; utilities to guard-verified :logic mode.
 
 ;   88 ; Changes to Existing Features
-;   37 ; New Features
+;   38 ; New Features
 ;   10 ; Heuristic and Efficiency Improvements
-;   38 ; Bug Fixes
+;   39 ; Bug Fixes
 ;   18 ; Changes at the System Level
 ;    8 ; EMACS Support
 ;    1 ; Experimental Versions
@@ -105776,6 +105889,20 @@ it."
 ; calls for chunks of code.  This reduced the lines of code for certify-book-fn
 ; from 1171 to 273 and for include-book-fn from 817 to 344.  Thanks to Sol
 ; Swords for a request that motivated these changes.
+
+; In each of the following examples, the evaluation of st resulted in printing
+; <st>, even though st is actually unbound because that stobj was introduced
+; with :non-executable t.  Now, #<Unbound>, which is consistent with the sort
+; of result printed by Lisp.
+;
+;   (defstobj st fld)
+;   (set-raw-mode-on!)
+;   (defstobj st (fld :type integer :initially 0) :non-executable t)
+;   st
+;
+;   (defstobj st fld :non-executable t)
+;   (set-raw-mode-on!)
+;   st
 
   :parents (release-notes)
   :short "ACL2 Version  8.6 (xxx, 20xx) Notes"
@@ -106660,6 +106787,12 @@ it."
  analogy to support for that keyword by defstobj.  Thanks to Yahya Sohail and
  Warren Hunt for discussions leading to this enhancement.</p>
 
+ <p>New functions @(tsee add-global-stobj) and @(tsee remove-global-stobj)
+ change whether there is a global (&ldquo;live&rdquo;) stobj for a given stobj
+ name, thus modifying the effect of the keyword @(':non-executable') of events
+ @(tsee defstobj) and @(tsee defabsstobj).  Thanks to Yahya Sohail and Warren
+ Hunt for discussions leading to the addition of these utilities.</p>
+
  <h3>Heuristic and Efficiency Improvements</h3>
 
  <p>Added a &ldquo;desperation heuristic&rdquo; to compute a stronger context,
@@ -107074,6 +107207,18 @@ it."
  printing a term with a @(tsee do$) call.  (The bug was in untranslating
  certain applications of @(tsee nth), @(tsee update-nth), or @(tsee
  update-nth-array) during a proof.)</p>
+
+ <p>@(tsee With-global-stobj) no longer produces an invalid result when its
+ first argument names a non-executable @(see stobj).  Previously, the call of
+ @('read-state') below could return the nonsensical result 637624320.</p>
+
+ @({
+ (defstobj st fld :non-executable t)
+ (defun read-state (state)
+   (declare (xargs :stobjs state))
+   (with-global-stobj st (fld st)))
+ (read-state state)
+ })
 
  <h3>Changes at the System Level</h3>
 
@@ -124606,6 +124751,25 @@ work on <tt>(q x)</tt>.</p>
  <p>@('Remove-duplicates') is defined by Common Lisp.  See any Common Lisp
  documentation for more information.</p>")
 
+(defxdoc remove-global-stobj
+  :parents (events stobj)
+  :short "Remove a global @(see stobj) with a given name"
+  :long "<p>See @(tsee add-global-stobj) for relevant background and terminlogy
+ together with an explanation of @('remove-global-stobj').  Here we give only a
+ brief summary.</p>
+
+ @({
+ General Form:
+ (remove-global-stobj x state)
+ })
+
+ <p>where @('x') evaluates to the name of a stobj that has a global value.</p>
+
+ @({
+ Example Form:
+ (remove-global-stobj 'st state)
+ })")
+
 (defxdoc remove-invisible-fns
   :parents (loop-stopper)
   :short "Make some unary functions no longer invisible"
@@ -138516,7 +138680,7 @@ work on <tt>(q x)</tt>.</p>
  <p>The consequences of this simple rule are far-reaching and require some
  getting used to.  For example, if @('OBJ') has been declared as a
  single-threaded object name, then the following consequences ensue (but see
- the discussion of congruent stobjs below for a slight relaxation).</p>
+ the discussion at the end of this topic for some relaxations).</p>
 
  <ul>
 
@@ -138574,7 +138738,9 @@ work on <tt>(q x)</tt>.</p>
  relatively advanced notion of ``congruent stobjs'' is discussed there.  The
  idea is to allow a stobj, @('st2'), of the same ``shape'' as a given stobj,
  @('st1'), to be used in place of @('st1').  Other @(tsee defstobj) keywords
- allow inlining and renaming of stobj accessors and updaters.</p>
+ allow inlining and renaming of stobj accessors and updaters, and a
+ @(':non-executable') keyword can be used to defer or totally avoid creating a
+ &ldquo;global&rdquo; stobj for the given stobj name.</p>
 
  <p>But we are getting ahead of ourselves.  To start the stobj tour recommended
  earlier in this topic, see @(see stobj-example-1).</p>")
