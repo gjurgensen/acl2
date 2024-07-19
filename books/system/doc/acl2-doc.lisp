@@ -112070,6 +112070,63 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>Use your browser's <b>Back Button</b> now to return to @(see
  practice-formulating-strong-rules).</p>")
 
+(defxdoc pre-built-binary-distributions
+  :parents (about-acl2)
+  :short "Pre-built binary distributions of ACL2"
+  :long "<p>Visit the &ldquo;Recent changes to this page&rdquo; link on the <a
+ href='http://www.cs.utexas.edu/users/moore/acl2/'>ACL2 home page</a> to see if
+ there are other shortcuts available.</p>
+
+ <p><font color='red'><b>WARNING</b></font>: Some of these packages might
+ be for old versions of ACL2.  We recommend that you use the latest
+ version of ACL2 (Version 8.5).</p>
+
+ <h3>Linux/Mac/Windows Binaries in ACL2s</h3>
+
+ <p>The ACL2 Sedan (see @(see acl2-sedan)), also known as ACL2s, is an
+ Eclipse-based IDE for ACL2 that is distributed with pre-certified books and
+ pre-built binaries, though it is not always based on the latest ACL2 version.
+ If you use an alternative development environment (such as Emacs), you can
+ still <a href='http://acl2s.ccs.neu.edu/acl2s/src/acl2/'>fetch a tarball</a>
+ for your x86-based Linux/Mac/Windows system that contains a pre-built binary
+ of (pure) ACL2, using the following instructions based on information kindly
+ provided by Harsh Raju Chamarthi.  Just extract the appropriate tarball (using
+ @('tar xfz') on Linux or Mac and @('unzip') on Windows) under a path with
+ <i>no</i> spaces.  Then run the script you will find, @('run_acl2') on Linux
+ or Mac and @('run_acl2.exe') on Windows, to start an ACL2 session.  (Note that
+ The first time you execute that command, the certificate (@('.cert')) files
+ are automatically fixed, according to the full pathname of your @('books/')
+ directory.)</p>
+
+ <h3>Windows</h3>
+
+ <p>In the past, a Windows Installer for ACL2 has included a Unix environment,
+ pre-certified standard and workshop books, and a copy of Gnu Emacs.  This
+ capability has largely been superseded in the installation instructions' <a
+ href='https://www.cs.utexas.edu/~moore/acl2/current/HTML/installation/obtaining-and-installing.html#Build-Particular'>section
+ on Building an Executable Image on Some Particular Systems</a> and the
+ Shortcut using the ACL2 Sedan, above.  See also @(see
+ windows-installation).</p>
+
+ <h3>MacPorts for Mac OS X</h3>
+
+ <p>ACL2 versions are sometimes been made available under MacPorts.</p>
+
+ <h3>Debian GNU Linux</h3>
+
+ <p>A Debian Gnu Linux package is available, which is likely to work on other
+ Linux systems as well.  Thanks to Camm Maguire for maintaining this package,
+ and for pointing out that as Debian packages are simply ar and tar archives,
+ they can be unpacked on any linux system, and who has said: &ldquo;If someone
+ is running Debian, all they want to do is 'apt-get install acl2', doing
+ likewise for any optional add-on package they wish as well, e.g. emacs, infix,
+ etc.&rdquo; Alternatively, Debian GNU Linux users may wish to <a
+ href='http://packages.qa.debian.org/a/acl2.html'>download the ACL2 Debian
+ package for Linux</a>.  An alternate location you might want to check is <a
+ href='http://backports.debian.org'>@('backports.debian.org')</a>.</p>
+
+ ")
+
 (defxdoc primitive
   :parents (programming acl2-built-ins)
   :short "Primitive functions built into ACL2 without definitions"
@@ -137469,6 +137526,11 @@ work on <tt>(q x)</tt>.</p>
 
  </ul></li>
 
+ <li>Here are some resources for trying out ACL2 without directly installing it
+ yourself.</li>
+
+ <ul>
+
  <li><a href='http://acl2s.ccs.neu.edu/acl2s/'>The ACL2 Sedan</a> (see @(see
  acl2-sedan)) is an <color rgb='#0090f0'><b>Eclipse-based plug-in that provides
  a modern development environment</b></color> and other capabilities that may
@@ -137476,6 +137538,12 @@ work on <tt>(q x)</tt>.</p>
 
  <li>A basic <color rgb='#0090f0'><b>web-based interface to ACL2</b></color> is
  <a href='http://new.proofpad.org'>Proof Pad</a>.</li>
+
+ <li>There is an <a href='https://hub.docker.com/r/atwalter/acl2'>ACL2 Docker
+ container</a> (maintained at <a
+ href='https://github.com/mister-walter/acl2-docker'>this repo</a>).</li>
+
+ </ul>
 
  </ul>")
 
