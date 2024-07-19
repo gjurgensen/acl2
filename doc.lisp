@@ -1658,6 +1658,9 @@ Subtopics
   [Git-quick-start]
       Git quick start guide
 
+  [Pre-built-binary-distributions]
+      Pre-built binary distributions of ACL2
+
   [Recursion-and-induction]
       Recursion and Induction
 
@@ -5092,8 +5095,8 @@ Silent loading of ACL2 customization files
        Quit the current ACL2-Doc buffer.
 
     K             acl2-doc-kill-buffers
-       Kill all background ACL2-Doc buffers.  If invoked in an ACl2-Doc buffer,
-       all ACl2-Doc buffers except the current one will be killed.  If invoked in
+       Kill all background ACL2-Doc buffers.  If invoked in an ACL2-Doc buffer,
+       all ACL2-Doc buffers except the current one will be killed.  If invoked in
        any other buffer, all ACL2-Doc buffers will be killed.  With prefix
        argument, avoid a query that asks for confirmation.
 
@@ -49228,7 +49231,7 @@ The Prover's Theory
   instantiation), and a variety of other ways of conservatively
   adding new function symbols.
 
-  The ACl2 prover proves theorems in the extension of the above theory
+  The ACL2 prover proves theorems in the extension of the above theory
   obtained by adding the axioms introduced by [events] successfully
   carried out in the user's session.  The most common such
   axiom-adding events are [47m[defun][0m, [47m[defchoose][0m, and [47m[encapsulate][0m,
@@ -111045,6 +111048,68 @@ Subtopics
 
   Use your browser's [31;1mBack Button[0m now to return to
   [practice-formulating-strong-rules].")
+ (PRE-BUILT-BINARY-DISTRIBUTIONS
+  (ABOUT-ACL2)
+  "Pre-built binary distributions of ACL2
+
+  Visit the ``Recent changes to this page'' link on the {ACL2 home page
+  | http://www.cs.utexas.edu/users/moore/acl2/} to see if there are
+  other shortcuts available.
+
+  [31;1mWARNING[0m: Some of these packages might be for old versions of ACL2.  We
+  recommend that you use the latest version of ACL2 (Version 8.5).
+
+
+Linux/Mac/Windows Binaries in ACL2s
+
+  The ACL2 Sedan (see [ACL2-sedan]), also known as ACL2s, is an
+  Eclipse-based IDE for ACL2 that is distributed with pre-certified
+  books and pre-built binaries, though it is not always based on the
+  latest ACL2 version.  If you use an alternative development
+  environment (such as Emacs), you can still {fetch a tarball |
+  http://acl2s.ccs.neu.edu/acl2s/src/acl2/} for your x86-based
+  Linux/Mac/Windows system that contains a pre-built binary of (pure)
+  ACL2, using the following instructions based on information kindly
+  provided by Harsh Raju Chamarthi.  Just extract the appropriate
+  tarball (using [47mtar xfz[0m on Linux or Mac and [47munzip[0m on Windows) under
+  a path with [3mno[0m spaces.  Then run the script you will find, [47mrun_acl2[0m
+  on Linux or Mac and [47mrun_acl2.exe[0m on Windows, to start an ACL2
+  session.  (Note that The first time you execute that command, the
+  certificate ([47m.cert[0m) files are automatically fixed, according to the
+  full pathname of your [47mbooks/[0m directory.)
+
+
+Windows
+
+  In the past, a Windows Installer for ACL2 has included a Unix
+  environment, pre-certified standard and workshop books, and a copy
+  of Gnu Emacs.  This capability has largely been superseded in the
+  installation instructions' {section on Building an Executable Image
+  on Some Particular Systems |
+  https://www.cs.utexas.edu/~moore/acl2/current/HTML/installation/obtaining-and-installing.html#Build-Particular}
+  and the Shortcut using the ACL2 Sedan, above.  See also
+  [windows-installation].
+
+
+MacPorts for Mac OS X
+
+  ACL2 versions are sometimes been made available under MacPorts.
+
+
+Debian GNU Linux
+
+  A Debian Gnu Linux package is available, which is likely to work on
+  other Linux systems as well.  Thanks to Camm Maguire for
+  maintaining this package, and for pointing out that as Debian
+  packages are simply ar and tar archives, they can be unpacked on
+  any linux system, and who has said: ``If someone is running Debian,
+  all they want to do is 'apt-get install acl2', doing likewise for
+  any optional add-on package they wish as well, e.g. emacs, infix,
+  etc.'' Alternatively, Debian GNU Linux users may wish to {download
+  the ACL2 Debian package for Linux |
+  http://packages.qa.debian.org/a/acl2.html}.  An alternate location
+  you might want to check is {[47mbackports.debian.org[0m |
+  http://backports.debian.org}.")
  (PRETTYIFY-CLAUSE (POINTERS)
                    "See [system-utilities].")
  (PRIMITIVE
@@ -135793,12 +135858,18 @@ Subtopics
           one construct and manage large mechanically checked proofs
           (in ACL2)?''.
 
-    * {The ACL2 Sedan | http://acl2s.ccs.neu.edu/acl2s/} (see [ACL2-sedan])
-      is an [31;1mEclipse-based plug-in that provides a modern development
-      environment[0m and other capabilities that may be helpful for new
-      ACL2 users.
-    * A basic [31;1mweb-based interface to ACL2[0m is {Proof Pad |
-      http://new.proofpad.org}.
+    * Here are some resources for trying out ACL2 without directly
+      installing it yourself.
+          * {The ACL2 Sedan | http://acl2s.ccs.neu.edu/acl2s/} (see [ACL2-sedan])
+            is an [31;1mEclipse-based plug-in that provides a modern
+            development environment[0m and other capabilities that may
+            be helpful for new ACL2 users.
+          * A basic [31;1mweb-based interface to ACL2[0m is {Proof Pad |
+            http://new.proofpad.org}.
+          * There is an {ACL2 Docker container |
+            https://hub.docker.com/r/atwalter/acl2} (maintained at
+            {this repo |
+            https://github.com/mister-walter/acl2-docker}).
 
 
 Subtopics
