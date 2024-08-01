@@ -105403,7 +105403,7 @@ it."
 
 ;   88 ; Changes to Existing Features
 ;   38 ; New Features
-;   10 ; Heuristic and Efficiency Improvements
+;   11 ; Heuristic and Efficiency Improvements
 ;   39 ; Bug Fixes
 ;   18 ; Changes at the System Level
 ;    8 ; EMACS Support
@@ -106865,6 +106865,11 @@ it."
  @('make-event') call in that scope; similarly for such @('defconst') events
  within calls of @(tsee skip-proofs), @(tsee with-output), @(tsee
  with-guard-checking), or @(tsee with-prover-step-limit).</p>
+
+ <p>Each new stobj was being created twice at @(tsee include-book) time, once
+ when the book's compiled file is loaded and once when the @(tsee defstobj) or
+ @(tsee defabsstobj) event is processed.  The former initialization is
+ unnecessary and has been eliminated.</p>
 
  <h3>Bug Fixes</h3>
 
