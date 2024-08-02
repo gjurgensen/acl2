@@ -103503,6 +103503,11 @@ Heuristic and Efficiency Improvements
   events within calls of [47m[skip-proofs][0m, [47m[with-output][0m,
   [47m[with-guard-checking][0m, or [47m[with-prover-step-limit][0m.
 
+  Each new stobj was being created twice at [47m[include-book][0m time, once
+  when the book's compiled file is loaded and once when the
+  [47m[defstobj][0m or [47m[defabsstobj][0m event is processed.  The former
+  initialization is unnecessary and has been eliminated.
+
 
 Bug Fixes
 
