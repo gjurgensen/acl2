@@ -112086,17 +112086,13 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>The ACL2 Sedan (see @(see acl2-sedan)), also known as ACL2s, is an
  Eclipse-based IDE for ACL2 that is distributed with pre-certified books and
  pre-built binaries, though it is not always based on the latest ACL2 version.
- If you use an alternative development environment (such as Emacs), you can
- still <a href='http://acl2s.ccs.neu.edu/acl2s/src/acl2/'>fetch a tarball</a>
- for your x86-based Linux/Mac/Windows system that contains a pre-built binary
- of (pure) ACL2, using the following instructions based on information kindly
- provided by Harsh Raju Chamarthi.  Just extract the appropriate tarball (using
- @('tar xfz') on Linux or Mac and @('unzip') on Windows) under a path with
- <i>no</i> spaces.  Then run the script you will find, @('run_acl2') on Linux
- or Mac and @('run_acl2.exe') on Windows, to start an ACL2 session.  (Note that
- The first time you execute that command, the certificate (@('.cert')) files
- are automatically fixed, according to the full pathname of your @('books/')
- directory.)</p>
+ The ACL2 Sedan is distributed via a Homebrew package for Linux and macOS
+ users, and as a Windows Subsystem for Linux distro for Windows users.</p>
+
+ <p>See @(see acl2s::acl2s-installation) for instructions for installing the
+ ACL2 Sedan. Note that these instructions are typically intended for students
+ at Northeastern, but hopefully are useful for anyone interested in installing
+ ACL2s.</p>
 
  <h3>Windows</h3>
 
@@ -112108,9 +112104,13 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  Shortcut using the ACL2 Sedan, above.  See also @(see
  windows-installation).</p>
 
- <h3>MacPorts for Mac OS X</h3>
+ <h3>macOS</h3>
 
- <p>ACL2 versions are sometimes been made available under MacPorts.</p>
+ <p>ACL2 versions are sometimes been made available <a
+ href='https://ports.macports.org/port/acl2/'>under MacPorts</a>.</p>
+
+ <p>Some folks maintain <a href='https://formulae.brew.sh/formula/acl2'>a
+ Homebrew package</a> that tracks the latest stable version of ACL2.</p>
 
  <h3>Debian GNU Linux</h3>
 
@@ -112124,6 +112124,17 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  href='http://packages.qa.debian.org/a/acl2.html'>download the ACL2 Debian
  package for Linux</a>.  An alternate location you might want to check is <a
  href='http://backports.debian.org'>@('backports.debian.org')</a>.</p>
+
+ <h3>Docker images</h3>
+
+ <p>Some folks maintain Docker images for ACL2. Below is a nonexhaustive list
+ of such images; feel free to add to this list. DH refers to Docker Hub and
+ GHCR refers to the GitHub Container Registry.</p>
+
+ <ul>
+ <li>DH: <a href='https://hub.docker.com/r/atwalter/acl2/'>atwalter/acl2</a>, GHCR: <a href='https://github.com/mister-walter/acl2-docker/pkgs/container/acl2'>mister-walter/acl2</a></li>
+ <li>DH: <a href='https://hub.docker.com/r/atwalter/acl2s/'>atwalter/acl2s</a>, GHCR: <a href='https://github.com/mister-walter/acl2s-docker/pkgs/container/acl2s'>mister-walter/acl2s</a></li>
+ </ul>
 
  ")
 
