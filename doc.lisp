@@ -111070,18 +111070,14 @@ Linux/Mac/Windows Binaries in ACL2s
   The ACL2 Sedan (see [ACL2-sedan]), also known as ACL2s, is an
   Eclipse-based IDE for ACL2 that is distributed with pre-certified
   books and pre-built binaries, though it is not always based on the
-  latest ACL2 version.  If you use an alternative development
-  environment (such as Emacs), you can still {fetch a tarball |
-  http://acl2s.ccs.neu.edu/acl2s/src/acl2/} for your x86-based
-  Linux/Mac/Windows system that contains a pre-built binary of (pure)
-  ACL2, using the following instructions based on information kindly
-  provided by Harsh Raju Chamarthi.  Just extract the appropriate
-  tarball (using [47mtar xfz[0m on Linux or Mac and [47munzip[0m on Windows) under
-  a path with [3mno[0m spaces.  Then run the script you will find, [47mrun_acl2[0m
-  on Linux or Mac and [47mrun_acl2.exe[0m on Windows, to start an ACL2
-  session.  (Note that The first time you execute that command, the
-  certificate ([47m.cert[0m) files are automatically fixed, according to the
-  full pathname of your [47mbooks/[0m directory.)
+  latest ACL2 version.  The ACL2 Sedan is distributed via a Homebrew
+  package for Linux and macOS users, and as a Windows Subsystem for
+  Linux distro for Windows users.
+
+  See ACL2s::ACL2s-installation for instructions for installing the
+  ACL2 Sedan. Note that these instructions are typically intended for
+  students at Northeastern, but hopefully are useful for anyone
+  interested in installing ACL2s.
 
 
 Windows
@@ -111096,9 +111092,14 @@ Windows
   [windows-installation].
 
 
-MacPorts for Mac OS X
+macOS
 
-  ACL2 versions are sometimes been made available under MacPorts.
+  ACL2 versions are sometimes been made available {under MacPorts |
+  https://ports.macports.org/port/acl2/}.
+
+  Some folks maintain {a Homebrew package |
+  https://formulae.brew.sh/formula/acl2} that tracks the latest
+  stable version of ACL2.
 
 
 Debian GNU Linux
@@ -111114,7 +111115,21 @@ Debian GNU Linux
   the ACL2 Debian package for Linux |
   http://packages.qa.debian.org/a/acl2.html}.  An alternate location
   you might want to check is {[47mbackports.debian.org[0m |
-  http://backports.debian.org}.")
+  http://backports.debian.org}.
+
+
+Docker images
+
+  Some folks maintain Docker images for ACL2. Below is a nonexhaustive
+  list of such images; feel free to add to this list. DH refers to
+  Docker Hub and GHCR refers to the GitHub Container Registry.
+
+    * DH: {atwalter/acl2 | https://hub.docker.com/r/atwalter/acl2/}, GHCR:
+      {mister-walter/acl2 |
+      https://github.com/mister-walter/acl2-docker/pkgs/container/acl2}
+    * DH: {atwalter/acl2s | https://hub.docker.com/r/atwalter/acl2s/},
+      GHCR: {mister-walter/acl2s |
+      https://github.com/mister-walter/acl2s-docker/pkgs/container/acl2s}")
  (PRETTYIFY-CLAUSE (POINTERS)
                    "See [system-utilities].")
  (PRIMITIVE
