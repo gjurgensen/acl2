@@ -3249,13 +3249,11 @@
 
  <p>ACL2 sessions in the ACL2 Sedan can utilize non-standard extensions and
  enhancements, especially geared toward new users, termination reasoning, and
- attaching rich user interfaces.  These extensions are <a
- href='http://acl2s.ccs.neu.edu/acl2s/src/acl2-extensions'>generally
- available</a> as certifiable ACL2 books.
- (Some code originating from this project has been migrated to the ACL2
- community books, but only after it was quite stable.)  Thanks to Peter
- Dillinger, Pete Manolios, Daron Vroon, and Harsh Raju Chamarthi for their work
- on the ACL2 Sedan and for making their books available to ACL2 users.</p>")
+ attaching rich user interfaces.  These extensions are distributed with the
+ ACL2 community books in @('books/acl2s/distribution/acl2s-hooks/').  Thanks to
+ Peter Dillinger, Pete Manolios, Daron Vroon, and Harsh Raju Chamarthi for
+ their work on the ACL2 Sedan and for making their books available to ACL2
+ users.</p>")
 
 (defxdoc acl2-tutorial
 
@@ -19144,8 +19142,8 @@ Texas at Austin.</li>
 
 <li><a href='https://www.ccs.neu.edu/home/pete/teaching.html'>Courses
     taught by Pete Manolios</a>, which use
-    the <a href='http://acl2s.ccs.neu.edu/acl2s/doc/'>ACL2 Sedan
-    (ACL2s)</a>,
+    the <see topic='@(url acl2-sedan)'>ACL2 Sedan
+    (ACL2s)</see>,
     including <a href='https://www.ccs.neu.edu/home/pete/courses/Logic-and-Computation/2020-Spring/'>one
     taught at Northeastern in Spring 2020</a></li>
 
@@ -19154,8 +19152,7 @@ to undergraduates:
 
   <ul>
 
-  <li>The <a href='http://acl2s.ccs.neu.edu/acl2s/doc/'>ACL2 Sedan
-  (ACL2s)</a></li>
+  <li>The <see topic='@(url acl2-sedan)'>ACL2 Sedan (ACL2s)</see></li>
 
   <li><a href='http://dracula-lang.github.io/index.html'>DrACuLa</a></li>
 
@@ -43349,7 +43346,7 @@ current fast alists."
  input.</p>
 
  <p>You could use ACL2 with no other interface.  But most users prefer an enviroment in which they can prepare a command by editing
- the text before submitting it.  We use an Emacs shell buffer for that.  Other users use <a href='http://acl2s.ccs.neu.edu/acl2s/doc/'>ACL2s</a>, which is an Eclipse plug-in.
+ the text before submitting it.  We use an Emacs shell buffer for that.  Other users use <see topic='@(url acl2-sedan)'>ACL2s</see>, which is an Eclipse plug-in.
  This guide doesn't discuss the interface further and we just assume you can submit commands and see the output.  The examples we provide
  are from our Emacs interface.</p>
 
@@ -112105,8 +112102,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  pre-certified standard and workshop books, and a copy of Gnu Emacs.  This
  capability has largely been superseded in the installation instructions' <a
  href='https://www.cs.utexas.edu/~moore/acl2/current/HTML/installation/obtaining-and-installing.html#Build-Particular'>section
- on Building an Executable Image on Some Particular Systems</a> and the
- Shortcut using the ACL2 Sedan, above.  See also @(see
+ on Building an Executable Image on Some Particular Systems</a>. See also @(see
  windows-installation).</p>
 
  <h3>macOS</h3>
@@ -137547,10 +137543,10 @@ work on <tt>(q x)</tt>.</p>
 
  <ul>
 
- <li><a href='http://acl2s.ccs.neu.edu/acl2s/'>The ACL2 Sedan</a> (see @(see
- acl2-sedan)) is an <color rgb='#0090f0'><b>Eclipse-based plug-in that provides
- a modern development environment</b></color> and other capabilities that may
- be helpful for new ACL2 users.</li>
+ <li><see topic='@(url acl2-sedan)'>The ACL2 Sedan</see> is an <color
+ rgb='#0090f0'><b>Eclipse-based plug-in that provides a modern development
+ environment</b></color> and other capabilities that may be helpful for new
+ ACL2 users.</li>
 
  <li>A basic <color rgb='#0090f0'><b>web-based interface to ACL2</b></color> is
  <a href='http://new.proofpad.org'>Proof Pad</a>.</li>
@@ -147481,8 +147477,8 @@ work on <tt>(q x)</tt>.</p>
 
  <p>@('Trace$') installs alternate code for the indicated functions that prints
  information upon entry to, and exit from, calls of the functions.  For an
- alternate tracing utility used for educational purposes in <a
- href='http://acl2s.ccs.neu.edu/acl2s/doc/'>ACL2s</a>, see community book
+ alternate tracing utility used for educational purposes in <see topic='@(url
+ acl2-sedan)'>ACL2s</see>, see community book
  @('books/misc/trace-star.lisp').</p>
 
  <p>From a logical perspective all trace printing is a fiction.  (But see @(see
@@ -158030,13 +158026,6 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
 
  <ul>
 
- <li>Fetch the ACL2 Sedan (ACL2s) &mdash; see @(see acl2-sedan) &mdash; which
- is an extension and distribution of ACL2 integrated with the Eclipse IDE.  If
- you wish to use ACL2s without the Eclipse front-end, see <a
- href='http://www.cs.utexas.edu/users/moore/acl2/current/HTML/installation/obtaining-and-installing.html#Shortcut-acl2s'>the
- information about ACL2s in the installation instructions</a>, which explains
- how to obtain and use a pre-built ACL2 binary for Windows, Linux, or Mac.</li>
-
  <li>Use a Virtual Machine platform, such as VMware Player (free for
  non-commercial use) or Oracle Virtualbox (free even for commercial
  use) to install Linux, and then follow the normal installation
@@ -158047,10 +158036,18 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
 
  <li>Set up <a
  href='https://en.wikipedia.org/wiki/Windows_Subsystem_for_Linux'>Windows
- Subsystem for Linux</a> on a 64-bit version of Windows 10 (or later, once
- available).  Within that subsystem, follow the setup and installation
- instructions for ACL2.  (You might be the first to test this, but it will
- likely work.)</li>
+ Subsystem for Linux</a> (WSL) on a 64-bit version of Windows 10 (or later,
+ once available).  Within that subsystem, follow the setup and installation
+ instructions for ACL2. See the below section regarding the ACL2 Sedan Windows
+ installation instructions for more info, as that involves installing the ACL2
+ Sedan in WSL on Windows.</li>
+
+ <li>Use the ACL2 Sedan (ACL2s) Windows installation instructions &mdash; see
+ @(see acl2s::acl2s-installation) for more details. This will install ACL2 and
+ the ACL2s system (including a copy of the Eclipse IDE with ACL2s support) in a
+ Windows Subsystem for Linux distro. This distro is configured to automatically
+ open Eclipse when the distro starts up, but one can start the distro without
+ Eclipse by running @('wsl -d acl2s -e /bin/bash --noprofile').</li>
 
  </ul>
 
