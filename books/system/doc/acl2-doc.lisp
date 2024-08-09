@@ -109329,14 +109329,13 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   automatically expanded when we have no information about @('s'): the inner
   @('step') would introduce a 9-way case split and the outer one would turn
   that into an 81-way case split considering all of the possiblities for the
-  first two instructions.  We only want to expand @('step') when we know
-  <i>exactly</i> what the next instruction actually is!  So we prove this
-  logically trivial theorem.</p>
+  first two instructions.  We want to expand @('step') only when we know
+  something definite about the instruction that is to be executed.  So we prove
+  this logically trivial theorem.</p>
 
   @({
   (defthm step-opener
-    (implies (and (equal ins (next-inst s))
-                  (syntaxp (quotep ins)))
+    (implies (consp (next-inst s))
              (equal (step s)
                     (do-inst (next-inst s) s))))
   })
@@ -109344,12 +109343,22 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   <p>The conclusion is just the definition of @('step')!  So the hypothesis is
   completely unnecessary from a logical perspective.  But operationally, if
   this rule has been proved and then @('step') is disabled, the rewriter will
-  expand @('(step s)') only @('(next-inst s)') rewrites to a quoted constant.
-  See @(tsee syntaxp) for an explanation of why the hypothesis causes this
-  behavior.  The most common way for @('(next-inst s)') to rewrite to a quoted
-  constant is when both the @('pc') and the @('program') in state @('s') are
-  quoted constants.  The objective is to expand @('(step s)') only when we know
-  exactly what instruction is to be executed.</p>
+  expand @('(step s)') only if @('(next-inst s)') can be proved to satisfy
+  @('consp').  The most common way for @('(next-inst s)') to be a @('consp') is
+  when both the @('pc') and the @('program') in state @('s') are quoted
+  constants and @('program') is a well-formed program.  But we don't want to
+  require exactly that because it is too restrictive.  For example, in machine
+  models supporting subroutine calls, the typical correctness theorem for a
+  subroutine says very little about the entire ``program space'' but deals with
+  an @('invoke')- or @('jsr')-type instruction to a place where the code for
+  the subroutine is found.  (If you inspect
+  @('books/models/jvm/m2/examples.lisp') and look at @('example4') you will see
+  such a correctness theorem.)  As models get more complex you may have to
+  adjust @('step-opener') accordingly, though this simple version is
+  surprisingly effective.</p>
+
+  <p>Having established @('step-opener'), we disable @('step') so that the only
+  way it ever expands is when the @('next-inst') is provably a @('consp').</p>
 
   @({
   (in-theory (disable step))
