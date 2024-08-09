@@ -106238,26 +106238,35 @@ Programming M1
   s))[0m were automatically expanded when we have no information about
   [47ms[0m: the inner [47mstep[0m would introduce a 9-way case split and the outer
   one would turn that into an 81-way case split considering all of
-  the possiblities for the first two instructions.  We only want to
-  expand [47mstep[0m when we know [3mexactly[0m what the next instruction actually
-  is!  So we prove this logically trivial theorem.
+  the possiblities for the first two instructions.  We want to expand
+  [47mstep[0m only when we know something definite about the instruction
+  that is to be executed.  So we prove this logically trivial
+  theorem.
 
     (defthm step-opener
-      (implies (and (equal ins (next-inst s))
-                    (syntaxp (quotep ins)))
+      (implies (consp (next-inst s))
                (equal (step s)
                       (do-inst (next-inst s) s))))
 
   The conclusion is just the definition of [47mstep[0m!  So the hypothesis is
   completely unnecessary from a logical perspective.  But
   operationally, if this rule has been proved and then [47mstep[0m is
-  disabled, the rewriter will expand [47m(step s)[0m only [47m(next-inst s)[0m
-  rewrites to a quoted constant.  See [47m[syntaxp][0m for an explanation of
-  why the hypothesis causes this behavior.  The most common way for
-  [47m(next-inst s)[0m to rewrite to a quoted constant is when both the [47mpc[0m
-  and the [47mprogram[0m in state [47ms[0m are quoted constants.  The objective is
-  to expand [47m(step s)[0m only when we know exactly what instruction is to
-  be executed.
+  disabled, the rewriter will expand [47m(step s)[0m only if [47m(next-inst s)[0m
+  can be proved to satisfy [47mconsp[0m.  The most common way for [47m(next-inst
+  s)[0m to be a [47mconsp[0m is when both the [47mpc[0m and the [47mprogram[0m in state [47ms[0m are
+  quoted constants and [47mprogram[0m is a well-formed program.  But we
+  don't want to require exactly that because it is too restrictive.
+  For example, in machine models supporting subroutine calls, the
+  typical correctness theorem for a subroutine says very little about
+  the entire ``program space'' but deals with an [47minvoke[0m- or [47mjsr[0m-type
+  instruction to a place where the code for the subroutine is found.
+  (If you inspect [47mbooks/models/jvm/m2/examples.lisp[0m and look at
+  [47mexample4[0m you will see such a correctness theorem.)  As models get
+  more complex you may have to adjust [47mstep-opener[0m accordingly, though
+  this simple version is surprisingly effective.
+
+  Having established [47mstep-opener[0m, we disable [47mstep[0m so that the only way
+  it ever expands is when the [47mnext-inst[0m is provably a [47mconsp[0m.
 
     (in-theory (disable step))
 
