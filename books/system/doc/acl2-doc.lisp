@@ -105901,6 +105901,9 @@ it."
 ;   (set-raw-mode-on!)
 ;   st
 
+; Improved error messages when non-executable stobjs are present when
+; evaluating a top-level form.
+
   :parents (release-notes)
   :short "ACL2 Version  8.6 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -108834,7 +108837,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
   <ul>
   <li>Setting up a Symbol Package</li>
-  <li>The Definition of M1</li> 
+  <li>The Definition of M1</li>
   <li>Programming M1</li>
   <li>&ldquo;Teaching&rdquo; the Prover How to Control M1</li>
   <ul>
@@ -109097,7 +109100,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
     (if (zp n)
         s
         (m1 (step s) (- n 1))))
-  }) 
+  })
 
   <p>In a model like this one, where we control the length of the run by a
   natural-number step count, we often call the second argument of @('m1') the
@@ -109203,19 +109206,19 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
       (720)                       ; stack
       ((ICONST 1)                 ; program
        (ISTORE 1)
-       (ILOAD 0) 
-       (IFEQ 10) 
-       (ILOAD 1) 
-       (ILOAD 0) 
-       (IMUL)    
+       (ILOAD 0)
+       (IFEQ 10)
+       (ILOAD 1)
+       (ILOAD 0)
+       (IMUL)
        (ISTORE 1)
-       (ILOAD 0) 
+       (ILOAD 0)
        (ICONST 1)
-       (ISUB)    
+       (ISUB)
        (ISTORE 0)
        (GOTO -10)
-       (ILOAD 1) 
-       (HALT)))  
+       (ILOAD 1)
+       (HALT)))
     })
 
   <p>Notice that the machine reached the @('(HALT)') at @('pc') 14 and @('720')
@@ -109244,7 +109247,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   sequence in which these definitions and lemmas appear below is not identical
   to the sequence in the @('m1.lisp') file, but they're all there.  In telling
   the story we just found the sequence below a little more natural.</p>
-  
+
   <h4>Arithmetic</h4>
 
   <p>To be able to reason about simple arithmetic, we include one of the
@@ -109313,7 +109316,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
          (equal (top (cons x s)) x)
          (equal (pop (cons x s)) s)))
-  })  
+  })
 
   <p>We prove the analogous rules about state accessors and @('make-state'),
   e.g., @('(equal (pc (make-state pc locals stack program)) pc)').
@@ -168994,7 +168997,7 @@ expand function call at the current subterm, without simplifying"
 (defxdoc bib::hunt85
   :parents (operational-semantics-3__annotated-bibliography)
 
-  :short "W. A. Hunt, Jr., <i>FM8501: A Verified Microprocessor</i>, 
+  :short "W. A. Hunt, Jr., <i>FM8501: A Verified Microprocessor</i>,
   University of Texas at Austin, Ph.D. dissertation, 1985 (also published as a
   book of the same title, Springer-Verlag LNAI 795, Heidelberg, 1994.
 
@@ -169376,7 +169379,7 @@ expand function call at the current subterm, without simplifying"
 
   <p>The &ldquo;Simple Von Neumann machine&rdquo; in question is M1.  See the
   ACL2 directory @('books/models/jvm/m1/') and the @('README') file there.</p>
-  
+
   <p>Abstract</p>
 
   <p>In this paper we sketch an ACL2-checked proof that a simple but unbounded
@@ -169547,7 +169550,7 @@ expand function call at the current subterm, without simplifying"
   :parents (operational-semantics-3__annotated-bibliography)
   :short "J S. Moore, <i>Piton:  A Mechanically Verified Assembly-Level Language</i>,
   J S. Moore, Automated Reasoning Series, Kluwer Academic Publishers, 1996.
-  
+
   <br></br><br></br><b>Relevance:</b> verified assembler/linker/loader and a
   component of the CLI Verified Stack"
 
