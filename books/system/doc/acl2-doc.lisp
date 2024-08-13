@@ -110310,8 +110310,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   via proof.  See the Nqthm script analyzing the game of Tic Tac Toe,
   @('examples/basic/tic-tac-toe.events') or @(see bib::wilding93) for a
   description of the verification of a winning strategy for the game of Nim.
-  See the ACL2 scripts for playing Towers of Hanoi, @('books/misc/hanoi.lisp'),
-  and the Bottle Game (played in the 1995 movie <i>Die Hard 2</i>),
+  See the ACL2 scripts for playing Towers of Hanoi, @(see
+  Tutorial1-Towers-of-Hanoi), @('books/misc/hanoi.lisp'), and the Bottle
+  Game (played in the 1995 movie <i>Die Hard 2</i>),
   @('books/projects/die-hard-bottle-game/top.lisp').</p>
 
   <p>But for the rest of this discussion we focus on modeling and proving
@@ -110463,10 +110464,13 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
   <p>While it is possible to download individual files from these sites, we
   recommend that you download the entire @('nqthm-1992') distribution as
-  follows.  In a browser, visit <a
-  href='ftp://ftp.cs.utexas.edu/pub/boyer/nqthm/nqthm-2nd-edition.tar.gz'>this
-  link</a>.  That will download all of nqthm-1992 as a gzipped tar file.  Put
-  that file on a directory where you want the Nqthm source code and regression
+  follows.  In particular, download the gzipped tar file:</p>
+
+  @({
+  ftp://ftp.cs.utexas.edu/pub/boyer/nqthm/nqthm-2nd-edition.tar.gz
+  })
+
+  <p>to a directory where you want the Nqthm source code and regression
   suite, connect to that directory, and extract the files as follows.</p>
 
   @({
@@ -168500,8 +168504,8 @@ expand function call at the current subterm, without simplifying"
 (defxdoc bib::bevier87
   :parents (operational-semantics-3__annotated-bibliography)
 
-  :short "W. R. Bevier, <i><a href='ftp://ftp.cs.utexas.edu/pub/boyer/diss/bevier.pdf'>A
-  Verified Operating System Kernel</a></i>, University of Texas
+  :short "W. R. Bevier, <i>Verified Operating System Kernel</i>
+  @('(ftp://ftp.cs.utexas.edu/pub/boyer/diss/bevier.pdf)'), University of Texas
   at Austin, Ph.D. dissertation, 1987.
 
   <br></br><br></br><b>Relevance:</b> first verified operating system and a
@@ -168814,11 +168818,10 @@ expand function call at the current subterm, without simplifying"
 (defxdoc bib::flatau92
   :parents (operational-semantics-3__annotated-bibliography)
 
-  :short "A. D. Flatau <i><a
-  href='ftp://ftp.cs.utexas.edu/pub/boyer/diss/flatau.pdf'>A verified
-  implementation of an applicative language with dynamic storage
-  allocation</a></i>, University of Texas at Austin, Ph.D. dissertation, 1992
-  (minus some appendices).
+  :short "A. D. Flatau <i>A verified implementation of an applicative language
+  with dynamic storage allocation</i>
+  @('(ftp://ftp.cs.utexas.edu/pub/boyer/diss/flatau.pdf)'), University of Texas
+  at Austin, Ph.D. dissertation, 1992 (minus some appendices).
 
   <br></br><br></br><b>Relevance:</b> a second verified compiler hosted on
   the CLI Verified Stack"
@@ -169921,10 +169924,9 @@ expand function call at the current subterm, without simplifying"
 (defxdoc bib::wilding92
   :parents (operational-semantics-3__annotated-bibliography)
 
-  :short "M. M. Wilding, <i><a
-  href='ftp://ftp.cs.utexas.edu/pub/boyer/diss/wilding.pdf'>Machine-checked
-  real-time system verification</a></i>, University of Texas at Austin,
-  Ph.D. dissertation, 1996.
+  :short "M. M. Wilding, <i>Machine-checked real-time system verification</i>
+  @('(ftp://ftp.cs.utexas.edu/pub/boyer/diss/wilding.pdf)'), University of
+  Texas at Austin, Ph.D. dissertation, 1996.
 
   <br></br><br></br><b>Relevance:</b> a non-trivial applications program on the CLI Verified Stack"
 
@@ -170016,10 +170018,9 @@ expand function call at the current subterm, without simplifying"
 
 (defxdoc bib::young88
   :parents (operational-semantics-3__annotated-bibliography)
-  :short "W. D. Young, <i><a
-  href='ftp://ftp.cs.utexas.edu/pub/boyer/diss/young.pdf'>A Verified Code
-  Generator for a Subset of Gypsy</a></i>, University of Texas at Austin,
-  Ph.D. dissertation, 1988.
+  :short "W. D. Young, <i>A Verified Code Generator for a Subset of Gypsy</i>
+  @('(ftp://ftp.cs.utexas.edu/pub/boyer/diss/young.pdf)'), University of Texas
+  at Austin, Ph.D. dissertation, 1988.
 
   <br></br><br></br><b>Relevance:</b> a verified compiler (from a small
   Pascal-like subset to an assembly language) and a component of the CLI
@@ -170033,10 +170034,9 @@ expand function call at the current subterm, without simplifying"
 
 (defxdoc bib::yu92
   :parents (operational-semantics-3__annotated-bibliography)
-  :short "Y. Yu, <i><a
-  href='ftp://ftp.cs.utexas.edu/pub/boyer/diss/yu.pdf'>Automated proofs of
-  object code for a widely used microprocessor</a></i>, University of Texas at
-  Austin, Ph.D. dissertation, 1992.
+  :short "Y. Yu, <i>Automated proofs of object code for a widely used
+  microprocessor</i> @('(ftp://ftp.cs.utexas.edu/pub/boyer/diss/yu.pdf)'),
+  University of Texas at Austin, Ph.D. dissertation, 1992.
 
   <br></br><br></br><b>Relevance:</b> details of the operational model of the
   Motorola 68020"
