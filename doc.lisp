@@ -132577,7 +132577,7 @@ Subtopics
   [47m[remove-untouchable][0m, [47m[set-body][0m, and [47m[table][0m [events].  Any other
   type of non-redundant event will cause an error if [47mflag[0m is [47mt[0m and a
   warning if [47mflag[0m is [47mnil[0m, [3mexcept[0m in the course of carrying out an
-  [47m[include-book][0m form.
+  [47m[include-book][0m form or the second pass of an [47m[encapsulate][0m form.
 
   Note that because [47m[table][0m [events] that set the [47m[ACL2-defaults-table][0m
   are implicitly [47m[local][0m, [47mset-enforce-redundancy[0m events are ignored

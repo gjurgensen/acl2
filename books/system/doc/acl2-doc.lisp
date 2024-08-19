@@ -133676,7 +133676,8 @@ work on <tt>(q x)</tt>.</p>
  push-untouchable), @(tsee remove-untouchable), @(tsee set-body), and @(tsee
  table) @(see events).  Any other type of non-redundant event will cause an
  error if @('flag') is @('t') and a warning if @('flag') is @('nil'),
- <i>except</i> in the course of carrying out an @(tsee include-book) form.</p>
+ <i>except</i> in the course of carrying out an @(tsee include-book) form or
+ the second pass of an @(tsee encapsulate) form.</p>
 
  <p>Note that because @(tsee table) @(see events) that set the @(tsee
  acl2-defaults-table) are implicitly @(tsee local), @('set-enforce-redundancy')
