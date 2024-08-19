@@ -107110,6 +107110,20 @@ Quick Index to Related Topics
   proof styles, and tools in the ACL2 Community Books that may be of
   interest.
 
+  We limit our discussion here to operational semantics.  But it is
+  worth noting that a valuable way to explore the diversity of ACL2
+  applications and extensions is to browse the ACL2 Workshop series.
+  See the ``ACL2 Workshops, UT Seminar, and Course Materials'' link
+  on the {ACL2 homepage |
+  http://www.cs.utexas.edu/users/moore/acl2/}.  Then visit the
+  Program for each workshop.  Many of the papers include supplemental
+  material in the form of ACL2 proof scripts are in the ACL2
+  Community Books regression suite and thus available locally if
+  you've installed ACL2.  They're under the directory
+  [47mbooks/workshops/[0m, which is organized by the year of the workshop
+  and the name of the author(s), e.g.,
+  [47mbooks/workshops/2023/passmore/[0m.
+
 
 Other Machines
 
@@ -107303,8 +107317,8 @@ Other Machines
   meaning ``correct if it terminates'' and the latter meaning
   ``terminating and correct at termination.''
 
-  The most complicated machine formalized with ACL2 is the x86
-  instruction set architecture.  The model evolved from simpler
+  The most complicated machine formalized (as of 2024) with ACL2 is the
+  x86 instruction set architecture.  The model evolved from simpler
   models, exploiting lessons learned from earlier Nqthm and ACL2
   work.  In the case of x86, the ``toy'' was the y86 as informally
   described in [bib::boh03].  The ACL2 directory [47mbooks/models/y86/[0m
@@ -107590,7 +107604,8 @@ Subtopics
       Holland, April, 1992.
       [31;1mRelevance:[0m a formalized hardware description language and the
       verification of a fabricated microprocessor described with it;
-      this describes three critical achievements in formal methods
+      this describes three foundational achievements in formal
+      methods
 
   [Bib::hk12]
       W. A. Hunt, Jr. and M. Kaufmann, ``{Towards a Formal Model of the
@@ -167279,7 +167294,7 @@ Subtopics
   Holland, April, 1992.
   [31;1mRelevance:[0m a formalized hardware description language and the
   verification of a fabricated microprocessor described with it; this
-  describes three critical achievements in formal methods
+  describes three foundational achievements in formal methods
 
 ---------
   Abstract
@@ -167303,7 +167318,7 @@ Subtopics
   final hosting of the CLI Verified Stack [bib::bhmy89].
 
   But aside from its importance to the Verified Stack, this paper
-  describes three critical achievements in formal methods:
+  describes three foundational achievements in formal methods:
 
     * the first formal definition of a hardward description language (HDL),
     * the first complete proof of a microprocessor design -- including its
@@ -167349,9 +167364,47 @@ Subtopics
   [31;1mRelevance:[0m how ACL2 is used in industry, and why
 
 ---------
-  This paper mainly describes how ACL2 is used in industry, although it
-  also deals a bit with how ACL2 gained traction in industrial use
-  and the features of the system of special importance to industry.")
+  Abstract
+
+  The ACL2 theorem prover has seen sustained industrial use since the
+  mid-1990s. Companies that have used ACL2 regularly include AMD,
+  Centaur Technology, IBM, Intel, Kestrel Institute,
+  Motorola/Freescale, Oracle and Rockwell Collins. This paper
+  introduces ACL2 and focuses on how and why ACL2 is used in
+  industry. ACL2 is well-suited to its industrial application to
+  numerous software and hardware systems, because it is an integrated
+  programming/proof environment supporting a subset of the ANSI
+  standard Common Lisp programming language. As a programming
+  language ACL2 permits the coding of efficient and robust programs;
+  as a prover ACL2 can be fully automatic but provides many features
+  permitting domain-specific human-supplied guidance at various
+  levels of abstraction. ACL2 specifications and models often serve
+  as efficient execution engines for the modelled artefacts while
+  permitting formal analysis and proof of properties. Crucially, ACL2
+  also provides support for the development and verification of other
+  formal analysis tools. However, ACL2 did not find its way into
+  industrial use merely because of its technical features. The core
+  ACL2 user/development community has a shared vision of making
+  mechanized verification routine when appropriate and has been
+  committed to this vision for the quarter century since the
+  Computational Logic, Inc., Verified Stack. The community has
+  focused on demonstrating the viability of the tool by taking on
+  industrial projects (often at the expense of not being able to
+  publish much).
+
+---------
+  This is does not discuss operational semantics [3mper se[0m but instead
+  focuses on how ACL2 is used in industry and how ACL2 gained
+  traction in industrial use.  The paper discusses how ACL2 is used
+  at Centaur Technology, Inc.  When a previously verified module of a
+  microprocessor design is modified by the designers and checked back
+  in to the data base, ACL2 is run that night to attempt to verify
+  the modified design, ``bugs introduced today are detected tonight
+  and fixed tomorrow.'' The Centaur design and verification teams
+  were acquired by Intel in 2021 and ACL2 continues to be so used at
+  Intel.  In addition the paper describes features of ACL2 (and of
+  the ACL2 community of users) that are particularly important to
+  industry.")
  (BIB::HUNT85
   (OPERATIONAL-SEMANTICS-3__ANNOTATED-BIBLIOGRAPHY)
   "W. A. Hunt, Jr., [3mFM8501: A Verified Microprocessor[0m, University of
