@@ -16763,7 +16763,7 @@ Subtopics
   (CCL-INSTALLATION)
   "Clozure Common Lisp (CCL) installation and implementation details
 
-  [31;1mNOTE[0mSee {the Clozure CL releases page |
+  [31;1mNOTE[0m: See {the Clozure CL releases page |
   https://github.com/Clozure/ccl/releases/} for the latest
   information, which may supersede some of what is included below.
 
@@ -16956,7 +16956,7 @@ configure-ccl.lisp
 
   [31;1mNOTE:[0m See {the Clozure CL releases page |
   https://github.com/Clozure/ccl/releases/} for the latest
-  information, which may supersede some of what is included below.
+  information, which probably supersedes what is included below.
 
   See [ccl-installation] for introductory remarks.  The instructions
   below describe how to install CCL on Linux.  For more elaborate
@@ -17006,7 +17006,7 @@ configure-ccl.lisp
 
   [31;1mNOTE:[0m See {the Clozure CL releases page |
   https://github.com/Clozure/ccl/releases/} for the latest
-  information, which may supersede some of what is included below.
+  information, which may well supersede what is included below.
 
   See [ccl-installation] for introductory remarks.  The ``cookbook''
   instructions below give you one way to install CCL on Linux without
@@ -17075,7 +17075,7 @@ configure-ccl.lisp
 
   [31;1mNOTE:[0m See {the Clozure CL releases page |
   https://github.com/Clozure/ccl/releases/} for the latest
-  information, which may supersede some of what is included below.
+  information, which probably supersedes what is included below.
 
   See [ccl-installation] for introductory remarks.  The instructions
   below describe how to install CCL on a Mac (Darwin).  For more
@@ -17129,7 +17129,7 @@ configure-ccl.lisp
 
   [31;1mNOTE:[0m See {the Clozure CL releases page |
   https://github.com/Clozure/ccl/releases/} for the latest
-  information, which may supersede some of what is included below.
+  information, which may well supersede what is included below.
 
   See [ccl-installation] for introductory remarks.  The ``cookbook''
   instructions below give you one way to install CCL on a Mac
@@ -105766,6 +105766,11 @@ Subtopics
   proved about M1.  Full references are given when we survey the M1
   results available.
 
+  (Historical Aside: What we're calling M1 was called ``Small-Machine''
+  in Nqthm.  See [bib::bm96] and the methodology described here was
+  essentially fully developed before ACL2, Java, or the JVM came
+  along.)
+
   M1 does not support bytecode verification, method invocation
   (procedure call) and return, data objects other than ACL2's
   unbounded numbers, threads, exceptions, and many other features of
@@ -106701,7 +106706,8 @@ of Correctness
   [47m(fact n)[0m is on top of the otherwise unchanged initial [47mstack[0m.
 
   [31;1mStep 1[0m: We start by defining an ACL2 function that ``does what the
-  loop does.''
+  loop does.'' We sometimes call this the [3msemantic function[0m
+  corresponding to the program.
 
     (defun helper (n ans)
       (if (zp n)
@@ -107104,6 +107110,20 @@ Quick Index to Related Topics
   proof styles, and tools in the ACL2 Community Books that may be of
   interest.
 
+  We limit our discussion here to operational semantics.  But it is
+  worth noting that a valuable way to explore the diversity of ACL2
+  applications and extensions is to browse the ACL2 Workshop series.
+  See the ``ACL2 Workshops, UT Seminar, and Course Materials'' link
+  on the {ACL2 homepage |
+  http://www.cs.utexas.edu/users/moore/acl2/}.  Then visit the
+  Program for each workshop.  Many of the papers include supplemental
+  material in the form of ACL2 proof scripts are in the ACL2
+  Community Books regression suite and thus available locally if
+  you've installed ACL2.  They're under the directory
+  [47mbooks/workshops/[0m, which is organized by the year of the workshop
+  and the name of the author(s), e.g.,
+  [47mbooks/workshops/2023/passmore/[0m.
+
 
 Other Machines
 
@@ -107181,14 +107201,105 @@ Other Machines
   But for the rest of this discussion we focus on modeling and proving
   properties of compute engines with ACL2.
 
-  In [operational-semantics-1__simple-example] (and on the ACL2
+  The first major external applications of ACL2 after it was developed
+  at Computational Logic, Inc., were at Motorola Government Systems,
+  in Scottsdale, Arizona, between 1994 and 1997, and at Advanced
+  Micro Devices, Inc., in Austin, Texas, in 1995.  Only the first of
+  these two projects employed operational semantics --- and it was a
+  [3mtour de force[0m.
+
+  A CLI employee, Bishop Brock, relocated to Scottsdale and embedded
+  with a design group there to formalize the evolving design of the
+  Motorola ``Complex Arithmetic Processor'' (CAP) digital signal
+  processor (DSP), using the operational semantic techniques
+  developed with Nqthm and described above.  A timeline of the entire
+  ACL2 part of the CAP DSP project may be found in [bib::bkm96].
+
+  Here is a brief description of the CAP design taken from Section 2.1
+  of [bib::bkm96].
+
+      The CAP design follows the `Harvard architecture', i.e., there are
+      separate program and data memories.  The design includes 252
+      programmer-visible data and control registers.  There are six
+      independently addressable data and parameter memories.  The
+      data memories are logically partitioned into `source' and
+      `destination' memories; the sense of the memories may be
+      switched under program control.  The arithmetic unit includes
+      four multiplier-accumulators and a 6-adder array.  The CAP
+      executes a 64-bit instruction word, which in the arithmetic
+      units is further decoded into a 317-bit, low-level control
+      word.  The instruction set includes no-overhead looping
+      constructs and automatic data scaling.  As many as 10 different
+      registers are involved in the determination of the next program
+      counter.  A single instruction can simultaneously modify well
+      over 100 registers.  In practice, instructions found in typical
+      applications simultaneously modify several dozen registers.
+      Finally, the CAP has a three-stage instruction pipeline which
+      contains many programmer-visible pipeline hazards.
+
+  Brock, with help from Warren Hunt, J Moore, and Matt Kaufmann,
+  developed a bit- and cycle-accurate model of the CAP design.  We
+  believe this was the first time an entire commercial microprocessor
+  was formally specified, see [bib::bh99].
+
+  Brock validated the design by running the ACL2 model against
+  Motorola's SPW engineering model of the processor.  For example, he
+  compared the results of executing an end-to-end application (a QPSK
+  modem) on both the SPW model and the ACL2 model and found the final
+  states bit-exact for all programmer visible registers.
+
+  Before turning to the verification of CAP applications programs Brock
+  undertook the logical elimination of the CAP pipeline.  He defined
+  a predicate that syntactically detected pipeline hazards in
+  microcode and he implemented a simpler ACL2 machine model without
+  the pipeline.  Then, following Burch and Dill's method of comparing
+  states after flushing the pipeline via symbolic evaluation, he
+  proved with ACL2 that the two models were equivalent [3mprovided the
+  microcode was hazard free[0m.
+
+  Then Brock, [3met al[0m, proved several microcode programs correct, again
+  following the proof methodology we sketched in section ``Proving
+  Theorems about M1 Programs'' of
+  [47moperational-semantics-1__simple-example[0m, where the main subtasks
+  were our so-called Steps 2 and 3: verify that the execution of the
+  pipeline-free model on hazard-free microcode implements semantic
+  function of the program, and then verify that the semantic function
+  implements the more abstract specification.  An example of the
+  second (generally harder) step is described in [bib::bm05]. These
+  two results could then be chained together, along with the
+  verification (by execution) that the hazard predicate detected no
+  hazards in the microcode and the proof of the equivalence (modulo
+  the absence of hazards) of the pipelined and non-pipelined models,
+  to conclude that the microcode runs correctly on the pipelined
+  model.
+
+  It is noteworthy that ACL2 executed the pipeline-free microcode
+  interpreter several times faster than the hardware simulator could
+  execute the SPW model --- with assurance that the answers were
+  equivalent to the pipelined model on hazard-free microcode.  In
+  addition, the ACL2 hazard predicate, being an executable ACL2
+  function on microcode programs, was executed on over fifty
+  microcode programs written by Motorola engineers and extracted from
+  the ROM mechanically. Hazards were found in some of these.  See
+  [bib::bh99].  This can be considered another practical application
+  of formal methods since the hazard detection predicate was formally
+  verified to be a sufficient condition for the pipelined and
+  non-pipelined machines to be equivalent.
+
+  Unfortunately, Motorola canceled the entire CAP effort before the
+  device was fabricated, despite the success of the formal methods
+  component of the project. The ACL2 proof scripts are not in the
+  ACL2 Community Books regression suite.
+
+  We now move on to other operational models.  In
+  [operational-semantics-1__simple-example] (and on the ACL2
   directory [47mbooks/models/jvm/m1/[0m) we describe a very simple
   operational definition of a machine, called M1, supporting a little
   stack-based arithmetic and some branch instructions.  That machine
   was used to teach students how to formalize machines and verify
   their programs.  M1 was the beginning of an evolutionary sequence
   of machines approximating an accurate model of the Java Virtual
-  Machine.  Those machines in that evolutionary sequence show how we
+  Machine.  The machines in that evolutionary sequence show how we
   can formalize and reason about method invocation (virtual and
   static), return, object creation including inheritance, threads,
   dynamic class loading, and bytecode verification.  The machines are
@@ -107206,7 +107317,24 @@ Other Machines
   meaning ``correct if it terminates'' and the latter meaning
   ``terminating and correct at termination.''
 
-  The x86 instruction set architecture has been modeled in ACL2.  The
+  The most complicated machine formalized (as of 2024) with ACL2 is the
+  x86 instruction set architecture.  The model evolved from simpler
+  models, exploiting lessons learned from earlier Nqthm and ACL2
+  work.  In the case of x86, the ``toy'' was the y86 as informally
+  described in [bib::boh03].  The ACL2 directory [47mbooks/models/y86/[0m
+  contains several models of the 32-bit y86 described in the First
+  Edition of [bib::boh03].  In particular, see the ACL2 book
+  [47mbooks/models/y86/y86-basic/y86/y86.lisp[0m, by Warren Hunt, for the
+  model.  For a proof of correctness of Sean Anderson's bit twiddling
+  ``population count'' in y86 machine code, see the ACL2 book
+  [47mbooks/models/y86/y86-basic/py86/popcount.lisp[0m.  The proof of that
+  particular straightline piece of code is just by symbolic
+  evaluation and the ACL2 verified ``bit-blasting'' solver [gl] by
+  Sol Swords.
+
+  From the y86, the model of the x86 evolved through several iterations
+  reported in [bib::hk12], [bib::ghk13], and [bib::ghkg14], to Shilpi
+  Goel's monumental x86 model [bib::goel16] and [bib::ghk17].  The
   model specifies over 400 x86 instructions and the model includes
   architectural features like segmentation and paging.  It can be
   executed in either of two modes. When running in the
@@ -107314,12 +107442,55 @@ Subtopics
       [31;1mRelevance:[0m operational semantics modeling a hybrid physical/digital
       system
 
+  [Bib::bh97]
+      B. Brock and W. A. Hunt, Jr., ``{Formally Specifying and
+      Mechanically Verifying Programs for the Motorola Complex
+      Arithmetic Processor DSP |
+      https://ieeexplore.ieee.org/document/628846}'', in [3m1997 IEEE
+      International Conference on Computer Design[0m, IEEE Computer
+      Society, pp. 31-36, October, 1997.
+      [31;1mRelevance:[0m first public announcement of the CAP DSP formalization
+      (this short article was superceded by [bib::bh99])
+
+  [Bib::bh99]
+      B. Brock and W. A. Hunt, Jr., ``{Formal Analysis of the Motorola CAP
+      DSP'' |
+      https://link.springer.com/chapter/10.1007/978-1-4471-0523-7_
+      5#citeas}, in M. Hinchey and J. Bowen, editors,
+      [3mIndustrial-Strength Formal Methods[0m, Springer-Verlag, pp.
+      81-115, 1999.
+      [31;1mRelevance:[0m first industrial application of operational semantics with
+      ACL2 and the first complete formal specification of a
+      commercially designed microprocessor
+
   [Bib::bhmy89]
       W.R. Bevier, W.A. Hunt, Jr., J S. Moore, and W.D. Young, [3mSpecial
       Issue on System Verification[0m, [3mJournal of Automated Reasoning[0m,
       [31;1m5[0m(4), pp. 409-530, 1989.
       [31;1mRelevance:[0m Computational Logic Inc. (CLI) Verified Stack --- a
       seminal achievement in formal methods and operational semantics
+
+  [Bib::bkm96]
+      B. Brock, M. Kaufmann, and J S. Moore, ``{ACL2 Theorems about
+      Commercial Microprocessors |
+      http://www.cs.utexas.edu/users/moore/publications/bkm96.pdf}'',
+      in M. Srivas and A. Camilleri, editors, [3mFormal Methods in
+      Computer-Aided Design (FMCAD'96)[0m, Springer-Verlag, LNCS [31;1m1166[0m,
+      pp. 275-293, doi 10.1007/BFb0031816, 1996.
+      [31;1mRelevance:[0m early (mid-1990s) applications of ACL2 in industry
+      (Motorola CAP DSP via operational semantics and the AMD K5 FDIV
+      via a shallow embedding)
+
+  [Bib::bm05]
+      B. Brock and J S. Moore, ``{A Mechanically Checked Proof of a
+      Comparator Sort Algorithm |
+      https://www.cs.utexas.edu/~moore/publications/csort/main.pdf}'',
+      in M. Broy, J. Gruenbauer, D. Harel, and C. A. R. Hoare,
+      editors, [3mEngineering Theories of Software Intensive Systems[0m,
+      Springer NATO Science Series II, [31;1m195[0m, pp. 141-175, 2005.
+      [31;1mRelevance:[0m an example of proving that the state transformation
+      effected by running a CAP model on commercial microcode
+      implements the high level specification
 
   [Bib::bm73]
       R. S. Boyer and J S. Moore, ``{Proving Theorems about LISP Functions
@@ -107350,12 +107521,29 @@ Subtopics
       [31;1mRelevance:[0m operational semantic model of (a fragment) of a 1970s
       flight control computer
 
+  [Bib::bm96]
+      R. S. Boyer and J S. Moore, ``{Mechanized Formal Reasoning about
+      Programs and Computing Machines |
+      https://www.cs.utexas.edu/~moore/publications/bm96.pdf}'', in
+      R. Veroff, editor, [3mAutomated Reasoning and Its Applications:
+      Essays in Honor of Larry Wos[0m, MIT Press, 1966.
+      [31;1mRelevance:[0m the basic Nqthm/ACL2 style of operational semantics as a
+      book chapter
+
   [Bib::bm97]
       R. S. Boyer and J S. Moore, [3m{ A Computational Logic Handbook, Second
       Edition |
       https://drive.google.com/file/d/0B2yFYLn0Spf1TloxMjNxdzBWN1E/}[0m,
       Academic Press, New York, 1997.
       [31;1mRelevance:[0m Nqthm user's manual
+
+  [Bib::boh03]
+      R. E. Bryant and D. R. O'Hallaron, [3mComputer Systems: A Programmer's
+      Perspective[0m, Prentice-Hall. First edition 2003, second edition
+      2011, third edition 2015.
+      [31;1mRelevance:[0mone of the most popular and influential textbooks on modern
+      computer systems; its relevance here is that the book
+      introduced the y86.
 
   [Bib::by96]
       R. S. Boyer and Y. Yu, ``{Automated Proofs of Object Code for a
@@ -107374,6 +107562,16 @@ Subtopics
       [31;1mRelevance:[0m a second verified compiler hosted on the CLI Verified
       Stack
 
+  [Bib::ghk13]
+      S. Goel, W. A. Hunt, Jr., and M. Kaufmann, ``{Abstract Stobjs and
+      Their Application to ISA Modeling |
+      http://eptcs.org/content.cgi?ACL22013}'', in R. Gamboa and J.
+      Davis, editors, [3mProceedings of ACL2 Workshop 2013[0m, Electronic
+      Proceedings in Theoretical Computer Science, Volume 114, pp.
+      54-69, 2013.
+      [31;1mRelevance:[0m an ACL2 feature introduced to support operational semantic
+      models
+
   [Bib::ghk17]
       S. Goel, W. A. Hunt, Jr., and M. Kaufmann, ``{Engineering a Formal,
       Executable x86 ISA Simulator for Software Verification |
@@ -107382,6 +107580,16 @@ Subtopics
       [3mProvably Correct Systems[0m Springer, pp. 173-209, 2017.
       [31;1mRelevance:[0m operational model of the x86 at both the user- and
       system-level and code proofs
+
+  [Bib::ghkg14]
+      S. Goel, W. A. Hunt, Jr., M. Kaufmann, and S. Ghosh, ``{Simulation
+      and Formal Verification of x86 Machine-Code Programs that Make
+      System Calls |
+      http://www.cs.utexas.edu/users/hunt/FMCAD/FMCAD14/proceedings/18_goel.pdf}'',
+      in [3mProceedings of Formal Methods in Computer-Aided Design
+      (FMCAD'14)[0m, pp. 91-98, 2014.
+      [31;1mRelevance:[0m modeling and verifying machine-code programs that exhibit
+      non-determinism
 
   [Bib::goel16]
       S. Goel, [3m{Formal Verification of Application and System Programs
@@ -107394,8 +107602,18 @@ Subtopics
       W. A. Hunt, Jr. and B. Brock, ``A Formal HDL and its use in the
       FM9001 Verification,'' [3mProceedings of the Royal Society[0m, North
       Holland, April, 1992.
-      [31;1mRelevance:[0m hardware description language and the verification of a
-      fabricated microprocessor described with it
+      [31;1mRelevance:[0m a formalized hardware description language and the
+      verification of a fabricated microprocessor described with it;
+      this describes three foundational achievements in formal
+      methods
+
+  [Bib::hk12]
+      W. A. Hunt, Jr. and M. Kaufmann, ``{Towards a Formal Model of the
+      x86 ISA |
+      http://apps.cs.utexas.edu/tech_reports/reports/tr/TR-2075.pdf}'',
+      University of Texas at Austin, Computer Science Department
+      Technical Report TR-12-07, May, 2012.
+      [31;1mRelevance:[0m a ``toy model'' of the x86, built as a warm up exercise
 
   [Bib::hkms17]
       W. A. Hunt, Jr., M. Kaufmann, J S. Moore, and A. Slobodova,
@@ -132374,7 +132592,7 @@ Subtopics
   [47m[remove-untouchable][0m, [47m[set-body][0m, and [47m[table][0m [events].  Any other
   type of non-redundant event will cause an error if [47mflag[0m is [47mt[0m and a
   warning if [47mflag[0m is [47mnil[0m, [3mexcept[0m in the course of carrying out an
-  [47m[include-book][0m form.
+  [47m[include-book][0m form or the second pass of an [47m[encapsulate][0m form.
 
   Note that because [47m[table][0m [events] that set the [47m[ACL2-defaults-table][0m
   are implicitly [47m[local][0m, [47mset-enforce-redundancy[0m events are ignored
@@ -166363,6 +166581,86 @@ Subtopics
   Dijkstra.
 
   See the Nqthm script [47mexamples/basic/controller.events[0m.")
+ (BIB::BH97
+  (OPERATIONAL-SEMANTICS-3__ANNOTATED-BIBLIOGRAPHY)
+  "B. Brock and W. A. Hunt, Jr., ``{Formally Specifying and Mechanically
+  Verifying Programs for the Motorola Complex Arithmetic Processor
+  DSP | https://ieeexplore.ieee.org/document/628846}'', in [3m1997 IEEE
+  International Conference on Computer Design[0m, IEEE Computer Society,
+  pp. 31-36, October, 1997.
+  [31;1mRelevance:[0m first public announcement of the CAP DSP formalization
+  (this short article was superceded by [bib::bh99])
+
+---------
+  Abstract
+
+  We describe our formal specification of Motorola's Complex Arithmetic
+  Processor (CAP) DSP and our subsequent use of this specification to
+  verify the correctness of several DSP algorithms. We wrote the
+  specification in the ACL2 logic and carried out the mechanical
+  proofs using the ACL2 theorem-proving system. Motorola's CAP is a
+  super-scalar, pipelined DSP with seven memories and more than 20
+  functional units. Our formal specification is bit-for-bit exact,
+  and was created by hand translating Motorola's drawings for the
+  CAP. We believe that the specification developed is the largest of
+  its kind, as this is the only formal specification of which we are
+  aware for a complete commercial design. Proving the correctness of
+  the DSP algorithms (programs) required proving the correctness of
+  programs with 317-bit instructions and a non-interlocking execution
+  pipeline. This Motorola DSP has a 1.8 million transistor
+  implementation. This project involved both CLI and Motorola
+  personnel and represents more than eight man-years of effort.
+
+---------
+  See the discussion of the CAP DSP project in
+  [operational-semantics-2__other-examples].")
+ (BIB::BH99
+  (OPERATIONAL-SEMANTICS-3__ANNOTATED-BIBLIOGRAPHY)
+  "B. Brock and W. A. Hunt, Jr., ``{Formal Analysis of the Motorola CAP
+  DSP'' |
+  https://link.springer.com/chapter/10.1007/978-1-4471-0523-7_
+  5#citeas}, in M. Hinchey and J. Bowen, editors, [3mIndustrial-Strength
+  Formal Methods[0m, Springer-Verlag, pp. 81-115, 1999.
+  [31;1mRelevance:[0m first industrial application of operational semantics with
+  ACL2 and the first complete formal specification of a commercially
+  designed microprocessor
+
+---------
+  Abstract
+
+  We describe our formal specification of Motorola's Complex Arithmetic
+  Processor (CAP) Digital Signal Processor (DSP) and our subsequent
+  use of this specification in formal analyses of the CAP hardware
+  and software. The CAP was designed by Motorola Government Systems
+  and Technology Group (Scottsdale, Arizona), which, as a part of
+  their business, builds and sells purpose-built products. The CAP is
+  an ASIC that was designed to efficiently implement a number of
+  signal processing algorithms required in digital communications.
+  Motorola's CAP is a super-scalar, pipelined DSP with seven memories
+  and more than 20 functional units. Motorola's specification for the
+  CAP was captured using the Cadence Signal Processing (SPW)
+  (Cadence, 1994) toolsuite; the design is represented as a series of
+  drawings that specify register files, data manipulation units, and
+  interconnecting busses. We have completely specified the CAP
+  (Gilfeather et al, 1994) using the formal logic ACL2 (Kaufmann and
+  Moore, 1996). Our specification is executable and can be used as a
+  simulator as well as a basis for proving the correctness of the CAP
+  hardware design and CAP programs. We believe our specification is
+  bit-for-bit exact with respect to the SPW specification produced by
+  Motorola, and was created by hand translating Motorola's SPW
+  drawings for the CAP. We have used our CAP specification to analyse
+  the CAP instruction pipeline and various CAP algorithms. We believe
+  that the specification developed is the largest of its kind, as
+  this is the only formal specification of which we are aware for a
+  complete commercial design. We believe that the use of mathematical
+  logic for modelling and reasoning about hardware designs such as we
+  have demonstrated here can provide assurance of circuit design
+  correctness well beyond what is available from current CAD
+  techniques.
+
+---------
+  See the discussion of the CAP DSP project in
+  [operational-semantics-2__other-examples].")
  (BIB::BHMY89
   (OPERATIONAL-SEMANTICS-3__ANNOTATED-BIBLIOGRAPHY)
   "W.R. Bevier, W.A. Hunt, Jr., J S. Moore, and W.D. Young, [3mSpecial
@@ -166457,6 +166755,102 @@ Subtopics
   never tested in a conventional manner during development or after
   completion. Even so, each worked the first time and we would have
   been surprised if any had not.''")
+ (BIB::BKM96
+  (OPERATIONAL-SEMANTICS-3__ANNOTATED-BIBLIOGRAPHY)
+  "B. Brock, M. Kaufmann, and J S. Moore, ``{ACL2 Theorems about
+  Commercial Microprocessors |
+  http://www.cs.utexas.edu/users/moore/publications/bkm96.pdf}'', in
+  M. Srivas and A. Camilleri, editors, [3mFormal Methods in
+  Computer-Aided Design (FMCAD'96)[0m, Springer-Verlag, LNCS [31;1m1166[0m, pp.
+  275-293, doi 10.1007/BFb0031816, 1996.
+  [31;1mRelevance:[0m early (mid-1990s) applications of ACL2 in industry
+  (Motorola CAP DSP via operational semantics and the AMD K5 FDIV via
+  a shallow embedding)
+
+---------
+  Abstract
+
+  ACL2 is a mechanized mathematical logic intended for use in
+  specifying and proving properties of computing machines.  In two
+  independent projects, industrial engineers have collaborated with
+  researchers at Computational Logic, Inc. (CLI), to use ACL2 to
+  model and prove properties of state-of-the-art commercial
+  microprocessors prior to fabrication.  In the first project,
+  Motorola Inc., and CLI collaborated to specify Motorola's complex
+  arithmetic processor (CAP), a single-chip, digital signal processor
+  (DSP) optimized for communications signal processing.  Using the
+  specifications, we proved the correctness of several CAP microcode
+  programs.  The second industrial collaboration involving ACL2 was
+  between Advanced Micro Devices, Inc. (AMD) and CLI.  In this work
+  we proved the correctness of the kernel of the floating-point
+  division operation on AMD's first Pentium-class microprocessor, the
+  AMD5K86.  In this paper, we discuss ACL2 and these industrial
+  applications, with particular attention to the microcode
+  verification work.
+
+---------
+  This paper contains a good sketch of the Motorola CAP digital signal
+  processor project, from capturing the design as an ACL2 operational
+  model to proving microcode correct with respect to the model.  The
+  paper also includes a timeline describing how long different phases
+  of the project took.
+
+  The paper also discusses the first use of ACL2, in 1995, to deal with
+  floating-point arithmetic: verifying microcode for floating-point
+  division on AMD's first Pentium-class microprocessor, the AMD5k86.
+  However, the formalization of the division microcode was not via
+  operational semantics but rather a ``shallow embedding'' of the
+  microcode into ACL2.  So while both the CAP project and
+  floating-point project are of great relevance to the use of formal
+  methods in industry, we have stressed the CAP work in this doc
+  topic on operational semantics.  For a technical description of the
+  division proof, see J S. Moore, T. Lynch, and M. Kaufmann, ``{A
+  Mechanically Checked Proof of the Correctness of the Kernel of the
+  AMD5k86 Floating-Point Division Program |
+  https://www.cs.utexas.edu/~moore/publications/divide_paper.pdf}'',
+  [3mIEEE Transactions on Computers[0m, [31;1m47[0m(9), pp. 913-926, Sep., 1998.")
+ (BIB::BM05
+  (OPERATIONAL-SEMANTICS-3__ANNOTATED-BIBLIOGRAPHY)
+  "B. Brock and J S. Moore, ``{A Mechanically Checked Proof of a
+  Comparator Sort Algorithm |
+  https://www.cs.utexas.edu/~moore/publications/csort/main.pdf}'', in
+  M. Broy, J. Gruenbauer, D. Harel, and C. A. R. Hoare, editors,
+  [3mEngineering Theories of Software Intensive Systems[0m, Springer NATO
+  Science Series II, [31;1m195[0m, pp. 141-175, 2005.
+  [31;1mRelevance:[0m an example of proving that the state transformation
+  effected by running a CAP model on commercial microcode implements
+  the high level specification
+
+---------
+  Abstract
+
+  We describe a mechanically checked correctness proof for the
+  comparator sort algorithm underlying a microcode program in a
+  commercially designed digital signal processing chip.  The abstract
+  algorithm uses an unlimited number of systolic comparator modules
+  to sort a stream of data.  In addition to proving that the
+  algorithm produces an ordered permutation of its input, we prove
+  two theorems that are imporant to verifying the microcode
+  implementation.  These theorems describe how positive and negative
+  ``infinities'' can be streamed into the array of comparators to
+  achieve certain effects.  Interesting generalizations are necessary
+  in order to prove these theorems inductively.  The mechanical
+  proofs were carried out with the ACL2 theorem prover.  We find
+  these proofs both mathematically interesting and illustrative of
+  the kind of mathematics that must be done to verify software.
+
+---------
+  For the 1997 ACL2 proof script see [47mbooks/misc/csort.lisp[0m.  The long
+  delay between when the work was done (1997) and when it was
+  published (2005) is due both to the understandable sensitivity of
+  companies to permit publication of anything that might reveal
+  proprietary intellectual property, combined with the rarity of
+  suitable venues to describe exceedingly practical formal methods
+  applications.  (Despite this phenomenon, working closely with
+  industry is the only way to build tools that meet their needs.)
+
+  See the discussion of the CAP DSP project in
+  [operational-semantics-2__other-examples].")
  (BIB::BM73
   (OPERATIONAL-SEMANTICS-3__ANNOTATED-BIBLIOGRAPHY)
   "R. S. Boyer and J S. Moore, ``{Proving Theorems about LISP Functions
@@ -166551,6 +166945,85 @@ Subtopics
   work was probably done in 1979 or 1980 as it was influential in the
   evolution of Thm to Nqthm, as noted in
   [operational-semantics-5__history-etc].")
+ (BIB::BM96
+  (OPERATIONAL-SEMANTICS-3__ANNOTATED-BIBLIOGRAPHY)
+  "R. S. Boyer and J S. Moore, ``{Mechanized Formal Reasoning about
+  Programs and Computing Machines |
+  https://www.cs.utexas.edu/~moore/publications/bm96.pdf}'', in R.
+  Veroff, editor, [3mAutomated Reasoning and Its Applications: Essays in
+  Honor of Larry Wos[0m, MIT Press, 1966.
+  [31;1mRelevance:[0m the basic Nqthm/ACL2 style of operational semantics as a
+  book chapter
+
+---------
+  Abstract
+
+  The design of a new processor often requires the invention and use of
+  a new machine-level programming language, especially when the
+  processor is meant to serve some special purpose.  It is possible
+  to specify formally the semantics of such a programming language so
+  that one obtains a simulator for the new language from the formal
+  semantics.  Furthermore, it is possible to configure some
+  mechanical theorem provers so that they can be used directly to
+  reason about the behavior of programs in the new language,
+  permitting the expeditious formal modeling of the new design as
+  well as experimentation with and mechanically checked proofs about
+  new programs.  We here study a very simple machine-level language
+  to illustrate how such modeling, experimentation, and reasoning may
+  be done using the ACL2 automated reasoning system.  Of particular
+  importance is how we control the reasoning system so that it can
+  deal with the complexity of the machine being modeled.  The
+  methodology we describe has been used on industrial problems and
+  has been shown to scale to the complexity of state-of-the-art
+  processors.
+
+---------
+  This paper describes the basic methodology used to model and reason
+  about machines with ACL2: states as objects, a step function, a run
+  function, clock functions for programs, lemmas to control
+  expansion, and the basic methodology for specifying and verifying
+  programs.  The vehicle for this explanation here is a machine
+  almost identical to M1 and this paper covers essentially the same
+  ground as the documentation topic
+  [operational-semantics-1__simple-example].  Referring to the work
+  described in [operational-semantics-5__history-etc] and early ACL2
+  work, the paper says
+
+    The approach we describe is essentially that used in the Nqthm and
+    ACL2 projects described above.  Furthermore, the Nqthm and ACL2
+    users above were taught this method of formalization via examples
+    very similar to this one, primarily in our graduate class,
+    [3mRecursion and Induction[0m, at the University of Texas at Austin.
+    That this technique scales up to languages that are many orders
+    of magnitude more complicated than this one is demonstrated by
+    [5, 9].  Therefore, simplicity [3mhere[0m should be looked upon as a
+    virtue.
+
+  While the paper does not name the machine being formalized, it was in
+  fact called [47msmall-machine[0m rather than [47mm1[0m and it goes all the way
+  back to Nqthm.  Indeed, among the students who learned this
+  methodology in [3mRecursion and Induction[0m in the early 1980s were
+  Bevier, Hunt, Young, Flatau, and Wilding --- all principals in the
+  CLI Verified Stack work [bib::bhmy89].  See the 1991 Nqthm script
+  [47mexamples/basic/small-machine.events[0m, which demonstrates that most
+  of the methodology described here was developed before ACL2.
+  Coincidentally, it also shows that what we're calling [47mm1[0m today ---
+  informally described as a ``toy'' Java Virtual Machine --- predates
+  the Java and the JVM.
+
+  The ACL2 version of the [47msmall-machine[0m proof script may be found in
+  the ACL2 book at
+  [47mhttps://www.cs.utexas.edu/~moore/publications/small-machine.lisp[0m.
+
+  By the way, notes for [3mRecursion and Induction[0m have been incorporated
+  into ACL2's documentation.  See [recursion-and-induction].  But
+  when the course was taught by Boyer and Moore in the 1980s the
+  notes were essentially just a list of conjectures to prove or
+  disprove and the class was rather free-form in the sense that
+  student participation was critical and often determined the kinds
+  of problems posed in the latter part of the semester.  Operational
+  semantics is not mentioned in the recursion-and-induction
+  documentation.")
  (BIB::BM97
   (OPERATIONAL-SEMANTICS-3__ANNOTATED-BIBLIOGRAPHY)
   "R. S. Boyer and J S. Moore, [3m{ A Computational Logic Handbook, Second
@@ -166565,6 +167038,43 @@ Subtopics
   ACL2 had gained a sizeable user community despite the fact that
   Nqthm was still being used by some students and industrial
   researchers.")
+ (BIB::BOH03
+  (OPERATIONAL-SEMANTICS-3__ANNOTATED-BIBLIOGRAPHY)
+  "R. E. Bryant and D. R. O'Hallaron, [3mComputer Systems: A Programmer's
+  Perspective[0m, Prentice-Hall. First edition 2003, second edition
+  2011, third edition 2015.
+  [31;1mRelevance:[0mone of the most popular and influential textbooks on modern
+  computer systems; its relevance here is that the book introduced
+  the y86.
+
+---------
+  Abstract
+
+  For Computer Systems, Computer Organization and Architecture courses
+  in CS, EE, and ECE departments. Few students studying computer
+  science or computer engineering will ever have the opportunity to
+  build a computer system. On the other hand, most students will be
+  required to use and program computers on a near daily basis.
+  [3mComputer Systems: A Programmers Perspective[0m introduces the
+  important and enduring concepts that underlie computer systems by
+  showing how these ideas affect the correctness, performance, and
+  utility of application programs. The text's hands-on approach
+  (including a comprehensive set of labs) helps students understand
+  the under-the-hood operation of a modern computer system and
+  prepares them for future courses in systems topics such as
+  compilers, computer architecture, operating systems, and
+  networking.
+
+---------
+  The y86 introduced in this textbook is can be thought of as a ``toy''
+  x86 and is an excellent starting point for the formalization of
+  that larger machine.
+
+  The y86 has been modeled in ACL2, by Warren A. Hunt, Jr., and M.
+  Kaufmann, and some programs proved correct with it.  In particular,
+  the ACL2 book [47m/books/models/y86/y86-basic/y86/y86.lisp[0m is a
+  faithful operational semantic model of the 36-bit y86 described in
+  the first edition of the Bryant-O'Hallaron book.")
  (BIB::BY96
   (OPERATIONAL-SEMANTICS-3__ANNOTATED-BIBLIOGRAPHY)
   "R. S. Boyer and Y. Yu, ``{Automated Proofs of Object Code for a
@@ -166638,6 +167148,32 @@ Subtopics
 
   The Nqthm events for this work may be found in the [47m*.events[0m files of
   [47mexamples/flatau/[0m.")
+ (BIB::GHK13
+  (OPERATIONAL-SEMANTICS-3__ANNOTATED-BIBLIOGRAPHY)
+  "S. Goel, W. A. Hunt, Jr., and M. Kaufmann, ``{Abstract Stobjs and
+  Their Application to ISA Modeling |
+  http://eptcs.org/content.cgi?ACL22013}'', in R. Gamboa and J.
+  Davis, editors, [3mProceedings of ACL2 Workshop 2013[0m, Electronic
+  Proceedings in Theoretical Computer Science, Volume 114, pp. 54-69,
+  2013.
+  [31;1mRelevance:[0m an ACL2 feature introduced to support operational semantic
+  models
+
+---------
+  Abstract
+
+  We introduce a new ACL2 feature, the abstract stobj, and show how to
+  apply it to modeling the instruction set architecture of a
+  microprocessor. Benefits of abstract stobjs over traditional
+  (``concrete'') stobjs can include faster execution, support for
+  symbolic simulation, more efficient reasoning, and resilience of
+  proof developments under modeling optimization.
+
+---------
+  Aside from the specific advantages abstract stobjs (see
+  [47m[defabsstobj][0m) confer on ACL2 state machines, this papers
+  illustrates how attention to operational semantics has influenced
+  the development of ACL2.")
  (BIB::GHK17
   (OPERATIONAL-SEMANTICS-3__ANNOTATED-BIBLIOGRAPHY)
   "S. Goel, W. A. Hunt, Jr., and M. Kaufmann, ``{Engineering a Formal,
@@ -166675,26 +167211,43 @@ Subtopics
 ---------
   See the collection of ACL2 books and files at [47mbooks/projects/x86isa/[0m.
 
-  Also relevant are [bib::goel16] and the following two earlier papers.
-  The first discusses how x86 ISA modeling benefits from abstract
-  stobjs (also see [defabsstobj]), an ACL2 feature whose introduction
-  was motivated by that application.  The second presents ``an
-  approach to modeling and verifying machine-code programs that
-  exhibit non-determinism.''
-
-  S. Goel, W. A. Hunt, Jr., and M. Kaufmann, ``{Abstract Stobjs and
-  Their Application to ISA Modeling |
-  http://eptcs.org/content.cgi?ACL22013}'', in R. Gamboa and J.
-  Davis, editors, [3mProceedings of ACL2 Workshop 2013[0m, Electronic
-  Proceedings in Theoretical Computer Science, Volume 114, pp. 54-69,
-  2013.
-
-  S. Goel, W. A. Hunt, Jr., M. Kaufmann, and S. Ghosh, ``{Simulation
+  Also relevant are [bib::goel16] and the following earlier papers
+  [bib::hk12], [bib::ghk13],and [bib::ghkg14].")
+ (BIB::GHKG14
+  (OPERATIONAL-SEMANTICS-3__ANNOTATED-BIBLIOGRAPHY)
+  "S. Goel, W. A. Hunt, Jr., M. Kaufmann, and S. Ghosh, ``{Simulation
   and Formal Verification of x86 Machine-Code Programs that Make
   System Calls |
   http://www.cs.utexas.edu/users/hunt/FMCAD/FMCAD14/proceedings/18_goel.pdf}'',
   in [3mProceedings of Formal Methods in Computer-Aided Design
-  (FMCAD'14)[0m, pp. 91-98, 2014.")
+  (FMCAD'14)[0m, pp. 91-98, 2014.
+  [31;1mRelevance:[0m modeling and verifying machine-code programs that exhibit
+  non-determinism
+
+---------
+  Abstract
+
+  We present an approach to modeling and verifying machine-code
+  programs that exhibit non-determinism. Specifically, we add support
+  for system calls to our formal, executable model of the user-level
+  x86 instruction-set architecture (ISA). The resulting model,
+  implemented in the ACL2 theorem-proving system, allows both formal
+  analysis and efficient simulation of x86 machine-code programs; the
+  logical mode characterizes an external environment to support
+  reasoning about programs that interact with an operating system,
+  and the execution mode directly queries the underlying operating
+  system to support simulation. The execution mode of our x86 model
+  is validated against both its logical mode and the real machine,
+  providing test-based assurance that our model faithfully represents
+  the semantics of an actual x86 processor. Our framework is the
+  first that enables mechanical proofs of functional correctness of
+  user-level x86 machine-code programs that make system calls. We
+  demonstrate the capabilities of our model with the mechanical
+  verification of a machine-code program, produced by the GCC
+  compiler, that computes the number of characters, lines, and words
+  in an input stream. Such reasoning is facilitated by our libraries
+  of ACL2 lemmas that allow automated proofs of a program's
+  memory-related properties.")
  (BIB::GOEL16
   (OPERATIONAL-SEMANTICS-3__ANNOTATED-BIBLIOGRAPHY)
   "S. Goel, [3m{Formal Verification of Application and System Programs
@@ -166739,15 +167292,66 @@ Subtopics
   "W. A. Hunt, Jr. and B. Brock, ``A Formal HDL and its use in the
   FM9001 Verification,'' [3mProceedings of the Royal Society[0m, North
   Holland, April, 1992.
-  [31;1mRelevance:[0m hardware description language and the verification of a
-  fabricated microprocessor described with it
+  [31;1mRelevance:[0m a formalized hardware description language and the
+  verification of a fabricated microprocessor described with it; this
+  describes three foundational achievements in formal methods
 
 ---------
-  The verified fabricated microprocessor used in the final hosting of
-  the CLI Verified Stack [bib::bhmy89] is described in this paper.
+  Abstract
+
+  A synchronous, hierarchical, occurrence-oriented, hardware
+  description language (HDL) has been formalized with the Boyer-Moore
+  logic. Well-formed HDL circuits are recognized by a predicate, and
+  a unit-clock simulator defines the meaning of circuits expressed in
+  the HDL. This HDL has been used to specify an implementation of the
+  FM9001 microprocessor that has been mechanically proved to
+  implement the FM9001 instruction-level specification. All proofs
+  were mechanically checked using the Boyer-Moore theorem-proving
+  system. The formalization of the HDL, the FM9001 user-level
+  specification, and the FM9001 HDL implementation architecture
+  specification required more than 700 function definitions. The
+  mechanical proof is composed of thousands of theorem prover proof
+  requests and millions of theorem prover inference steps.
+
+---------
+  The verified fabricated microprocessor described here was used in the
+  final hosting of the CLI Verified Stack [bib::bhmy89].
+
+  But aside from its importance to the Verified Stack, this paper
+  describes three foundational achievements in formal methods:
+
+    * the first formal definition of a hardward description language (HDL),
+    * the first complete proof of a microprocessor design -- including its
+      embedded test logic -- with respect to its high-level ISA
+      specification, and
+    * the first (and still, only) verified microprocessor that was
+      manufactured and demonstrated to function properly.
 
   For complete details, see the Nqthm script
   [47mexamples/fm9001-piton/fm9001/fm9001-replay.events[0m.")
+ (BIB::HK12
+  (OPERATIONAL-SEMANTICS-3__ANNOTATED-BIBLIOGRAPHY)
+  "W. A. Hunt, Jr. and M. Kaufmann, ``{Towards a Formal Model of the x86
+  ISA |
+  http://apps.cs.utexas.edu/tech_reports/reports/tr/TR-2075.pdf}'',
+  University of Texas at Austin, Computer Science Department
+  Technical Report TR-12-07, May, 2012.
+  [31;1mRelevance:[0m a ``toy model'' of the x86, built as a warm up exercise
+
+---------
+  Abstract
+
+  We present a preliminary formalization of a subset of the x86
+  instruction set. Our model is written in the logic of the ACL2
+  theorem prover. It can be executed as a Lisp program on concrete
+  data, which provides the capability to validate the model against
+  results delivered by actual x86 processors. We demonstrate how bugs
+  in our model can also be eliminated by using the ACL2 prover to
+  verify guards (semantic preconditions) for our functions.
+
+---------
+  This work preceded the development of the full x86 model described in
+  [bib::ghk13], [bib::ghkg14], [bib::goel16], and [bib::ghk17].")
  (BIB::HKMS17
   (OPERATIONAL-SEMANTICS-3__ANNOTATED-BIBLIOGRAPHY)
   "W. A. Hunt, Jr., M. Kaufmann, J S. Moore, and A. Slobodova,
@@ -166760,9 +167364,47 @@ Subtopics
   [31;1mRelevance:[0m how ACL2 is used in industry, and why
 
 ---------
-  This paper mainly describes how ACL2 is used in industry, although it
-  also deals a bit with how ACL2 gained traction in industrial use
-  and the features of the system of special importance to industry.")
+  Abstract
+
+  The ACL2 theorem prover has seen sustained industrial use since the
+  mid-1990s. Companies that have used ACL2 regularly include AMD,
+  Centaur Technology, IBM, Intel, Kestrel Institute,
+  Motorola/Freescale, Oracle and Rockwell Collins. This paper
+  introduces ACL2 and focuses on how and why ACL2 is used in
+  industry. ACL2 is well-suited to its industrial application to
+  numerous software and hardware systems, because it is an integrated
+  programming/proof environment supporting a subset of the ANSI
+  standard Common Lisp programming language. As a programming
+  language ACL2 permits the coding of efficient and robust programs;
+  as a prover ACL2 can be fully automatic but provides many features
+  permitting domain-specific human-supplied guidance at various
+  levels of abstraction. ACL2 specifications and models often serve
+  as efficient execution engines for the modelled artefacts while
+  permitting formal analysis and proof of properties. Crucially, ACL2
+  also provides support for the development and verification of other
+  formal analysis tools. However, ACL2 did not find its way into
+  industrial use merely because of its technical features. The core
+  ACL2 user/development community has a shared vision of making
+  mechanized verification routine when appropriate and has been
+  committed to this vision for the quarter century since the
+  Computational Logic, Inc., Verified Stack. The community has
+  focused on demonstrating the viability of the tool by taking on
+  industrial projects (often at the expense of not being able to
+  publish much).
+
+---------
+  This is does not discuss operational semantics [3mper se[0m but instead
+  focuses on how ACL2 is used in industry and how ACL2 gained
+  traction in industrial use.  The paper discusses how ACL2 is used
+  at Centaur Technology, Inc.  When a previously verified module of a
+  microprocessor design is modified by the designers and checked back
+  in to the data base, ACL2 is run that night to attempt to verify
+  the modified design, ``bugs introduced today are detected tonight
+  and fixed tomorrow.'' The Centaur design and verification teams
+  were acquired by Intel in 2021 and ACL2 continues to be so used at
+  Intel.  In addition the paper describes features of ACL2 (and of
+  the ACL2 community of users) that are particularly important to
+  industry.")
  (BIB::HUNT85
   (OPERATIONAL-SEMANTICS-3__ANNOTATED-BIBLIOGRAPHY)
   "W. A. Hunt, Jr., [3mFM8501: A Verified Microprocessor[0m, University of
@@ -167501,24 +168143,25 @@ Subtopics
 
   There is no doubt that interpretive operational semantics for
   commercial microprocessors is enormously complicated and much of
-  that complexity is buried in data structures, but we regard that as
-  an unavoidable because of how the machines are designed and the
-  fact that the structure of the designs manifest themselves in
-  behaviors that users see.  Would a structural operational semantics
-  for the system-level view of x86 be less complex than the ACL2 x86
-  model described in [bib::goel16]?  We also agree with Plotkin's
-  observation that the interpretive approach does not scale well [3mwhen
-  used as a human-oriented method of specification for real
-  languages[0m.  However, our focus is on [3mmechanized[0m reasoning about
-  machines and we are optimistic that mechanization can manage the
-  complexity.  Furthermore, we believe the examples discussed in
-  [operational-semantics-2__other-examples] support our optimism.  Of
-  course, as noted in [operational-semantics-1__simple-example], the
-  ACL2 user is responsible for configuring ACL2's prover to manage
-  the complexity but the evidence is that expert users are capable of
-  doing that, exploiting such ACL2 features as rewrite rules,
-  metafunctions, enabling and disabling, pragmas for controlling
-  rules, and hints (including computed hints).")
+  that complexity is buried in data structures, but we in the ACL2
+  community tend to regard that as an unavoidable consequence of how
+  the machines are designed and the fact that the structure of the
+  designs manifest themselves in behaviors that users see.  Would a
+  structural operational semantics for the system-level view of x86
+  be less complex than the ACL2 x86 model described in [bib::goel16]?
+  We also agree with Plotkin's observation that the interpretive
+  approach does not scale well [3mwhen used as a human-oriented method
+  of specification for real languages[0m.  However, our focus is on
+  [3mmechanized[0m reasoning about machines and we are optimistic that
+  mechanization can manage the complexity.  Furthermore, we believe
+  the examples discussed in [operational-semantics-2__other-examples]
+  support our optimism.  Of course, as noted in
+  [operational-semantics-1__simple-example], the ACL2 user is
+  responsible for configuring ACL2's prover to manage the complexity
+  but the evidence is that expert users are capable of doing that,
+  exploiting such ACL2 features as rewrite rules, metafunctions,
+  enabling and disabling, pragmas for controlling rules, and hints
+  (including computed hints).")
  (BIB::RHMM07
   (OPERATIONAL-SEMANTICS-3__ANNOTATED-BIBLIOGRAPHY)
   "S. Ray, W. A. Hunt, Jr., J. Matthews, and J S. Moore, `{A Mechanical
