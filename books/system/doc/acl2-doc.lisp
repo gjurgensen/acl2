@@ -2773,8 +2773,8 @@
      Quit the current ACL2-Doc buffer.
 
   K             acl2-doc-kill-buffers
-     Kill all background ACL2-Doc buffers.  If invoked in an ACl2-Doc buffer,
-     all ACl2-Doc buffers except the current one will be killed.  If invoked in
+     Kill all background ACL2-Doc buffers.  If invoked in an ACL2-Doc buffer,
+     all ACL2-Doc buffers except the current one will be killed.  If invoked in
      any other buffer, all ACL2-Doc buffers will be killed.  With prefix
      argument, avoid a query that asks for confirmation.
 
@@ -3249,13 +3249,11 @@
 
  <p>ACL2 sessions in the ACL2 Sedan can utilize non-standard extensions and
  enhancements, especially geared toward new users, termination reasoning, and
- attaching rich user interfaces.  These extensions are <a
- href='http://acl2s.ccs.neu.edu/acl2s/src/acl2-extensions'>generally
- available</a> as certifiable ACL2 books.
- (Some code originating from this project has been migrated to the ACL2
- community books, but only after it was quite stable.)  Thanks to Peter
- Dillinger, Pete Manolios, Daron Vroon, and Harsh Raju Chamarthi for their work
- on the ACL2 Sedan and for making their books available to ACL2 users.</p>")
+ attaching rich user interfaces.  These extensions are distributed with the
+ ACL2 community books in @('books/acl2s/distribution/acl2s-hooks/').  Thanks to
+ Peter Dillinger, Pete Manolios, Daron Vroon, and Harsh Raju Chamarthi for
+ their work on the ACL2 Sedan and for making their books available to ACL2
+ users.</p>")
 
 (defxdoc acl2-tutorial
 
@@ -3636,6 +3634,118 @@
  <p>This feature is used so that the interactive @(see proof-builder)'s @('DV')
  command and numeric diving commands (e.g., @('3')) will dive properly into
  subterms.  Please see @(see dive-into-macros-table).</p>")
+
+(defxdoc add-global-stobj
+  :parents (events stobj)
+  :short "Add a global @(see stobj) with a given name"
+  :long "<p>See @(see stobj) for background on stobjs, and see @(see defstobj)
+ and @(see defabsstobj) for further background.</p>
+
+ <p>We start with the General Form and an Example Form, which are followed by
+ discussions of global stobjs and the effect of this utility.</p>
+
+ @({
+ General Form:
+ (add-global-stobj x state)
+ })
+
+ <p>where @('x') evaluates to the name of a stobj that does not already have a
+ global value, either because it was introduced by @(tsee defstobj) or @(tsee
+ defabsstobj) with keyword value @(':non-executable t') or because @(tsee
+ remove-global-stobj) was previously applied to that name.</p>
+
+ @({
+ Example Form:
+ (add-global-stobj 'st state) ; st non-global from defstobj or defabsstobj
+ })
+
+ <p>By default, @('defstobj') and @('defabsstobj') create a &ldquo;live&rdquo;,
+ mutable object for the given name that can be referenced at the top level,
+ which we call a &ldquo;global&rdquo; stobj.  This is illustrated by the
+ following log.</p>
+
+ @({
+ ACL2 !>(defstobj st fld)
+
+ Summary
+ Form:  ( DEFSTOBJ ST ...)
+ Rules: NIL
+ Time:  0.02 seconds (prove: 0.00, print: 0.00, other: 0.02)
+  ST
+ ACL2 !>st ; global stobj for the name, ST
+ <st>
+ ACL2 !>(fld st)
+ NIL
+ ACL2 !>(update-fld 3 st)
+ <st>
+ ACL2 !>(fld st)
+ 3
+ ACL2 !>
+ })
+
+ <p>However, the following log shows that we can introduce a stobj without
+ creating a global stobj, by using the keyword value @(':non-executable
+ t').</p>
+
+ @({
+ ACL2 !>(defstobj st2 fld2 :non-executable t)
+
+ Summary
+ Form:  ( DEFSTOBJ ST2 ...)
+ Rules: NIL
+ Time:  0.02 seconds (prove: 0.00, print: 0.00, other: 0.02)
+  ST2
+ ACL2 !>(fld2 st2)
+
+
+ ACL2 Error [Evaluation] in TOP-LEVEL:  Unbound var ST2.  Note that
+ ST2 is a non-executable stobj.
+
+ ACL2 !>
+ })
+
+ <p>The function @('add-global-stobj') creates a global stobj for a given stobj
+ name when one does not already exist.  Let's continue the log started
+ immediately above.</p>
+
+ @({
+ ACL2 !>(add-global-stobj 'st2 state)
+  ST2
+ ACL2 !>(fld2 st2)
+ NIL
+ ACL2 !>(update-fld2 3 st2)
+ <st2>
+ ACL2 !>(fld2 st2)
+ 3
+ ACL2 !>
+ })
+
+ <p>The function @('remove-global-stobj') removes the indicated global stobj.
+ We continue the log above.</p>
+
+ @({
+ ACL2 !>(remove-global-stobj 'st2 state)
+  ST2
+ ACL2 !>(fld2 st2)
+
+
+ ACL2 Error [Evaluation] in TOP-LEVEL:  Unbound var ST2.  Note that
+ ST2 is a non-executable stobj.
+
+ ACL2 !>
+ })
+
+ <p>If we remove a global stobj, as shown just above, and then add the
+ corresponding global stobj, we get a fresh copy of that stobj; all previous
+ updates are discarded.</p>
+
+ @({
+ ACL2 !>(add-global-stobj 'st2 state)
+  ST2
+ ACL2 !>(fld2 st2)
+ NIL
+ ACL2 !>
+ })")
 
 (defxdoc add-include-book-dir
   :parents (books-reference)
@@ -11934,10 +12044,22 @@ with any questions about building the community books.</p>")
   :short "A version of the ACL2 rewriter with interactive breaks"
   :long "<p>ACL2 allows the user to @(see monitor) the application of @(see
  rewrite), @(see definition), and @(see linear) rules.  When the rewriter is
- about to try to apply a @(see monitor)ed rule, it can trigger an interactive
- break managed by a version of the rewriter called &ldquo;break-rewrite&rdquo;.
- From within this read-eval-print loop you can inspect the context, attempt to
- apply the rule, and see what happens.  This interactive loop is technically
+ about to try to apply an @(tsee enable)d @(see monitor)ed rule, it can trigger
+ an interactive break managed by a version of the rewriter called
+ &ldquo;break-rewrite&rdquo;.  These breaks can be caused by</p>
+
+ <ul>
+ <li>failure of a rewrite rule's equivalence relation
+ to be a known refinement of the permitted relations,</li>
+ <li>failure of
+ a rule's triggering pattern to match the target term while &ldquo;almost&rdquo;
+ matching,</li>
+ <li>failure to relieve the hypotheses of the rule, or</li>
+ <li>failure of any of several heuristic checks to prevent looping in the rewriter.</li>
+ </ul>
+
+ <p>From within this read-eval-print loop you can inspect the context, attempt
+ to apply the rule, and see what happens.  This interactive loop is technically
  just a call of the standard ACL2 read-eval-print loop, @(tsee ld), on a
  ``@(see wormhole) @(see state)'' (see @(see wormhole)).  While in
  break-rewrite, certain keyword commands are available for accessing
@@ -12076,6 +12198,16 @@ with any questions about building the community books.</p>")
                             ; starting at the top-level clause being simplified
                             ; and ending with the current application
  })
+
+ <p>The output of the @(':path') command shows a stack of simplification and
+ rewriting ``frames'' starting with the current top-level goal (in clausal form
+ as a list of literals) and ending with the current target.  Frames should be
+ self-explanatory.  Frames describing the attempt to apply a rewrite rule will
+ display the name of the equivalence relation the rule uses (unless the
+ relation is @('equal')).  All rewrite frames (including the attempt to apply a
+ given rewrite rule) will display the current @(see geneqv) (the sense of
+ equivalence the rewriter is obligated to maintain) unless the geneqv denotes
+ just the @('equal')ity relation.</p>
 
  <p>At this point in the interaction the system has not yet tried to apply the
  @(see monitor)ed rule.  That is, it has not tried to establish the hypotheses,
@@ -12475,6 +12607,7 @@ with any questions about building the community books.</p>")
  :failure-reason[+] reason rule failed (after :eval)
  :final-ttree[+]    ttree after :eval (see :DOC ttree)
  :frame[+] i        ith frame in :path
+ :geneqv[+]         generated equivalence relation to be maintained
  :go                :eval but don't return to this break, just
                       print the result of the try
  :go!               :go but first remove all monitors (see below)
@@ -12755,6 +12888,11 @@ with any questions about building the community books.</p>")
                       the current context.  (See also the documentation for
                       type-alist.)  The type-alist may be used to determine
                       the current assumptions, e.g., whether A is a CONSP.
+
+  :geneqv          *  the generated equivalence relation that specifies
+                      what equivalence relations may be used to rewrite
+                      the target.  (See the documentation for geneqv and
+                      refinement-failure.)
 
   :ancestors       *  a stack of frames indicating the backchain history
                       of the current context.  The theorem prover is in
@@ -13702,7 +13840,7 @@ with any questions about building the community books.</p>")
 (defxdoc ccl-installation-extra
   :parents (ccl-installation)
   :short "Clozure Common Lisp (CCL) installation and implementation details"
-  :long "<p><b>NOTE</b>See <a
+  :long "<p><b>NOTE</b>: See <a
  href='https://github.com/Clozure/ccl/releases/'>the Clozure CL releases
  page</a> for the latest information, which may supersede some of what is
  included below.</p>
@@ -13923,7 +14061,7 @@ with any questions about building the community books.</p>")
   :short "Installing Clozure Common Lisp (CCL) on Linux (brief version)"
   :long "<p><b>NOTE:</b> See <a
  href='https://github.com/Clozure/ccl/releases/'>the Clozure CL releases
- page</a> for the latest information, which may supersede some of what is
+ page</a> for the latest information, which probably supersedes what is
  included below.</p>
 
  <p>See @(see ccl-installation) for introductory remarks.  The instructions
@@ -13985,8 +14123,8 @@ with any questions about building the community books.</p>")
   :short "Installing Clozure Common Lisp (CCL) on Linux (elaborate version)"
   :long "<p><b>NOTE:</b> See <a
  href='https://github.com/Clozure/ccl/releases/'>the Clozure CL releases
- page</a> for the latest information, which may supersede some of what is
- included below.</p>
+ page</a> for the latest information, which may well supersede what is included
+ below.</p>
 
  <p>See @(see ccl-installation) for introductory remarks.  The ``cookbook''
  instructions below give you one way to install CCL on Linux without any
@@ -14067,7 +14205,7 @@ with any questions about building the community books.</p>")
   :short "Installing Clozure Common Lisp (CCL) on Mac (brief version)"
   :long "<p><b>NOTE:</b> See <a
  href='https://github.com/Clozure/ccl/releases/'>the Clozure CL releases
- page</a> for the latest information, which may supersede some of what is
+ page</a> for the latest information, which probably supersedes what is
  included below.</p>
 
  <p>See @(see ccl-installation) for introductory remarks.  The instructions
@@ -14134,8 +14272,8 @@ with any questions about building the community books.</p>")
   :short "Installing Clozure Common Lisp (CCL) on Mac (elaborate version)"
   :long "<p><b>NOTE:</b> See <a
  href='https://github.com/Clozure/ccl/releases/'>the Clozure CL releases
- page</a> for the latest information, which may supersede some of what is
- included below.</p>
+ page</a> for the latest information, which may well supersede what is included
+ below.</p>
 
  <p>See @(see ccl-installation) for introductory remarks.  The ``cookbook''
  instructions below give you one way to install CCL on a Mac
@@ -16081,7 +16219,7 @@ with any questions about building the community books.</p>")
  failures, and for how to keep the prover from inserting a @('comment') call
  under a call of @(tsee hide).</p>
 
- <h3>Evaluation during proofs</h3>
+ <h3>Evaluation during rewriting</h3>
 
  <p>Forms:</p>
 
@@ -16095,20 +16233,24 @@ with any questions about building the community books.</p>")
  @({
  (defstub f (x) t)
  (defun g (x) (cons (f x) x))
- (defun h (x) (cons x (cdr (g x))))
+ (defund h (x) (cons x (cdr (g x))))
  (thm (equal (h 3) '(3 . 3)))
  })
 
- <p>The proof attempt fails for the @(tsee thm) call, indicating the checkpoint
- shown below.</p>
+ <p>Note that the @(see definition) of @('h') is disabled, but its @(see
+ executable-counterpart) is not.  The proof attempt fails for the @(tsee thm)
+ call, indicating the checkpoint shown below.</p>
 
  @({
  *** Key checkpoint at the top level: ***
 
  Goal'
- (EQUAL (HIDE (COMMENT \"Failed attempt to call constrained function F\"
-                       (H 3)))
-        '(3 . 3))
+ (EQUAL
+  (HIDE
+    (COMMENT \"Failed attempt to call constrained function F;
+ see :DOC comment\"
+             (H 3)))
+  '(3 . 3))
  })
 
  <p>The first argument of @('equal') is logically just @('(h 3)').  But the
@@ -16165,19 +16307,21 @@ with any questions about building the community books.</p>")
  <p>(It actually suffices to disable only @('(:e h)'), but the workings of the
  ACL2 rewriter are out of scope here.)</p>
 
- <p>Note that if the offending function is @(see non-executable) rather than
- constrained, in particular if that function is defined using @(tsee defun-nx),
- then in the first argument of comment you will see ``non-executable'' instead
- of ``constrained''.</p>
+ <p>If the offending function (here, @('f')) is introduced as @(see
+ non-executable) rather than constrained, in particular if that function is
+ defined using @(tsee defun-nx) or @(tsee defund-nx), then in the first
+ argument of comment you will see ``non-executable'' instead of
+ ``constrained''.</p>
 
- <h3>Evaluation during building a term</h3>
+ <h3>Evaluation during substitution</h3>
 
  <p>Form:</p>
 
  @({
  (HIDE
   (COMMENT
-   \"Failed attempt (when building a term) to call constrained function <fn>\"
+   \"Failed attempt (during substitution) to call constrained function <fn>;
+ see :DOC comment\"
    <term>))
  })
 
@@ -16190,15 +16334,16 @@ with any questions about building the community books.</p>")
  })
 
  <p>The prover attacks the @(tsee thm) event by substituting the constant
- @(''3') for @('x').  But the prover attempts to evaluate @('(bar 3)') when
- doing that substitution, and the evaluation fails because @('bar') calls the
- undefined function @('foo').  The checkpoint is as follows.</p>
+ @(''3') for @('x'), which results in an attempt to evaluate @('(bar 3)').
+ This evaluation fails because @('bar') calls the undefined function @('foo').
+ The checkpoint is as follows.</p>
 
  @({
  (EQUAL
   (HIDE
    (COMMENT
-      \"Failed attempt (when building a term) to call constrained function FOO\"
+      \"Failed attempt (during substitution) to call constrained function FOO;
+ see :DOC comment\"
       (BAR 3)))
   YYY)
  })
@@ -16208,7 +16353,8 @@ with any questions about building the community books.</p>")
  <p>Form:</p>
 
  @({
- (HIDE (COMMENT \"Unable to expand using the rule <name>\"
+ (HIDE (COMMENT \"Unable to expand using the rule <name>;
+ see :DOC comment\"
                 <term>))
  })
 
@@ -16223,14 +16369,17 @@ with any questions about building the community books.</p>")
  })
 
  <p>The checkpoint is as follows.  What happened is that the rule @('nth-open')
- had a hypothesis that was false when the rule was attempted for the term
- @('(nth i y)').</p>
+ had a hypothesis that was false when an attempt was made to apply it to the
+ term @('(nth i y)').</p>
 
  @({
- (IMPLIES (NOT (CONSP Y))
-          (EQUAL (HIDE (COMMENT \"Unable to expand using the rule NTH-OPEN\"
-                                (NTH I Y)))
-                 ZZZ))
+ (IMPLIES
+  (NOT (CONSP Y))
+  (EQUAL
+   (HIDE (COMMENT \"Unable to expand using the rule NTH-OPEN;
+ see :DOC comment\"
+                  (NTH I Y)))
+   ZZZ))
  })
 
  <h3>Failure due to disabled or missing warrants</h3>
@@ -16238,9 +16387,11 @@ with any questions about building the community books.</p>")
  <p>Forms:</p>
 
  @({
- (HIDE (COMMENT \"Call failed because the rule apply$-<fn> is disabled\"
+ (HIDE (COMMENT \"Call failed because the rule apply$-<fn> is disabled;
+ see :DOC comment\"
        <term>))
- (HIDE (COMMENT \"Call failed because the warrant for <fn> is not known to be true\"
+ (HIDE (COMMENT \"Call failed because the warrant for <fn> is not known to be true;
+ see :DOC comment\"
        <term>))
  })
 
@@ -16252,7 +16403,7 @@ with any questions about building the community books.</p>")
  the attempt to simplify the call of @('apply$') in the theorem ultimately
  leads to an attempt to evaluate a call of @(tsee ev$), which ultimately fails
  because it leads to a call to evaluate @('(apply$ 'bar '(3))') @('bar').  That
- call causes an error because the warrant is unavailable, because the rule
+ call causes an error because the warrant is unavailable since the rule
  @('apply$-bar') is disabled, hence cannot rewrite a term @('(apply$ 'bar
  args)') to @('(bar (car args))').</p>
 
@@ -16268,10 +16419,14 @@ with any questions about building the community books.</p>")
 
  @({
  (IMPLIES
-   (APPLY$-WARRANT-BAR)
-   (EQUAL (HIDE (COMMENT \"Call failed because the rule APPLY$-BAR is disabled\"
-                         (EV$ '(BAR Y) '((Y . 3)))))
-          3))
+  (APPLY$-WARRANT-BAR)
+  (EQUAL
+   (HIDE
+    (COMMENT
+       \"Call failed because the rule APPLY$-BAR is disabled;
+ see :DOC comment\"
+       (EV$ '(BAR Y) '((Y . 3)))))
+   3))
  })
 
  <p>Similarly, if we instead submit the following event, we see the other such
@@ -16288,9 +16443,13 @@ with any questions about building the community books.</p>")
  @({
  (IMPLIES
   (NOT (APPLY$-WARRANT-BAR))
-  (EQUAL (HIDE (COMMENT \"Call failed because the warrant for BAR is not known to be true\"
-                        (EV$ '(BAR Y) '((Y . 3)))))
-         3))
+  (EQUAL
+   (HIDE
+    (COMMENT
+     \"Call failed because the warrant for BAR is not known to be true;
+ see :DOC comment\"
+     (EV$ '(BAR Y) '((Y . 3)))))
+   3))
  })
 
  <p>Our final example illustrates a failure due to forcing being disabled.  The
@@ -16316,19 +16475,20 @@ with any questions about building the community books.</p>")
  <p>Here is the resulting checkpoint.</p>
 
  @({
-  (EQUAL
-   (HIDE
-    (COMMENT
-     \"Call failed because the warrant for HELLO is not known to be true\"
-     (EV$ '(RETURN-LAST 'PROGN
-                        '(LAMBDA$ (LOOP$-IVAR)
-                                  (LET ((NAME LOOP$-IVAR))
-                                    (DECLARE (IGNORABLE NAME))
-                                    (HELLO NAME)))
-                        ((LAMBDA (NAME) (HELLO NAME))
-                         LOOP$-IVAR))
-          '((LOOP$-IVAR . JOHN)))))
-   '(HI JOHN))
+ (EQUAL
+  (HIDE
+   (COMMENT
+    \"Call failed because the warrant for HELLO is not known to be true;
+ see :DOC comment\"
+    (EV$ '(RETURN-LAST 'PROGN
+                       '(LAMBDA$ (LOOP$-IVAR)
+                          (LET ((NAME LOOP$-IVAR))
+                            (DECLARE (IGNORABLE NAME))
+                            (HELLO NAME)))
+                       ((LAMBDA (NAME) (HELLO NAME))
+                        LOOP$-IVAR))
+         '((LOOP$-IVAR . JOHN)))))
+  '(HI JOHN))
  })")
 
 (defxdoc common-lisp
@@ -17526,7 +17686,9 @@ with any questions about building the community books.</p>")
  two (or more) congruence rules for the same slot of a function.  The result is
  that the system uses a new, ``generated'' equivalence relation for that slot
  with the result that rules of both (or all) kinds are available while
- rewriting.</p>
+ rewriting.  See @(see geneqv) for a discussion of how generated equivalence
+ relations are derived using congruence rules and how generated equivalence
+ relations are represented.</p>
 
  <p>Congruence rules can be @(see disable)d.  For example, if you have two
  different inside equivalences for a given argument position and you find that
@@ -18980,8 +19142,8 @@ Texas at Austin.</li>
 
 <li><a href='https://www.ccs.neu.edu/home/pete/teaching.html'>Courses
     taught by Pete Manolios</a>, which use
-    the <a href='http://acl2s.ccs.neu.edu/acl2s/doc/'>ACL2 Sedan
-    (ACL2s)</a>,
+    the <see topic='@(url acl2-sedan)'>ACL2 Sedan
+    (ACL2s)</see>,
     including <a href='https://www.ccs.neu.edu/home/pete/courses/Logic-and-Computation/2020-Spring/'>one
     taught at Northeastern in Spring 2020</a></li>
 
@@ -18990,8 +19152,7 @@ to undergraduates:
 
   <ul>
 
-  <li>The <a href='http://acl2s.ccs.neu.edu/acl2s/doc/'>ACL2 Sedan
-  (ACL2s)</a></li>
+  <li>The <see topic='@(url acl2-sedan)'>ACL2 Sedan (ACL2s)</see></li>
 
   <li><a href='http://dracula-lang.github.io/index.html'>DrACuLa</a></li>
 
@@ -20787,6 +20948,7 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
     :creator creator
     :corr-fn corr-fn
     :congruent-to congruent-to
+    :non-executable non-executable
     :protect-default protect-default
     :exports (e1 ... ek))
  })
@@ -20852,6 +21014,12 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
  @(':EXEC') symbols.  See @(see defstobj) for more about congruent stobjs.
  Note that if two names are congruent, then they are either both ordinary
  stobjs or both abstract stobjs.</p>
+
+ <p>@('Non-executable') should either be @('nil') (the default) or @('t').
+ When @('t'), a global stobj is not created for the given name; see @(see
+ defstobj), Section &ldquo;Specifying Non-executable Stobjs&rdquo;, for
+ details, as the meaning of @(':non-executable') is the same for
+ @('defabsstobj') as it is for @('defstobj').</p>
 
  <p>@('Protect-default') should either be @('nil') (the default) or @('t').  It
  provides the value of keyword @(':PROTECT') for each member of @('exports')
@@ -24397,7 +24565,7 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
  are ignored when @('nm-flg') and @('ne-flg') are @('nil'), but otherwise: the
  former instructs ACL2 to lay down faster code for functions that return the
  new stobj but disallows @(see memoization) of any function that takes the new
- stobj as an argument; and the latter avoids actually creating the
+ stobj as an argument; and the latter avoids actually creating a global
  stobj (details follow later below).  We describe further restrictions on the
  @('fieldi'), @('typei'), @('vali'), and on @('doublets') below.  We recommend
  that you read about single-threaded objects (stobjs) in ACL2 before
@@ -24994,17 +25162,18 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
  <h3>Specifying Non-executable Stobjs</h3>
 
  <p>As noted above, if keyword argument @(':non-executable t') is specified
- then the stobj is not created.  More precisely, the ``live'', mutable stobj is
- not created.  So why use this keyword argument?  Perhaps you would like to do
- your computation on several stobjs that are all congruent to a given stobj,
+ then no global stobj for the given name is created.  See @(see
+ add-global-stobj) for a discussion of global stobjs, but in a nutshell, a
+ global stobj is a ``live'', mutable stobj that can be referenced in the
+ top-level loop.  So why use this keyword argument?  Perhaps you would like to
+ do your computation on several stobjs that are all congruent to a given stobj,
  @('st').  Then by using @(':non-executable t') to introduce @('st'), you avoid
  allocating memory for @('st') that you never intend to use.  Similarly, you
  can avoid allocating such memory when your intended use of @('st') is only as
  a local stobj (see @(see with-local-stobj)) or as the type of a stobj field of
- another stobj.</p>
-
- <p>When @(':non-executable t') is specified, it is illegal to supply a
- @(':congruent-to') argument.</p>")
+ another stobj.  But see @(see add-global-stobj) and @(see remove-global-stobj)
+ for utilities that change whether or not there is a global stobj for a given
+ name.</p>")
 
 (defxdoc defstobj-element-type
   :parents (defstobj)
@@ -42532,6 +42701,305 @@ current fast alists."
  so for example, for 4 threads (i.e., using &ldquo;@('-j 4')&rdquo; in your
  @('make') command), you may want to specify @('GCL_MEM_MULTIPLE=0.25').</p>")
 
+(defxdoc geneqv
+  :parents (introduction-to-the-theorem-prover break-rewrite)
+  :short "the rewriter's generated equivalence relation"
+  :long "<p>As the rewriter descends through a term, rewriting the subterms, it
+  uses @(see congruence) rules to determine which @(see equivalence)s may be
+  used to rewrite one subterm to another while ensuring that each rewrite
+  maintains a given equivalence.  Generally speaking multiple equivalences may
+  be used to rewrite subterms.  A ``generated equivalence'' or
+  ``geneqv'' (pronounced ``genequiv'') is the way we encode which equivalences
+  may be used by the rewriter at any given subterm position.</p>
+
+  <p>The outline of this discussion is as follows.</p>
+
+  <ul>
+
+  <li>Basic Support for Equivalence Relations: a review of equivalence
+  relations, refinement, and congruence</li>
+
+  <li>Salient Facts about the ACL2 Rewriter: a review of how the rewriter
+  works</li>
+
+  <li>Using Congruence Rules to Generate Acceptable Equivalences for
+  Subterms: an illustration of how congruence rules are used to determine the
+  equivalences the rewriter is permitted to use</li>
+
+  <li>Debugging Tools: How to see what equivalences are permitted while
+  rewriting the current target and how to see how the set evolved as the
+  rewriter descended from the top-level goal.</li>
+
+  </ul>
+
+  <h3>Basic Support for Equivalence Relations</h3>
+
+  <p>If you do not know what the following ACL2 macro forms do, you should
+  see their documentation.</p>
+
+  <code>
+  ; prove and store that eqv is an equivalence relation:
+
+  (defequiv eqv)
+
+  ; prove and store that the equivalence relation eqv1
+  ; refines the equivalence relation eqv2
+
+  (defrefinement eqv1 eqv2)
+
+  ; prove and store that the equivalence relation eqv1 is a congruence relation
+  ; for the kth argument of the function f, preserving the equivalence relation
+  ; eqv2.
+
+  (defcong eqv1 eqv2 (f x1 ... xn) k)
+  </code>
+
+  <p>An example of the last form is</p>
+
+  <code>
+  (defcong set-equal iff (member e x) 2)
+  </code>
+
+  <p>which essentially expands to</p>
+
+  <code>
+  (defthm set-equal-implies-iff-member-2
+    (implies (set-equal x y)
+             (iff (member e x)
+                  (member e y)))
+    :rule-classes (:congruence))
+  </code>
+
+  <p>(ACL2 actually generates a different variable name in place of @('y')
+  above.)</p>
+
+  <p>Helpful documentation topics include @(see equivalence), @(see
+  refinement), @(see congruence), @(tsee defequiv), @(tsee defrefinement), and
+  @(tsee defcong).</p>
+
+  <h3>Salient Facts about the ACL2 Rewriter</h3>
+
+  <ul>
+
+  <li>Goals, which are represented as clauses, are simplified by rewriting each
+  literal in turn, assuming the other literals false.</li>
+
+  <li>When a term is rewritten (under some assumptions) the rewriter is given
+  an @(see equivalence) relation to maintain, i.e., the output of the rewriter
+  must be equivalent in that sense to the input, under the assumptions.</li>
+
+  <li>The initial equivalence relation to be maintained while rewriting a
+  literal is @(tsee iff).</li>
+
+  <li>Each @(':')@(tsee rewrite) rule in ACL2 effectively concludes with a
+  term of the form @('(@('eqv lhs rhs)'), where @('eqv') is an equivalence
+  relation.  Such a rule may be used to replace instances of @('lhs') by the
+  corresponding instance of @('rhs'), and maintains the equivalence relation
+  @('eqv').  But the rule is only applicable if @('eqv') <i>refines</i> the
+  equivalence relation to be maintained by rewrite.  See @(see
+  refinement).</li>
+
+  <li>If the term to be rewritten is a function call, @('(fn a1 ... ak)'),
+  the rewriter rewrites each @('ai') to, say, @('ai''), before applying rules
+  to @('(fn a1' ... ak')').  To be more precise, when the ACL2 rewriter is
+  asked to rewrite @('(fn a1 ... an)') maintaining some equivalence @('eqv'),
+  it first rewrites each @('ai'), maintaining an equivalence generated from the
+  congruence rules about how to rewrite the @('i')th argument of @('fn')
+  maintaining @('eqv').  Suppose each @('ai') is thus rewritten to some other
+  term @('ai'').  That is, @('(fn a1 ... an)') is transformed to @('(fn a1'
+  ... an')') which is known to be @('eqv')-equivalent to @('(fn a1 ... an)').
+  Then the rewriter applies all the @('eqv') rules it knows to @('(fn b1
+  ... bn)').</li>
+
+  <li>How the rewriter uses the known @(see congruence) rules to determine
+  the equivalence relation to be maintained while rewriting each @('ai') is
+  illustrated below.</li>
+
+  <li>@('Equal') refines all equivalence relations.</li>
+
+  <li>@('Equal') maintains all equivalence relations across all argument
+  positions of all functions.</li>
+
+  </ul>
+
+  <h3>Using Congruence Rules to Generate Acceptable Equivalences for
+  Subterms</h3>
+
+  <p>In this section show how ACL2 generates the equivalence relation it will
+  maintain when diving into subterms.  We do so by discussing a couple of
+  contrived examples.  The actual script for these examples is in
+  @('books/demos/geneqv.lisp').</p>
+
+  <p>Our examples use the following functions.</p>
+
+  <ul>
+
+  <li>@('Len') is an ACL2 primitive that determines the number of elements
+  in a list.</li>
+
+  <li>@('(perm x y)') determines whether @('x') is a permutation of @('y'),
+  i.e., whether each element that occurs in either @('x') or @('y') occurs in
+  both the same number of times.  For example @('(perm '(A B A C) '(C B A A))')
+  is true, but @('(perm '(A B A C) '(A B B C))') is false.</li>
+
+  <li>@('(pairwise-iff x y)') determines whether corresponding elements of
+  @('x') and @('y') are propositionally equivalent (i.e., @('IFF')-equivalent).
+  For example, @('(pairwise-iff '(T NIL T) '(1 NIL A))') is true (since both
+  @('1') and @('A') are non-@('NIL') and thus propositionally equivalent to
+  @('T')), but @('(pairwise-iff '(T NIL T) '(1 NIL NIL))') is false.</li>
+
+  <li>Both @('perm') and @('pairwise-iff') can be proved to be @(see
+  equivalence) relations.</li>
+
+  <li>Both @('perm') and @('pairwise-iff') are congruence relations for the
+  first argument of @('len') that maintain @('equal')ity of @('len').
+
+  <code>
+  (defthm perm-implies-equal-len-1
+    (implies (perm x y)
+             (equal (len x)
+                    (len y)))
+    :rule-classes (:congruence))
+
+  (defthm pairwise-iff-implies-equal-len-1
+    (implies (pairwise-iff x y)
+             (equal (len x)
+                    (len y)))
+    :rule-classes (:congruence))
+  </code>
+  </li>
+  </ul>
+
+  <p>Now consider proving</p>
+
+  <code>
+  (defthm example-thm-1
+    (equal (len (isort (norml x)))
+           (len x))
+    :rule-classes nil)
+  </code>
+
+  <p>Before we start you should understand that there are many ways to prove
+  this little theorem.  The most straightforward is just to prove that
+  @('(len (isort x))') is @('(len x)') and to prove @('(len (norml x))') is
+  @('(len x)').  In this case, where the functions involved are @('isort') and
+  @('norml'), those theorems are easy to prove.  But for some functions in
+  those roles of a problem like this it is easier to appeal to the properties
+  of certain equivalence relations.  That's what we'll do here.</p>
+
+  <p>If you run the @('defthm') above, the prover (after preprocessing)
+  eventually calls the rewriter on the @('equal') term, requiring it to
+  maintain @('iff').  The rewriter then dives into the two arguments, rewriting
+  @('(len (isort (norml x)))') first, maintaining @('equal')ity.</p>
+
+  <p>The rewriter then dives into the first argument of the @('len') term,
+  @('(isort (norml x))').  The congruence rule @('perm-implies-equal-len-1')
+  above tells it that @('equal')ity of the @('len') term is maintained if the
+  first argument is rewritten maintaining the @('perm') equivalence.  In
+  addition, the congruence rule @('pairwise-iff-implies-equal-len-1') tells it
+  that @('equal')ity of the @('len') term is also maintained if the first
+  argument is rewritten maintaining the @('pairwise-iff') equivalence.</p>
+
+  <p>Thus, when rewriting @('(isort (norml x))') the rewriter can use any
+  rewrite rule that maintains @('perm'), any rewrite rule that maintains
+  @('pairwise-iff'), and, of course, any rewrite rule that maintains
+  @('equal').  In addition, of course, it can use any rewrite rule that
+  maintains a refinement of any of these equivalence relations.  This
+  ``generated equivalence'' or ``geneqv'' is denoted by a set containing the
+  named equivalence relations and the justifying congruence rules.</p>
+
+  <p>The geneqv just derived is represented internally as</p>
+
+  <code>
+  ((5658 PAIRWISE-IFF
+         :CONGRUENCE PAIRWISE-IFF-IMPLIES-EQUAL-LEN-1)
+   (5651 PERM
+         :CONGRUENCE PERM-IMPLIES-EQUAL-LEN-1))
+  </code>
+
+  <p>Ignoring the two numbers, we see two pairs, each naming an equivalence
+  relation and the @(see rune) that justifies its use here.  The numbers are
+  session-specific indices uniquely associated with the two runes that allow
+  ACL2 to determine quickly if the runes are enabled.  Note that we do not
+  include an entry for @('EQUAL') since it maintains every equivalence relation
+  in every argument position of every function.  Indeed, if you see a geneqv of
+  @('NIL') it means @('EQUAL') is the only acceptable equivalence relation in
+  that context.</p>
+
+  <p>Debugging tools in ACL2 typically display the geneqv above as</p>
+
+  <code>
+  ((PAIRWISE-IFF PAIRWISE-IFF-IMPLIES-EQUAL-LEN-1)
+   (PERM PERM-IMPLIES-EQUAL-LEN-1))
+  </code>
+
+  <p>or even</p>
+
+  <code>
+  (PAIRWISE-IFF PERM).
+  </code>
+
+  <p>We discuss debugging tools that display geneqvs below.</p>
+
+  <p>But what does this geneqv buy us during this proof?  Recall where we were
+  in the proof discussed above.  We're rewriting @('(isort (norml x))')
+  maintaining @('(PAIRWISE-IFF PERM)').  If the user had proved the following
+  two rewrite rules</p>
+
+  <code>
+  (defthm perm-isort                ; isort perserves perm
+    (perm (isort X) X))
+
+  (defthm pairwise-iff-norml        ; norml preserves pairwise-iff
+     (pairwise-iff (norml x) x))
+  </code>
+
+  <p>then the rewriter would replace @('(isort (norml x))') by @('(norml
+  x)') using the first rule, since @('perm') is a refinement of the geneqv, and
+  then the rewriter would rewrite that and replace it by @('x') using the
+  second rule, since @('pairwise-iff') is also a refinement of the geneqv.
+  Note that neither of these replacements preserve @('equal')ity, but they are
+  permitted because they preserve the @('equal')ity of the @('len')s.</p>
+
+  <p>Thus, @('(equal (len (isort (norml x))) (len x))') has been simplified to
+  @('(equal (len x) (len x))') which further simplifies to @('t') and the proof
+  is done.</p>
+
+  <p>The Community Book @('\"books/demos/geneqv-test-book.lisp\"') (which
+  executes the commands in books/demos/geneqv-test-input.lsp) contains this and
+  other examples.</p>
+
+  <h3>Debugging Tools</h3>
+
+  <p>Generated equivalence relations are never mentioned or displayed in the
+  prover output.  But of course they are crucial since they determine which
+  rewrite rules can be used.  If a rule was expected to be used in a proof or
+  proof attempt but was not used it might be because the rule's equivalence
+  relation failed to be a refinement of the geneqv in effect when the intended
+  target was encountered.  If @(tsee brr) is enabled and a @(tsee monitor)ed
+  rule is tried by the rewriter but does not fire because it failed the
+  refinement test, a @(see break-rewrite) interactive break occur.  See @(see
+  refinement-failure) for some advice for how you might respond to such a
+  failure.</p>
+
+  <p>From within a break-rewrite break the @(tsee brr-commands) @(':path') will
+  print the ``path'' from the current top-level goal down to the call of the
+  rewriter on current @(':target') term.  Like a call stack, the path is
+  composed of ``frames,'' most of which describe calls of the rewriter but some
+  of which are calls of other system functions (like the @(tsee
+  linear-arithmetic) procedure) that orchestrate other calls to the rewriter.
+  As of Version 8.6, each frame of the @(':path') that describes the attempt to
+  apply a particular rewrite rule will display the name of the equivalence
+  relation used by the rule (unless that name is @('equal')).  Every frame
+  describing a call of the rewriter includes the geneqv to be maintained as the
+  target is rewritten (unless the geneqv is @('nil') which denotes the
+  @('equal')ity relation).  The noted exceptions are intended to shorten the
+  output in the most common cases: rewriting with @('equal') and maintaining
+  equality.</p>
+
+  <p>In addition, from within such a break the brr-command @(':geneqv') will
+  print the geneqv for the current target.</p>")
+
 (defxdoc generalize
   :parents (rule-classes)
   :short "Make a rule to restrict generalizations"
@@ -42768,7 +43236,7 @@ current fast alists."
 ; Release approved by DARPA with "DISTRIBUTION STATEMENT A. Approved
 ; for public release. Distribution is unlimited."
 
-; WARNING: Don’t change the name of this topic without also changing its
+; WARNING: Don't change the name of this topic without also changing its
 ; reference in :DOC acknowledgments!
 
 ; This topic makes some claims about the following data from ACL2 V8.5.
@@ -42878,7 +43346,7 @@ current fast alists."
  input.</p>
 
  <p>You could use ACL2 with no other interface.  But most users prefer an enviroment in which they can prepare a command by editing
- the text before submitting it.  We use an Emacs shell buffer for that.  Other users use <a href='http://acl2s.ccs.neu.edu/acl2s/doc/'>ACL2s</a>, which is an Eclipse plug-in.
+ the text before submitting it.  We use an Emacs shell buffer for that.  Other users use <see topic='@(url acl2-sedan)'>ACL2s</see>, which is an Eclipse plug-in.
  This guide doesn't discuss the interface further and we just assume you can submit commands and see the output.  The examples we provide
  are from our Emacs interface.</p>
 
@@ -45801,7 +46269,7 @@ current fast alists."
   inference akin to second order instantiation), and a variety of other ways of
   conservatively adding new function symbols.</p>
 
-  <p>The ACl2 prover proves theorems in the extension of the above theory
+  <p>The ACL2 prover proves theorems in the extension of the above theory
   obtained by adding the axioms introduced by @(see events) successfully
   carried out in the user's session.  The most common such axiom-adding events
   are @(tsee defun), @(tsee defchoose), and @(tsee encapsulate), which all
@@ -45854,12 +46322,12 @@ current fast alists."
 
   <ul>
 
-  <li><p>Instead of treating stobj names as variables, the evaluation theory
+  <li>Instead of treating stobj names as variables, the evaluation theory
   treats them as abbreviations for the ``current value'' of the stobj,
   specifically, the constant obtained by composing the sequence of all updates
   to the stobj's fields carried out so far in the top-level loop.  Thus, for
   example, in the evaluation theories created by this sequence of top-level
-  evaluations</p>
+  evaluations
 
   <code>
   ACL2 !&gt;(defstobj st fld)                           ; [1]
@@ -45870,18 +46338,18 @@ current fast alists."
   &lt;st&gt;
   </code>
 
-  <p>@('st') is an abbreviation for @('(NIL)') after evaluation [1], an
+  @('st') is an abbreviation for @('(NIL)') after evaluation [1], an
   abbreviation for @('(3)') after evaluation [2], and an abbreviation for
-  @('(9)') after evaluation [3].</p></li>
+  @('(9)') after evaluation [3].</li>
 
-  <li><p>Every warrant created by @('defwarrant') is assumed true as an
-  axiom.</p></li>
+  <li>Every warrant created by @('defwarrant') is assumed true as an
+  axiom.</li>
 
-  <li><p>For every @('(defattach f g)') event in the prover's theory the
+  <li>For every @('(defattach f g)') event in the prover's theory the
   axiom (i.e., constraints) on @('f') is replaced by the axiom @('(equal (f
   ...) (g ...))') in the evaluation theory.  (Of course this replacement also
   takes place when using the more general form for @(tsee defattach),
-  @('(defattach ... (f g ...) ...)').)</p></li>
+  @('(defattach ... (f g ...) ...)').)</li>
 
   </ul>
 
@@ -58390,20 +58858,20 @@ tables in the current Hons Space."
 
   <ul>
 
-  <li><p>lambda expression -- This phrase is used to describe the syntactic
+  <li>lambda expression -- This phrase is used to describe the syntactic
   entity beginning with the symbol @('lambda') that is allowed to occupy the
   ``function'' position in an ACL2 @(see term).  Lambda expressions are most
   often created when @('let') expressions are translated into their formal
-  counterparts.  We provide an example below.</p></li>
+  counterparts.  We provide an example below.</li>
 
-  <li><p>@('LAMBDA') object -- An ACL2 list constant interpreted as a ``function''
+  <li>@('LAMBDA') object -- An ACL2 list constant interpreted as a ``function''
   by @(tsee apply$).  @('LAMBDA') objects may be written in terms by quoting them.
   However, we urge the user to introduce @('LAMBDA') objects into terms by using
-  the built-in macro @(tsee lambda$).  We provide examples below.</p></li>
+  the built-in macro @(tsee lambda$).  We provide examples below.</li>
 
-  <li><p>@('lambda$') expressions -- These are untranslated terms beginning with
+  <li>@('lambda$') expressions -- These are untranslated terms beginning with
   the macro symbol @('lambda$').  They expand during translation to quoted @('LAMBDA')
-  objects.  We provide examples below.</p></li>
+  objects.  We provide examples below.</li>
 
   </ul>
 
@@ -63536,7 +64004,7 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
 ; Release approved by DARPA with "DISTRIBUTION STATEMENT A. Approved
 ; for public release. Distribution is unlimited."
 
-; WARNING: Don’t change the name of this topic without also changing its
+; WARNING: Don't change the name of this topic without also changing its
 ; reference in :DOC acknowledgments!
 
   :parents (loop$ documentation programming)
@@ -74255,10 +74723,12 @@ it."
   (monitor '(:r assoc-of-app) t)
   (monitor 'assoc-of-app t)
   (monitor '(rewrite assoc-of-app) '(:condition t :depth 2))
+  (monitor '(rewrite assoc-of-app) '(:condition t :rf t :depth 2))
 
   Keyword Command Examples:
   :monitor assoc-of-app t
   :monitor lemma42 (:condition (equal (brr@ :target) '(F A (G A (H B))))
+                    :rf t
                     :depth 2
                     :abstraction (F x (G x y))
                     :lambda t))
@@ -74281,6 +74751,9 @@ it."
 
  <ul>
 
+ <li>@(':rf') &mdash; value must be @('T') or @('NIL'), defaults to
+ @('NIL')</li>
+
  <li>@(':depth') &mdash; value must be a natural number</li>
 
  <li>@(':abstraction') &mdash; value must be a term and it is most often an
@@ -74291,21 +74764,32 @@ it."
 
  <li>@(':condition') &mdash; value must be a term, called the &ldquo;break
  condition&rdquo; which contains at most one free variable and that variable
- must be @(tsee state).</li>
+ must be @(tsee state).  An interactive break is initiated only if the
+ @(':condition') term evaluates to non-@('nil').  If not provided, the
+ @(':condition') value defaults to @(''T').</li>
 
  </ul>
 
  <p>The keys @(':depth'), @(':abstraction'), and @(':lambda') are only relevant
- when the &ldquo;pattern&rdquo; that may trigger the rule named by @('x')
+ when the rule named by @('x') rewrites with an equivalence relation that is a
+ refinement of the equivalence relation the rewriter is obligated to maintain
+ on the current target (see @(see geneqv)) and the rule's &ldquo;pattern&rdquo;
  <b>does not match</b> the target.  They specify criteria under which a failed
- match is to be considered a &ldquo;near miss.&rdquo; Details are given below.
- However, other keywords are allowed with no constraints on their values.  The
- purpose of this allowance is so that the user who wants to attach his or her
- own function to ACL2's @(tsee brr-near-missp) predicate can pass information
- to that function.</p>
+ match is to be considered a &ldquo;near miss.&rdquo; Details are given
+ below.</p>
 
- <p>The @(':condition') key is only relevant when the pattern of the monitored
- rune <b>matches</b> the target to which the rewriter tried to apply it.</p>
+ <p>The key @(':rf') with value @('T') indicates that breaks are to also
+ occur (if the @(':condition') evaluates to non-@('nil') and) the rune's
+ equivalence relation has failed to be a refinement of the equivalence relation
+ the rewriter is obligated to maintain on the current target.  See @(see
+ refinement-failure).  If @(':rf') is @('nil') or not provided, refinement
+ failures do not trigger breaks but the other kinds of breaks may occur.</p>
+
+ <p>Keywords other than @(':condition'), @(':rf'), @(':depth'),
+ @(':abstraction'), and @(':lambda') are allowed with no constraints on their
+ values.  The purpose of this allowance is so that the user who wants to attach
+ his or her own function to ACL2's @(tsee brr-near-missp) predicate can pass
+ information to that function.</p>
 
  <p>When successful, @('monitor') arranges for the rewriter to trigger an
  interactive break when any rule named by @('x') and of the above classes is
@@ -99162,7 +99646,7 @@ it."
 
  <li>The utilities @(tsee verify-guards-formula) and @(tsee guard-obligation)
  take a new argument, @('rrp') (``return redundant p'').  When this argument
- is ('nil'), which is the default for @('verify-guards-formula'), these
+ is @('nil'), which is the default for @('verify-guards-formula'), these
  utilities will avoid returning the symbol @(''redundant') even in the case
  that the given function symbol is already guard-verified.  Thanks to Eric
  Smith for requesting this enhancement.</li>
@@ -104914,11 +105398,11 @@ it."
 ; conversion of fmt, (er soft ...), one-way-unify, and genvar, and related
 ; utilities to guard-verified :logic mode.
 
-;   85 ; Changes to Existing Features
-;   36 ; New Features
-;   10 ; Heuristic and Efficiency Improvements
-;   38 ; Bug Fixes
-;   18 ; Changes at the System Level
+;   88 ; Changes to Existing Features
+;   38 ; New Features
+;   11 ; Heuristic and Efficiency Improvements
+;   39 ; Bug Fixes
+;   19 ; Changes at the System Level
 ;    8 ; EMACS Support
 ;    1 ; Experimental Versions
 
@@ -105402,6 +105886,23 @@ it."
 ; calls for chunks of code.  This reduced the lines of code for certify-book-fn
 ; from 1171 to 273 and for include-book-fn from 817 to 344.  Thanks to Sol
 ; Swords for a request that motivated these changes.
+
+; In each of the following examples, the evaluation of st resulted in printing
+; <st>, even though st is actually unbound because that stobj was introduced
+; with :non-executable t.  Now, #<Unbound>, which is consistent with the sort
+; of result printed by Lisp.
+;
+;   (defstobj st fld)
+;   (set-raw-mode-on!)
+;   (defstobj st (fld :type integer :initially 0) :non-executable t)
+;   st
+;
+;   (defstobj st fld :non-executable t)
+;   (set-raw-mode-on!)
+;   st
+
+; Improved error messages when non-executable stobjs are present when
+; evaluating a top-level form.
 
   :parents (release-notes)
   :short "ACL2 Version  8.6 (xxx, 20xx) Notes"
@@ -106049,6 +106550,24 @@ it."
  <p>The predicate @('standard-string-alistp') has been deleted, while a related
  predicate @(tsee string-alistp) has been added.</p>
 
+ <p>The @(see break-rewrite) facility will now cause an interactive break on a
+ monitored rewrite rule if the rule's equivalence relation fails to refine any
+ of the equivalence relations known to be permitted while rewriting the target.
+ See @(see geneqv) for a discussion of how @(see congruence) rules are used to
+ compute permitted equivalence relations and @(see refinement-failure) for
+ advice about how to investigate and fix refinement failures during
+ rewriting.</p>
+
+ <p>The message for evaluation failures during proofs has been modified
+ slightly, clarifying the case of substitution and, especially, suggesting
+ :DOC @(see comment) for explanations (which has been updated accordingly).
+ Thanks to David Russinoff for an acl2-help list query leading to this
+ improvement.</p>
+
+ <p>It is no longer illegal for a @(tsee defstobj) event both to specify
+ keyword argument @(':NON-EXECUTABLE T') and to use the @(':CONGRUENT-TO')
+ keyword argument.</p>
+
  <h3>New Features</h3>
 
  <p>ACL2 now supports floating-point operations.  See @(see df).  Regarding
@@ -106264,6 +106783,16 @@ it."
  <p>A new utility, @(tsee compare-objects), highlights the differences between
  two @('cons')-trees.</p>
 
+ <p>Now @(tsee defabsstobj) accepts the @(':non-executable') keyword, in
+ analogy to support for that keyword by defstobj.  Thanks to Yahya Sohail and
+ Warren Hunt for discussions leading to this enhancement.</p>
+
+ <p>New functions @(tsee add-global-stobj) and @(tsee remove-global-stobj)
+ change whether there is a global (&ldquo;live&rdquo;) stobj for a given stobj
+ name, thus modifying the effect of the keyword @(':non-executable') of events
+ @(tsee defstobj) and @(tsee defabsstobj).  Thanks to Yahya Sohail and Warren
+ Hunt for discussions leading to the addition of these utilities.</p>
+
  <h3>Heuristic and Efficiency Improvements</h3>
 
  <p>Added a &ldquo;desperation heuristic&rdquo; to compute a stronger context,
@@ -106336,6 +106865,11 @@ it."
  @('make-event') call in that scope; similarly for such @('defconst') events
  within calls of @(tsee skip-proofs), @(tsee with-output), @(tsee
  with-guard-checking), or @(tsee with-prover-step-limit).</p>
+
+ <p>Each new stobj was being created twice at @(tsee include-book) time, once
+ when the book's compiled file is loaded and once when the @(tsee defstobj) or
+ @(tsee defabsstobj) event is processed.  The former initialization is
+ unnecessary and has been eliminated.</p>
 
  <h3>Bug Fixes</h3>
 
@@ -106679,6 +107213,18 @@ it."
  certain applications of @(tsee nth), @(tsee update-nth), or @(tsee
  update-nth-array) during a proof.)</p>
 
+ <p>@(tsee With-global-stobj) no longer produces an invalid result when its
+ first argument names a non-executable @(see stobj).  Previously, the call of
+ @('read-state') below could return the nonsensical result 637624320.</p>
+
+ @({
+ (defstobj st fld :non-executable t)
+ (defun read-state (state)
+   (declare (xargs :stobjs state))
+   (with-global-stobj st (fld st)))
+ (read-state state)
+ })
+
  <h3>Changes at the System Level</h3>
 
  <p>The `@('make')' target, @('save-exec'), now builds @('custom-saved_acl2')
@@ -106786,6 +107332,13 @@ it."
  verbose debugging information is avoided (since these are ACL2 errors for
  which that information is very unlikely to be helpful).  Thanks to Alessandro
  Coglio for a recent Zulip query that led us to make this change.</p>
+
+ <p>A new documentation topic and its subtopics describe uses of ACL2 and its
+ predecessor, Nqthm, in modeling state machines.  See @(see
+ operational-semantics), which notes that others are welcome to add to these
+ topics; see the discussion of &ldquo;Request for Suggestions from ACL2
+ Users&rdquo;.  The new topic incorporates an annotated bibliography pointing
+ to more than 40 topics in a new @('\"BIB\"') package.</p>
 
  <h3>EMACS Support</h3>
 
@@ -107954,6 +108507,2300 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>@('Open-trace-file') does not work as would reasonably be expected during
  @(tsee make-event) expansion.  Use @(tsee open-trace-file!) instead within
  @('make-event').</p>")
+
+(defxdoc operational-semantics
+
+; TO DO:
+
+; M6 is mentioned but that directory is not yet part of the regression suite.
+; Add it and remove the Warning in :DOC
+; operational-semantics-1__simple-example. See also bib::liu06 which will need
+; a little rewriting; delete the italicized note at the top and correct the
+; tense from past to present!
+
+; :DOC operational-semantics-1__simple-example notes that the comments in
+; books/models/jvm/m1/defsys.llisp are out of date.  Fix those comments and
+; remove the Warning.
+
+  :parents (documentation acl2 about-acl2)
+  :short "Modeling State Machines"
+
+; The quote just below can also be found at:
+; http://www-formal.stanford.edu/jmc/towards/node13.html
+
+  :long "<p>&ldquo;<i>The meaning of a program is defined by its effect on the
+  state vector</i>&rdquo; &mdash; John McCarthy, Towards a Mathematical Science
+  of Computation (1962).</p>
+
+  <p>Users of ACL2 (see @(see bib::kmm00a) and @(see bib::kmm00b)) and its
+  predecessor, Nqthm (see @(see bib::bm97)), have long modeled state machines
+  and verified interesting properties of programs running on those machines.
+  The basic idea is to represent the state of the machine (including its
+  programs) by an ACL2 object and then define an interpreter that computes a
+  &ldquo;final&rdquo; state from an initial state.  In this documentation topic
+  we fill out that sketch of the methodology without being specific about any
+  particular machine.  We then dive into details in subsidiary topics.</p>
+
+  <h3>Request for Suggestions from ACL2 Users</h3>
+
+  <p>If you have ideas for additions or other improvements to the documentation
+  of the ACL2 approach to operational semantics, please add suitable
+  documentation or simply send your comments to the ACL2 developers.  Note that
+  we have intentionally limited our literature survey to models and proof
+  methods in ACL2 and Nqthm.  Widening the focus to operational semantics in
+  general is simply beyond the scope of this documentation topic.  But if you
+  see omissions or errors in our discussion of ACL2 or Nqthm models and proof
+  methods, please either fix them or bring them to our attention, making your
+  suggestions as detailed as possible, e.g., what documentation topic are you
+  looking at and precisely how would you change it?  If your change involves
+  citing a paper or Nqthm or ACL2 file that we have left out, please include
+  the appropriate bibliographic information as well as a URL to the paper or
+  file if possible.  The following documentation topics are of concern:</p>
+
+  <h3>Recommended Order of Topics</h3>
+
+  <ul>
+
+  <li>operational-semantics (the current topic)</li>
+
+  <li>@(see operational-semantics-1__simple-example)</li>
+
+  <li>@(see operational-semantics-2__other-examples)</li>
+
+  <li>@(see operational-semantics-3__annotated-bibliography)</li>
+
+  <li>@(see operational-semantics-4__how-to-find-things)</li>
+
+  <li>@(see operational-semantics-5__history-etc)</li>
+
+  </ul>
+
+  <h3>Prerequisites</h3>
+
+  <p>You won't be able to prove theorems about ACL2 functions interpreting
+  another language unless you can prove theorems about ACL2 functions.  An
+  excellent way to test yourself is to think of a program you'd like to verify
+  in that other programming language.  Code a function in ACL2 that computes
+  the same answer using the same algorithm, as nearly as possible in an
+  applicative setting.  So for example, if your program destructively modifies
+  an array in that other programming language, perhaps model the array in ACL2
+  as a list but access elements with @(tsee nth) and &ldquo;modify&rdquo;
+  elements with @(tsee update-nth).  Then prove that the ACL2 function is
+  correct with ACL2.  If you can do that, you're ready to try to embed that
+  other language (or some fragment of it) in ACL2 and reason about such
+  programs with ACL2.</p>
+
+  <h3>Generic Description of the Methodology</h3>
+
+  <h4>How Machines Are Modeled</h4>
+
+  <p>In the approach ACL2 users most often take to model state machines the
+  first step is to represents the relevant parts of the machine's state as an
+  ACL2 object.  Then the user defines a single-step (or &ldquo;small
+  step&rdquo;) function to compute the next state from the current one (and
+  possibly some inputs).  Finally, the user defines a recursive function that
+  iterates the single-step transition from a given initial state a given number
+  of times or until some halting condition is detected in the state.  That
+  function is often called the &ldquo;run&rdquo; function and is our
+  operational semantic model.  See @(see
+  operational-semantics-1__simple-example) for a model of an extremely simple
+  machine, the way we configure ACL2 to prove things about it, some example
+  proofs and other uses of the model.</p>
+
+  <p>The argument that controls the maximum number of steps taken is often
+  called a &ldquo;clock&rdquo; but it has nothing to do with the passage of
+  time.  In some models the clock is just a natural number.  In others it may
+  be a finite list of inputs to be successively transferred into the state on
+  each cycle.  In any case, the clock guarantees that the run function
+  terminates, which is a prerequisite for functions defined recursively in
+  ACL2.  But do not be fooled into thinking that all programs running on the
+  machine always terminate.  By appropriate use of quantification one can often
+  prove that a given program never terminates or only terminates under certain
+  pre-conditions.  This is discussed further in @(see
+  operational-semantics-1__simple-example).</p>
+
+  <h4>Uses of Such a Model</h4>
+
+  <p>Such a model can be used as a prototype for the machine: the model can be
+  executed on concrete states for testing purposes.  But because ACL2 is a
+  formal system, it is also possible to do symbolic simulation of the model and
+  to prove theorems involving the model.  Such theorems might be loosely
+  classified as being &ldquo;about&rdquo; a particular program running on the
+  machine or &ldquo;about&rdquo; the machine itself.  An example of the first
+  might be that a certain program for the machine computes the factorial
+  function.  An example of the second might be that when the machine is run
+  @('(+ i j)') steps from state @('s0') the result is the same as running it
+  @('i') steps from state @('s0') to get some state, @('si'), and then running
+  it @('j') steps from @('si').  Such theorems are sometimes called
+  &ldquo;sequential execution&rdquo; or &ldquo;semi-colon&rdquo; theorems
+  because they allow a long run to be broken up into a composition of shorter
+  runs.  One can even prove theorems relating one such model to another.  But
+  from the logical perspective there is no practical distinction between these
+  &ldquo;kinds&rdquo; of theorems: they are just ordinary theorems about ACL2
+  functions.</p>
+
+  <h4>Proving Theorems about A Model</h4>
+
+  <p>To facilitate such proofs it is common to develop a book of rewrite (and
+  other kinds of) rules that do such things as normalize compositions of
+  functions used in the construction of states and clock expressions.  The
+  basic idea is to control the expansions of the step and run functions to
+  contain case explosions that would otherwise occur.  E.g., we usually
+  configure the ACL2 database so that</p>
+
+  <ul>
+
+  <li>the step function only expands on a state when it is possible to
+  determine what the &ldquo;next instruction&rdquo; is, rather than considering
+  all possible cases,</li>
+
+  <li>when the clock is constant (or, more precisely, when it is possible to
+  determine the explicit number of steps the clock will allow) the run function
+  is eliminated by expanding it to a composition of steps, and</li>
+
+  <li>when the clock is given by a composition of functions, as in
+  (+ 4 (loop-clk x y z)), a sequential composition rule is used to
+  break it into a composition of runs.</li>
+
+  </ul>
+
+  <p>Such a configuration of ACL2 generally makes it possible to prove certain
+  styles of theorems by following a well-understood methodology.</p>
+
+  <p>For example, to express a conjecture about the final state produced by a
+  program on the machine, one might write an implication whose hypothesis
+  characterizes an acceptable initial state and whose conclusion is an equality
+  whose left-hand side is a call of run on that state and a clock expression
+  that measures exactly how many steps it will take to reach the halt state or
+  return, and whose right-hand side is the symbolic expression of the correct
+  final state.  The two states just mentioned and the clock expression are
+  usually terms involving variables denoting values found in relevant locations
+  in the initial state.  A very strong total correctness theorem for a
+  factorial program might be something like &ldquo;if a natural number, @('n'),
+  is found in the memory location used for the program's input, and the state
+  is run @('(clk n)') steps, then the halt flag is set in the resulting state,
+  and @('(fact n)'), aka, <i>n!</i>, is found in the memory location used for
+  the program's return value &mdash; and the program counter is set to the
+  correct next instruction and no other part of the state has changed.&rdquo;
+  Alternatively, the theorem might only express some post-condition of the
+  final state.  The examples in @(see operational-semantics-1__simple-example)
+  will make this clearer.  The methodology for proving such theorems is
+  demonstrated there too.</p>
+
+  <p>The clock term, @('(clk n)') above, is a constructive expression of an
+  existential quantifier meaning &ldquo;there exists a clock that drives the
+  machine from the given initial state to the given final state.&rdquo; It is
+  also sometimes possible to prove that no such clock exists.  There are tools
+  that can, for simple programs, generate appropriate clock terms.  Of course,
+  the problem is undecideable.</p>
+
+  <p>Proofs of such theorems are most often done by induction, appealing to
+  similar lemmas about the effects of loops and subroutine calls.  But proofs
+  using inductive assertions and other mathematical techniques can be used.</p>
+
+  <p>The methodology described above generally limits the human to creative
+  contributions (like identifying invariants being maintained) and relegates to
+  ACL2 the tedious unwinding of possibly long chains of symbolic computation.
+  The previously mentioned documentation topic, @(see
+  operational-semantics-1__simple-example), carries out this entire program for
+  a simple machine, explicates the methodology, and uses it to prove a variety
+  of theorems.</p>
+
+  <p>Following this approach, users of Nqthm and ACL2 have modeled and verified
+  properties of many interesting machines.  More precise references to the work
+  mentioned below as well as models and proofs about other machines &mdash; and
+  other kinds of properties, like absence of deadlock &mdash; may be found in
+  @(see operational-semantics-2__other-examples).</p>
+
+  <h4>Advice</h4>
+
+  <p>After you are familiar with how to use ACL2 and have studied some of the
+  models described here, you are ready to try to develop your own models. We
+  offer three pieces of advice.</p>
+
+  <ul>
+
+  <li>Start small, e.g., model half a dozen routine instructions and master the
+  methodology so that you can &ldquo;automatically&rdquo; prove things about
+  simple programs.  Be sure that your proofs don't rely on the small size of
+  the model; in particular, don't repeatedly enumerate all possible
+  instructions.  Then add one new feature to the model and elaborate the
+  methodology.  You will often find there are multiple ways to represent the
+  state and state changes.  By starting small you will be able to iterate more
+  quickly to find the best way to formalize new features and cope with the
+  resulting complexity.</li>
+
+  <li>Consider the necessity of introducing multiple layers of abstraction.
+  For example your most realistic model might have finite bounds on all
+  resources, but it might be worth your while to &ldquo;duplicate&rdquo; the
+  model with unbounded resources but with meters that record the maximal extent
+  of the resources used.  Then prove a theorem relating the two models.</li>
+
+  <li>As usual with ACL2, think carefully about how the prover will use the
+  lemmas you prove.  They are not just expressing mathematical relations but are
+  used operationally to transform the formulas being proved.</li>
+
+  </ul>
+
+  <h3>Overview of the Remaining Topics on Operational Semantics</h3>
+
+  <p>Our discussion of the details of operational semantics in ACL2 is
+  structured as follows.</p>
+
+  <ul>
+
+  <li> @(see operational-semantics-1__simple-example) &mdash; carries out
+  the generic methodology to formalize and prove theorems about a very simple
+  machine, called M1.  M1 is a toy Java Virtual Machine (JVM) supporting just
+  stack-based arithmetic and branch instructions.  We highly recommend this
+  section, though users already familiar with this style of model may wish just
+  to skim it.</li>
+
+  <li>@(see operational-semantics-2__other-examples) &mdash; briefly
+  summarizes some other examples of operational models with citations to the
+  relevant source documents.  The topic has several goals.  One is to show how
+  we can handle programming features omitted from M1, e.g., subroutine call and
+  return, data types, threads, monitors, etc.  A second goal is to demonstrate
+  that the methodology allows really large complex models, like of the JVM or
+  the x86, that can be executed in ACL2 to emulate the machine in question and
+  as the basis of formal proofs about the machine.  A third goal is to point
+  out alternative ACL2 proof styles and tools that may be of use while trying
+  to prove theorems about state machines.</li>
+
+  <li>@(see operational-semantics-3__annotated-bibliography) &mdash; is just
+  what it says: an annotated bibliography.  The annotations you see in this
+  bibliography are akin simply to keywords.  But if you select a given citation
+  you'll generally see a discussion of how the work fits into the scheme of
+  things.  This section is an alternative way to browse through Nqthm and ACL2
+  examples of state machines, proofs, proof styles, and tools.</li>
+
+  <li> @(see operational-semantics-4__how-to-find-things) &mdash; the various
+  topics on operational semantics cite papers and files that are not part of
+  the ACL2 documentation; for example, in these topics you might see utterances
+  such as &ldquo;Nqthm source file @('prove.lisp')&rdquo;, &ldquo;ACL2 source
+  file @('rewrite.lisp')&rdquo;, &ldquo;Nqthm proof script
+  @('examples/hunt/fm8501.lisp') and &ldquo;ACL2 directory
+  &ldquo;@('books/models/jvm/m1/'); this brief topic explains how to
+  dereference these utterances.  </li>
+
+  <li> @(see operational-semantics-5__history-etc) &mdash; a discussion of
+  early work in the 1970s and 1980s by members of the Boyer-Moore
+  community to model state machines, and how that work influenced the evolution
+  of Nqthm and ACL2.</li>
+
+  </ul>
+
+  ")
+
+(defxdoc operational-semantics-1__simple-example
+  :parents (operational-semantics)
+  :short "M1: definition, rules, clocks, proofs"
+
+  :long "<p>In this topic we explain, by example, the most common way to
+  formalize a computing machine in ACL2 and then reason about it.  The machine
+  we have in mind will be called &ldquo;M1&rdquo; and is a &ldquo;toy&rdquo;
+  version of the Java Virtual Maching or &ldquo;JVM.&rdquo; More precisely, it
+  is a simple stack machine having a fixed number of registers, hereafter
+  called &ldquo;local variables,&rdquo; and an execute-only program memory.
+  There will only be eight instructions.  We will then write and verify a
+  factorial program for it and mention many more M1 programs that have been
+  verified &mdash; and which we urge you to solve as practice problems.
+  Despite its simplicity, M1 is equivalent to a Turing machine and, in fact,
+  that fact is among the theorems proved about M1.  Full references are given
+  when we survey the M1 results available.</p>
+
+  <p>(Historical Aside: What we're calling M1 was called ``Small-Machine'' in
+  Nqthm.  See @(see bib::bm96) and the methodology described here was
+  essentially fully developed before ACL2, Java, or the JVM came along.)</p>
+
+  <p>M1 does not support bytecode verification, method invocation (procedure
+  call) and return, data objects other than ACL2's unbounded numbers, threads,
+  exceptions, and many other features of modern machines and languages.
+  However, M1 is an excellent place to start when learning how to formalize a
+  machine and to prove theorems about it.  Furthermore, it is the starting
+  place of a series of machine models in the JVM family that we explore more
+  fully at the end of this documentation topic.</p>
+
+  <p>You can find the definition of M1 and all of the work done with it on the
+  ACL2 directory @('books/models/jvm/m1').  It might be easiest to fire up
+  your ACL2 system and do this.</p>
+
+  @({
+  (include-book \"models/jvm/m1/m1\" :dir :system)
+  (in-package \"M1\")
+  })
+
+  <p>Then, to see the definition of any symbol mentioned below you could just
+  issue the @(':')@(tsee pe) command.  For example, to see the definition of
+  the function @('execute-ILOAD'), aka @('execute-iload'), you could type
+  @(':pe execute-iload') to the interactive prompt in your ACL2 session.  This
+  doc topic will not exhibit all the functions but will give examples of each
+  &ldquo;kind&rdquo; of function involved in M1.</p>
+
+  <h3>Organization of This Topic</h3>
+
+  <ul>
+  <li>Setting up a Symbol Package</li>
+  <li>The Definition of M1</li>
+  <li>Programming M1</li>
+  <li>&ldquo;Teaching&rdquo; the Prover How to Control M1</li>
+  <ul>
+  <li>Arithmetic</li>
+  <li>Resolving &ldquo;Reads&rdquo; and &ldquo;Writes&rdquo;</li>
+  <li>Keeping &ldquo;Abstractions&rdquo; Abstract</li>
+  <li>Controlling Case Explosion due to Step</li>
+  <li>Clock Expressions</li>
+  <li>Expanding @('m1')</li>
+  </ul>
+  <li>Playing with Program *pi*: Execution, Symbolic Execution, and Proof of
+  Correctness</li>
+  <ul>
+  <li>The Clock for Factorial</li>
+  <li>Computing with M1</li>
+  <li>Symbolic Execution of M1 Code</li>
+  <li>Proving Theorems about M1 Programs</li>
+  </ul>
+  <li>More M1 Programs and Proofs</li>
+  <li>More Elaborate Models of the JVM: From M1 to M6</li>
+  </ul>
+
+  <h3>Setting up a Symbol Package</h3>
+
+  <p>All of the functions involved in the definition of M1 are in a new symbol
+  package named @('\"M1\"')</p>
+
+  @({
+  (defpkg \"M1\"
+    (set-difference-eq
+      (union-eq *acl2-exports*
+                *common-lisp-symbols-from-main-lisp-package*)
+      '(push pop pc program step nth update-nth nth-update-nth)))
+  })
+
+  <p>Note that we put all the usual ACL2 symbols and Common Lisp symbols in the
+  new package, except for a few whose names clash with names we want to define
+  for use in our model.</p>
+
+  <p>See the ACL2 file @('books/models/jvm/m1/m1.acl2').</p>
+
+  <h3>The Definition of M1</h3>
+
+  <p>See the ACL2 file @('books/models/jvm/m1/m1.lisp') for all of the functions mentioned
+  below.</p>
+
+  <p>The <i>state</i>, @('s'), of M1 will be given by a list of four elements, accessed with
+  the functions named below.</p>
+
+  <ul>
+  <li>@('pc') &mdash; a natural number giving the position in @('(program s)') of the
+   next instruction</li>
+
+  <li>@('locals') &mdash; a list containing the values, by position, of the
+  local variables of the program</li>
+
+  <li>@('stack') &mdash; a list representing a stack of intermediate results,
+  the @('car') being the topmost value </li>
+
+  <li>@('program') &mdash; a list of instructions (see below)</li>
+
+  </ul>
+
+  <p>States will be constructed with</p>
+
+  @({
+  (defun make-state (pc locals stack program)
+     (cons pc
+           (cons locals
+                 (cons stack
+                       (cons program
+                             nil)))))
+  })
+
+  <p>Thus, @('(make-state pc locals stack program)') is just @('(list pc locals
+  stack program)').  The state accessors just select the appropriate elements
+  of a state, e.g., @('(stack (make-state pc locals stack program))') is just
+  @('stack').</p>
+
+  <p>To &ldquo;abstractly&rdquo; treat a list as a stack we define</p>
+
+  @({
+ (defun push (x y) (cons x y))   ; return a new stack with x on top of stack y
+ (defun top (stack) (car stack)) ; return topmost element of stack
+ (defun pop (stack) (cdr stack)) ; remove topmost element and return that stack
+  })
+
+  <p>To access and update the elements of a list by 0-based positions we define</p>
+
+  @({
+ (defun nth (n list)
+   (if (zp n)
+       (car list)
+     (nth (- n 1) (cdr list))))
+
+ (defun update-nth (n v list)
+   (if (zp n)
+       (cons v (cdr list))
+     (cons (car list)
+           (update-nth (- n 1) v (cdr list)))))
+  })
+
+  <p>Thus, @('(nth 3 '(10 20 30 40 50))') is @('40') and @('(update-nth 3 45
+  '(10 20 30 40 50))') is @('(10 20 30 45 50)').</p>
+
+  <p>The eight M1 instructions are</p>
+  <ul>
+
+  <li>@('(ICONST i)') &mdash; push @('i') onto the stack and advance the pc by
+      1</li>
+
+  <li>@('(ILOAD i)') &mdash; push the value of the @('i')th local onto the
+      stack and advance the pc by 1</li>
+
+  <li>@('(ISTORE i)') &mdash; pop the topmost value from the stack, store it as
+      the value of the @('i')th local, and advance the pc by 1</li>
+
+  <li>@('(IADD)') &mdash; pop the topmost value, @('u'), and value just under
+       it, @('v'), from the stack, push @('(+ v u)') onto the stack, and
+       advance the pc by 1</li>
+
+  <li>@('(ISUB)') &mdash; pop the topmost value, @('u'), and value just under
+       it, @('v'), from the stack, push @('(- v u)') onto the stack, and
+       advance the pc by 1</li>
+
+  <li>@('(IMUL)') &mdash; pop the topmost value, @('u'), and value just under
+      it, @('v'), from the stack, push @('(* v u)') onto the stack, and
+      advance the pc by 1</li>
+
+  <li>@('(GOTO i)') &mdash; advance the pc by @('i')</li>
+
+  <li>@('(IFEQ i)') &mdash; pop the topmost value from the stack and if it is
+      0, then advance the pc by @('i') and otherwise advance the pc by 1</li>
+
+  </ul>
+
+  <p>In the case of both @('GOTO') and @('IFEQ'), the pc may be
+  &ldquo;advanced&rdquo; by a negative amount.</p>
+
+  <p>To access the components of an instruction we define</p>
+
+  @({
+  (defun op-code (inst) (nth 0 inst))  ; return the op-code of instruction inst
+  (defun arg1 (inst) (nth 1 inst))     ; return the operand of instruction inst
+  })
+
+  <p>For each instruction we define the function that takes the instruction and a state and
+  returns the next state.  For example,</p>
+
+  @({
+  (defun execute-ICONST (inst s)
+    (make-state (+ 1 (pc s))
+                (locals s)
+                (push (arg1 inst) (stack s))
+                (program s)))
+
+  (defun execute-ILOAD (inst s)
+    (make-state (+ 1 (pc s))
+                (locals s)
+                (push (nth (arg1 inst)
+                           (locals s))
+                      (stack s))
+                (program s)))
+
+  (defun execute-ISTORE (inst s)
+    (make-state (+ 1 (pc s))
+                (update-nth (arg1 inst) (top (stack s)) (locals s))
+                (pop (stack s))
+                (program s)))
+
+  (defun execute-IADD (inst s)
+    (declare (ignore inst))
+    (make-state (+ 1 (pc s))
+                (locals s)
+                (push (+ (top (pop (stack s)))
+                         (top (stack s)))
+                      (pop (pop (stack s))))
+                (program s)))
+
+  (defun execute-IFEQ (inst s)
+    (make-state (if (equal (top (stack s)) 0)
+                    (+ (arg1 inst) (pc s))
+                  (+ 1 (pc s)))
+                (locals s)
+                (pop (stack s))
+                (program s)))
+  })
+
+  <p>The other instructions are analogous.  Many users define an ACL2 macro,
+  typically named @('modify') that takes a machine state and some keyword
+  argument and builds a new state from the given one, with new values for the
+  keys specified with keywords.  So for example, in that idiom one might
+  replace the @('make-state') call in @('execute-IADD') by</p>
+
+  @({
+  (modify s :pc (+ 1 (pc s))
+            :stack (push (+ (top (pop (stack s)))
+                            (top (stack s)))
+                         (pop (pop (stack s)))))
+  })
+
+  <p>omitting any mention of @('locals') and @('program') because they are not
+  changed.  But for beginners we prefer the @('make-state') idiom because it is
+  more explicit.</p>
+
+  <p>We wrap all those &ldquo;execute&rdquo; functions up into a
+  big-switch.</p>
+
+  @({
+  (defun do-inst (inst s)         ; ``do'' instruction inst to state s
+    (if (equal (op-code inst) 'ILOAD)
+        (execute-ILOAD  inst s)
+        (if (equal (op-code inst) 'ICONST)
+            (execute-ICONST  inst s)
+            (if (equal (op-code inst) 'IADD)
+                (execute-IADD   inst s)
+                (if (equal (op-code inst) 'ISUB)
+                    (execute-ISUB   inst s)
+                    (if (equal (op-code inst) 'IMUL)
+                        (execute-IMUL   inst s)
+                        (if (equal (op-code inst) 'ISTORE)
+                            (execute-ISTORE  inst s)
+                            (if (equal (op-code inst) 'GOTO)
+                                (execute-GOTO   inst s)
+                                (if (equal (op-code inst) 'IFEQ)
+                                    (execute-IFEQ   inst s)
+                                    s)))))))))
+  })
+
+  <p>Observe that if @('do-inst') is called on an unknown instruction it returns
+  the state unchanged.  Thus @('(do-inst '(HALT) s)') is just @('s').</p>
+
+  <p>To access the next instruction in a state we define</p>
+
+  @({
+  (defun next-inst (s)
+    (nth (pc s) (program s)))
+  })
+
+  <p>In some of our theorems about @('m1') it is convenient to have a way to
+  say &ldquo;the machine has reached the @('(HALT)') instruction, i.e., the
+  @('pc') points to @('(HALT)'),&rdquo; so we define</p>
+
+  @({
+  (defun haltedp (s)
+    (equal (next-inst s) '(HALT)))
+  })
+
+  <p>To &ldquo;step&rdquo; the machine just once we define</p>
+
+  @({
+  (defun step (s)
+    (do-inst (next-inst s) s))
+  })
+
+  <p>Finally we define @('m1') to step @('n') times.</p>
+
+  @({
+  (defun m1 (s n)
+    (if (zp n)
+        s
+        (m1 (step s) (- n 1))))
+  })
+
+  <p>In a model like this one, where we control the length of the run by a
+  natural-number step count, we often call the second argument of @('m1') the
+  &ldquo;clock.&rdquo; One might think of it as counting &ldquo;cycles&rdquo;
+  but not &ldquo;run time.&rdquo; In some models the &ldquo;clock&rdquo; might
+  more reasonably called a &ldquo;schedule&rdquo; (specifying which process is
+  to step next), or &ldquo;inputs&rdquo; (specifying what signals appear on
+  certain pins in the next cycle), or &ldquo;oracle&rdquo; (specifying
+  &ldquo;random&rdquo; choices).</p>
+
+  <h3>Programming M1</h3>
+
+  <p>Below we exhibit an M1 program for computing factorial.  For convenience
+  we define a constant with this program as its value so we can refer to it.
+  We name the constant &ldquo;pi&rdquo; for &ldquo;program&rdquo;.  In the
+  comments to the right of the instructions we show the position (i.e., the
+  corresponding pc) of the instruction and pseudocode for the nearby snippet of
+  code.  In this program we will have just two local variables, called
+  &ldquo;@('n')&rdquo; and &ldquo;@('ans')&rdquo; in the pseudocode, in
+  positions 0 and 1 respectiely of the @('locals').  We'll compute @('(fact
+  n)') and leave the result in @('ans') and on top of the stack.</p>
+
+  @({
+  (defconst *pi*
+                  ; pc    pseudo-code
+    '((iconst 1)  ;  0                    [Block 1]
+      (istore 1)  ;  1    ans := 1;
+
+      (iload 0)   ;  2  loop:             [Block 2]
+      (ifeq 10)   ;  3    if n=0 then goto exit (i.e., pc+10);
+
+      (iload 1)   ;  4                    [Block 3]
+      (iload 0)   ;  5
+      (imul)      ;  6
+      (istore 1)  ;  7    ans := ans * n;
+
+      (iload 0)   ;  8                    [Block 4]
+      (iconst 1)  ;  9
+      (isub)      ; 10
+      (istore 0)  ; 11    n := n - 1;
+
+      (goto -10)  ; 12    goto loop;      [Block 5]
+
+      (iload 1)   ; 13 exit:              [Block 6]
+      (halt)))    ; 14   return ans;
+  })
+
+  <p>We've put blank lines in the display to break the program into blocks,
+  which we've numbered.  We'll describe each block's effect now, just to drive
+  home how @('m1') behaves.  We will use these blocks in some examples later.</p>
+
+  <p>Block 1 is the &ldquo;compilation&rdquo; of &ldquo;ans := 1;&rdquo; The
+  @('(iconst 1)') pushes @('1') onto the stack and the @('(istore 1)') pops it
+  off into local 1, which we're calling &ldquo;@('ans')&rdquo;.</p>
+
+  <p>We have labeled the top of Block 2 &ldquo;@('loop').&rdquo; Although it is
+  not syntactically obvious in this assembly-like code, subsequent code will
+  jump back to @('pc') 2.</p>
+
+  <p>Block 2 is the compilation of &ldquo;if @('n')=0, then goto exit,&rdquo;
+  where we labeled @('pc') 13 &ldquo;@('exit').&rdquo; In particular, the
+  @('(iload 0)') at @('pc') 2 pushes the value of &ldquo;@('n')&rdquo;) onto
+  the stack.  The instruction at @('pc') 3, @('(ifeq 10)'), pops it off and
+  tests it against @('0').  If @('n')=0, the @('ifeq') increments the @('pc')
+  by 10, transferring control to @('pc') 13.</p>
+
+  <p>Block 3 is the compilation of &ldquo;ans := ans * n;&rdquo;.  Walk that
+  code segment to understand.</p>
+
+  <p>Block 4 is the compilation of &ldquo;n := n - 1;&rdquo;.</p>
+
+  <p>Block 5 jumps back to @('pc') 2 (i.e., @('loop')).  In particular, the
+  @('(goto -10)') at @('pc') 12 adds -10 to the @('pc').</p>
+
+  <p>Block 6 is the compilation of &ldquo;return @('ans').&rdquo; It just
+  pushes local 1 onto the stack and halts, leaving the @('pc') at 14.</p>
+
+  <p>If all we wanted to do with @('m1') is run programs on it, we're done!
+  @('M1') as defined above can be run on concrete input to produce concrete
+  results.</p>
+
+  <p>For example, to compute factorial of 6 we would start with this state:</p>
+
+  @({
+  (make-state 0           ; pc - first instruction
+              (list 6 0)  ; locals - n = 6, ans = 0
+              nil         ; stack - empty
+              *pi*)       ; program
+  })
+
+  <p>and run it with @('m1').  Of course, we need to specify the
+  &ldquo;clock,&rdquo; the number of steps we want to take.  In the absence of
+  any better idea, we could just try 1000 and see if the final state is at
+  @('pc') 14, which is the @('(HALT)').</p>
+
+  @({
+  M1 !>(m1 (make-state 0          ; pc
+                       (list 6 0) ; locals
+                       nil        ; stack
+                       *pi*)      ; program
+           1000)
+  (14 (0 720)                     ; pc and locals
+      (720)                       ; stack
+      ((ICONST 1)                 ; program
+       (ISTORE 1)
+       (ILOAD 0)
+       (IFEQ 10)
+       (ILOAD 1)
+       (ILOAD 0)
+       (IMUL)
+       (ISTORE 1)
+       (ILOAD 0)
+       (ICONST 1)
+       (ISUB)
+       (ISTORE 0)
+       (GOTO -10)
+       (ILOAD 1)
+       (HALT)))
+    })
+
+  <p>Notice that the machine reached the @('(HALT)') at @('pc') 14 and @('720')
+  is on top of the stack.  We also may note that local 0 has been zeroed out
+  and local 1 contains 720.</p>
+
+  <p>We will deal with the clock situation more carefully later.  It should be
+  noted that our definition of @('m1') actually executes 1000 steps if that's
+  what the clock says.  In particular, the @('HALT') instruction is a no-op,
+  making no state change, and @('m1') just continues to bang away while sitting
+  on that instruction until the clock runs out.  We could, of course, define
+  @('m1') differently, so as to return @('s') whenever when @('(step s)') =
+  @('s').  But we'll keep @('m1') simple.</p>
+
+  <h3>&ldquo;Teaching&rdquo; the Prover How to Control M1</h3>
+
+  <p>We'll now turn our attention to configuring ACL2 to prove things about M1
+  programs.  This basically consists of proving lemmas to be used as
+  @(':')@('rewrite') rules and, sometimes, disabling functions so that their
+  calls don't expand automatically.  We'll explain the motivations of our
+  configuration as we go, but true understanding of the motivation won't come
+  until we prove an M1 program correct.  Be patient.</p>
+
+  <p>This section only exhibits some of the rules we introduce.  See the ACL2
+  file @('books/models/jvm/m1/m1.lisp') for all of the events.  By the way, the
+  sequence in which these definitions and lemmas appear below is not identical
+  to the sequence in the @('m1.lisp') file, but they're all there.  In telling
+  the story we just found the sequence below a little more natural.</p>
+
+  <h4>Arithmetic</h4>
+
+  <p>To be able to reason about simple arithmetic, we include one of the
+  standard arithmetic books.</p>
+
+  @({
+  (include-book \"arithmetic-5/top\" :dir :system)
+  })
+
+  <h4>Resolving &ldquo;Reads&rdquo; and &ldquo;Writes&rdquo;</h4>
+
+  <p>The local variables are read and written positionally using @('nth') and
+  @('update-nth').  It is helpful to have the following lemmas to resolve reads
+  after writes and eliminate shadowed writes.  (These lemmas are not necessary
+  in most of our @('m1') proofs because the locals are generally expressed as
+  &ldquo;semi-concrete&rdquo; list (i.e., a @('cons') tree with symbolic
+  expressions in the @('car') positions) of a fixed length, like @('(list a b
+  c)') and reads and writes always address an explicitly specified position,
+  like @('2'), so even after a sequence of @('m1') instructions storing values,
+  the symbolic expression of the locals will be a fixed length semi-concrete
+  list.  For example @('(update-nth 2 (+ u v) (list a b c d))') is
+  automatically rewritten to @('(list a b (+ u v) d)') just by the definition
+  of @('update-nth').  But in more general situations, where the position of
+  the local variable is not an explicit constant or the symbolic expression of
+  the current values of the locals in the state is not an explicit @('cons')
+  tree, the lemmas below are crucial.</p>
+
+  @({
+  (defthm nth-add1!
+    (implies (natp n)
+             (equal (nth (+ 1 n) list)
+                    (nth n (cdr list)))))
+
+  (defthm nth-update-nth
+    (implies (and (natp i) (natp j))
+             (equal (nth i (update-nth j v list))
+                    (if (equal i j)
+                        v
+                      (nth i list)))))
+
+  (defthm update-nth-update-nth-1
+    (implies (and (natp i) (natp j) (not (equal i j)))
+             (equal (update-nth i v (update-nth j w list))
+                    (update-nth j w (update-nth i v list))))
+    :rule-classes ((:rewrite :loop-stopper ((i j update-nth)))))
+
+  (defthm update-nth-update-nth-2
+    (equal (update-nth i v (update-nth i w list))
+           (update-nth i v list)))
+  })
+
+  <h4>Keeping &ldquo;Abstractions&rdquo; Abstract</h4>
+
+  <p>To allow us to reason about &ldquo;abstract&rdquo; structures represented
+  by @('cons')es, without expanding their definitions, we prove such lemmas
+  as</p>
+
+  @({
+  (defthm stacks
+    (and (equal (top (push x s)) x)
+         (equal (pop (push x s)) s)
+
+  ; These next two are needed because some push expressions evaluate to
+  ; list constants, e.g., (push 1 (push 2 nil)) becomes '(1 2) and '(1
+  ; 2) pattern-matches with (cons x s) but not with (push x s).
+
+         (equal (top (cons x s)) x)
+         (equal (pop (cons x s)) s)))
+  })
+
+  <p>We prove the analogous rules about state accessors and @('make-state'),
+  e.g., @('(equal (pc (make-state pc locals stack program)) pc)').
+  Then we disable all the defined functions just mentioned so they never
+  expand.</p>
+
+  <h4>Controlling Case Explosion due to Step</h4>
+
+  <p>Next we introduce a crucial rule for controlling the expansion of
+  @('step').  The term @('(step s)') can always be expanded into that
+  big-switch that considers all the possible @('op-code')s.  That is generally
+  a disaster.  Think of what would happen if @('(step (step s))') were
+  automatically expanded when we have no information about @('s'): the inner
+  @('step') would introduce a 9-way case split and the outer one would turn
+  that into an 81-way case split considering all of the possiblities for the
+  first two instructions.  We want to expand @('step') only when we know
+  something definite about the instruction that is to be executed.  So we prove
+  this logically trivial theorem.</p>
+
+  @({
+  (defthm step-opener
+    (implies (consp (next-inst s))
+             (equal (step s)
+                    (do-inst (next-inst s) s))))
+  })
+
+  <p>The conclusion is just the definition of @('step')!  So the hypothesis is
+  completely unnecessary from a logical perspective.  But operationally, if
+  this rule has been proved and then @('step') is disabled, the rewriter will
+  expand @('(step s)') only if @('(next-inst s)') can be proved to satisfy
+  @('consp').  The most common way for @('(next-inst s)') to be a @('consp') is
+  when both the @('pc') and the @('program') in state @('s') are quoted
+  constants and @('program') is a well-formed program.  But we don't want to
+  require exactly that because it is too restrictive.  For example, in machine
+  models supporting subroutine calls, the typical correctness theorem for a
+  subroutine says very little about the entire ``program space'' but deals with
+  an @('invoke')- or @('jsr')-type instruction to a place where the code for
+  the subroutine is found.  (If you inspect
+  @('books/models/jvm/m2/examples.lisp') and look at @('example4') you will see
+  such a correctness theorem.)  As models get more complex you may have to
+  adjust @('step-opener') accordingly, though this simple version is
+  surprisingly effective.</p>
+
+  <p>Having established @('step-opener'), we disable @('step') so that the only
+  way it ever expands is when the @('next-inst') is provably a @('consp').</p>
+
+  @({
+  (in-theory (disable step))
+  })
+
+  <p><b>Symbolic Execution Example 1</b></p>
+
+  <p>To illustrate the rules just described, consider the symbolic expression</p>
+
+  @({
+  (step
+    (step
+      (make-state 0
+                  (list n ans)
+                  stack
+                  *pi*    ; '((ICONST 1)  ;  0             [Block 1]
+                          ;   (ISTORE 1)  ;  1   ans := 1;
+                          ;   ...         ;  2
+                          ;   ...)        ; ...
+                  )))
+  })
+
+  <p>Note that the outer @('step') cannot be expanded because @('step') is disabled
+  and we can't determine the @('next-instr') of the (unsimplified) inner @('step').</p>
+
+  <p>But @('step-opener') fires on the inner @('step') because @('next-inst')
+  of the above @('make-state') just rewrites to @(''(ICONST 1)') using the
+  definitions of @('pc'), @('program'), and @('nth').  So the term above is
+  rewritten to</p>
+
+  @({
+  (step
+    (make-state 1
+                (list n ans)
+                (push 1 stack)
+                *pi*    ; '((ICONST 1)    ;  0             [Block 1]
+                        ;   (ISTORE 1)    ;  1   ans := 1;
+                        ;   ...           ;  2
+                        ;  ...)           ; ...
+                ))
+  })
+
+  <p>using @('step-opener'), @('next-inst'), @('do-inst'), @('execute-iconst'),
+  @('nth'), and @('update-nth').  @('Execute-iconst') just advanced the @('pc')
+  from 0 to 1 and symbolically pushed a @('1') into the @('stack').</p>
+
+  <p>But now @('step-opener') can fire on that outer @('step') because we see
+  that the @('next-inst') of this state is @('(ISTORE 1)').  So the term rewrites
+  to</p>
+
+  @({
+  (make-state 2
+              (list n 1)
+              stack
+              *pi*    ; '((ICONST 1)      ;  0             [Block 1]
+                      ;   (ISTORE 1)      ;  1   ans := 1;
+                      ;   ...             ;  2
+                      ;   ...)            ; ...
+              )
+  })
+
+  <p>We've just symbolically executed the first two instructions of @('*pi*')
+  on a symbolic state containing two unspecified locals and an unspecified
+  stack.  This simplification is completely automatic.</p>
+
+  <p><b>Symbolic Execution Example 2</b></p>
+
+  <p>We'll show one more symbolic execution of a snippet from program
+  @('*pi*').  This time, let's start at top of the loop in @('*pi*'), @('pc')
+  2, and run down through the @('(GOTO -10)') where the program jumps back to
+  the loop.  That takes 11 @('step')s.  Furthermore, assume that @('n') (local
+  0) is a non-0 natural number and @('ans') (local 1) is a natural number.</p>
+
+  @({
+  (m1 (make-state 2 (list n ans) stack *pi*) 11)
+  =
+  (step
+   (step
+    (step
+     (step
+      (step
+       (step
+        (step
+         (step
+          (step
+           (step
+            (step
+             (make-state 2
+                         (list n ans)
+                         stack
+                         *pi*    ; '(...        ;  ...
+                                 ;   (ILOAD 0)  ;  2 loop: [Block 2]
+                                 ;   (IFEQ 10)  ;  3
+                                 ;   (ILOAD 1)  ;  4       [Block 3]
+                                 ;   (ILOAD 0)  ;  5
+                                 ;   (IMUL)     ;  6
+                                 ;   (ISTORE 1) ;  7
+                                 ;   (ILOAD 0)  ;  8       [Block 4]
+                                 ;   (ICONST 1) ;  9
+                                 ;   (ISUB)     ; 10
+                                 ;   (ISTORE 0) ; 11
+                                 ;   (GOTO -10) ; 12       [Block 5]
+                                 ;   ...)
+                         ))))))))))))
+  })
+
+  <p>(Exceedingly deep nests of @('step')s can cause stack overflow in the ACL2
+  rewriter.  We discuss this problem the presentation of the @('m1-opener')
+  lemma below.)</p>
+
+  <p>We won't show the step-by-step results of this symbolic execution (thank
+  goodness!), but the first two instructions just move the @('pc') from 2 to 4
+  because @('n') is not 0.  The next four replace @('ans') by @('(* ans n)'),
+  the next four replace @('n') by @('(- n 1)'), and the last @('step') sets the
+  @('pc') to the top of the loop at @('pc') 2 again.  Despite the pushing and
+  popping on the stack, by the time we get back to the top of the loop, the
+  stack is unchanged.  The result is</p>
+
+  @({
+  (make-state 2
+              (list (- n 1) (* ans n))
+              stack
+              *pi*               ; '(...        ;  ...
+                                 ;   (ILOAD 0)  ;  2 loop: [Block 2]
+                                 ;   (IFEQ 10)  ;  3
+                                 ;   (ILOAD 1)  ;  4       [Block 3]
+                                 ;   (ILOAD 0)  ;  5
+                                 ;   (IMUL)     ;  6
+                                 ;   (ISTORE 1) ;  7
+                                 ;   (ILOAD 0)  ;  8       [Block 4]
+                                 ;   (ICONST 1) ;  9
+                                 ;   (ISUB)     ; 10
+                                 ;   (ISTORE 0) ; 11
+                                 ;   (GOTO -10) ; 12       [Block 5]
+                                 ;   ...)
+              )
+  })
+
+  <p>We'll see this expression again later.  What's important is that with the
+  @('step') rules we have in place, ACL2 will automatically do symbolic
+  evaluation of concrete code sequences.</p>
+
+  <h4>Clock Expressions</h4>
+
+  <p>Many (most?) of our theorems about specific M1 programs will involve a
+  clock expression which specifies exactly how many steps we want the machine
+  to take.  It is not as hard as you might think to create functions that
+  compute this &mdash; provided you can prove that the clock function
+  terminates, which is of course generally undecideable but frequently trivial.
+  And, proofs via clock functions are not only equivalent to proofs by
+  inductive assertions but that has been proved with ACL2 and tools are
+  provided to convert back and forth between the two proof styles (see @(see
+  bib::rm04)).</p>
+
+  <p>Clock functions for @('m1') are recursive functions defined that use
+  arithmetic expressions to compute the lengths of straightline code segments.
+  However, a key part of our strategy for controlling proofs is to use the
+  structure of the clock function and its arithmetic expressions to decompose
+  &ldquo;long&rdquo; runs of @('m1') into compositions of shorter runs.  In
+  order to do that, we must prevent the prover from rearranging our clocks!
+  That is, @('(m1 s (+ i j))') will decompose differently than @('(m1 s (+ j
+  i))'), but the arithmetic library might rearrange the clock, e.g., by using
+  the commutativity of addition.  So instead of using @('+') to express the the
+  addition of two clocks we define @('clk+') to be @('+'), but we'll disable
+  its definition to protect clocks from arithmetic reasoning.  We will arrange
+  for @('clk+') to take more than just two arguments and will reveal that it is
+  associative.</p>
+
+  @({
+  (defun binary-clk+ (i j)
+    (+ (nfix i) (nfix j)))
+
+  (defthm clk+-associative
+    (equal (binary-clk+ (binary-clk+ i j) k)
+           (binary-clk+ i (binary-clk+ j k))))
+
+  (defmacro clk+ (&rest args)
+    (if (endp args)
+        0
+        (if (endp (cdr args))
+            (car args)
+            `(binary-clk+ ,(car args)
+                           (clk+ ,@(cdr args))))))
+  })
+
+  <p>Thus @('(clk+ a b c)') is just an abbreviation for @('(binary-clk+
+  a (binary-clk+ b c))'), and the prover will rewrite @('(clk+ (clk+ a b) (clk+
+  d e))') to the @('binary-clk+') version of @('(clk+ a b c d)').</p>
+
+  <p>The key fact about clocks and @('m1') is captured in the following rewrite
+  rule, which is sometimes called the &ldquo;sequential execution&rdquo; rule
+  or the &ldquo;semi-colon rule.&rdquo;</p>
+
+  @({
+  (defthm m1-clk+
+    (equal (m1 s (clk+ i j))
+           (m1 (m1 s i) j)))
+  })
+
+  <p>Having proved this, we disable @('binary-clk+') so that we have complete
+  control over how long runs decompose.</p>
+
+  <h4>Expanding @('m1')</h4>
+
+  <p>Of course, @('m1') must eventually expand.  The following rule effectively
+  makes the prover open @('m1') only when the clock is a natural number
+  constant.  (We say &ldquo;effectively&rdquo; because we assume that all clock
+  expressions are phrased in terms of @('clk+').)  The rule below exploits the
+  fact that the prover sees @('7'), for example, as @('(+ 1 6)').</p>
+
+  @({
+  (defthm m1-opener
+    (and (equal (m1 s 0) s)
+         (implies (natp i)
+                  (equal (m1 s (+ 1 i))
+                         (m1 (step s) i)))))
+  })
+
+  <p>We then disable @('m1').</p>
+
+  <p><b>Obscure Remark</b>: Experiments with the @('codewalker') tool (see the
+  ACL2 book @('books/projects/codewalker/codewalker.lisp'), specifically the
+  discussion of &ldquo;snorkling&rdquo;) suggest that nests of @('step')s more
+  than several hundred deep (depending on the complexity of @('step')) can
+  cause stack overflow.  One way to handle that is to modify @('m1-opener'),
+  above, using a @(tsee syntaxp) hypothesis so that it doesn't fire if @('i')
+  is, say, larger than 200.  Then prove a variant for &ldquo;large&rdquo;
+  natural numbers, @('i'), that transforms @('(m1 s i)') into p @('(m1 (m1 s
+  200) (- i 200))'), using @(tsee syntaxp) to limit the application to @('s')
+  terms that are <i>not</i> calls of either @('m1') or @('step'), and @('i')
+  terms that are quoted natural numbers.  This variant can be derived from
+  @('m1-clk+').  (Note: a hint is necessary to keep our other rules from
+  interfering with the obvious proof.)  The effect of this more sophisticated
+  variant of @('m1-opener') is that an expression like @('(m1 s 900)') is
+  rewritten first to @('(m1 (m1 s 200) 700)'); the sophisticated rule won't
+  fire on the outer @('m1') because it is applied to an @('m1') term, but the
+  conventional @('m1-opener') will fire on the inner @('(m1 s 200)') because of
+  the small clock.  That will reduce the inner @('m1') to a semi-explicit
+  state, and then another 200 steps will be taken from the 700, etc.  We do not
+  recommend doing this until you start to get stack overflows, but we point out
+  the possibility to highlight the tricks you can use to control
+  expansions.</p>
+
+  <p>But for the rest of this discussion we assume we just have the
+  conventional @('m1-opener'). The rules shown above have the effect of
+  rewriting the following @('m1') call successively into the last term
+  below.</p>
+
+  @({
+  (m1 (make-state 0 (list n ans) stack *pi*)
+      (clk+ 2 (loop-clk n)))
+
+  =                             {by m1-clk+}
+
+  (m1 (m1 (make-state 0 (list n ans) stack *pi*)
+          2)
+      (loop-clk n))
+
+  =                             {by m1-opener}
+
+  (m1 (step (step (make-state 0 (list n ans) stack *pi*)))
+      (loop-clk n))
+
+  =                             {by step-opener}
+
+  (m1 (make-state 2
+                  (list n 1)
+                  stack
+                  *pi*)
+      (loop-clk n))
+  })
+
+  <p>The last simplification above is just the symbolic evaluation of the first
+  two instructions of @('*pi*'), as we shown Symbolic Execution Example 1.</p>
+
+  <p>We'll see the final @('m1') expression again later, when we prove
+  @('*pi*') computes the factorial function.</p>
+
+  <h3>Playing with Program *pi*: Execution, Symbolic Execution, and Proof of
+  Correctness</h3>
+
+  <p>In this section use program @('*pi*') to compute factorial on a concrete
+  state, essentially using our formal model as a prototype of the envisioned
+  machine.  We show two examples, @('n') = 6 and @('n') = 1000.  The latter
+  requires several thousand @('m1') steps and allows us to time the execution
+  speed of @('m1').  We then show the theorem prover doing symbolic execution
+  of a snippet of @('*pi*') to help us &ldquo;reverse engineer&rdquo; the loop.
+  Finally, we prove that when program @('*pi*') is run on a natural number
+  @('n') in local 0, it halts and leaves @('(fact n)') on top of the stack,
+  where @('fact') is defined in the classic recursive way.  In fact, we prove
+  something stronger and explain why.</p>
+
+  <h4>The Clock for Factorial</h4>
+
+  <p>If we start at @('pc') 0, how many steps must we take to reach the
+  @('halt')?  We take 2 steps to reach the instruction labeled @('loop') at
+  @('pc') 2.  We'll then travel around the loop some &ldquo;unknown&rdquo;
+  number of times as a function of @('n') before exiting and reaching the
+  @('HALT').  (Technically the iteration might also depend on @('ans') but in
+  this case it does not.)  Let @('(loop-clk n)') be the number of steps we take
+  from @('pc') 2 to the @('HALT').  After defining @('loop-clk') we can define
+  the clock for @('*pi*') to be</p>
+
+  @({
+  (defun clk (n)
+    (clk+ 2
+          (loop-clk n)))
+  })
+
+  <p>To derive a definition for @('loop-clk') just walk the code starting at
+  @('pc') 2.  The code tests whether @('n') is zero and if so jump to 13 where
+  it puts @('ans') on the stack and halt.  Thus, if @('n') is zero, we take 3
+  steps.  If @('n') is not zero (which takes 2 steps to determine), we multiply
+  @('n') into @('ans') (at @('pc')s 4-7, which takes 4 steps), decrement
+  @('n') (at @('pc')s 8-11, which takes 4 steps), and then at @('pc') 12 the
+  code jumps back to loop (which takes 1 step).  So after a total of 2+4+4+1 =
+  11 steps we're back at @('pc') 2 having decremented @('n') by 1.  So here is
+  how many steps we take from @('pc') 2 to the @('halt'):</p>
+
+  @({
+  (defun loop-clk (n)
+    (if (zp n)
+        3
+        (clk+ 11
+              (loop-clk (- n 1)))))
+  })
+
+  <p>Question: how many steps does it take to compute @('6!')?  Answer: @('(clk
+  6)') = 71.</p>
+
+  <h4>Computing with M1</h4>
+
+  <p>If we fire up ACL2, include the @('m1') book, select the @('\"M1\"')
+  symbol package, and define @('*pi*'), @('loop-clk'), and @('clk') as shown
+  above, we can use @('m1') to compute various factorials.</p>
+
+  @({
+  M1 !>(m1 (make-state 0           ; pc
+                       (list 6 0)  ; locals n = 6 and ans = 0
+                       nil         ; stack (empty)
+                       *pi*)       ; program
+           (clk 6))
+  (14 (0 720)
+      (720)
+      ((ICONST 1)
+       (ISTORE 1)
+       (ILOAD 0)
+       (IFEQ 10)
+       (ILOAD 1)
+       (ILOAD 0)
+       (IMUL)
+       (ISTORE 1)
+       (ILOAD 0)
+       (ICONST 1)
+       (ISUB)
+       (ISTORE 0)
+       (GOTO -10)
+       (ILOAD 1)
+       (HALT)))
+  })
+
+  <p>Observe the final state: the @('pc') is @('14'), which points to the
+  @('(HALT)').  Local 0, i.e., @('n'), has been zeroed out but local 1, i.e.,
+  @('ans'), contains @('720').  Furthermore, @('720') has been pushed onto the
+  stack.  The @('program'), of course, is unchanged.  And by the way, 720 =
+  6*5*4*3*2*1.</p>
+
+  <p>Of course, we can define factorial recursively in ACL2 and check the
+  @('m1') computation.</p>
+
+  @({
+  M1 !>(defun fact (n)
+         (if (zp n)
+             1
+             (* n (fact (- n 1)))))
+
+  The admission of FACT is trivial, ...
+  ...
+
+  M1 !>(fact 6)
+  720
+  })
+
+  <p>We can compute larger factorials with @('m1'), of course.  Here's how we
+  compute @('1000!') with @('m1').</p>
+
+  @({
+  M1 !>(m1 (make-state 0 (list 1000 0) nil *pi*) (clk 1000))
+  })
+
+  <p>It takes SBCL about 0.02 seconds to compute the answer.  The answer is a
+  natural number with 2,568 decimal digits, so we won't show it here, but you
+  can try it on your own.  @('(Clk 1000)') is 11,005, so during this particular
+  computation, ACL2 was executing 550,250 @('m1') instructures per second.  Our
+  model would run faster if we used a single-thread object (see @('stobj')) to
+  hold the state and faster still if we verified the guards of @('m1').  We
+  point to discussions and examples of these ideas at the end of this
+  topic.</p>
+
+  <h4>Symbolic Execution of M1 Code</h4>
+
+  <p>We can use the theorem prover to help us reverse engineer code.  For
+  example, what does the loop in @('*pi*') do?  We actually posed the question
+  in Symbolic Execution Example 2 above, i.e., what is @('(m1 (make-state
+  2 (list n ans) stack *pi*) 11)') when @('n') and @('ans') are natural numbers
+  and @('n') is not @('0').  We can pose a (non-)theorem to the prover to see.
+  The lefthand side of the equality just simplifies to the nest of 11
+  @('step')s from Symbolic Execution Example 2.  The righthand side, below, is
+  the variable @('???'), so this formula is obviously not a theorem, but the
+  prover will simplify the formula and print the checkpoint.</p>
+
+  @({
+  (thm (implies (and (natp n)
+                     (< 0 n)
+                     (natp ans))
+                (equal (m1 (make-state 2 (list n ans) stack *pi*) 11)
+                       ???)))
+  })
+
+  <p>Of course, the proof attempt fails.  But if you look at the checkpoint you
+  should recognize the simplified expression as being from Example 2.</p>
+
+  @({
+  Goal''
+  (IMPLIES (AND (INTEGERP N)
+                (<= 0 N)
+                (< 0 N)
+                (INTEGERP ANS)
+                (<= 0 ANS))
+           (EQUAL (MAKE-STATE 2 (LIST (+ -1 N) (* ANS N))
+                              STACK
+                              '((ICONST 1)
+                                (ISTORE 1)
+                                (ILOAD 0)
+                                (IFEQ 10)
+                                (ILOAD 1)
+                                (ILOAD 0)
+                                (IMUL)
+                                (ISTORE 1)
+                                (ILOAD 0)
+                                (ICONST 1)
+                                (ISUB)
+                                (ISTORE 0)
+                                (GOTO -10)
+                                (ILOAD 1)
+                                (HALT)))
+                  ???))
+  })
+
+  <h4>Proving Theorems about M1 Programs</h4>
+
+  <p>In this section we prove that @('*pi*') computes factorial.</p>
+
+  <p><b>Step 0</b>: Define the specification.  We've already done that:
+  @('*pi*') allegedly computes @('(fact n)') when @('n') is a natural number.
+  This is just shorthand for the more precise understanding that if we start at
+  @('pc') 0 with a natural, @('n'), in local 0 and run program @('*pi*')
+  @('(clk n)') steps, the final state has @('pc') 14 (meaning execution reached
+  the @('(HALT)')), local 0 has been zeroed, local 1 contains @('(fact n)'),
+  and @('(fact n)') is on top of the otherwise unchanged initial
+  @('stack').</p>
+
+  <p><b>Step 1</b>: We start by defining an ACL2 function that &ldquo;does what
+  the loop does.&rdquo;  We sometimes call this the <i>semantic function</i>
+  corresponding to the program.</p>
+
+  @({
+  (defun helper (n ans)
+    (if (zp n)
+        ans
+        (helper (- n 1) (* ans n))))
+  })
+
+  <p><b>Step 2</b>: Prove that the loop does what we said it would do.</p>
+
+  @({
+  (defthm loop-correct
+    (implies (and (natp n)
+                  (natp ans))
+             (equal (m1 (make-state 2
+                                    (list n ans)
+                                    stack
+                                    *pi*)
+                        (loop-clk n))
+                    (make-state 14
+                                (list 0 (helper n ans))
+                                (push (helper n ans) stack)
+                                *pi*))))
+  })
+
+  <p>This proof is completely &ldquo;automatic&rdquo; &mdash; but only because
+  we stated the theorem exactly right, in terms of @('helper') to
+  &ldquo;explain&rdquo; what the loop is doing with the second local, @('ans').
+  Once you get used to this style of proof, Step 2 is not really very creative:
+  it just says what the program does operationally, using tail recursion in
+  place of iteration.  Of course, recursion is ACL2's bread and butter.</p>
+
+  <p>The proof of @('loop-correct') is by the induction as suggested by
+  @('(helper n ans)').  The induction scheme is</p>
+
+  @({
+  (AND (IMPLIES (AND (NOT (ZP N))
+                     (:P (* ANS N) (+ -1 N) STACK))
+                (:P ANS N STACK))
+     (IMPLIES (ZP N) (:P ANS N STACK)))
+  })
+
+  <p>If you work it out you'll see that in the induction conclusion
+  @('(loop-clk n)') expands to @('(clk+ 11 (loop-clk (- n 1)))'), and then the
+  machinery we've been talking about reduces the induction conclusion to the
+  induction hypothesis.  Do it for yourself.  You will see the simplifications
+  done earlier in Symbolic Execution Example 2.  (There is another basic case
+  we haven't explicitly discussed: what happens when we're at the top of the
+  loop but @('n') is @('0')?  That case is handled by symbolic execution:
+  @('(loop-clk n)') is 3, the @('IFEQ') jumps to the exit to push @('ans') onto
+  the stack and advance the @('pc') to the @('(HALT)') at 14.)  </p>
+
+  <p><b>Step 3</b>:  Relate the @('helper') to the specification.</p>
+
+  @({
+  (defthm helper-is-fact
+    (implies (and (natp n)
+                  (natp ans))
+             (equal (helper n ans)
+                    (* ans (fact n)))))
+  })
+
+  <p>This is proved &ldquo;automatically.&rdquo;</p>
+
+  <p>Generally speaking, Step 3 is the most creative step because it requires
+  explaining how the &ldquo;iterative&rdquo; (tail-recursive) accumulation of
+  the answer relates to the recursive computation of the answer.</p>
+
+  <p><b>Step 4</b>: Put it all together in a statement of the total correctness
+  of @('*pi*').</p>
+
+  @({
+  (defthm correctness-of-*pi*
+    (implies (natp n)
+             (equal (m1 (make-state 0
+                                    (list n ans)
+                                    stack
+                                    *pi*)
+                        (clk n))
+                    (make-state 14
+                                (list 0 (fact n))
+                                (push (fact n) stack)
+                                *pi*))))
+  })
+
+  <p>This is proved &ldquo;automatically&rdquo; because of our setup.</p>
+
+  <p>@('(Clk n)') expands to @('(clk+ 2 (loop-clk n))') and the crucial
+  @('m1-clk+') (&ldquo;sequential execution&rdquo;) rule shows it is equivalent
+  to</p>
+
+  @({
+  (m1 (step (step (make-state 0
+                              (list n ans)
+                              stack
+                              *pi*)))
+      (loop-clk n))
+  })
+
+  <p>But then the @('step') rules can reduce that to:</p>
+
+  @({
+  (m1 (make-state 2
+                  (list n 1)
+                  stack
+                  *pi*)
+      (loop-clk n))
+  })
+
+  <p>at which point the @('loop-correct') lemma can fire and produce</p>
+
+  @({
+  (make-state 14
+              (list 0 (helper n 1))
+              (push (helper n 1) stack)
+              *pi*)
+  })
+
+  <p>and then @('(helper n 1)') is rewritten @('(fact n)') by @('helper-is-fact') and
+  arithmetic, reducing the lefthand side to the righthand side.  (The above description
+  is inaccurate only in the sequencing of the various rewrites.)  Q.E.D.</p>
+
+  <p>Of course, from @('correctness-of-*pi*') we can easily derive weaker but
+  simpler results to &ldquo;advertise.&rdquo;</p>
+
+  @({
+  (defthm corollary-of-correctness-of-*pi*
+    (implies (and (natp n)
+                  (equal s_init (make-state 0 (list n ans) stack *pi*))
+                  (equal s_fin (m1 s_init (clk n))))
+             (and (equal (top (stack s_fin)) (fact n))
+                  (equal (next-inst s_fin) '(HALT)))))
+
+  })
+
+  <p>Viewing these results from a higher level, one might argue that the
+  corollary above is a &ldquo;better&rdquo; theorem than
+  @('correctness-of-*pi*').  It just says, simply, if you have an initial state
+  poised to execute @('*pi*') on @('n') and you run it @('(clk n)') steps to
+  some &ldquo;final&rdquo; state, that final state has @('(fact n)') on top of
+  the stack and is halted.  The full correctness result we proved says some
+  &ldquo;irrelevant&rdquo; things: in the final state, @('n') is 0, @('(fact
+  n)') is also in local 1, and the original stack is intact under the
+  answer.</p>
+
+  <p>But those facts are not irrelevant!  They (or something like them) are
+  mathematically necessary for the inductive proof.  Remember, inductive proofs
+  only work on sufficiently strong theorems.  Furthermore, we really must care
+  about these other issues even from the high level perspective.  If, for
+  example, our program is just a subroutine of a larger system (on a machine
+  that supports procedure call and return) we <i>really need to know</i> that
+  the stack is not disturbed since the results of prior computations may be
+  sitting in it for use for future computations.  In a setting where we're
+  concerned about privacy and security (in a machine with addressable memory)
+  <i>we really need to know</i> that information hasn't been moved from private
+  space to public space.  In a setting where programs are in writable memory,
+  <i>we really need to know</i> that our program hasn't been overwritten by
+  some subroutine.</p>
+
+  <h3>More M1 Programs and Proofs</h3>
+
+  <p>The proofs described above can be seen in the ACL2 book
+  @('books/models/jvm/m1/fact.lisp').  If the proof script here is taken as a
+  template for all such proofs you'll find it a bit &ldquo;fragile&rdquo; in
+  the sense that lemmas proved in one step of the template may get in the way
+  of proofs in subsequent steps.  That is generally dealt with by disabling
+  certain lemmas when their work has been done.  But, except for this issue of
+  controlling rewriting a little more restrictively via disabling, this proof
+  of the correctness of @('*pi*') serves as a good template for clock-based
+  total correctness proofs of single-loop @('m1') programs.</p>
+
+  <p>There are many other examples of proofs of @('m1') programs on the
+  directory @('books/models/jvm/m1').  Here is a brief guide.</p>
+
+  <ul>
+
+  <li>@('books/models/jvm/m1/template.lisp'): a &ldquo;robust&rdquo; template
+  for proving the total correctness of one-loop @('m1') programs.  The template
+  is overly robust in the sense that it introduces often irrelevant
+  intermediate functions, lemmas, and disable events.  In the vast majority of
+  cases the proofs can be carried out with fewer events.  But until you
+  understand how ACL2 behaves it's best to just rotely follow the
+  template.</li>
+
+  <li>the files listed below contain simple one-loop @('m1') programming and
+  proof challenges.  Each file follows the template above.  We recommend that
+  you <i>not</i> look at the solutions and instead read the challenge
+  programming/proof problem at the top of the file and then follow the template
+  for yourself.  We also recommend you do these problems in the order listed,
+  as they gradually get harder.
+  <ul>
+  <li>@('books/models/jvm/m1/sum.lisp')</li>
+  <li>@('books/models/jvm/m1/sumsq.lisp')</li>
+  <li>@('books/models/jvm/m1/fact.lisp')</li>
+  <li>@('books/models/jvm/m1/power.lisp')</li>
+  <li>@('books/models/jvm/m1/expt.lisp')</li>
+  <li>@('books/models/jvm/m1/alternating-sum.lisp')</li>
+  <li>@('books/models/jvm/m1/alternating-sum-variant.lisp')</li>
+  <li>@('books/models/jvm/m1/fib.lisp')</li>
+  <li>@('books/models/jvm/m1/lessp.lisp')</li>
+  <li>@('books/models/jvm/m1/even-solution-1.lisp')</li>
+  <li>@('books/models/jvm/m1/even-solution-2.lisp')</li>
+  <li>@('books/models/jvm/m1/sign.lisp')</li> </ul> </li>
+
+  <li>the files below deal with two-loop programs in which the loops are
+  nested.  The solutions use the same basic naming scheme as the template.
+
+  <ul>
+  <li>@('books/models/jvm/m1/div.lisp')</li>
+  <li>@('books/models/jvm/m1/bexpt.lisp')</li>
+  </ul>
+  </li>
+
+  <li>@('books/models/jvm/m1/m1-fact-on-neg-runs-forever.lisp'): we prove
+  that if @('n') is negative, the factorial program @('*pi*') never reaches the
+  halt.  This problem is probably not suitable for you to work out on your own.
+  But you can probably do others like it after understanding the proofs here.
+  We prove the theorem two different ways.  The first is a classic clock-style
+  proof but the clock function decomposes an arbitrary natural number @('k >
+  1') into the form 2 + 11 + 11 + ... + 11 + @('(mod (- k 2) 11)') and then an
+  inductive proof shows that the program never gets out of the loop &mdash; and
+  there's no @('HALT') in the loop.  The second uses the inductive assertion
+  style proof carried out directly by symbolic evaluation of the operational
+  semantics and induction.  For an explanation of the use of inductive
+  assertions with this style of operational semantics see @(see bib::moore03b).
+  That paper deals with the M5 machine (ACL2 directory
+  @('books/models/jvm/m5/')) but is easily understood in the context of
+  M1.</li>
+
+  <li>@('books/models/jvm/m1/m1-half-via-inductive-assertions.lisp'): define
+  a program that halves its natural number input and terminates iff the input
+  was even.  Prove it.  This example is discussed in @(see bib::moore03b) as an
+  M5 program.  It uses the inductive assertion method.</li>
+
+  <li>@('books/models/jvm/m1/magic.lisp') illustrates the importance of
+  termination.  It presents a program that just successively replaces the top
+  of the stack by its successor, starting from @('0').  If you look at the
+  state at the right moment, you can find any natural number you want on top of
+  the stack.  So this program &ldquo;implements&rdquo; every natural valued
+  function &mdash; if terminating isn't a requirement!  In that sense, we prove
+  this program implements fib and also implements factorial.  (Of course, we
+  could also constrain a function to return a natural and prove that the
+  program implements that function, but we don't bother.)</li>
+
+  <li>@('books/models/jvm/m1/funny-fact.lisp'): this shows a two-loop program
+  in which one loop follows another rather than being nested inside the other.
+  The first loop pushes successive naturals from @('n') down to @('1') onto the
+  stack.  The second loop repeatedly multiplies the top two elements together.
+  Prove that implements factorial.  Note: this &ldquo;bytecode&rdquo; program
+  violates a basic principle of the Java bytecode verifier, which insists that
+  the stack is always the same length upon every arrival at every
+  instruction.</li>
+
+  <li>@('books/models/jvm/m1/wormhole-abstraction.lisp'): yet another proof
+  of a factorial program, but it shows a way you can avoid explicitly
+  specifying intermediate values you don't care about.  This idea was first
+  demonstrated by Dave Greve of Collins Aerospace.</li>
+
+  <li>@('books/models/jvm/m1/m1-with-stobj.lisp'): @('M1') has been defined in
+  a &ldquo;constructor&rdquo; style: every new state constructed as a list of
+  four elements where all the elements are specified.  In more realistic
+  machines, e.g., ACL2 directory @('books/projects/x86isa/'), the state is a
+  single-threaded object (see @(see stobj)) that is destructively modified to
+  effect state changes.  This produces much more efficient runtime execution.
+  However, it slightly changes the form of correctness proofs.  In
+  @('m1-with-stobj.lisp') we define the M1 machine using a single-threaded
+  object as the state.  Then, in<p/>
+
+  <ul>
+  <li>@('books/models/jvm/m1/m1-with-stobj-clock-example.lisp')</li>
+  </ul>
+
+  we implement multiplication by repeated additions (avoiding use of the
+  @('IMUL') instruction) on that version of M1 and prove it correct.</li>
+
+  <li>@('books/models/jvm/m1/defsys.lisp'): a verifying compiler from a very
+  simple &ldquo;Toy Lisp&rdquo; to @('m1').  Toy Lisp is just the subset of
+  ACL2 composed of variable symbols, quoted numeric constants, the function
+  symbols @('+'), @('-'), @('*') (primitively supported by M1), the form @('(MV
+  a1 ... an)') for returning multiple values, the form @('(IFEQ a b c)') (which
+  is just ACL2's @('(if (equal a 0) b c)')), and calls of primitive and defined
+  Toy Lisp functions.  The compiler takes a list of Toy Lisp
+  &ldquo;modules,&rdquo; each of which specifies a symbolic name, formals,
+  pre-conditions, post-conditions, and a Toy Lisp implementation.  An example
+  module is
+
+  @({
+  (lessp :formals (x y)
+         :input (and (natp x)           ; pre-condition
+                     (natp y))
+         :output (if (< x y) 1 0)       ; post-condition
+         :code (ifeq y                  ; Toy Lisp implementation
+                     0
+                     (ifeq x
+                           1
+                           (lessp (- x 1) (- y 1)))))
+  })
+
+  The compiler implements a call/return protocol so that one Toy Lisp function
+  can use another.  The compiler produces M1 code for each module.  In
+  addition, it produces the clock function for each module and it generates
+  events that prove that the M1 code implements input/output specification.
+  The result is an M1 state poised to call the module @('main') on whatever
+  arguments are on the @('m1') @('stack'). <b>Warning:</b> As of August, 2024,
+  the comments in @('defsys.lisp') are out of date!</li>
+
+  <li>@('books/models/jvm/m1/theorems-a-and-b.lisp'):  a proof that M1
+  can compute anything a Turing machine can compute.  See the paper
+  @(see bib::moore14).</li>
+
+  <li>The ACL2 file @('books/projects/codewalker/README') describes a tool
+  called &ldquo;codewalker.&rdquo; Codewalker is a utility for exploring code
+  in any programming language specified by an ACL2 operational model.  Three
+  main facilities are provided: the abstraction of a piece of code into an ACL2
+  &ldquo;semantic function&rdquo; that returns the same machine state, the
+  definition the &ldquo;clock function&rdquo; for the code, and the
+  &ldquo;projection&rdquo; of the semantic function into another function that
+  computes the final value of a given state component using only the values of
+  the relevant initial state components.  No paper about codewalker is
+  available.  But the first 50 pages of @('codewalker.lisp') is a comment
+  providing documentation.  In addition, several examples are provided in other
+  files.  For example, the ACL2 book
+  @('books/projects/codewalker/demo-fact.lisp') uses codewalker to verify an M1
+  factorial program.  By the way, the version of M1 used there is defined on
+  the @('codewalker/') directory rather than the @('books/models/jvm/m1/')
+  directory to allow the two versions to drift apart.  The M1 used by the
+  codewalker demo is defined in
+  @('books/projects/codewalker/m1-version-3.lisp') and it uses a
+  single-threaded object (see @(see stobj)) representation of the state.</li>
+
+  </ul>
+
+  <h3>More Elaborate Models of the JVM: From M1 to M6</h3>
+
+  <p>M1 is only the start of a series of models of the JVM.  M1 lacks
+  a bytecode verifier, method invocation, threads, and other features
+  which are explored in the more elaborate models, all of which are
+  found on the ACL2 directory @('books/models/jvm/').</p>
+
+  <ul>
+
+  <li>The ACL2 directory @('books/models/jvm/guard-verified-m1/') is another
+  version of @('m1') that differs in two ways.  First, instead of using the
+  constructor style of creating new states (e.g., with @('(list pc locals stack
+  program)')) it uses a single-threaded object (see @(see stobj)).  This
+  slightly changes the forms of corretness theorems and lemmas.  Second, the
+  definition of @('m1') on the @('books/models/jvm/guard-verified-m1/')
+  directory has been guard verified.  This involves attaching a guard to every
+  &ldquo;@('execute')&rdquo; function and lifting that up to the level of the
+  @('m1') function.  The guards include the notion of a &ldquo;good
+  state&rdquo; which includes the notion of a well-formed program.  But that
+  necessarily involves the requirement that, say, when every @('IADD')
+  instruction is encountered the stack has at least two numbers on it.  The
+  @('good-statep') predicate is essentially a simple <i>bytecode verifier</i>
+  for @('m1'): it tells us that if a state is good (meaning, the program in it
+  is good), then executing the program guarantees all the properties necessary
+  for error-free execution.  Verifying the guards of this version of @('m1')
+  demonstrates &ldquo;verification of the bytecode verifier.&rdquo; The
+  directory also contains the examples found in the unguarded version of
+  @('m1') on @('books/models/jvm/m1').  The reason we provide two functionally
+  equivalent versions of @('m1') is that when teaching how to use ACL2 to
+  specify a machine operationally, it is easiest to start with the unguarded
+  @('m1').</li>
+
+  <li>M2, on the ACL2 directory @('books/models/jvm/m2/') is essentially M1
+  with method invocation (both static and virtual), return, and class instances
+  including a demonstration of inheritance.  See @(see bib::moore99a).  In that
+  paper the machine is named &ldquo;tjvm&rdquo; for &ldquo;Toy JVM&rdquo; but
+  its proper name is M2.  The paper and ACL2 scripts illustrate how to reason
+  about procedure call and return.</li>
+
+  <li>M5, on the ACL2 directory @('books/models/jvm/m5/') is a closer
+  approximation to the JVM.  M5 was written by George Porter, as an
+  undergraduate project.  M5 supports 195 JVM instructions, including those for
+  several kinds of arithmetic, arrays, and objects, threads and monitors.  The
+  handling of integer arithmetic is accurate, e.g., all integers are bounded
+  and addition, say, wraps around.  Floating point is not accurate and we
+  regard it as a mere placeholder.  The directory contains proofs of properties
+  for several M5 programs, including iterative and recursive ones (dealt with
+  via clock-based proofs), some partial correctness proofs about programs that
+  do not always terminate (dealt with via the inductive assertion method), and
+  the correctness of an applicative insertion sort method (on Objects
+  representing cons trees).  See @(see bib::mp02) and @(see bib::moore03a).  A
+  proof of a mutual-exclusion property, called &ldquo;the Apprentice
+  Challenge,&rdquo; is described in the papers and the corresponding books
+  containing proofs are available on the @('m5/') directory.</li>
+
+  <li>M6, on the ACL2 directory @('books/models/jvm/m6/') is the best
+  approximation to the JVM.  M6 was written as part of Hanbing Liu's PhD
+  dissertation, supported by Sun Microsystems.  The M6 state includes an
+  &ldquo;external class table&rdquo; where classes reside until they are
+  loaded.  M6 can execute most J2ME Java programs (except those with
+  significant I/O or floating-point).  It was primarily designed to model
+  dynamic class loading, class initialization, and bytecode verification.  The
+  entire Sun CLDC API library (672 methods in 87 classes) was translated into
+  the external representation and is available for loading, constituting about
+  500 pages of data.  The model included 21 out of 41 native APIs that appeared
+  in Sun's CLDC API library.  The M6 description itself is about 160 pages of
+  ACL2.  See @(see bib::liu06).  <b>Warning:</b> M6 is not yet in the
+  regression!</li>
+
+  </ul>
+
+  <h3>Quick Index to Related Topics</h3>
+  <ul>
+  <li>@(see operational-semantics)</li>
+  <li>operational-semantics-1__simple-example &mdash; current topic</li>
+  <li>@(see operational-semantics-2__other-examples)</li>
+  <li>@(see operational-semantics-3__annotated-bibliography)</li>
+  <li>@(see operational-semantics-4__how-to-find-things)</li>
+  <li>@(see operational-semantics-5__history-etc)</li>
+  </ul> ")
+
+(defxdoc operational-semantics-2__other-examples
+  :parents (operational-semantics)
+  :short "Examples of other models and proof techniques"
+  :long "<p>The topic @(see operational-semantics-1__simple-example) deals with
+  a simple machine, M1, and focuses on the &ldquo;clock&rdquo;-based proof
+  style.  In this section we point to other machine models, different ACL2
+  proof styles, and tools in the ACL2 Community Books that may be of
+  interest.</p>
+
+  <p>We limit our discussion here to operational semantics.  But it is worth
+  noting that a valuable way to explore the diversity of ACL2 applications and
+  extensions is to browse the ACL2 Workshop series.  See the &ldquo;ACL2
+  Workshops, UT Seminar, and Course Materials&rdquo; link on the <a
+  href='http://www.cs.utexas.edu/users/moore/acl2/'>ACL2 homepage</a>.  Then
+  visit the Program for each workshop.  Many of the papers include supplemental
+  material in the form of ACL2 proof scripts are in the ACL2 Community Books
+  regression suite and thus available locally if you've installed ACL2.
+  They're under the directory @('books/workshops/'), which is organized by the
+  year of the workshop and the name of the author(s), e.g.,
+  @('books/workshops/2023/passmore/').</p>
+
+  <h3>Other Machines</h3>
+
+  <p>As noted in @(see operational-semantics-5__history-etc), a &ldquo;handheld
+  calculator&rdquo; was formalized in Chapter 17 @(see bib::bm79), using the
+  precursor to Nqthm.  That machine was essentially M1 without the branch or
+  jump instructions.  That is, all programs were just straightline sequences of
+  stack-based arithmetic operations.  The Bendix 930 flight control computer
+  discussed in @(see bib::bm80) was a more traditional von Neumann machine,
+  also modeled in the precursor to Nqthm.  The 30 page model is listed in
+  Section 15 of @(see bib::bm80).</p>
+
+  <p>The Computational Logic, Inc. (CLI) Verified Stack was formalized and
+  verified with Nqthm.  The CLI Verified Stack was a hardware-software stack
+  consisting of a gate-level description of a microprocessor, its instruction
+  set architecture, an assembler/linker/loader for a stack based assembly
+  language with subroutine call and return, a compiler for a simple subset of a
+  Pascal-like language, a simple operating system kernel, and some applications
+  programs.  Each component of the stack was verified with respect to the
+  component immediately below in such a way that the correctness theorems could
+  be composed.  The result was that if a program in the high-level language was
+  verified (with respect to the operational semantics of the high-level
+  language) then compiling, assembling, linking, and loading the binary image
+  onto the gate-level machine and running it would, with mathematical
+  certainty, deliver the results verified at the high level.  The stack was
+  described in the 1989 special issue of the <i>Journal of Automated
+  Reasoning</i>, @(see bib::bhmy89).  In 1992, a hardware description language
+  was formalized and another microprocessor was described and verified to
+  implement a slightly different machine code.  That microprocessor was
+  fabricated, the assembler/linker/loader was retargeted to the new machine
+  code and verified, so that the entire stack was then ported to a fabricated
+  microprocessor.  A second compiler (for a Lisp subset) and a game-playing
+  applications program were also written and verified.  The CLI Stack was a
+  project by Bill Bevier, Bishop Brock, Art Flatau, Warren A. Hunt, Jr., Matt
+  Kaufmann, J Moore, Matt Wilding, and Bill Young, of Computational Logic,
+  Inc.</p>
+
+  <p>The CLI Verified Stack convinced us that this style of operational
+  semantics was viable not just for program verification but for stacking and
+  relating machines.  For more details, including papers, books, dissertations,
+  and proof scripts, start at the annotation for @(see bib::bhmy89) and visit
+  the citations.</p>
+
+  <p><i>[Personal aside by Moore: I believe the CLI Verified Stack to be a
+  seminal achievement in formal methods.]</i></p>
+
+  <p>The most elaborate machine model created with Nqthm was of the Motorola
+  MC68020, modeled by Yuan Yu @(see bib::yu92).  He and Boyer used that model
+  to verify many MC68020 machine code programs produced by a variety of
+  standard compilers.  Perhaps most notably they verified the machine code for
+  Hoare's Quick Sort and 21 of the 22 functions in the Berkeley Unix C string
+  library (as compiled with @('gcc -o')).  For a shorter description of the
+  work, see @(see bib::by96).</p>
+
+  <p>Of course, state machines are not limited to modeling computational
+  engines.  See @(see bib::bgm90) for a real-time control problem formalized
+  with a &ldquo;clocked&rdquo; state machine where the &ldquo;clock&rdquo;
+  specifies the change in the physical environment at each sampling cycle.  In
+  addition, games can often be formalized with state machines where the
+  &ldquo;clock&rdquo; specifies opponents' moves.  Strategies can be analyzed
+  via proof.  See the Nqthm script analyzing the game of Tic Tac Toe,
+  @('examples/basic/tic-tac-toe.events') or @(see bib::wilding93) for a
+  description of the verification of a winning strategy for the game of Nim.
+  See the ACL2 scripts for playing Towers of Hanoi, @(see
+  Tutorial1-Towers-of-Hanoi), @('books/misc/hanoi.lisp'), and the Bottle
+  Game (played in the 1995 movie <i>Die Hard 2</i>),
+  @('books/projects/die-hard-bottle-game/top.lisp').</p>
+
+  <p>But for the rest of this discussion we focus on modeling and proving
+  properties of compute engines with ACL2.</p>
+
+  <p>The first major external applications of ACL2 after it was developed at
+  Computational Logic, Inc., were at Motorola Government Systems, in
+  Scottsdale, Arizona, between 1994 and 1997, and at Advanced Micro Devices,
+  Inc., in Austin, Texas, in 1995.  Only the first of these two projects
+  employed operational semantics &mdash; and it was a <i>tour de force</i>.</p>
+
+  <p>A CLI employee, Bishop Brock, relocated to Scottsdale and embedded with a
+  design group there to formalize the evolving design of the Motorola
+  &ldquo;Complex Arithmetic Processor&rdquo; (CAP) digital signal
+  processor (DSP), using the operational semantic techniques developed with
+  Nqthm and described above.  A timeline of the entire ACL2 part of the CAP DSP
+  project may be found in @(see bib::bkm96).</p>
+
+  <p>Here is a brief description of the CAP design taken from Section 2.1
+  of @(see bib::bkm96).</p>
+
+  <blockquote>
+  <p>The CAP design follows the `Harvard architecture', i.e., there are
+  separate program and data memories.  The design includes 252
+  programmer-visible data and control registers.  There are six independently
+  addressable data and parameter memories.  The data memories are logically
+  partitioned into `source' and `destination' memories; the sense of the
+  memories may be switched under program control.  The arithmetic unit
+  includes four multiplier-accumulators and a 6-adder array.  The CAP
+  executes a 64-bit instruction word, which in the arithmetic units is
+  further decoded into a 317-bit, low-level control word.  The instruction
+  set includes no-overhead looping constructs and automatic data scaling.  As
+  many as 10 different registers are involved in the determination of the
+  next program counter.  A single instruction can simultaneously modify well
+  over 100 registers.  In practice, instructions found in typical
+  applications simultaneously modify several dozen registers.  Finally, the
+  CAP has a three-stage instruction pipeline which contains many
+  programmer-visible pipeline hazards.</p>
+
+  </blockquote>
+
+  <p>Brock, with help from Warren Hunt, J Moore, and Matt Kaufmann, developed a
+  bit- and cycle-accurate model of the CAP design.  We believe this was the
+  first time an entire commercial microprocessor was formally specified, see
+  @(see bib::bh99).</p>
+
+  <p>Brock validated the design by running the ACL2 model against Motorola's
+  SPW engineering model of the processor.  For example, he compared the results
+  of executing an end-to-end application (a QPSK modem) on both the SPW model
+  and the ACL2 model and found the final states bit-exact for all programmer
+  visible registers.</p>
+
+  <p>Before turning to the verification of CAP applications programs Brock
+  undertook the logical elimination of the CAP pipeline.  He defined a
+  predicate that syntactically detected pipeline hazards in microcode and he
+  implemented a simpler ACL2 machine model without the pipeline.  Then,
+  following Burch and Dill's method of comparing states after flushing the
+  pipeline via symbolic evaluation, he proved with ACL2 that the two models
+  were equivalent <i>provided the microcode was hazard free</i>.</p>
+
+  <p>Then Brock, <i>et al</i>, proved several microcode programs correct, again
+  following the proof methodology we sketched in section &ldquo;Proving
+  Theorems about M1 Programs&rdquo; of
+  @('operational-semantics-1__simple-example'), where the main subtasks were
+  our so-called Steps 2 and 3: verify that the execution of the pipeline-free
+  model on hazard-free microcode implements semantic function of the program,
+  and then verify that the semantic function implements the more abstract
+  specification.  An example of the second (generally harder) step is described
+  in @(see bib::bm05). These two results could then be chained together, along
+  with the verification (by execution) that the hazard predicate detected no
+  hazards in the microcode and the proof of the equivalence (modulo the absence
+  of hazards) of the pipelined and non-pipelined models, to conclude that the
+  microcode runs correctly on the pipelined model.</p>
+
+  <p>It is noteworthy that ACL2 executed the pipeline-free microcode
+  interpreter several times faster than the hardware simulator could execute
+  the SPW model &mdash; with assurance that the answers were equivalent to the
+  pipelined model on hazard-free microcode.  In addition, the ACL2 hazard
+  predicate, being an executable ACL2 function on microcode programs, was
+  executed on over fifty microcode programs written by Motorola engineers and
+  extracted from the ROM mechanically. Hazards were found in some of these.
+  See @(see bib::bh99).  This can be considered another practical application
+  of formal methods since the hazard detection predicate was formally verified
+  to be a sufficient condition for the pipelined and non-pipelined machines to
+  be equivalent.</p>
+
+  <p>Unfortunately, Motorola canceled the entire CAP effort before the device
+  was fabricated, despite the success of the formal methods component of the
+  project. The ACL2 proof scripts are not in the ACL2 Community Books
+  regression suite.</p>
+
+  <p>We now move on to other operational models.  In @(see
+  operational-semantics-1__simple-example) (and on the ACL2 directory
+  @('books/models/jvm/m1/')) we describe a very simple operational definition
+  of a machine, called M1, supporting a little stack-based arithmetic and some
+  branch instructions.  That machine was used to teach students how to
+  formalize machines and verify their programs.  M1 was the beginning of an
+  evolutionary sequence of machines approximating an accurate model of the Java
+  Virtual Machine.  The machines in that evolutionary sequence show how we
+  can formalize and reason about method invocation (virtual and static),
+  return, object creation including inheritance, threads, dynamic class
+  loading, and bytecode verification.  The machines are described, with
+  appropriate citations to papers and ACL2 books, in the final section of @(see
+  operational-semantics-1__simple-example).</p>
+
+  <p>The use of the inductive assertion method with an operational semantics of
+  this style is quite interesting.  As noted in @(see bib::mmrv06), no other
+  tools are required beyond the operational semantics and a theorem prover.  It
+  is possible for the theorem prover to use the operational semantics directly
+  to generate and prove the &ldquo;verification conditions&rdquo; one gets by
+  exploring all possible program paths between assertions in the code.  One can
+  use the method to prove either partial or total correctness, the former
+  meaning &ldquo;correct if it terminates&rdquo; and the latter meaning
+  &ldquo;terminating and correct at termination.&rdquo;</p>
+
+  <p>The most complicated machine formalized (as of 2024) with ACL2 is the x86
+  instruction set architecture.  The model evolved from simpler models,
+  exploiting lessons learned from earlier Nqthm and ACL2 work.  In the case of
+  x86, the &ldquo;toy&rdquo; was the y86 as informally described in @(see
+  bib::boh03).  The ACL2 directory @('books/models/y86/') contains several
+  models of the 32-bit y86 described in the First Edition of @(see bib::boh03).
+  In particular, see the ACL2 book
+  @('books/models/y86/y86-basic/y86/y86.lisp'), by Warren Hunt, for the model.
+  For a proof of correctness of Sean Anderson's bit twiddling &ldquo;population
+  count&rdquo; in y86 machine code, see the ACL2 book
+  @('books/models/y86/y86-basic/py86/popcount.lisp').  The proof of that
+  particular straightline piece of code is just by symbolic evaluation and the
+  ACL2 verified &ldquo;bit-blasting&rdquo; solver @(see GL) by Sol Swords.</p>
+
+  <p>From the y86, the model of the x86 evolved through several iterations
+  reported in @(see bib::hk12), @(see bib::ghk13), and @(see bib::ghkg14), to
+  Shilpi Goel's monumental x86 model @(see bib::goel16) and @(see bib::ghk17).
+  The model specifies over 400 x86 instructions and the model includes
+  architectural features like segmentation and paging.  It can be executed in
+  either of two modes. When running in the application-program level, it
+  executes about 3.3 million x86 instructions per second.  When running in the
+  system-level mode it executes about 912,000 x86 instructions per second.  The
+  model has been validated extensively against actual x86 hardware, which is
+  the reason so much attention has been paid to execution efficiency.  X86
+  machine code programs have been verified.  See @(see bib::goel16) and @(see
+  bib::ghk17).</p>
+
+  <h3>Proof Methods and Tools</h3>
+
+  <p>The paper @(see bib::moore99b) shows how we can reason about a system
+  involving multiple processes interacting with a shared memory.  The paper
+  describes two operational models, one in which the model switches between
+  multiple processes according to an &ldquo;oracle&rdquo; and the other which
+  models just a single process but in which the memory changes
+  &ldquo;spontaneously.&rdquo; The two models are then related by proved lemmas
+  so that one can switch back and forth between views.  The lemmas are used to
+  verify a safety property (using one model) and a progress property (using the
+  other).  All the proofs are carried out via the clock-based methodology.</p>
+
+  <p>We have focused on the clock-based proof methodology.  But an advantage of
+  creating &ldquo;toy&rdquo; models is that it is easy to explore other proof
+  methodologies and then try to apply them to larger models.</p>
+
+  <p>The papers @(see bib::rm04) and @(see bib::rhmm07) establish that the
+  clock-function approach to verification is equivalent to the use of inductive
+  assertions and to stepwise invariants.  In fact, ACL2 tools are provided for
+  converting between clock-based proofs and inductive assertion-style proofs.</p>
+
+  <p>The paper @(see bib::sawada00) describes the modeling and verification of
+  a pipelined machine.  The paper @(see bib::manolios00) shows an alternative
+  method based on Well-founded Equivalence Bisimulations.  Briefly, it
+  introduces a notion of correctness that implies that the instruction set
+  architecture and micro-architecture machines have the same observable
+  infinite paths, up to stuttering.</p>
+
+  <p>The paper @(see bib::sh98) deals with a machine with precise exceptions and
+  speculative execution.</p>
+
+  <p>An ACL2 tool to help manage states in operational models is described in
+  @(see bib::moore15) and a tool for determining whether two symbolic terms
+  representing machine addresses may be equal is described in @(see
+  bib::moore17).  These tools are available among the ACL2 Community Books.  A
+  tool for deriving the meaning of and clock function for a piece of code from
+  the code and the operational semantics model is described in the ACL2 file
+  @('books/projects/codewalker/README').</p>
+
+  <h3>Quick Index to Related Topics</h3>
+  <ul>
+  <li>@(see operational-semantics)</li>
+  <li>@(see operational-semantics-1__simple-example)</li>
+  <li>operational-semantics-2__other-examples &mdash; current topic</li>
+  <li>@(see operational-semantics-3__annotated-bibliography)</li>
+  <li>@(see operational-semantics-4__how-to-find-things)</li>
+  <li>@(see operational-semantics-5__history-etc)</li>
+  </ul>")
+
+(defxdoc operational-semantics-3__annotated-bibliography
+  :parents (operational-semantics)
+  :short "Annotated bibliography for operational-semantics"
+  :long "<p>This topic provides proper bibliographic citations to the work
+  mentioned in the ACL2 documentation topic @(see operational-semantics) and
+  its subtopics.  Each citation (e.g., @(see bib::bhmy89)) is a link, at which
+  you may find additional information about the publication and its relation to
+  operational semantics.  When Nqthm or ACL2 files are mentioned you will have
+  to dereference those names following the instructions in @(see
+  operational-semantics-4__how-to-find-things).</p>
+
+  <h3>Quick Index to Related Topics</h3>
+  <ul>
+  <li>@(see operational-semantics)</li>
+  <li>@(see operational-semantics-1__simple-example)</li>
+  <li>@(see operational-semantics-2__other-examples)</li>
+  <li>operational-semantics-3__annotated-bibliography &mdash; current topic</li>
+  <li>@(see operational-semantics-4__how-to-find-things)</li>
+  <li>@(see operational-semantics-5__history-etc)</li>
+  </ul>
+
+")
+
+(defxdoc operational-semantics-4__how-to-find-things
+  :parents (operational-semantics)
+  :short "Citation conventions for doc operational-semantics"
+
+  :long "<p>In the documentation topic @(see operational-semantics) and its
+  supporting subtopics, references to published books and papers appear as
+  ordinary documentation topics, except all the labels are in the \"BIB\"
+  package, e.g., @(see bib::mccarthy62) or @(see bib::kmm00a).  When finding
+  them with the @(':')@(tsee doc) keyword command or in the @(see acl2-doc)
+  Emacs-based browser, you must type the &ldquo;bib::&rdquo; prefix.  When
+  finding them in the &ldquo;Jump to&rdquo; box of your browser you must not
+  include the &ldquo;bib::&rdquo; prefix.</p>
+
+  <p>In @(see operational-semantics) and its supporting subtopics we also make
+  frequent reference to Nqthm and ACL2 directories and proof scripts, such as
+  @('examples/hunt/fm8501.events') and @('books/projects/x86isa/').  In this
+  topic we explain how to dereference those citations to find the directory or
+  file we mean.</p>
+
+  <p>By the way, the active development of Nqthm ended in 1992, three years
+  after ACL2 development began.  For about 10 years Nqthm and ACL2 were both in
+  use.  Since then Nqthm has been maintained by Boyer and most of its proof
+  scripts are not only still available but can still be processed.</p>
+
+  <p>Documentation for Nqthm may be found in @(see bib::bm97).</p>
+
+  <p>The Nqthm source code and proof scripts are available in two places,</p>
+
+  @({
+  ftp://ftp.cs.utexas.edu/pub/boyer/nqthm/nqthm-1992/
+  })
+
+  <p>and</p>
+
+  @({
+  https://drive.google.com/drive/folders/18z-uwg8E_3NxIijLoxYE-_NS-klqYI7R
+  })
+
+  <p>While it is possible to download individual files from these sites, we
+  recommend that you download the entire @('nqthm-1992') distribution as
+  follows.  In particular, download the gzipped tar file:</p>
+
+  @({
+  ftp://ftp.cs.utexas.edu/pub/boyer/nqthm/nqthm-2nd-edition.tar.gz
+  })
+
+  <p>to a directory where you want the Nqthm source code and regression
+  suite, connect to that directory, and extract the files as follows.</p>
+
+  @({
+  tar xfz nqthm-2nd-edition.tar.gz
+  })
+
+  <p>That will create the directory @('nqthm-1992/').</p>
+
+  <p>You do not have to build the Nqthm image or do a regression if all you
+  want to do is inspect either the Nqthm source code (which consists of the
+  files @('nqthm-1992/*.lisp')) or the files in the regression suite
+  (@('nqthm-1992/examples/')).  You can just explore the relevant files
+  locally.  If you want to build Nqthm and do a regression, see the Nqthm
+  installation instructions in @('nqthm-1992/README').</p>
+
+  <p>The ACL2 system, as it stood in 2000, is documented in two textbooks
+  described <a
+  href='https://www.cs.utexas.edu/~moore/publications/acl2-papers.html#Books'>here</a>.
+  These books are a good place for a beginner to start, even though some of the
+  material is out-of-date.  Up-to-date user-level @(see documentation) of ACL2
+  is available online as described in the User's Manuals link on the
+  homepage (below), and a wealth of information is available there.  Some of it
+  is organized for the experienced user trying to get information about a
+  particular feature, but there is a documentation topic, @(see start-here),
+  that provides many starting points for the beginning ACL2 user.</p>
+
+  <p>Source code, input files, installation instructions, extensive online
+  documentation and other material is available on the <a
+  href='http://www.cs.utexas.edu/users/moore/acl2/'>ACL2 homepage</a>:</p>
+
+  @({
+  https://www.cs.utexas.edu/~moore/acl2/
+  })
+
+  <p>That page provides instructions for obtaining the latest ACL2 numbered
+  release.  However, many ACL2 users obtain an up-to-date <a
+  href='https://github.com/acl2/acl2'>snapshot of ACL2 from GitHub</a>:</p>
+
+  @({
+  https://github.com/acl2/acl2
+  })
+
+  <p>As with Nqthm, to explore ACL2 source files or prover input files we
+  recommend that you perform the first step of the installation instructions
+  found under the <a
+  href='https://www.cs.utexas.edu/~moore/acl2/current/HTML/installation/installation.html'>&ldquo;Obtaining,
+  Installing, and License&rdquo;</a> link of the ACL2 homepage above.  That
+  first step downloads a gzipped tar file of the latest sources and input
+  scripts (but not prover output) to a directory of your choosing.  The
+  filenames suffixed with @('.lisp') at the top-level of that directory
+  constitute the ACL2 source code.  The ACL2 regression suite consists of
+  thousands of files called &ldquo;@(see books)&rdquo; and are available under
+  the @('books/') subdirectory.  So, for example, you'll find a toy model of
+  the JVM at @('books/models/jvm/m1/m1.lisp').  If you want to see proofs you
+  must build ACL2 on your machine and run a full regression as described in the
+  installation instructions.</p>
+
+  <h3>Quick Index to Related Topics</h3>
+  <ul>
+  <li>@(see operational-semantics)</li>
+  <li>@(see operational-semantics-1__simple-example)</li>
+  <li>@(see operational-semantics-2__other-examples)</li>
+  <li>@(see operational-semantics-3__annotated-bibliography)</li>
+  <li>operational-semantics-4__how-to-find-things &mdash; current topic</li>
+  <li>@(see operational-semantics-5__history-etc)</li>
+  </ul>")
+
+(defxdoc operational-semantics-5__history-etc
+  :parents (operational-semantics)
+  :short "A quick history of our style of modeling state machines"
+  :long "<p>As informally explained in @(see operational-semantics) and
+  illustrated in @(see operational-semantics-1__simple-example) and @(see
+  operational-semantics-3__annotated-bibliography), the common ACL2 style in
+  which state machines are modeled involves representing the relevant part of
+  the state as an ACL2 object, defining a single-step function for computing
+  state transitions, and then defining a total recursive run function for
+  iterating the step function until it &ldquo;halts&rdquo; or some specified
+  number of steps has been taken.</p>
+
+  <p>This approach to operational semantics is different from &ldquo;structural
+  operational semantics&rdquo; described by Plotkin in his 1981 paper &ldquo;A
+  Structural Approach to Operational Semantics&rdquo; (see @(see
+  bib::plotkin04a)).  Plotkin formalized machines operationally but as
+  inference rules (reminiscent of Hoare logic).  See also @(see
+  bib::plotkin04b), where Plotkin elaborates on the origins of that approach.
+  Furthermore, the origins paper appears in a two volume special issue of
+  <i>The Journal of Logic and Algebraic Programming</i> which contains many
+  other papers on structural operational semantics.</p>
+
+  <p>To distinguish the approach taken commonly in the ACL2 community from
+  structural operational semantics we might call it &ldquo;ACL2-style&rdquo;
+  operational semantics.  But its only connection to ACL2 is that ACL2 happens
+  to be the logic in which our models are expressed.  Other settings supporting
+  recursion and induction could also be used.  Boyer and Moore used this
+  approach in the 1970s, inspired in part by McCarthy's seminal
+  papers (&ldquo;Recursive Functions of Symbolic Expressions and Their
+  Computation by Machine,&rdquo; 1960, &ldquo;A Basis for a Mathematical Theory
+  of Computation,&rdquo; 1963, and &ldquo;Correctness of a Compiler for
+  Arithmetic Expressions,&rdquo; with James Painter, 1967).  But we would be
+  hard-pressed to attribute this style of operational semantics even to
+  McCarthy.  Machine designers and programmers have been writing software to
+  emulate other machines for almost as long as computers have existed and ACL2
+  is just another programming language &mdash; albeit one that comes with a
+  logical foundation and theorem prover allowing one to reason about programs
+  running on the machine or even properties of the machine itself.</p>
+
+  <p>In fact, such operational semantics models played an important role in the
+  evolution of ACL2.</p>
+
+  <p>ACL2 evolved from earlier theorem provers by Boyer and Moore.  Those
+  earlier provers were the Edinburgh Pure Lisp Theorem prover, aka PLTP (see
+  @(see bib::bm73) and @(see bib::moore73)), (1971--73), Thm (1974--79), and
+  Nqthm (1980--95) (see @(see bib::bm97)).  The dates are approximate.  Boyer
+  and Moore began working on ACL2 on August 14, 1989 and the first ACL2
+  proof (associativity of @('append')) was done on November 3, 1989.  Matt
+  Kaufmann officially joined the ACL2 development team in August, 1993,
+  although he had become an invaluable contributor years before that.  See
+  &ldquo;@('; Commemorative Plaque')&rdquo; in the ACL2 source file
+  @('prove.lisp').  For a description of the evolution from PLTP, through Thm,
+  and Nqthm, to ACL2, including proper bibliographic citations, see @(see
+  bib::moore19).</p>
+
+  <p>Boyer and Moore's first foray into operational semantics for a computing
+  machine shows up in Chapter 17 of @(see bib::bm79) where they used Thm to
+  prove a version of the McCarthy-Painter theorem verifying an expression
+  compiler for a simple machine @(see bib::mp67).</p>
+
+  <p>At the time, Boyer and Moore were employed at SRI and were working
+  part-time on the Software Implemented Fault Tolerance (SIFT) project.  Their
+  task was to verify that a certain small fragment of machine code for the
+  Bendix 930 (BDX930) flight-control computer implemented a simple time-sharing
+  system.  (Personal aside by J Moore: Having such an ambitious goal, in 1979,
+  astounds me in 2024, but it was a side-effect of youthful energy combined
+  with naivete and the excitement (and hype?) of that early period in the
+  history of mechanized formal methods.)  To attack the problem they formalized
+  the necessary subset of the BDX930 instruction set operationally.  But Thm
+  was not able to process the &ldquo;large&rdquo; system of definitions (30
+  pages).  The problem was, in part, due to the representation of logical
+  constants in Thm's implementation.  E.g., the logical constant @('1') was
+  represented as the ground term @('(add1 (zero))'), and the logical constant
+  pair containing @('1') in its @('car') and @('2') in its @('cdr') was the
+  ground term:</p>
+
+  <code>
+  (cons (add1 (zero)) (add1 (add1 (zero))))
+  </code>
+
+  <p>So Thm was rewritten to represent the constant @('1') as @('(quote 1)')
+  and the constant pair above as</p>
+
+  <code>
+  (quote (1 . 2)).
+  </code>
+
+  <p>This required a major rewrite (affecting virtually every routine in the
+  system that inspected terms) and was a significant step toward Nqthm.  (Note:
+  another formalization problem pushed Boyer and Moore in the same direction:
+  the desire to support verified &ldquo;metafunctions,&rdquo; which required
+  the formalization in the logic of a weak interpreter, @('V&C$'), for the
+  logic.)</p>
+
+  <p>The BDX930 model was admitted to the improved &ldquo;Thm&rdquo; (now more
+  like Nqthm) but Boyer and Moore then realized that the machine code
+  implemented a time-sharing system only if every SIFT process, when compiled
+  from the native Pascal, respected a bevy of unstated invariants on the
+  machine code.  They wrote a &ldquo;minority report&rdquo; explaining this.
+  That report was contained in Sections 14 and 15 of the SIFT final report for
+  the period September 1978 to June 1982.  Section 14 describes the problem and
+  Section 15 lists the 30 page BDX930 model.  See @(see bib::bm80), which has
+  the provocative title &ldquo;WHY IT IS IMPOSSIBLE TO PROVE THAT THE BDX930
+  DISPATCHER IMPLEMENTS A TIME-SHARING SYSTEM.&rdquo;</p>
+
+  <p>Boyer and Moore left SRI for the University of Texas at Austin in 1981 and
+  Nqthm was fully formed shortly thereafter.  The combination of Nqthm and some
+  brilliant students led to a remarkable string of projects, including the
+  FM8501 (and later the FM9001), the Computational Logic, Inc., verified stack,
+  and the Motorola 68020 model and its use in the emulation and verification of
+  machine code produced from the Berkeley C String Library by @('gcc -o').
+  (See @(see operational-semantics-3__annotated-bibliography) for proper
+  citations.)  These projects pushed Nqthm to its limits: models were large and
+  running them as software prototypes of the compute engines they modeled was
+  relatively slow.</p>
+
+  <p>That spurred Boyer and Moore to abandon the home grown Lisp supported by
+  Nqthm and build a theorem prover for a subset of Common Lisp: ACL2.  That
+  way, operational models were just Common Lisp functions and could be run at
+  Common Lisp speeds.</p>
+
+  <p>Of course, pressure on Kaufmann and Moore to improve ACL2 to provide
+  higher capacity and more efficiency to load and process models of commercial
+  processors continues to this day.  See Sections 8 and 9 of @(see
+  bib::hkms17).  Among many other changes made in response to industrial
+  requests, many of which relate to operational models, are such things the
+  invention of guards as an extralogical device to ensure that compiled code
+  complies with the axioms, support for inlining and other directives to the
+  compiler, the @(tsee mbt) directive, performance improvements in
+  certification and the inclusion of certified files into a session, congruent
+  single-threaded objects, nested single-threaded objects, patterned congruence
+  rules, and an attachment mechanism for stobjs so that different memory models
+  can be executed.  See @(see stobj)s.</p>
+
+  <h3>Quick Index to Related Topics</h3>
+  <ul>
+  <li>@(see operational-semantics)</li>
+  <li>@(see operational-semantics-1__simple-example)</li>
+  <li>@(see operational-semantics-2__other-examples)</li>
+  <li>@(see operational-semantics-3__annotated-bibliography)</li>
+  <li>@(see operational-semantics-4__how-to-find-things)</li>
+  <li>operational-semantics-5__history-etc &mdash; current topic</li>
+  </ul>")
 
 (defxdoc or
   :parents (basics acl2-built-ins)
@@ -111529,6 +114376,73 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>Use your browser's <b>Back Button</b> now to return to @(see
  practice-formulating-strong-rules).</p>")
 
+(defxdoc pre-built-binary-distributions
+  :parents (about-acl2)
+  :short "Pre-built binary distributions of ACL2"
+  :long "<p>Visit the &ldquo;Recent changes to this page&rdquo; link on the <a
+ href='http://www.cs.utexas.edu/users/moore/acl2/'>ACL2 home page</a> to see if
+ there are other shortcuts available.</p>
+
+ <p><font color='red'><b>WARNING</b></font>: Some of these packages might
+ be for old versions of ACL2.  We recommend that you use the latest
+ version of ACL2 (Version 8.5).</p>
+
+ <h3>Linux/Mac/Windows Binaries in ACL2s</h3>
+
+ <p>The ACL2 Sedan (see @(see acl2-sedan)), also known as ACL2s, is an
+ Eclipse-based IDE for ACL2 that is distributed with pre-certified books and
+ pre-built binaries, though it is not always based on the latest ACL2 version.
+ The ACL2 Sedan is distributed via a Homebrew package for Linux and macOS
+ users, and as a Windows Subsystem for Linux distro for Windows users.</p>
+
+ <p>See @(see acl2s::acl2s-installation) for instructions for installing the
+ ACL2 Sedan. Note that these instructions are typically intended for students
+ at Northeastern, but hopefully are useful for anyone interested in installing
+ ACL2s.</p>
+
+ <h3>Windows</h3>
+
+ <p>In the past, a Windows Installer for ACL2 has included a Unix environment,
+ pre-certified standard and workshop books, and a copy of Gnu Emacs.  This
+ capability has largely been superseded in the installation instructions' <a
+ href='https://www.cs.utexas.edu/~moore/acl2/current/HTML/installation/obtaining-and-installing.html#Build-Particular'>section
+ on Building an Executable Image on Some Particular Systems</a>. See also @(see
+ windows-installation).</p>
+
+ <h3>macOS</h3>
+
+ <p>ACL2 versions are sometimes been made available <a
+ href='https://ports.macports.org/port/acl2/'>under MacPorts</a>.</p>
+
+ <p>Some folks maintain <a href='https://formulae.brew.sh/formula/acl2'>a
+ Homebrew package</a> that tracks the latest stable version of ACL2.</p>
+
+ <h3>Debian GNU Linux</h3>
+
+ <p>A Debian Gnu Linux package is available, which is likely to work on other
+ Linux systems as well.  Thanks to Camm Maguire for maintaining this package,
+ and for pointing out that as Debian packages are simply ar and tar archives,
+ they can be unpacked on any linux system, and who has said: &ldquo;If someone
+ is running Debian, all they want to do is 'apt-get install acl2', doing
+ likewise for any optional add-on package they wish as well, e.g. emacs, infix,
+ etc.&rdquo; Alternatively, Debian GNU Linux users may wish to <a
+ href='http://packages.qa.debian.org/a/acl2.html'>download the ACL2 Debian
+ package for Linux</a>.  An alternate location you might want to check is <a
+ href='http://backports.debian.org'>@('backports.debian.org')</a>.</p>
+
+ <h3>Docker images</h3>
+
+ <p>Some folks maintain Docker images for ACL2. Below is a nonexhaustive list
+ of such images; feel free to add to this list. DH refers to Docker Hub and
+ GHCR refers to the GitHub Container Registry.</p>
+
+ <ul>
+ <li>DH: <a href='https://hub.docker.com/r/atwalter/acl2/'>atwalter/acl2</a>, GHCR: <a href='https://github.com/mister-walter/acl2-docker/pkgs/container/acl2'>mister-walter/acl2</a></li>
+ <li>DH: <a href='https://hub.docker.com/r/atwalter/acl2s/'>atwalter/acl2s</a>, GHCR: <a href='https://github.com/mister-walter/acl2s-docker/pkgs/container/acl2s'>mister-walter/acl2s</a></li>
+ </ul>
+
+ ")
+
 (defxdoc primitive
   :parents (programming acl2-built-ins)
   :short "Primitive functions built into ACL2 without definitions"
@@ -114089,22 +117003,22 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   <p>But there are several arguments against this approach in general:</p>
   <ul>
 
-  <li><p>@('Defconst'), @('defmacro') and @('defpkg') not only prohibit
+  <li>@('Defconst'), @('defmacro') and @('defpkg') not only prohibit
   @('loop$') and @('lambda$') but also prohibit all uses of @('apply$') and
   scions if user-defined functions are involved in the function objects.  This
   is because to compute logically with them one must have @(see warrant)
   hypotheses and there is no provision for supplying warrants with these
   events.  See @(see ignored-attachment).  It turns out that the hideous
   example above does not mention any user-defined functions in the function
-  objects, so this restriction doesn't stop us here.</p></li>
+  objects, so this restriction doesn't stop us here.</li>
 
-  <li><p>Eliminating @('loop$') in favor of scions sacrifices execution speed
+  <li>Eliminating @('loop$') in favor of scions sacrifices execution speed
   if the @('loop$')s are guard verified.  A guard-verified @('loop$') executes
   in raw Lisp as a Common Lisp @('loop'), whereas its translation into nested
   calls of @('loop$') scions, even if guard verified, involves far more
-  function calls.</p></li>
+  function calls.</li>
 
-  <li><p>It is much harder to ``maintain'' code derived this way!</p></li>
+  <li>It is much harder to ``maintain'' code derived this way!</li>
   </ul>
 
   <p>There may be cases where no user-defined functions are involved,
@@ -118028,7 +120942,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 ; Release approved by DARPA with "DISTRIBUTION STATEMENT A. Approved
 ; for public release. Distribution is unlimited."
 
-; WARNING: Don’t change the name of this topic without also changing its
+; WARNING: Don't change the name of this topic without also changing its
 ; reference in :DOC acknowledgments!
 
 ; This topic and its subtopics are derived from "Recursion and Induction"
@@ -122355,8 +125269,9 @@ work on <tt>(q x)</tt>.</p>
  elementary number theory theorems but also proofs of Goedel's incompleteness
  theorem, Gauss's law of quadratic reciprocity, the Paris-Harrington Ramsey
  theorem, and the &ldquo;verified stack&rdquo; of Computational Logic, Inc.  The
- verified stack, completed in 1992, consisted of a gate-level implementation of
- a microprocessor, an assembler, linker, and loader, several compilers, an
+ verified stack, first reported in 1989 and then ported to a verified fabricated
+ microprocessor in 1992, consisted of a gate-level implementation of
+ a microprocessor, an assembler, linker, and loader, a compiler, an
  operating system, and some applications, all of which were verified with Nqthm
  to &ldquo;stack&rdquo; so that a theorem proved about an application written
  in one of two high level languages and proved correct with respect to that
@@ -123498,12 +126413,398 @@ work on <tt>(q x)</tt>.</p>
  equivalence, then @('bag-equality') will automatically be known as a refinement
  of that third equivalence.</p>
 
+ <p>A rewrite rule may fail to fire because its equivalence relation is not
+ known to be a refinement of any of those known to be permitted.  See @(tsee
+ geneqv) for a discussion of how ACL2 uses @(tsee congruence) rules to derive
+ the permitted equivalences and how those equivalences are represented.  See
+ @(see refinement-failure) for advice on how to use @(see break-rewrite) to
+ determine that a rule failed the refinement check and for advice about how to
+ ``fix'' such a problem.</p>
+
  <p>@(':refinement') lemmas cannot be disabled.  That is, once one equivalence
  relation has been shown to be a refinement of another, there is no way to
- prevent the system from using that information.  Of course, individual
- @(':')@(tsee rewrite) rules can be disabled.</p>
+ prevent the system from using that information.  Furthermore, @(':refinement')
+ lemmas are not tracked and are thus not reported in the @(see summary).  Of
+ course, individual @(':')@(tsee rewrite) rules can be disabled.</p>
 
  <p>More will be written about this as we develop the techniques.</p>")
+
+(defxdoc refinement-failure
+  :parents (introduction-to-the-theorem-prover break-rewrite)
+  :short "what to do when a rewrite rule fails the refinement check"
+  :long "<p>One reason a @(':')@(tsee rewrite) rule may fail to fire is that
+  its equivalence relation fails to be a known refinement of the generated
+  equivalence relation (or ``@(see geneqv)'') governing the current target of the
+  rewriter.  In the following discussion we assume you are familiar with the
+  notion of the generated equivalence relation.  If not, please see @(tsee
+  geneqv) for the necessary background and details.</p>
+
+  <h3>Is a Rule Not Firing Because of a Refinement Failure?</h3>
+
+  <p>To determine whether refinement failure is the cause of a rule's failure
+  to fire, enable @(see break-rewrite) with @('(brr t)') and install a @(tsee
+  monitor) with @(':rf') set to @('t') on the rule, e.g., @('(monitor rune
+  '(:rf t))'), where @('rune') evaluates to the @(tsee rune) of the rule in
+  question.  You might also specify a @(':condition') so that a break occurs
+  only if the target is the translated term, @('tterm'), you expected the rule
+  to hit,</p>
+
+  @({
+  (monitor rune '(:condition (equal (brr@ :target) 'tterm) :rf t)).
+  })
+
+  <p>Then try the proof again.  (Note: if the rule being monitored is a @(see
+  simple) abbreviation rule, be sure to supply the hint @(':DO-NOT
+  '(PREPROCESS)') as discussed in @(tsee monitor).)  If a monitored rule fails
+  to fire (under the monitored condition) because its equivalence relation is
+  not known to refine the geneqv derived for that occurrence of the target, an
+  interactive break will occur.  The break header will name the rule, print the
+  target, show the rule's equivalence relation, and show the geneqv.  The
+  header tells you the equivalence relation is not a refinement of the geneqv.
+  You might wish to use the break-rewrite command @(':path') or @(':path+') to
+  print the path down to the target from the top-level goal.  That will show
+  the geneqv derived for each active call of the rewriter and will help you
+  understand why the current geneqv is what it is.  While looking at the path
+  make sure that the current occurrence of the target is the one you expected
+  the rule to hit.  If it is not, proceed to the next break with @(':ok').</p>
+
+  <p>When you find the target you're looking for, focus your attention on the
+  equivalence relation and geneqv.  To fix the problem you need the former to
+  be a refinement of the latter.  When you understand how to make that happen,
+  abort the failing proof attempt with @(':a!') and try to fix the problem.</p>
+
+  <h3>How to Fix a Refinement Failure</h3>
+
+  <p>There are two basic ways to ``fix'' a refinement failure:</p>
+
+  <ul>
+
+  <li>(a) prove a @(tsee refinement) rule that establishes that the
+  equivalence relation used in the rule indeed refines one of the equivalence
+  relations displayed in the geneqv, or</li>
+
+  <li>(b) prove a @(tsee congruence) rule that will extend the geneqv
+  derived for the current occurrence of the target.</li>
+
+  </ul>
+
+  <p>We illustrate these approaches below.  But first you must keep in mind
+  that the equivalence relation in the rule may not refine any possible geneqv
+  derivable along the path.  You may have to find a different proof or, at
+  least, you may have to define some additional equivalence relations,
+  refinement rules, and congruence rules, and prove a version of your lemma
+  that uses a new relation.  After all, this is a theorem proving problem and
+  not all fixes are trivial!</p>
+
+  <h3>How Geneqvs Are Displayed</h3>
+
+  <p>As illustrated in the discusson of @(see geneqv), a generated equivalence
+  is essentially a set of equivalence relations.  ACL2 prints geneqvs in three
+  different ways depending on the utility doing the printing.</p>
+
+  <p>When reporting that an equivalence relation is not a refinement of a
+  geneqv, the geneqv is printed simply as a list of equivalence relation names,
+  e.g., @('(EQV1 EQV2)').  Order is unimportant as this list represents a
+  set.</p>
+
+  <p>When reporting the path the rewriter took to the current target and the
+  geneqvs for each active call of the rewriter along that path, each geneqv is
+  printed as a list of doublets, where the first component of the doublet is
+  the name of an equivalence relation and the second component is the name of
+  the @(see congruence) rule responsible for adding that relation to the
+  geneqv, e.g.,</p>
+
+  <code>
+  ((EQV1 EQV1-IFF-CONGRUENCE-FOR-F)
+   (EQV2 EQV2-IFF-CONGRUENCE-FOR-F))
+  </code>
+
+  <p>This is just another presentation of @('(eqv1 eqv2)') but we believe
+  the congruence rule names may help you recall how equivalence relations get
+  into the set.</p>
+
+  <p>Finally, in @(tsee trace$), or the value returned by (brr@ :geneqv) or any
+  other system utility that displays the actual internal representation of a
+  geneqv you will see something like this:</p>
+
+  <code>
+  ((5603 EQV1 . (:congruence EQV1-IFF-CONGRUENCE-FOR-F))
+   (4957 EQV2 . (:congruence EQV2-IFF-CONGRUENCE-FOR-F)))
+  </code>
+
+  <p>where the equivalence relation names are paired with the runes (not just the names)
+  of the responsible congruence rules and the numbers are unique session-dependent indices
+  for those runes allowing quick determination of the enabled status of the rules.</p>
+
+  <p>You will see the first two print conventions in the examples below.</p>
+
+  <h3>Some Generic Examples</h3>
+
+  <p>In the following discussion we introduce some functions that will allow us
+  to explore refinement failures.  The experiements reported below are carried
+  out in the community book @('books/demos/refinement-failure-test-book.lisp')
+  whose input/output log may be found in
+  @('books/demos/refinement-failure-test-log.txt').</p>
+
+  <p>We're going to attempt to prove @('(P (F (G A (BETA B))))') by rewriting
+  the occurrence of @('(BETA B)') to @('(GAMMA B)') and appealing to a rule
+  that establishes @('(P (F (G A (GAMMA B))))').  But at every subterm level in
+  the conjecture different equivalence relations are involved.  Thus, many
+  equivalence and congruence relations are involved and that makes this example
+  hard to follow.  Assume that @('PEQ'), @('FEQ'), @('G2EQ1'), @('G2EQ2'), and
+  @('G2EQ1!') are known equivalence relations.</p>
+
+  <p>Possibly Distracting Aside: In this section of this documentation we use
+  names that follow a certain convention.  These conventions help the authors
+  keep the names straight!  Perhaps they'll help you too.  Names containing
+  ``@('EQ')'' are equivalence relations; they will serve as ``inside''
+  equivalences for the function symbol indicated by the first character in the
+  name, ``@('P')'', ``@('F')'' or ``@('G')''; if that first character is
+  followed by ``2'' it means they apply to the second argument of the function,
+  otherwise they apply to the first (and only) argument; and if there is more
+  than one such inside equivalence relation for that function the name is
+  suffixed with ``@('1')'' or ``@('2')''.  The exclamation mark at the end of
+  ``G2EQ1!'' is to remind us that the function is a refinement of @('G2EQ1').
+  Thus @('PEQ') is the inside equivalence for the first (only) argument of
+  @('P')-terms and @('G2EQ1') is the inside equivalence for the second argument
+  of @('G')-terms and is one of two such relations.</p>
+
+  <p>Imagine that we've proved two rewrite rules:</p>
+
+  <ul>
+
+  <li>@('(DEFTHM RULE (G2EQ1! (BETA X) (GAMMA X)))')</li>
+
+  <li>@('(DEFTHM DONE (P (F (G X (GAMMA Y)))))')
+
+      <p>which is actually stored as</p>
+
+     @('(DEFTHM DONE (IFF (P (F (G X (GAMMA Y)))) T))').</li>
+
+  </ul>
+
+  <p>Clearly, our strategy to prove @('(P (F (G A (BETA B))))') is to use
+  @('RULE') to replace the @('(BETA B)') by @('(GAMMA B)'), and then use
+  @('DONE') to reduce the conjecture to @('T').</p>
+
+  <p>However, the problem is that @('RULE') uses the equivalence relation
+  @('G2EQ1!').  So the rewriter, which starts by maintaining @('IFF') on the
+  top-level @('P') term, will have to evolve a geneqv so that by the time it
+  reaches the occurrence of @('(BETA B)') the geneqv at that target admits
+  @('G2EQ1!') as a refinement.  To do so we'll provide the following @(tsee
+  congruence) rules.  As you read them, remember that the term we'll be working
+  on is @('(P (F (G A (BETA B))))'), i.e., our conjecture is a call of @('P'),
+  in which the 1st (and only) argument is a call of @('F'), in which the 1st
+  (and only) argument is a call of @('G'), in which the 2nd argument is call of
+  @('BETA').</p>
+
+  <ul>
+
+  <li>@('IFF') is maintained on a call of @('P') provided @('PEQ') is maintained on
+  the 1st argument of @('P'):
+    <ul>
+    <li><i>event</i>:  @('(DEFCONG PEQ IFF (P X) 1)')</li>
+    <li><i>name</i>: @('PEQ-IMPLIES-IFF-P-1')</li>
+    </ul>
+    </li>
+
+  <li>@('PEQ') is maintained on a call of @('F') provided @('FEQ') is maintained on
+  the 1st argument of @('F'):
+    <ul>
+    <li><i>event</i>:  @('(DEFCONG FEQ PEQ (F X) 1)')</li>
+    <li><i>name</i>: @('FEQ-IMPLIES-PEQ-F-1')</li>
+    </ul>
+    </li>
+
+  <li>@('FEQ') is maintained on a call of @('G') provided @('G2EQ1') is maintained on
+  the 2nd argument of @('G'):
+    <ul>
+    <li><i>event</i>:  @('(DEFCONG G2EQ1 FEQ (G X Y) 2)')</li>
+    <li><i>name</i>: @('G2EQ1-IMPLIES-FEQ-G-2')</li>
+    </ul>
+    </li>
+
+  <li>@('FEQ') is <i>also</i> maintained on a call of @('G') provided @('G2EQ2') is maintained on
+  the 2nd argument of @('G'):
+    <ul>
+    <li><i>event</i>:  @('(DEFCONG G2EQ2 FEQ (G X Y) 2)')</li>
+    <li><i>name</i>: @('G2EQ2-IMPLIES-FEQ-G-2')</li>
+    </ul>
+    </li>
+
+  </ul>
+
+  <p>Note that there are two ways to maintain @('FEQ') on a call of @('G'):
+  maintain either @('G2EQ1') or @('G2EQ2') on the second argument of @('G').
+  But neither of those equivalence relations is used in our rewrite @('RULE').
+  Our @('RULE') uses @('G2EQ1!'), so assume we've proved:</p>
+
+  <ul>
+
+  <li>@('G2EQ1!') refines @('G2EQ1'):
+    <ul>
+    <li><i>event</i>: @('(DEFREFINEMENT G2EQ1! G2EQ1)')</li>
+    <li><i>name</i>: @('G2EQ1!-REFINES-G2EQ1')</li>
+   </ul>
+   </li>
+
+  </ul>
+
+  <p>Having arranged all of the above, imagine issuing the commands</p>
+
+  @({
+  (brr T)
+  (monitor '(:REWRITE RULE)
+           '(:condition (and (equal (brr@ :target) '(BETA B))
+                             '(:path+ :go))
+             :rf t))
+  (thm (P (F (G A (BETA B))))
+       :hints ((\"Goal\" :do-not '(preprocess))))
+  })
+
+  <p>Note: The @(':condition') value above will cause a break only if the
+  @(':target') is @('(BETA B)'), but when the break occurs it will issue the
+  command @(':PATH+') to print the path and then issue the command @(':GO') to
+  proceed from the break.  Because we've just monitored a @(see simple)
+  abbreviation rule, we include in the @(tsee thm) command the hint to avoid
+  preprocessing, as advised in the documentation for @(tsee monitor).</p>
+
+  <p>Because we've done the equivalence, congruence, and refinement setup
+  perfectly, our @('RULE') will fire and we will get a break like this:</p>
+
+  @({
+  (1 Breaking (:REWRITE RULE) on (BETA B):
+  1 ACL2 >
+  })
+
+  <p>The subsequent @(':PATH+') command will show how the rewriter descended to
+  here from the top-level goal and will display the geneqvs derived for each
+  rewrite.</p>
+
+  @({
+  1 ACL2 >:path+
+  1. Simplifying the clause
+       ((P (F (G A (BETA B)))))
+  2. Rewriting (to simplify) the atom of the first literal,
+       (P (F (G A (BETA B)))),
+     Geneqv: (IFF)
+  3. Rewriting (to simplify) the first argument,
+       (F (G A (BETA B))),
+     Geneqv: ((PEQ PEQ-IMPLIES-IFF-P-1))
+  4. Rewriting (to simplify) the first argument,
+       (G A (BETA B)),
+     Geneqv: ((FEQ FEQ-IMPLIES-PEQ-F-1))
+  5. Rewriting (to simplify) the second argument,
+       (BETA B),
+     Geneqv: ((G2EQ2 G2EQ2-IMPLIES-FEQ-G-2)
+              (G2EQ1 G2EQ1-IMPLIES-FEQ-G-2))
+  6. Attempting to apply (:REWRITE RULE) to
+       (BETA B)
+     Preserving: G2EQ1!
+     Geneqv: ((G2EQ2 G2EQ2-IMPLIES-FEQ-G-2)
+              (G2EQ1 G2EQ1-IMPLIES-FEQ-G-2))
+  1 ACL2 >
+  })
+
+  <p>Recall, from the discussion above, that sometimes geneqvs are printed
+  merely as a list of equivalence relations, e.g., @('(G2EQ2 G2EQ1)'), and
+  other times, as above, are printed so as to include the name of the
+  congruence relation responsible for each equivalence.</p>
+
+  <p>Notice that in frame 4, where the rewriter is working on @('(G A (BETA
+  B))') it is to maintain the @('FEQ') equivalence relation (which was
+  justified from frame 3 by the rule @('FEQ-IMPLIES-PEQ-F-1') where the
+  rewriter was to maintain @('PEQ')).  But when the rewriter stepped from frame
+  4 to the second argument of @('(G A (BETA B))') in frame 5, it used both
+  @('G2EQ1-IMPLIES-FEQ-G-2') and @('G2EQ2-IMPLIES-FEQ-G-2') to derive the
+  geneqv @('(G2EQ2 G2EQ1)').  Then, when it attempted to apply @('RULE'), whose
+  equivalence relation is @('G2EQ1!'), it passed the refinement test because
+  @('G2EQ1!') refines @('G2EQ1'), which is one of the equivalences listed in
+  the geneqv.</p>
+
+  <p>When we proceed from the break, the proof completes successfully.</p>
+
+  <p>But now imagine that we had failed to prove @('(DEFREFINEMENT G2EQ1!
+  G2EQ1)').  The @('thm') command above would have caused this break:</p>
+
+  @({
+  (1 Breaking (:REWRITE RULE) on (BETA B):
+
+  The equivalence relation, G2EQ1!, of this rule is not a refinement
+  of the current geneqv, (G2EQ2 G2EQ1).  Use :path or :path+ to see how
+  the geneqv evolved.  See :DOC refinement-failure for advice about how
+  to deal with this kind of problem.
+
+  1 ACL2 >
+  })
+
+  <p>The break header explains the problem: the rewriter does not know that
+  @('G2EQ1!') refines @('G2EQ1') or @('G2EQ2').  Of course, <i>we</i> do know
+  that and the fix is simply to prove the ``forgotten'' @(tsee
+  defrefinement).</p>
+
+  <p>On the other hand, suppose we had proved the @('defrefinement') but had
+  forgotten to prove that @('FEQ') is maintained on a call of @('G') when
+  @('G2EQ1') is maintained on the 2nd argument of @('G'), i.e., @('(DEFCONG
+  G2EQ1 FEQ (G X Y) 2)'), aka @('G2EQ1-IMPLIES-FEQ-G-2').  Then the @('thm')
+  command would produce the following break.</p>
+
+  @({
+  (1 Breaking (:REWRITE RULE) on (BETA B):
+
+  The equivalence relation, G2EQ1!, of this rule is not a refinement
+  of the current geneqv, (G2EQ2).  Use :path or :path+ to see how the
+  geneqv evolved.  See :DOC refinement-failure for advice about how to
+  deal with this kind of problem.
+  })
+
+  <p>Note that the geneqv is printed in its simplest form, as a list of
+  equivalence relation names; in this case only one name is included:
+  @('G2EQ2').  Of course, if we believed @('G2EQ1!') does refine @('G2EQ2'), it
+  would suffice to prove the corresponding refinement rule.  But let's suppose
+  we know @('G2EQ1!') doesn't refine @('G2EQ2').  Instead, we know @('G2EQ1!')
+  refines @('G2EQ1'), which is not in the geneqv.  Our problem then is to
+  arrange for @('G2EQ1') to be in the geneqv.  Look at the path that got us
+  here.</p>
+
+  @({
+  1 ACL2 >:path+
+  1. Simplifying the clause
+       ((P (F (G A (BETA B)))))
+  2. Rewriting (to simplify) the atom of the first literal,
+       (P (F (G A (BETA B)))),
+     Geneqv: (IFF)
+  3. Rewriting (to simplify) the first argument,
+       (F (G A (BETA B))),
+     Geneqv: ((PEQ PEQ-IMPLIES-IFF-P-1))
+  4. Rewriting (to simplify) the first argument,
+       (G A (BETA B)),
+     Geneqv: ((FEQ FEQ-IMPLIES-PEQ-F-1))
+  5. Rewriting (to simplify) the second argument,
+       (BETA B),
+     Geneqv: ((G2EQ2 G2EQ2-IMPLIES-FEQ-G-2))
+  6. Attempting to apply (:REWRITE RULE) to
+       (BETA B)
+     Preserving: G2EQ1!
+     Geneqv: ((G2EQ2 G2EQ2-IMPLIES-FEQ-G-2))
+  1 ACL2 >
+  })
+
+  <p>In frame 4 we are to maintain @('FEQ') on a call of @('G').  In frame 5 we
+  are rewritting the second argument of @('G') and used
+  @('G2EQ2-IMPLIES-FEQ-G-2') to derive the new geneqv containing @('G2EQ2').
+  We could get @('G2EQ1') into that new geneqv is only we had a congruence rule
+  that says @('FEQ') is maintained on @('G') when rewriting the second argument
+  of @('G') maintaining @('G2EQ1').  That's just the ``forgotten'' @('(DEFCONG
+  G2EQ1 FEQ (G X Y) 2)').  Of course we could alternatively have chosen to
+  prove @('(DEFCONG G2EQ1! FEQ (G X Y) 2)'), but it is generally better to
+  prove the strongest congruence rules we know.</p>
+
+  <p>Finally, as documented in @(see refinement) and @(see congruence),
+  refinement and congruence rules are not (always) tracked and usually do
+  not show up in the @(see summary) printed at the end of proof attempts.
+  The decision not to track every use of these rules was made to improve
+  prover efficiency.</p>")
 
 (defxdoc regenerate-tau-database
   :parents (events introduction-to-the-tau-system)
@@ -123823,6 +127124,25 @@ work on <tt>(q x)</tt>.</p>
 
  <p>@('Remove-duplicates') is defined by Common Lisp.  See any Common Lisp
  documentation for more information.</p>")
+
+(defxdoc remove-global-stobj
+  :parents (events stobj)
+  :short "Remove a global @(see stobj) with a given name"
+  :long "<p>See @(tsee add-global-stobj) for relevant background and terminlogy
+ together with an explanation of @('remove-global-stobj').  Here we give only a
+ brief summary.</p>
+
+ @({
+ General Form:
+ (remove-global-stobj x state)
+ })
+
+ <p>where @('x') evaluates to the name of a stobj that has a global value.</p>
+
+ @({
+ Example Form:
+ (remove-global-stobj 'st state)
+ })")
 
 (defxdoc remove-invisible-fns
   :parents (loop-stopper)
@@ -130368,7 +133688,8 @@ work on <tt>(q x)</tt>.</p>
  push-untouchable), @(tsee remove-untouchable), @(tsee set-body), and @(tsee
  table) @(see events).  Any other type of non-redundant event will cause an
  error if @('flag') is @('t') and a warning if @('flag') is @('nil'),
- <i>except</i> in the course of carrying out an @(tsee include-book) form.</p>
+ <i>except</i> in the course of carrying out an @(tsee include-book) form or
+ the second pass of an @(tsee encapsulate) form.</p>
 
  <p>Note that because @(tsee table) @(see events) that set the @(tsee
  acl2-defaults-table) are implicitly @(tsee local), @('set-enforce-redundancy')
@@ -135689,7 +139010,7 @@ work on <tt>(q x)</tt>.</p>
  #\LATIN_CAPITAL_LETTER_A_WITH_ACUTE
  * (code-char 225)
  #\LATIN_SMALL_LETTER_A_WITH_ACUTE
- * 
+ *
  })
 
  <p>While most Lisps that host ACL2 consider these two characters to be
@@ -136413,7 +139734,7 @@ work on <tt>(q x)</tt>.</p>
 ; Release approved by DARPA with "DISTRIBUTION STATEMENT A. Approved
 ; for public release. Distribution is unlimited."
 
-; WARNING: Don’t change the name of this topic without also changing its
+; WARNING: Don't change the name of this topic without also changing its
 ; reference in :DOC acknowledgments!
 
   :parents (acl2)
@@ -136523,13 +139844,24 @@ work on <tt>(q x)</tt>.</p>
 
  </ul></li>
 
- <li><a href='http://acl2s.ccs.neu.edu/acl2s/'>The ACL2 Sedan</a> (see @(see
- acl2-sedan)) is an <color rgb='#0090f0'><b>Eclipse-based plug-in that provides
- a modern development environment</b></color> and other capabilities that may
- be helpful for new ACL2 users.</li>
+ <li>Here are some resources for trying out ACL2 without directly installing it
+ yourself.</li>
+
+ <ul>
+
+ <li><see topic='@(url acl2-sedan)'>The ACL2 Sedan</see> is an <color
+ rgb='#0090f0'><b>Eclipse-based plug-in that provides a modern development
+ environment</b></color> and other capabilities that may be helpful for new
+ ACL2 users.</li>
 
  <li>A basic <color rgb='#0090f0'><b>web-based interface to ACL2</b></color> is
  <a href='http://new.proofpad.org'>Proof Pad</a>.</li>
+
+ <li>There is an <a href='https://hub.docker.com/r/atwalter/acl2'>ACL2 Docker
+ container</a> (maintained at <a
+ href='https://github.com/mister-walter/acl2-docker'>this repo</a>).</li>
+
+ </ul>
 
  </ul>")
 
@@ -137734,7 +141066,7 @@ work on <tt>(q x)</tt>.</p>
  <p>The consequences of this simple rule are far-reaching and require some
  getting used to.  For example, if @('OBJ') has been declared as a
  single-threaded object name, then the following consequences ensue (but see
- the discussion of congruent stobjs below for a slight relaxation).</p>
+ the discussion at the end of this topic for some relaxations).</p>
 
  <ul>
 
@@ -137792,7 +141124,9 @@ work on <tt>(q x)</tt>.</p>
  relatively advanced notion of ``congruent stobjs'' is discussed there.  The
  idea is to allow a stobj, @('st2'), of the same ``shape'' as a given stobj,
  @('st1'), to be used in place of @('st1').  Other @(tsee defstobj) keywords
- allow inlining and renaming of stobj accessors and updaters.</p>
+ allow inlining and renaming of stobj accessors and updaters, and a
+ @(':non-executable') keyword can be used to defer or totally avoid creating a
+ &ldquo;global&rdquo; stobj for the given stobj name.</p>
 
  <p>But we are getting ahead of ourselves.  To start the stobj tour recommended
  earlier in this topic, see @(see stobj-example-1).</p>")
@@ -138168,7 +141502,7 @@ work on <tt>(q x)</tt>.</p>
 (defxdoc stobj-example-1-implementation
   :parents (stobj)
   :short "The implementation of the @('counters') stobj"
-  :long "<p>the event</p>
+  :long "<p>The event</p>
 
  @({
   (defstobj counters
@@ -142172,28 +145506,28 @@ work on <tt>(q x)</tt>.</p>
 
   <ul>
 
-  <li><p><b>tame @('LAMBDA') object</b> aka @('tamep-lambdap'): An object is a
+  <li><b>tame @('LAMBDA') object</b> aka @('tamep-lambdap'): An object is a
   tame @('LAMBDA') object if is of the form @('(LAMBDA vars body)') or
   @('(LAMBDA vars dcl body)') where @('vars') is a list of symbols and
   @('body') is a tame expression.  Formally, an object @('x') is a tame
   @('LAMBDA') object iff @('(tamep-lambdap x)').  @('Tamep-lambdap') is
-  actually a macro.</p></li>
+  actually a macro.</li>
 
-  <li><p><b>tame function</b> aka @('tamep-functionp'): An object is a <i>tame
+  <li><b>tame function</b> aka @('tamep-functionp'): An object is a <i>tame
   function</i> iff it is either (a) a badged symbol and ilks is @('T'), or (b)
   a tame @('LAMBDA') object (see above).  Formally, an object @('x') is a tame
-  function iff @('(tamep-functionp x)').</p></li>
+  function iff @('(tamep-functionp x)').</li>
 
-  <li><p><b>tame expression</b> aka @('tamep'): An object is a <i>tame
+  <li><b>tame expression</b> aka @('tamep'): An object is a <i>tame
   expression</i> iff it is a symbol, a quoted constant, the call of an badged
   function symbol on the correct number of suitably tame expressions with
   respect to the ilks of the function symbol, or the call of a tame @('LAMBDA')
   expression on the correct number of tame expressions.  Formally, an object
   @('x') is a tame expression iff @('(tamep x)').  Note that tameness implies
   every function symbol in the expression is badged but <i>not necessarily
-  warranted</i>.</p></li>
+  warranted</i>.</li>
 
-  <li><p><b>suitably tame with (respect to arity and ilks)</b> aka
+  <li><b>suitably tame with (respect to arity and ilks)</b> aka
   @('suitably-tamep-listp'): A list of objects @('x') is <i>suitably tame</i>
   with respect to an arity @('n') and a list of @('ilks') iff @('x') is a true
   list of length @('n'), and when an ilk is @(':FN') the corresponding object
@@ -142202,7 +145536,7 @@ work on <tt>(q x)</tt>.</p>
   tame expression.  Formally, an object @('x') is suitably tame with respect to
   @('n') and @('ilks') iff @('(suitably-tamep-listp n ilks x)').   Note in
   particular our use of the word ``quoted'' above.  We illustrate this in the
-  example below.</p></li>
+  example below.</li>
 
   </ul>
 
@@ -146449,8 +149783,8 @@ work on <tt>(q x)</tt>.</p>
 
  <p>@('Trace$') installs alternate code for the indicated functions that prints
  information upon entry to, and exit from, calls of the functions.  For an
- alternate tracing utility used for educational purposes in <a
- href='http://acl2s.ccs.neu.edu/acl2s/doc/'>ACL2s</a>, see community book
+ alternate tracing utility used for educational purposes in <see topic='@(url
+ acl2-sedan)'>ACL2s</see>, see community book
  @('books/misc/trace-star.lisp').</p>
 
  <p>From a logical perspective all trace printing is a fiction.  (But see @(see
@@ -156161,22 +159495,22 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   <p>where</p>
 
   <ul>
-  <li><p>@('vars') is a list of distinct legal variable names</p></li>
+  <li>@('vars') is a list of distinct legal variable names</li>
 
-  <li><p>@('tdcl'), if present, is a @('DECLARE') form containing, at most,
+  <li>@('tdcl'), if present, is a @('DECLARE') form containing, at most,
       @('TYPE'), @('IGNORE'), @('IGNORABLE'), and @('XARGS') keys.  The user of
       @(tsee lambda$) may provide multiple @('DECLARE') forms but when
-      translated they are combined into one as shown here.</p></li>
+      translated they are combined into one as shown here.</li>
 
-  <li><p>If an @('XARGS') key is present it has exactly this form @('(XARGS
+  <li>If an @('XARGS') key is present it has exactly this form @('(XARGS
       :GUARD tguard :SPLIT-TYPES T)'), where @('tguard') is a <i>fully
       translated</i> logic mode term involving only the formal variables,
       @('vars').  Note that the user of @(tsee lambda$) may supply
       @(':SPLIT-TYPES') @('NIL') and may do so before or after the @(':GUARD'),
       and the guard term need not be in translated form, but the resulting
-      @('LAMBDA') object has the form described here.</p></li>
+      @('LAMBDA') object has the form described here.</li>
 
-  <li><p>The @(':GUARD') specified in @('XARGS') must include as a conjunct
+  <li>The @(':GUARD') specified in @('XARGS') must include as a conjunct
       every @('TYPE') expression generated by any @('TYPE') specs.  E.g.,
       @('(INTEGERP x)') must be a conjunct of @('tguard') if @('(TYPE INTEGER
       ... x ...)') is declared.  That is consistent with the @(':SPLIT-TYPES')
@@ -156191,20 +159525,20 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
       rational x) (xargs :guard (if (integerp x) (rationalp x)
       'nil) :split-types t))').  Note also that the guard is a fully translated
       conjunction, i.e., an @('IF'), not an @('AND')!  Order of the conjuncts
-      does not matter.</p>
+      does not matter.<p/>
 
-      <p>Note: The guard need not be tame (or even fully badged) because guards
+      Note: The guard need not be tame (or even fully badged) because guards
       are irrelevant to the axioms of @('apply$').  But guards must be in
       @(':logic') mode from the outset because we may have to prove guard
       obligations on-the-fly in evaluation (we do not want to try to convert
       functions used in the guard from from @(':program') to @(':logic') mode
-      while doing an evaluation of an @('apply$')).</p></li>
+      while doing an evaluation of an @('apply$')).</li>
 
-  <li><p>@('tbody') is a fully translated, @(see tame) term, involving no free
+  <li>@('tbody') is a fully translated, @(see tame) term, involving no free
       variables and respecting the declared @('IGNORE') and @('IGNORABLE')
-      declarations.</p>
+      declarations.<p/>
 
-      <p>Furthermore, in the case of a lambda object generated by @('lambda$'),
+      Furthermore, in the case of a lambda object generated by @('lambda$'),
       @('tbody') is a ``tagged'' version of the translation of the body used in
       the @('lambda$') expression.  Tagging involves use of a special form
       generated by @('tag-translated-lambda$-body') and recognized by
@@ -156213,10 +159547,10 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
       @('(lambda$ (x) (+ 1 x))') translates to the tagged lambda object
       @(''(LAMBDA (X) (RETURN-LAST 'PROGN 'orig-form tbody))'), where
       @('orig-form') is @('(LAMBDA$ (X) (+ 1 X))') and @('tbody') is
-      @('(BINARY-+ '1 X)').</p>
+      @('(BINARY-+ '1 X)').<p/>
 
-      <p>It may be helpful to use @(':')@(tsee translam) to inspect examples of
-      the translations of @('lambda$') expressions.</p></li>
+      It may be helpful to use @(':')@(tsee translam) to inspect examples of
+      the translations of @('lambda$') expressions.</li>
 
   </ul>
 
@@ -156998,13 +160332,6 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
 
  <ul>
 
- <li>Fetch the ACL2 Sedan (ACL2s) &mdash; see @(see acl2-sedan) &mdash; which
- is an extension and distribution of ACL2 integrated with the Eclipse IDE.  If
- you wish to use ACL2s without the Eclipse front-end, see <a
- href='http://www.cs.utexas.edu/users/moore/acl2/current/HTML/installation/obtaining-and-installing.html#Shortcut-acl2s'>the
- information about ACL2s in the installation instructions</a>, which explains
- how to obtain and use a pre-built ACL2 binary for Windows, Linux, or Mac.</li>
-
  <li>Use a Virtual Machine platform, such as VMware Player (free for
  non-commercial use) or Oracle Virtualbox (free even for commercial
  use) to install Linux, and then follow the normal installation
@@ -157015,10 +160342,18 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
 
  <li>Set up <a
  href='https://en.wikipedia.org/wiki/Windows_Subsystem_for_Linux'>Windows
- Subsystem for Linux</a> on a 64-bit version of Windows 10 (or later, once
- available).  Within that subsystem, follow the setup and installation
- instructions for ACL2.  (You might be the first to test this, but it will
- likely work.)</li>
+ Subsystem for Linux</a> (WSL) on a 64-bit version of Windows 10 (or later,
+ once available).  Within that subsystem, follow the setup and installation
+ instructions for ACL2. See the below section regarding the ACL2 Sedan Windows
+ installation instructions for more info, as that involves installing the ACL2
+ Sedan in WSL on Windows.</li>
+
+ <li>Use the ACL2 Sedan (ACL2s) Windows installation instructions &mdash; see
+ @(see acl2s::acl2s-installation) for more details. This will install ACL2 and
+ the ACL2s system (including a copy of the Eclipse IDE with ACL2s support) in a
+ Windows Subsystem for Linux distro. This distro is configured to automatically
+ open Eclipse when the distro starts up, but one can start the distro without
+ Eclipse by running @('wsl -d acl2s -e /bin/bash --noprofile').</li>
 
  </ul>
 
@@ -157737,7 +161072,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
    nil)
 
  (defrec brr-data-1
-   (((lemma . target) . (unify-subst . type-alist))
+   (((lemma . target) . (unify-subst type-alist . geneqv))
     .
     ((pot-list . ancestors) . (rcnst initial-ttree . gstack)))
    nil)
@@ -165286,6 +168621,2025 @@ expand function call at the current subterm, without simplifying"
  <p>Same as @('(expand t)').  See @(see acl2-pc::expand).</p>
 
  <p>Also see @(see acl2-pc::x), which performs simplification.</p>")
+
+(defxdoc bib::bevier87
+  :parents (operational-semantics-3__annotated-bibliography)
+
+  :short "W. R. Bevier, <i>Verified Operating System Kernel</i>
+  @('(ftp://ftp.cs.utexas.edu/pub/boyer/diss/bevier.pdf)'), University of Texas
+  at Austin, Ph.D. dissertation, 1987.
+
+  <br></br><br></br><b>Relevance:</b> first verified operating system and a
+  component of the CLI stack"
+
+  :long "<br></br>&mdash;&mdash;&mdash;<br></br>
+  <p>The verified operating system kernel used in the CLI Verified Stack as
+  reported in @(see bib::bhmy89) is described here.</p>
+
+  <p>See the Nqthm script @('examples/bevier/kit.events').</p>")
+
+(defxdoc bib::bgm90
+  :parents (operational-semantics-3__annotated-bibliography)
+  :short "R. S. Boyer, M. W. Green, and J S. Moore, &ldquo;<a
+  href='http://www.cs.utexas.edu/users/moore/publications/controller.pdf'>The
+  Use of a Formal Simulator to Verify a Simple Real Time Control
+  Program</a>&rdquo;, in W.H.J. Feijen, A.J.M. van Gasteren, D. Gries, and
+  J. Misra, editors, <i>Beauty is Our Business: A Birthday Salute to Edsger
+  W. Dijkstra</i>, Springer-Verlag Texts and Monographs in Computer Science,
+  pp. 54-66, 1990.
+
+  <br></br><br></br><b>Relevance:</b> operational semantics modeling a hybrid
+  physical/digital system"
+
+  :long "<br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p>Abstract</p>
+
+  <p>We present an initial and elementary investigation of the formal
+  specification and mechanical verification of programs that interact with
+  environments.  We describe a formal, mechanically produced proof that a
+  simple real time control program keeps a vehicle on a straightline course in
+  a variable crosswind.  To formalize the specification we define a
+  mathematical function which models the interaction of the program and its
+  environent.  We then state and prove two theorems about this function: the
+  simulated vehicle never gets farther than three units away from the intended
+  course and homes to the course if the wind remains steady for at least four
+  sampling intervals.</p>
+
+  <br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p>It is easiest to think of the problem as a one-dimensional control
+  problem, e.g., a thermostat or speed control.  But the problem was posed as
+  follows.  Consider the task of steering a vehicle along the x-axis with a
+  crosswind along the y-axis.  The wind speed varies.  The vehicle carries a
+  sensor that indicates whether the vehicle is above, on, or below the x-axis.
+  The vehicle also has actuators that can adjust the sideways velocity of
+  vehicle by a fixed amount.  Write, specify, and verify a control program that
+  never allows the vehicle to drift too far from the x-axis and homes to the
+  x-axis when the wind stays steady sufficiently long.</p>
+
+  <p>This can be modeled as a &ldquo;clocked&rdquo; state machine, except the
+  clock is a sequence of changes in wind velocity.  The &ldquo;physics&rdquo;
+  is modeled extremely simply because the prover only supported natural
+  numbers; but anybody who has ever written a simulator of a physical system
+  will recognize it.  The proof involved defining and verifying an invariant on
+  the state, under the assumption that the wind changed sufficiently
+  smoothly.</p>
+
+  <p>The work was done at SRI, probably between 1979 and 1980.  It was
+  submitted for publication at that time but rejected because its formal
+  approach to real-time control was too unconventional.  The reviewers
+  overlooked the fact that this approach accommodated a hybrid system, where
+  the control program was digital but the &ldquo;simulator&rdquo; was
+  describing the physical world.  It was eventually published about a decade
+  after the work was done, when the authors were invited to submit a paper to a
+  volume in honor of Edsger Dijkstra.</p>
+
+  <p>See the Nqthm script @('examples/basic/controller.events').</p>")
+
+(defxdoc bib::bhmy89
+  :parents (operational-semantics-3__annotated-bibliography)
+
+  :short "W.R. Bevier, W.A. Hunt, Jr., J S. Moore, and W.D. Young, <i>Special
+   Issue on System Verification</i>, <i>Journal of Automated Reasoning</i>,
+   <b>5</b>(4), pp. 409-530, 1989.
+
+  <br></br><br></br><b>Relevance:</b> Computational Logic Inc. (CLI) Verified
+  Stack &mdash; a seminal achievement in formal methods and operational
+  semantics"
+
+  :long "<br></br>&mdash;&mdash;&mdash;<br></br>
+  <p>The Computational Logic, Inc (CLI) Verified Stack was
+  reported in this Special Issue of the JAR.</p>
+
+  <p>The CLI stack was composed of four verified components: a gate-level
+  design for a microprocessor (by Warren Hunt), an assembler/linker/loader that
+  provided an execute-only, stack-based instruction set with subroutine call
+  and return (Moore), a compiler for a small subset of a programming language
+  related to Pascal (Bill Young, see @(see bib::young88)), and a simple
+  operating system kernel (Bill Bevier; see @(see bib::bevier87)).  All
+  components were verified with Nqthm, so that a high-level program could be
+  compiled, assembled, linked, loaded, and run on the gate-level machine with
+  mathematical certainty that it behaved as specified by the semantics of the
+  high-level programming language.  All the models just mentioned involved
+  @(see operational-semantics) and proofs in the style described in here.
+  Indeed, this project basically convinced the community that this style of
+  semantics was practical for both execution and verification of models.</p>
+
+  <p>The verification of the relations between each component &mdash; gates to
+  machine code, machine code to assembly language, assembly language to high
+  level language, operating system to assembly language &mdash; must be
+  considered a &ldquo;first&rdquo; for relating practical machines of each
+  kind.  To the best of our knowledge, no one had ever verified a gate-level
+  implementation of an ISA for a practical microprocessor before Hunt's 1985
+  work @(see bib::hunt85).  With the same caveat, no one had ever verified an
+  assembler/linker/loader before Moore's 1988 Piton work (see @(see
+  bib::moore96) for a history) or verified an operating system kernel for a
+  practical machine before Bevier's 1987 work.  And while McCarthy and Painter
+  verified (by a traditional &ldquo;hand proof&rdquo;) an expression compiler,
+  which various formal methods researchers tackled in the 1970s (including
+  Boyer and Moore in 1979 @(see bib::bm79), where a history of the challenge is
+  sketched), both the high- and low- level machines involved in that earlier
+  &ldquo;compiler&rdquo; work were trivial compared to what Young dealt with in
+  1988.  The messy reality of each component was fundamentally due to the
+  requirement that each layer, starting at the gates, provide sufficient
+  functionality to implement the higher layers.</p>
+
+  <p>In 1989, the &ldquo;hardware&rdquo; at the bottom of the CLI stack was a
+  gate-level description of a machine called FM8502.  The FM8502 was a 32-bit
+  version of Hunt's earlier 16-bit FM8501; see @(see bib::hunt85).  Hunt
+  designed and verified FM8502 to make Moore's job of writing an assembler a
+  little easier.  Moore, with Matt Kaufmann's help with some proofs, verified
+  that the FM8502 code produced by the assembler/linker/loader implemented the
+  semantics of the Piton assembly language.  But the FM8502 could not be
+  fabricated because its gate-level description was not compatible with
+  commercial fabrication tools, e.g., there was unrealistic fan-out.  But the
+  1989 CLI Verified Stack demonstrated that it was practical to prove that a
+  gate-level design implemented a given instruction set architecture (ISA) and
+  that the operational semantic approach allowed the mechanized proofs of
+  formal relations between different abstraction hierarchies.</p>
+
+  <p>In 1991, Hunt and Bishop Brock designed a formal hardware description
+  language (HDL) and used it to describe the FM9001 microprocessor which they
+  then verified to implement its ISA; see @(see bib::hb92).  The FM9001 was
+  fabricated.  In 1991, Moore retargetted the code-generators in the 1989
+  assembler/linker/loader and re-verified that part of the stack, making it
+  possible to port the rest of the verified stack to a fabricated, running
+  machine; see @(see bib::moore96).</p>
+
+  <p>In 1992, two other interesting projects related to Piton and FM9001 were
+  completed.  Art Flatau completed the implementation and Nqthm verification of
+  a second compiler, one that compiled a small subset of the Nqthm functional
+  programming language into Piton (see @(see bib::flatau92)).</p>
+
+  <p>At about the same time, Matt Wilding completed the implementation and
+  verification of several real-time control programs in Piton and verified
+  their functional correctness and resource bounds (instruction counts and
+  stack sizes).  See @(see bib::wilding92) and @(see bib::wilding93).  One of
+  the programs carried out a winning strategy for the game of Nim (if one
+  exists from the given Nim starting state).</p>
+
+  <p>Wilding wrote (@(see bib::wilding93), page 278) &ldquo;An FM9001 was
+  fabricated and runs a compiled version of the Nim program. The fabricated
+  FM9001 microprocessor, the Piton compiler, and the Nim program were never
+  tested in a conventional manner during development or after completion. Even
+  so, each worked the first time and we would have been surprised if any had
+  not.&rdquo;</p>")
+
+(defxdoc bib::bh97
+  :parents (operational-semantics-3__annotated-bibliography)
+
+  :short "B. Brock and W. A. Hunt, Jr., &ldquo;<a
+  href='https://ieeexplore.ieee.org/document/628846'>Formally Specifying and
+  Mechanically Verifying Programs for the Motorola Complex Arithmetic
+  Processor DSP</a>&rdquo;, in <i>1997 IEEE International Conference on
+  Computer Design</i>, IEEE Computer Society, pp. 31-36, October, 1997.
+
+  <br></br><br></br><b>Relevance:</b> first public announcement of the CAP
+  DSP formalization (this short article was superceded by @(see bib::bh99))"
+
+  :long "<br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p>Abstract</p>
+
+  <p>We describe our formal specification of Motorola's Complex Arithmetic
+  Processor (CAP) DSP and our subsequent use of this specification to verify
+  the correctness of several DSP algorithms. We wrote the specification in
+  the ACL2 logic and carried out the mechanical proofs using the ACL2
+  theorem-proving system. Motorola's CAP is a super-scalar, pipelined DSP
+  with seven memories and more than 20 functional units. Our formal
+  specification is bit-for-bit exact, and was created by hand translating
+  Motorola's drawings for the CAP. We believe that the specification
+  developed is the largest of its kind, as this is the only formal
+  specification of which we are aware for a complete commercial
+  design. Proving the correctness of the DSP algorithms (programs) required
+  proving the correctness of programs with 317-bit instructions and a
+  non-interlocking execution pipeline. This Motorola DSP has a 1.8 million
+  transistor implementation. This project involved both CLI and Motorola
+  personnel and represents more than eight man-years of effort.</p>
+
+  <br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p>See the discussion of the CAP DSP project in @(see
+  operational-semantics-2__other-examples).</p>")
+
+(defxdoc bib::bh99
+  :parents (operational-semantics-3__annotated-bibliography)
+
+  :short "B. Brock and W. A. Hunt, Jr., &ldquo;<a
+  href='https://link.springer.com/chapter/10.1007/978-1-4471-0523-7_
+  5#citeas'>Formal Analysis of the Motorola CAP DSP&rdquo;</a>, in M. Hinchey
+  and J. Bowen, editors, <i>Industrial-Strength Formal Methods</i>,
+  Springer-Verlag, pp. 81-115, 1999.
+
+  <br></br><br></br><b>Relevance:</b> first industrial application of
+  operational semantics with ACL2 and the first complete formal specification
+  of a commercially designed microprocessor"
+
+  :long "<br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p>Abstract</p>
+
+  <p>We describe our formal specification of Motorola's Complex Arithmetic
+  Processor (CAP) Digital Signal Processor (DSP) and our subsequent use of
+  this specification in formal analyses of the CAP hardware and software. The
+  CAP was designed by Motorola Government Systems and Technology Group
+  (Scottsdale, Arizona), which, as a part of their business, builds and sells
+  purpose-built products. The CAP is an ASIC that was designed to efficiently
+  implement a number of signal processing algorithms required in digital
+  communications. Motorola's CAP is a super-scalar, pipelined DSP with seven
+  memories and more than 20 functional units. Motorola's specification for
+  the CAP was captured using the Cadence Signal Processing (SPW) (Cadence,
+  1994) toolsuite; the design is represented as a series of drawings that
+  specify register files, data manipulation units, and interconnecting
+  busses. We have completely specified the CAP (Gilfeather et al, 1994) using
+  the formal logic ACL2 (Kaufmann and Moore, 1996). Our specification is
+  executable and can be used as a simulator as well as a basis for proving
+  the correctness of the CAP hardware design and CAP programs. We believe our
+  specification is bit-for-bit exact with respect to the SPW specification
+  produced by Motorola, and was created by hand translating Motorola's SPW
+  drawings for the CAP. We have used our CAP specification to analyse the CAP
+  instruction pipeline and various CAP algorithms. We believe that the
+  specification developed is the largest of its kind, as this is the only
+  formal specification of which we are aware for a complete commercial
+  design. We believe that the use of mathematical logic for modelling and
+  reasoning about hardware designs such as we have demonstrated here can
+  provide assurance of circuit design correctness well beyond what is
+  available from current CAD techniques.</p>
+
+  <br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p>See the discussion of the CAP DSP project in @(see
+  operational-semantics-2__other-examples).</p>")
+
+(defxdoc bib::bkm96
+  :parents (operational-semantics-3__annotated-bibliography)
+
+  :short "B. Brock, M. Kaufmann, and J S. Moore, &ldquo;<a
+   href='http://www.cs.utexas.edu/users/moore/publications/bkm96.pdf'>ACL2
+   Theorems about Commercial Microprocessors</a>&rdquo;, in M. Srivas and
+   A. Camilleri, editors, <i>Formal Methods in Computer-Aided Design
+   (FMCAD'96)</i>, Springer-Verlag, LNCS <b>1166</b>, pp. 275-293, doi
+   10.1007/BFb0031816, 1996.
+
+  <br></br><br></br><b>Relevance:</b> early (mid-1990s) applications of ACL2 in
+  industry (Motorola CAP DSP via operational semantics and the AMD K5 FDIV via
+  a shallow embedding)"
+
+  :long "<br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p>Abstract</p>
+
+  <p>ACL2 is a mechanized mathematical logic intended for use in specifying
+  and proving properties of computing machines.  In two independent projects,
+  industrial engineers have collaborated with researchers at Computational
+  Logic, Inc. (CLI), to use ACL2 to model and prove properties of
+  state-of-the-art commercial microprocessors prior to fabrication.  In the
+  first project, Motorola Inc., and CLI collaborated to specify Motorola's
+  complex arithmetic processor (CAP), a single-chip, digital signal processor
+  (DSP) optimized for communications signal processing.  Using the
+  specifications, we proved the correctness of several CAP microcode
+  programs.  The second industrial collaboration involving ACL2 was between
+  Advanced Micro Devices, Inc. (AMD) and CLI.  In this work we proved the
+  correctness of the kernel of the floating-point division operation on AMD's
+  first Pentium-class microprocessor, the AMD5K86.  In this paper, we discuss
+  ACL2 and these industrial applications, with particular attention to the
+  microcode verification work.</p>
+
+  <br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p>This paper contains a good sketch of the Motorola CAP digital signal
+  processor project, from capturing the design as an ACL2 operational model to
+  proving microcode correct with respect to the model.  The paper also includes
+  a timeline describing how long different phases of the project took.</p>
+
+  <p>The paper also discusses the first use of ACL2, in 1995, to deal with
+  floating-point arithmetic: verifying microcode for floating-point division on
+  AMD's first Pentium-class microprocessor, the AMD5k86.  However, the
+  formalization of the division microcode was not via operational semantics but
+  rather a &ldquo;shallow embedding&rdquo; of the microcode into ACL2.  So
+  while both the CAP project and floating-point project are of great relevance
+  to the use of formal methods in industry, we have stressed the CAP work in
+  this doc topic on operational semantics.  For a technical description of the
+  division proof, see J S. Moore, T. Lynch, and M. Kaufmann, &ldquo;<a
+  href='https://www.cs.utexas.edu/~moore/publications/divide_paper.pdf'>A
+  Mechanically Checked Proof of the Correctness of the Kernel of the AMD5k86
+  Floating-Point Division Program</a>&rdquo;, <i>IEEE Transactions on
+  Computers</i>, <b>47</b>(9), pp. 913-926, Sep., 1998.</p>")
+
+(defxdoc bib::bm05
+  :parents (operational-semantics-3__annotated-bibliography)
+
+  :short "B. Brock and J S. Moore, &ldquo;<a
+  href='https://www.cs.utexas.edu/~moore/publications/csort/main.pdf'>A
+  Mechanically Checked Proof of a Comparator Sort Algorithm</a>&rdquo;, in
+  M. Broy, J. Gruenbauer, D. Harel, and C. A. R. Hoare, editors,
+  <i>Engineering Theories of Software Intensive Systems</i>, Springer NATO
+  Science Series II, <b>195</b>, pp. 141-175, 2005.
+
+  <br></br><br></br><b>Relevance:</b> an example of proving that the state
+  transformation effected by running a CAP model on commercial microcode
+  implements the high level specification"
+
+  :long "<br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p>Abstract</p>
+
+  <p>We describe a mechanically checked correctness proof for the comparator
+  sort algorithm underlying a microcode program in a commercially designed
+  digital signal processing chip.  The abstract algorithm uses an unlimited
+  number of systolic comparator modules to sort a stream of data.  In
+  addition to proving that the algorithm produces an ordered permutation of
+  its input, we prove two theorems that are imporant to verifying the
+  microcode implementation.  These theorems describe how positive and
+  negative &ldquo;infinities&rdquo; can be streamed into the array of
+  comparators to achieve certain effects.  Interesting generalizations are
+  necessary in order to prove these theorems inductively.  The mechanical
+  proofs were carried out with the ACL2 theorem prover.  We find these proofs
+  both mathematically interesting and illustrative of the kind of mathematics
+  that must be done to verify software.</p>
+
+  <br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p>For the 1997 ACL2 proof script see @('books/misc/csort.lisp').  The long
+  delay between when the work was done (1997) and when it was published
+  (2005) is due both to the understandable sensitivity of companies to permit
+  publication of anything that might reveal proprietary intellectual property,
+  combined with the rarity of suitable venues to describe exceedingly practical
+  formal methods applications.  (Despite this phenomenon, working closely with
+  industry is the only way to build tools that meet their needs.)</p>
+
+  <p>See the discussion of the CAP DSP project in @(see
+  operational-semantics-2__other-examples).</p>")
+
+(defxdoc bib::bm73
+  :parents (operational-semantics-3__annotated-bibliography)
+  :short "R. S. Boyer and J S. Moore, &ldquo;<a
+  href='https://www.cs.utexas.edu/~moore/publications/bm-ijcai-73.pdf'>Proving
+  Theorems about LISP Functions</a>&rdquo;, in <i>Proceedings of the Third
+  International Joint Conference on Artificial Intelligence (IJCAI)</i>,
+  Stanford University, pp. 486-493, 1973.
+
+  <br></br><br></br><b>Relevance:</b> journal article about the Edinburgh Pure
+  Lisp Theorem Prover (PLTP)"
+
+  :long "<br></br>&mdash;&mdash;&mdash;<br></br> <p>For a longer, journal
+  version of this paper see R. S. Boyer and J S. Moore, &ldquo;<a
+  href='https://www.cs.utexas.edu/~moore/publications/bm75.pdf'>Proving
+  Theorems about LISP Functions</a>&rdquo;, <i>Journal of the ACM</i>,
+  <b>22</b>(1), pp. 129-144, 1975.</p>
+
+  <p>The IJCAI'73 paper was the first widely accessible description of the
+  Edinburgh Pure Lisp Theorem Prover (PLTP).  The key ideas in the theorem
+  prover were the use of Lisp as a logic, the reliance on recursive function
+  definitions, extensive use of rewriting and symbolic evaluation, and an
+  induction heuristic based on the failure of symbolic evaluation.  The system
+  was fully automatic; there were no provisions for user supplied lemmas or
+  hints.</p>
+
+  <p>The &ldquo;proveall&rdquo; (regression suite) included such theorems as
+  associativity of @('append'), @('reverse-reverse'), and the correctness of
+  insertion sort.  The paper was hailed as a landmark in theorem proving
+  because these theorems had never been proved automatically before.  But early
+  critics said that proving theorems about pure Lisp was irrelevant because
+  serious applications were not written in pure Lisp.  However, Boyer and Moore
+  argued that Lisp was a logic with features necessary to the specification and
+  proof of program properties, namely recursive definitions and mathematical
+  induction.</p>
+
+  <p><a href='https://www.cs.utexas.edu/~moore/best-ideas/pltp/index.html'>The
+  PLTP Archive</a> contains a wealth of information about PLTP and its 1973
+  implementation in POP-2, including the POP-2 Reference Manual, scanned OCR
+  listings of the PLTP source code, listings of proof output, and modern
+  reconstructions of PLTP in OCaml (by Grant Passmore) and ACL2 (by J
+  Moore).</p>")
+
+(defxdoc bib::bm79
+  :parents (operational-semantics-3__annotated-bibliography)
+
+  :short "R. S. Boyer and J S. Moore, <i><a
+  href='https://archive.org/details/acl_20240626'>A Computational
+  Logic</a></i>, Academic Press, 1979.
+
+  <br></br><br></br><b>Relevance:</b> implementation details of the prover that
+  became Nqthm"
+
+  :long "<br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p>This book described the &ldquo;Boyer-Moore theorem prover&rdquo; as it
+  stood in 1979, when the prover was locally known as &ldquo;Thm.&rdquo; Unlike
+  the Edinburgh Pure Lisp Theorem Prover (PLTP), Thm supported datatypes other
+  than pairs, well-founded ordinals, a conservative definitional principle, and
+  named previously proved lemmas stored as rules.  Unlike the later Nqthm, Thm
+  did not support @('quote')-notation and so represented logical constants
+  inefficiently.  Thm also lacked the linear-arithmetic decision procedure, and
+  lacked user-supplied hints.  Of course, there were also many heuristic
+  changes along the way from PLTP to Nqthm.</p>
+
+  <p>One outstanding feature of <i>A Computational Logic</i> was noted by Boyer
+  and Moore in the Preface to the First Edition of @(see bib::bm97) &ldquo;we
+  know of three independent successful efforts to construct the theorem prover
+  from the book.&rdquo; If you want to a good idea of how Nqthm and ACL2
+  &ldquo;work,&rdquo; read this book!</p>")
+
+(defxdoc bib::bm80
+  :parents (operational-semantics-3__annotated-bibliography)
+
+  :short "R. S. Boyer and J S. Moore, &ldquo;<a
+  href='https://www.cs.utexas.edu/~moore/publications/BDX930-Report-1978-81.pdf'>On
+  Why It Is Impossible to Prove that the BDX930 Dispatcher Implements a
+  Time-Sharing System</a>&rdquo;, in Sections 14 and 15 of P.M. Melliar-Smith,
+  K. Levitt, R. Schwartz, R. Boyer, J Moore, D. Hare, R. Shostak, M. Moriconi,
+  M. Green, and W.D. Elliot, <i>Investigation, Development, and Evaluation of
+  Performance Proving for Fault-Tolerant Computer Final Report, covering the
+  period September 1978 to June 1982</i>, SRI, July 1982.
+
+  <br></br><br></br><b>Relevance:</b> operational semantic model of (a
+  fragment) of a 1970s flight control computer"
+
+  :long "<br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p>Boyer and Moore's formalization of a subset of the instruction set of the
+  Bendix BDX930 flight control computer is reported in this document.  The
+  document is part of the Final Report for the Software Implemented Fault
+  Tolerance (SIFT) project of SRI, sponsored by the National Aeronautics and
+  Space Administration, Langley Research Center, Hampton, Va 23665.  Section 14
+  explains why it was impossible to verify that the code for the SIFT
+  dispatcher implemented a time-sharing system; Section 15 contains the 30 page
+  listing of the operational semantics for the BDX930 fragment in question,
+  written in the logic of Thm/Nqthm.  The two sections do not contain dates.
+  The whole report covers the period 1978 through 1982.  Boyer and Moore left
+  SRI in 1981.  The BDX930 work was probably done in 1979 or 1980 as it was
+  influential in the evolution of Thm to Nqthm, as noted in @(see
+  operational-semantics-5__history-etc).</p>")
+
+(defxdoc bib::bm96
+  :parents (operational-semantics-3__annotated-bibliography)
+
+  :short "R. S. Boyer and J S. Moore, &ldquo;<a
+  href='https://www.cs.utexas.edu/~moore/publications/bm96.pdf'>Mechanized
+  Formal Reasoning about Programs and Computing Machines</a>&rdquo;, in
+  R. Veroff, editor, <i>Automated Reasoning and Its Applications: Essays in
+  Honor of Larry Wos</i>, MIT Press, 1966.
+
+  <br></br><br></br><b>Relevance:</b> the basic Nqthm/ACL2 style of operational semantics as a book chapter"
+
+  :long "<br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p>Abstract</p>
+
+  <p>The design of a new processor often requires the invention and use of a
+  new machine-level programming language, especially when the processor is
+  meant to serve some special purpose.  It is possible to specify formally the
+  semantics of such a programming language so that one obtains a simulator for
+  the new language from the formal semantics.  Furthermore, it is possible to
+  configure some mechanical theorem provers so that they can be used directly
+  to reason about the behavior of programs in the new language, permitting the
+  expeditious formal modeling of the new design as well as experimentation with
+  and mechanically checked proofs about new programs.  We here study a very
+  simple machine-level language to illustrate how such modeling,
+  experimentation, and reasoning may be done using the ACL2 automated reasoning
+  system.  Of particular importance is how we control the reasoning system so
+  that it can deal with the complexity of the machine being modeled.  The
+  methodology we describe has been used on industrial problems and has been
+  shown to scale to the complexity of state-of-the-art processors.</p>
+
+  <br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p>This paper describes the basic methodology used to model and reason about
+  machines with ACL2: states as objects, a step function, a run function, clock
+  functions for programs, lemmas to control expansion, and the basic
+  methodology for specifying and verifying programs.  The vehicle for this
+  explanation here is a machine almost identical to M1 and this paper covers
+  essentially the same ground as the documentation topic @(see
+  operational-semantics-1__simple-example).  Referring to the work described in
+  @(see operational-semantics-5__history-etc) and early ACL2 work, the paper
+  says</p>
+
+  <blockquote>
+  The approach we describe is essentially that used in the Nqthm and ACL2
+  projects described above.  Furthermore, the Nqthm and ACL2 users above were
+  taught this method of formalization via examples very similar to this one,
+  primarily in our graduate class, <i>Recursion and Induction</i>, at the
+  University of Texas at Austin.  That this technique scales up to languages
+  that are many orders of magnitude more complicated than this one is
+  demonstrated by [5, 9].  Therefore, simplicity <i>here</i> should be looked
+  upon as a virtue.
+  </blockquote>
+
+  <p>While the paper does not name the machine being formalized, it was in fact
+  called @('small-machine') rather than @('m1') and it goes all the way back to
+  Nqthm.  Indeed, among the students who learned this methodology in
+  <i>Recursion and Induction</i> in the early 1980s were Bevier, Hunt, Young,
+  Flatau, and Wilding &mdash; all principals in the CLI Verified Stack work
+  @(see bib::bhmy89).  See the 1991 Nqthm script
+  @('examples/basic/small-machine.events'), which demonstrates that most of the
+  methodology described here was developed before ACL2.  Coincidentally, it
+  also shows that what we're calling @('m1') today &mdash; informally described
+  as a &ldquo;toy&rdquo; Java Virtual Machine &mdash; predates the Java and the
+  JVM.</p>
+
+  <p>The ACL2 version of the @('small-machine') proof script may be found in
+  the ACL2 book at
+  @('https://www.cs.utexas.edu/~moore/publications/small-machine.lisp').</p>
+
+  <p>By the way, notes for <i>Recursion and Induction</i> have been
+  incorporated into ACL2's documentation.  See @(see recursion-and-induction).
+  But when the course was taught by Boyer and Moore in the 1980s the notes were
+  essentially just a list of conjectures to prove or disprove and the class was
+  rather free-form in the sense that student participation was critical and
+  often determined the kinds of problems posed in the latter part of the
+  semester.  Operational semantics is not mentioned in the
+  recursion-and-induction documentation.</p>")
+
+(defxdoc bib::bm97
+  :parents (operational-semantics-3__annotated-bibliography)
+
+  :short "R. S. Boyer and J S. Moore, <i><a
+  href='https://drive.google.com/file/d/0B2yFYLn0Spf1TloxMjNxdzBWN1E/'> A
+  Computational Logic Handbook, Second Edition</a></i>, Academic Press, New
+  York, 1997.
+
+  <br></br><br></br><b>Relevance:</b> Nqthm user's manual"
+
+  :long "<br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p>This book is the &ldquo;final&rdquo; user's manual for Nqthm.  It was
+  written about 8 years after the ACL2 project was started, by which time ACL2
+  had gained a sizeable user community despite the fact that Nqthm was still
+  being used by some students and industrial researchers.</p>")
+
+(defxdoc bib::boh03
+  :parents (operational-semantics-3__annotated-bibliography)
+
+  :short "R. E. Bryant and D. R. O'Hallaron, <i>Computer Systems: A
+   Programmer's Perspective</i>, Prentice-Hall. First edition 2003, second
+   edition 2011, third edition 2015.
+
+  <br></br><br></br><b>Relevance:</b>one of the most popular and influential
+  textbooks on modern computer systems; its relevance here is that the book
+  introduced the y86."
+
+  :long "<br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p>Abstract</p>
+
+  <p>For Computer Systems, Computer Organization and Architecture courses in
+  CS, EE, and ECE departments. Few students studying computer science or
+  computer engineering will ever have the opportunity to build a computer
+  system. On the other hand, most students will be required to use and
+  program computers on a near daily basis. <i>Computer Systems: A Programmers
+  Perspective</i> introduces the important and enduring concepts that
+  underlie computer systems by showing how these ideas affect the
+  correctness, performance, and utility of application programs. The text's
+  hands-on approach (including a comprehensive set of labs) helps students
+  understand the under-the-hood operation of a modern computer system and
+  prepares them for future courses in systems topics such as compilers,
+  computer architecture, operating systems, and networking.</p>
+
+  <br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p>The y86 introduced in this textbook is can be thought of as a &ldquo;toy&rdquo;
+  x86 and is an excellent starting point for the formalization of that larger machine.</p>
+
+  <p>The y86 has been modeled in ACL2, by Warren A. Hunt, Jr., and M. Kaufmann,
+  and some programs proved correct with it.  In particular, the ACL2 book
+  @('/books/models/y86/y86-basic/y86/y86.lisp') is a faithful operational
+  semantic model of the 36-bit y86 described in the first edition of the
+  Bryant-O'Hallaron book.</p>")
+
+(defxdoc bib::by96
+  :parents (operational-semantics-3__annotated-bibliography)
+
+  :short "R. S. Boyer and Y. Yu, &ldquo;<a
+  href='https://dl.acm.org/doi/10.1145/227595.227603'>Automated Proofs of
+  Object Code for a Widely Used Microprocessor</a>&rdquo;, <i>Journal of the
+  ACM</i> <b>43</b>(1), pp. 166-192, January, 1996.
+
+  <br></br><br></br><b>Relevance:</b> operational model of the Motorola 68020
+  and verification of object code generated by commercial compilers"
+
+  :long "<br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p>Abstract</p>
+
+  <p>We have formally described a substantial subset of the MC68020, a widely
+  used microprocessor built by Motorola, within the mathematical logic of the
+  automated reasoning system Nqthm, a.k.a. the Boyer-Moore Theorem Prover.
+  Using this formal description, we have mechanically checked the correctness
+  of MC68020 object code programs for for binary search, Hoare's Quick Sort,
+  twenty-one functions from the Berkeley Unix C string library, and other
+  well-known algorithms.  The object code for these examples was generated
+  using the Gnu C, the Verdix Ada, and the AKCL common Lisp compilers.  We have
+  mechanized a mathematical theory to facilitate automated reasoning about
+  object code programs.  We describe a two-stage methodology we use to do our
+  proofs.</p>
+
+  <br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p>See also the Nqthm scripts @('examples/yu/') where you will find the
+  definition of the MC68020 model and the proofs of the programs mentioned.</p>")
+
+(defxdoc bib::flatau92
+  :parents (operational-semantics-3__annotated-bibliography)
+
+  :short "A. D. Flatau <i>A verified implementation of an applicative language
+  with dynamic storage allocation</i>
+  @('(ftp://ftp.cs.utexas.edu/pub/boyer/diss/flatau.pdf)'), University of Texas
+  at Austin, Ph.D. dissertation, 1992 (minus some appendices).
+
+  <br></br><br></br><b>Relevance:</b> a second verified compiler hosted on
+  the CLI Verified Stack"
+
+  :long "<br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p>Abstract</p>
+
+  <p>A compiler for a subset of the Nqthm logic and a mechanically checked
+  proof of its correctness is described.  The Nqthm logic defines an
+  applicative programming language very similar to McCarthy's pure Lisp [20].
+  The compiler compiles programs in the Nqthm logic into the Piton assembly
+  level language [23].  The correctness of the compiler is proven by showing
+  that the result of executing the Piton code is the same as produced by the
+  Nqthm interpreter @('V&C$').  The Nqthm logic defines several different
+  abstract data types, or shells, as they are called in Nqthm.  The user can
+  also define additional shells.  The definition of a shell includes the
+  definition of a constructor function that returns new objects with the type
+  of that shell.  These objects can become garbage, so the run-time system of
+  the compiler includes a garbage collector.  The proof of the correctness of
+  the compiler has not been entirely mechanically checked.  A plan for
+  completing the proof is described.</p>
+
+  <br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p>The version of the compiler presented in the dissertation included code
+  for creating new shells and a garbage collector.  But these features of the
+  compiler were not fully verified at the time the dissertation was defended.
+  An earlier version of the compiler dealt only with the Nqthm primitives
+  @('CAR'), @('CDR'), @('CONS'), @('FALSE'), @('LISTP'), @('NLISTP'),
+  @('TRUE'), @('TRUEP'), and @('IF'), as well as recursive functions.  The
+  run-time of that simpler system included dynamic storage allocation (to
+  allocate conses in Piton's array space).  But it did not include a garbage
+  collector.  It was that simpler implementation that was mechanically
+  verified.  The completion of the proofs of the full system was never
+  completed.</p>
+
+  <p>The Nqthm events for this work may be found in the @('*.events') files
+  of @('examples/flatau/').</p>")
+
+(defxdoc bib::ghk13
+  :parents (operational-semantics-3__annotated-bibliography)
+  :short "S. Goel, W. A. Hunt, Jr., and M. Kaufmann, &ldquo;<a
+  href='http://eptcs.org/content.cgi?ACL22013'>Abstract Stobjs and Their
+  Application to ISA Modeling</a>&rdquo;, in R. Gamboa and J. Davis, editors,
+  <i>Proceedings of ACL2 Workshop 2013</i>, Electronic Proceedings in
+  Theoretical Computer Science, Volume 114, pp. 54-69, 2013.
+
+  <br></br><br></br><b>Relevance:</b> an ACL2 feature introduced to support
+  operational semantic models"
+
+  :long "<br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p>Abstract</p>
+
+  <p>We introduce a new ACL2 feature, the abstract stobj, and show how to apply
+  it to modeling the instruction set architecture of a microprocessor. Benefits
+  of abstract stobjs over traditional (&ldquo;concrete&rdquo;) stobjs can
+  include faster execution, support for symbolic simulation, more efficient
+  reasoning, and resilience of proof developments under modeling
+  optimization.</p>
+
+  <br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p>Aside from the specific advantages abstract stobjs (see @(tsee
+  defabsstobj)) confer on ACL2 state machines, this papers illustrates how
+  attention to operational semantics has influenced the development of
+  ACL2.</p>")
+
+(defxdoc bib::ghkg14
+  :parents (operational-semantics-3__annotated-bibliography)
+  :short "S. Goel, W. A. Hunt, Jr., M. Kaufmann, and S. Ghosh, &ldquo;<a
+  href='http://www.cs.utexas.edu/users/hunt/FMCAD/FMCAD14/proceedings/18_goel.pdf'>Simulation
+  and Formal Verification of x86 Machine-Code Programs that Make System
+  Calls</a>&rdquo;, in <i>Proceedings of Formal Methods in Computer-Aided
+  Design (FMCAD'14)</i>, pp. 91-98, 2014.
+
+  <br></br><br></br><b>Relevance:</b> modeling and verifying machine-code
+  programs that exhibit non-determinism"
+
+  :long "<br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p>Abstract</p>
+
+  <p>We present an approach to modeling and verifying machine-code programs
+  that exhibit non-determinism. Specifically, we add support for system calls
+  to our formal, executable model of the user-level x86 instruction-set
+  architecture (ISA). The resulting model, implemented in the ACL2
+  theorem-proving system, allows both formal analysis and efficient
+  simulation of x86 machine-code programs; the logical mode characterizes an
+  external environment to support reasoning about programs that interact with
+  an operating system, and the execution mode directly queries the underlying
+  operating system to support simulation. The execution mode of our x86 model
+  is validated against both its logical mode and the real machine, providing
+  test-based assurance that our model faithfully represents the semantics of
+  an actual x86 processor. Our framework is the first that enables mechanical
+  proofs of functional correctness of user-level x86 machine-code programs
+  that make system calls. We demonstrate the capabilities of our model with
+  the mechanical verification of a machine-code program, produced by the GCC
+  compiler, that computes the number of characters, lines, and words in an
+  input stream. Such reasoning is facilitated by our libraries of ACL2 lemmas
+  that allow automated proofs of a program's memory-related properties.</p>")
+
+(defxdoc bib::ghk17
+  :parents (operational-semantics-3__annotated-bibliography)
+
+  :short "S. Goel, W. A. Hunt, Jr., and M. Kaufmann, &ldquo;<a
+  href='https://link.springer.com/chapter/10.1007/978-3-319-48628-4_8'>Engineering
+  a Formal, Executable x86 ISA Simulator for Software Verification</a>&rdquo;,
+  in M. Hinchey, J. P. Bowen, and E.-R. Olderog, editors, <i>Provably Correct
+  Systems</i> Springer, pp. 173-209, 2017.
+
+  <br></br><br></br><b>Relevance:</b> operational model of the x86 at both the
+  user- and system-level and code proofs"
+
+  :long "<br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p>Abstract</p>
+
+  <p>Construction of a formal model of a computing system is a necessary
+  practice in formal verification. The results of formal analysis can only be
+  valued to the same degree as the model itself. Model development is
+  error-prone, not only due to the complexity of the system being modeled,
+  but also because it involves addressing disparate requirements. For
+  example, a formal model should be defined using simple constructs to enable
+  efficient reasoning but it should also be optimized to offer fast concrete
+  simulations. Models of large computing systems are themselves large
+  software systems and must be subject to rigorous validation. We describe
+  our formal, executable model of the x86 instruction-set architecture; we
+  use our model to reason about x86 machine-code programs. Validation of our
+  x86 ISA model is done by co-simulating it regularly against a physical x86
+  machine. We present design decisions made during model development to
+  optimize both validation and verification, i.e., efficiency of both
+  simulation and reasoning. Our engineering process provides insight into the
+  development of a software verification and model animation framework from
+  the points of view of accuracy, efficiency, scalability, maintainability,
+  and usability.</p>
+
+  <br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p>See the collection of ACL2 books and files at
+  @('books/projects/x86isa/').</p>
+
+  <p>Also relevant are @(see bib::goel16) and the following earlier papers
+  @(see bib::hk12), @(see bib::ghk13),and  @(see bib::ghkg14).</p>")
+
+(defxdoc bib::goel16 :parents (operational-semantics-3__annotated-bibliography)
+
+  :short "S. Goel, <i><a
+  href='https://repositories.lib.utexas.edu/server/api/core/bitstreams/858b2f9b-5532-4b2a-bed1-fb889a265f6c/content'>Formal
+  Verification of Application and System Programs Based on a Validated x86 ISA
+  Model</a></i>, University of Texas at Austin, Ph.D. dissertation, 2016.
+
+  <br></br><br></br><b>Relevance:</b> details of the x86 model"
+
+  :long "<br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p>Goel writes on page viii of the dissertation</p>
+
+  <p>This dissertation demonstrates that formal verification of complex
+  program properties can be made practical, without any loss of accuracy or
+  expressiveness, by employing a machine-code analysis framework implemented
+  using a mechanical theorem prover. To this end, we constructed a formal
+  and executable model of the x86 Instruction-Set Architecture using the ACL2
+  theorem-proving system. This model includes a specification of 400+ x86
+  opcodes and architectural features like segmentation and paging. The
+  model's high execution speed allows it to be validated routinely by
+  performing co-simulations against a physical x86 processor &mdash; thus, formal
+  analysis based on this model is reliable. We also developed a general
+  framework for x86 machine-code analysis that can lower the overhead
+  associated with the verification of a broad range of program properties,
+  including correctness with respect to behavior, security, and resource
+  requirements. We illustrate the capabilities of our framework by describing
+  the verification of two application programs, population count and word
+  count, and one system program, zero copy.</p>
+
+  <br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p>Because of the concern for validating the ACL2 x86 model against x86
+  hardware by various manufacturers it was important the ACL2 x86 execute
+  efficiently.  When running in the application-level mode the ACL2 model
+  executes at about 3.3 million x86 instructions per second (ips); in the
+  system-level mode it executes at about 912,000 ips.</p>
+
+  <p>See the collection ACL2 books and files at
+  @('books/projects/x86isa/').</p>")
+
+(defxdoc bib::hb92
+  :parents (operational-semantics-3__annotated-bibliography)
+
+  :short "W. A. Hunt, Jr. and B. Brock, &ldquo;A Formal HDL and its use in the
+  FM9001 Verification,&rdquo; <i>Proceedings of the Royal Society</i>, North
+  Holland, April, 1992.
+
+  <br></br><br></br><b>Relevance:</b> a formalized hardware description language
+  and the verification of a fabricated microprocessor described with it; this
+  describes three foundational achievements in formal methods"
+
+  :long "<br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p>Abstract</p>
+
+  <p>A synchronous, hierarchical, occurrence-oriented, hardware description
+  language (HDL) has been formalized with the Boyer-Moore logic. Well-formed
+  HDL circuits are recognized by a predicate, and a unit-clock simulator
+  defines the meaning of circuits expressed in the HDL. This HDL has been used
+  to specify an implementation of the FM9001 microprocessor that has been
+  mechanically proved to implement the FM9001 instruction-level
+  specification. All proofs were mechanically checked using the Boyer-Moore
+  theorem-proving system. The formalization of the HDL, the FM9001 user-level
+  specification, and the FM9001 HDL implementation architecture specification
+  required more than 700 function definitions. The mechanical proof is composed
+  of thousands of theorem prover proof requests and millions of theorem prover
+  inference steps.</p>
+
+  <br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p>The verified fabricated microprocessor described here was used in the
+  final hosting of the CLI Verified Stack @(see bib::bhmy89).</p>
+
+  <p>But aside from its importance to the Verified Stack, this paper describes
+  three foundational achievements in formal methods:</p>
+
+  <ul>
+
+  <li>the first formal definition of a hardward description
+  language (HDL),</li>
+
+  <li>the first complete proof of a microprocessor design -- including its
+  embedded test logic -- with respect to its high-level ISA specification,
+  and</li>
+
+  <li>the first (and still, only) verified microprocessor that was manufactured
+  and demonstrated to function properly.</li>
+
+  </ul>
+
+  <p>For complete details, see the Nqthm script
+  @('examples/fm9001-piton/fm9001/fm9001-replay.events').</p>")
+
+(defxdoc bib::hk12
+  :parents (operational-semantics-3__annotated-bibliography)
+
+  :short "W. A. Hunt, Jr. and M. Kaufmann, &ldquo;<a
+  href='http://apps.cs.utexas.edu/tech_reports/reports/tr/TR-2075.pdf'>Towards
+  a Formal Model of the x86 ISA</a>&rdquo;, University of Texas at Austin,
+  Computer Science Department Technical Report TR-12-07, May, 2012.
+
+  <br></br><br></br><b>Relevance:</b>
+
+  a &ldquo;toy model&rdquo; of the x86, built as a warm up exercise"
+
+  :long "<br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p>Abstract</p>
+
+  <p>We present a preliminary formalization of a subset of the x86
+  instruction set. Our model is written in the logic of the ACL2 theorem
+  prover. It can be executed as a Lisp program on concrete data, which
+  provides the capability to validate the model against results delivered by
+  actual x86 processors. We demonstrate how bugs in our model can also be
+  eliminated by using the ACL2 prover to verify guards (semantic
+  preconditions) for our functions.</p>
+
+  <br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p>This work preceded the development of the full x86 model described in
+  @(see bib::ghk13), @(see bib::ghkg14), @(see bib::goel16), and @(see
+  bib::ghk17).</p>")
+
+(defxdoc bib::hkms17
+  :parents (operational-semantics-3__annotated-bibliography)
+
+  :short "W. A. Hunt, Jr., M. Kaufmann, J S. Moore, and A. Slobodova, &ldquo;<a
+  href='https://royalsocietypublishing.org/doi/10.1098/rsta.2015.0399'>Industrial
+  hardware and software verification with ACL2</a>&rdquo; in P. Gardner,
+  P. O'Hearn, M. Gordon, G. Morrisett and F. B. Schneider, editors),
+  <i>Verified Trustworthy Software Systems</i>, Philosophical Transactions A,
+  Royal Society Publishing, <b>374</b>, DOI 10.1098/rsta.2015.0399, September,
+  2017.
+
+  <br></br><br></br><b>Relevance:</b> how ACL2 is used in industry, and why"
+
+  :long "<br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p>Abstract</p>
+
+  <p>The ACL2 theorem prover has seen sustained industrial use since the
+  mid-1990s. Companies that have used ACL2 regularly include AMD, Centaur
+  Technology, IBM, Intel, Kestrel Institute, Motorola/Freescale, Oracle and
+  Rockwell Collins. This paper introduces ACL2 and focuses on how and why ACL2
+  is used in industry. ACL2 is well-suited to its industrial application to
+  numerous software and hardware systems, because it is an integrated
+  programming/proof environment supporting a subset of the ANSI standard Common
+  Lisp programming language. As a programming language ACL2 permits the coding
+  of efficient and robust programs; as a prover ACL2 can be fully automatic but
+  provides many features permitting domain-specific human-supplied guidance at
+  various levels of abstraction. ACL2 specifications and models often serve as
+  efficient execution engines for the modelled artefacts while permitting
+  formal analysis and proof of properties. Crucially, ACL2 also provides
+  support for the development and verification of other formal analysis
+  tools. However, ACL2 did not find its way into industrial use merely because
+  of its technical features. The core ACL2 user/development community has a
+  shared vision of making mechanized verification routine when appropriate and
+  has been committed to this vision for the quarter century since the
+  Computational Logic, Inc., Verified Stack. The community has focused on
+  demonstrating the viability of the tool by taking on industrial
+  projects (often at the expense of not being able to publish much).</p>
+
+  <br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p>This is does not discuss operational semantics <i>per se</i> but instead
+  focuses on how ACL2 is used in industry and how ACL2 gained traction in
+  industrial use.  The paper discusses how ACL2 is used at Centaur Technology,
+  Inc.  When a previously verified module of a microprocessor design is
+  modified by the designers and checked back in to the data base, ACL2 is run
+  that night to attempt to verify the modified design, &ldquo;bugs introduced
+  today are detected tonight and fixed tomorrow.&rdquo; The Centaur design and
+  verification teams were acquired by Intel in 2021 and ACL2 continues to be so
+  used at Intel.  In addition the paper describes features of ACL2 (and of the
+  ACL2 community of users) that are particularly important to industry.</p>")
+
+(defxdoc bib::hunt85
+  :parents (operational-semantics-3__annotated-bibliography)
+
+  :short "W. A. Hunt, Jr., <i>FM8501: A Verified Microprocessor</i>,
+  University of Texas at Austin, Ph.D. dissertation, 1985 (also published as a
+  book of the same title, Springer-Verlag LNAI 795, Heidelberg, 1994.
+
+  <br></br><br></br><b>Relevance:</b> first microprocessor verified at the gate
+  level and the bottommost component of the CLI stack"
+
+  :long "<br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p>The precursor to the verified microprocessor used in the CLI Verified
+  Stack as reported in @(see bib::bhmy89) is described here.  See the Nqthm
+  script @('examples/hunt/fm8501.events')).</p>
+
+  <p>FM8501, which had 8 registers and a 16-bit wordsize, was verified to
+  implement a conventional orthogonal instruction set.  The semantics of the
+  gate-level design of the FM8501 and of the instruction set were described
+  operationally.  The CLI Stack was ultimately based on the FM8502, which was
+  like the FM8501 except (a) the wordsize was 32-bits and (b) extra bits were
+  allocated in the instruction word to permit programmer control over ALU
+  condition code flags.  These changes were requested by Moore during his
+  design of an assembler for the machine.  For more detail on the evolutionary
+  pressure that the assembler put on the underlying machine see Section 1.5 of
+  @(see bib::moore96).  Since the gate-level design of the FM8501 was
+  parameterized by the word length (including the ALU), the description and
+  verification of the 32-bit FM8502 was easier for Hunt than one might
+  otherwise expect.  The FM8502 is described in more detail in Hunt's article
+  in @(see bib::bhmy89).  Because of the way the gate-level designs of FM8501
+  and FM8502 were expressed, it was impractical to fabricate either machine.
+  However, see @(see bib::hb92).</p>")
+
+(defxdoc bib::kmm00a
+  :parents (operational-semantics-3__annotated-bibliography)
+
+  :short "M. Kaufmann, P. Manolios, J S. Moore, <i><a
+  href='https://www.cs.utexas.edu/~moore/publications/acl2-books/car/index.html'>Computer-Aided
+  Reasoning: An Approach</a></i>, Kluwer Academic Publishers, 2000.
+
+  <br></br><br></br><b>Relevance:</b> introduction to ACL2"
+
+  :long "<br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p>This book explains how to program in the ACL2 functional programming
+  language, how that language is formalized as a logic, and how to use the
+  theorem prover.  While the language and logic have acquired additional
+  features in subsequent years, most new features are orthogonal to the system
+  described here.  Thus, the system here describes a subset of the
+  functionality of the current version of ACL2.  Probably the single most
+  &ldquo;incompatible&rdquo; addition was the change of representation of the
+  ordinals.  But the Errata published online in the link above explains how to
+  restore the default representation assumed in the book.  Thus, this is an
+  excellent beginner's introduction to how to use the system.  In contains many
+  exercises and the solutions are available online.</p>")
+
+(defxdoc bib::kmm00b
+  :parents (operational-semantics-3__annotated-bibliography)
+
+  :short "M. Kaufmann, P. Manolios, J S. Moore, <i><a
+  href='https://www.cs.utexas.edu/~moore/publications/acl2-books/acs/index.html'>Computer-Aided
+  Reasoning: ACL2 Case Studies</a></i>, Kluwer Academic Publishers, 2000.
+
+  <br></br><br></br><b>Relevance:</b> tutorial examples of ACL2 applications"
+
+  :long "<br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p>This book is a companion to @(see bib::kmm00a).  It contains fourteen articles
+  by ACL2 experts, explaining how they formalized and solved fourteen different
+  problems.  It also includes exercises.</p>")
+
+(defxdoc bib::liu06
+  :parents (operational-semantics-3__annotated-bibliography)
+
+  :short "H. Liu, <i><a
+  href='https://www.cs.utexas.edu/~moore/publications/liu-dissertation.pdf'>Formal
+  Specification and Verification of a JVM and its Bytecode Verifier</a></i>,
+  University of Texas at Austin, Ph.D. dissertation, 2006
+
+  <br></br><br></br><b>Relevance:</b> most complete ACL2 model of the JVM "
+
+  :long "<br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p><i>Note: The source files for this effort have not been part of the ACL2
+  regression and cannot currently be recertified because of changes to ACL2
+  since 2006.  When that oversight is addressed, they will be posted.  In the
+  meantime, this document speaks of the model in the past tense!</i></p>
+
+  <p>This dissertation, available at the link above, describes the
+  &ldquo;M6&rdquo; model of the JVM and some important proofs about it.  It was
+  the most complete model constructed in ACL2.  It executed most J2ME Java
+  programs (except those with significant I/O or floating-point).  It
+  supported</p>
+
+  <ul>
+  <li>all data types (except floats),</li>
+  <li>multi-threading,</li>
+  <li>dynamic class loading,</li>
+  <li>class initialization, and</li>
+  <li>synchronization via monitors.</li>
+  </ul>
+
+  <p>The M6 state included an &ldquo;external class table&rdquo; where classes
+  reside until they are loaded.  The entire Sun CLDC API library (672 methods
+  in 87 classes) was translated into the external representation and was
+  available for loading, constituting about 500 pages of data.  The model
+  included 21 out of 41 native APIs that appeared in Sun's CLDC API library.
+  The M6 description itself is about 160 pages of ACL2.</p>
+
+  <p>It was created with support from Sun Microsystems.</p>
+
+  <p>On page 322, Liu describes the size of the proof effort: &ldquo;We have
+  defined 2104 ACL2 functions. We proved over 4764 theorems. 196 of them are
+  &ldquo;skip-proofed&rdquo;. To prove the rest of them, 971 inductions are
+  necessary. The total line count of the ACL2 input is 136000. They are
+  organized in 282 files. The dependency graph between the 282 ACL2 books has
+  2012 edges.&rdquo;</p>
+
+  <p><i>Note from J Moore, dissertation supervisor: The @(tsee skip-proofs) tag
+  on a &ldquo;theorem&rdquo; means the conjecture is assumed rather than
+  proved.  So having even one @('skip-proofs') makes it impossible to fully
+  trust the results.  However, the skipped conjectures in this work were
+  relatively low-level results very similar to other theorems already proved.
+  Liu and I agreed that these conjectures were very probably provable and we
+  were more interested in the higher-level conclusions drawn from those
+  assumptions.</i></p>
+
+  <p>An informal summary of the dissertation, by Liu, states</p>
+
+  <p>Will a bytecode-verified Java program run safely? Why? What do we mean by
+  &ldquo;safely&rdquo;?</p>
+
+  <p>This dissertation sets out to address these questions by first building a
+  precise model of the JVM and its bytecode verifier.</p>
+
+  <p>The models are written in ACL2, for which we have computer-aided
+  mechanical reasoning support.</p>
+
+  <p>We studied how static type checking during bytecode verification can
+  provide runtime type safety. We did this by examining the JVM type hierarchy
+  and proving that safety conditions on operations enforced by the bytecode
+  verifier can guarantee runtime type safety of the program.</p>
+
+  <p>We also studied how the JVM type hierarchy is extended in a
+  safe way by the JVM class loader that introduces new types
+  into the environment.  We proved a set of theorems stating
+  that the class loading process preserves the consistency of
+  the JVM type hierarchy.</p>
+
+  <p>We studied a third aspect of the JVM safety. We focused on the
+  safety across method invocation and return.  We studied
+  why the bytecode verifier can examine each method individually
+  and provide a safety guarantee about the runtime execution of
+  a program.  We note that the execution of a program is
+  characterized by a stack of partially executed methods and a
+  current executing method.</p>
+
+  <p>We used the full JVM model in ACL2 to study the first two
+  aspects of JVM safety.  We proved a set of theorems that
+  stated the effectiveness of the bytecode verification about
+  individual operations and safety of the JVM class loading.</p>
+
+  <p>We used a simplified JVM model, which we call the small machine, to study
+  the third aspect of the JVM safety.  The small machine has only one data
+  type. It has branching instructions and method invocation and return
+  instructions.  We proved that any small program verified by the corresponding
+  simplified JVM bytecode verifier can execute safely without overflowing or
+  underflowing the operand stacks.</p>")
+
+(defxdoc bib::manolios00
+  :parents (operational-semantics-3__annotated-bibliography)
+  :short "P. Manolios, &ldquo;<a
+  href='https://dl.acm.org/doi/10.5555/646186.683220'>Correctness of Pipelined
+  Machines</a>&rdquo;, in W. A. Hunt, Jr and S. D. Johnson, editors, <i>Formal
+  Methods in Computer-Aided Design (FMCAD 2000)</i>, Springer-Verlag LNCS
+  <b>1954</b>, Heidelberg, pp. 161-178, 2000.
+
+  <br></br><br></br><b>Relevance:</b> an alternative approach to verifying
+  operational models of a pipelined machine"
+
+   :long "<br></br>&mdash;&mdash;&mdash;<br></br>
+
+   <p>Abstract</p>
+
+   <p>The correctness of pipelined machines is a subject that has been studied
+   extensively. Most of the recent work has used variants of the Burch and Dill
+   notion of correctness. As new features are modeled, e.g., interrupts,
+   new notions of correctness are developed. Given the plethora of correctness
+   conditions, the question arises: what is a reasonable notion of
+   correctness? We discuss the issue at length and show, by mechanical
+   proof, that variants of the Burch and Dill notion of correctness are
+   flawed. We propose a notion of correctness based on WEBs (Well-founded
+   Equivalence Bisimulations). Briefly, our notion of correctness
+   implies that the ISA (Instruction Set Architecture) and
+   MA (Micro-Architecture) machines have the same observable infinite paths, up
+   to stuttering. This implies that the two machines satisfy the same CTL*\X
+   properties and the same safety and liveness properties (up to stuttering). To
+   test the utility of the idea, we use ACL2 to verify several variants of the
+   simple pipelined machine described by Sawada. Our variants
+   extend the basic machine by adding exceptions (to deal with overflows),
+   interrupts, and fleshed-out 128-bit ALUs (one of which is described in a
+   netlist language). In all cases, we prove the same final theorem. We develop
+   a methodology with mechanical support that we used to verify Sawada's
+   machine. The resulting proof is substantially shorter than the original and
+   does not require any intermediate abstractions; in fact, given the
+   definitions and some general-purpose books (collections of theorems), the
+   proof is automatic. A practical and noteworthy feature of WEBs is their
+   compositionality. This allows us to prove the correctness of the more
+   elaborate machines in manageable stages.</p>")
+
+(defxdoc bib::mccarthy62
+  :parents (operational-semantics-3__annotated-bibliography)
+
+  :short "J. McCarthy, &ldquo;<a
+  href='http://jmc.stanford.edu/articles/towards/towards.pdf'>Towards a
+  mathematical science of computation</a>,&rdquo; <i>Proceedings of the
+  Information Processing Cong. 62</i>, North-Holland, Munich, West Germany,
+  pp. 21-28, August, 1962.
+
+  <br></br><br></br><b>Relevance:</b> a seminal paper in the history of formal
+  operational semantics"
+
+  :long "<br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p>The pdf linked above is dated 1996, but the original paper was written in
+  1962.  In a brief preface (found on the @('.html') file at the
+  same site as the link above) to the 1996 paper McCarthy wrote:</p>
+
+  <p>&ldquo;<i>Towards a Mathematical Science of Computation was given at the
+  congress IFIP-62 and published in the proceedings of that conference. It
+  extends the results of A Basis for a Mathematical Theory of Computation which
+  was first given in 1961.</i>&rdquo;</p>
+
+  <p>In the 1962 paper (page 19) he wrote</p>
+
+  <p>&ldquo;The semantic description of the language must tell what the
+  programs mean. The meaning of a program is its effect on the state vector in
+  the case of a machine independent language, and its effect on the contents of
+  memory in the case of a machine language program.&rdquo;</p>
+
+  <p>He goes on to sketch the approach to operational semantics used most often
+  in ACL2 and its predecessors.  See page 22.</p>")
+
+(defxdoc bib::mmrv06
+  :parents (operational-semantics-3__annotated-bibliography)
+  :short "J. Matthews, J S. Moore, S. Ray and D. Vroon, &ldquo;<a
+  href='http://ece.ufl.edu/wp-content/uploads/sites/119/publications/lpar06.pdf'>
+  Verification Condition Generation via Theorem Proving</a>&rdquo;, in
+  <i>Proceedings of 13th International Conference on Logic for Programming,
+  Artificial Intelligence, and Reasoning (LPAR 2006)</i>, LNCS <b>4246</b>,
+  pp. 362-376, 2006.
+
+  <br></br><br></br><b>Relevance:</b> how to conduct inductive assertion-style
+  proofs from an operational semantics without a verification condition
+  generator"
+
+  :long "<br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p>Abstract</p>
+
+  <p>We present a deductive method to convert (i) a formal operational
+  semantics for a given machine language, and (ii) an off-the-shelf theorem
+  prover, into a high assurance verification condition generator (VCG). Our
+  method automatically generates verification conditions from assertions at
+  join points of basic blocks of a program, analogous to those produced by a
+  custom-built VCG. We show how to achieve this with a theorem prover by
+  symbolic simulation on the operational semantics. Thus no separate VCG needs
+  to be implemented for the target language. Furthermore, we can employ the
+  full power of the theorem prover to generate and discharge the verification
+  conditions.  Our method can handle both partial and total correctness, and
+  recursive procedures. It is also compositional, in that the correctness of a
+  subroutine needs only be proved once, rather than at each call site. The
+  method has been used to verify several machine-level programs in the ACL2
+  theorem prover, including the functional correctness of JVM bytecodes for a
+  CBC-mode encryption algorithm.</p>")
+
+(defxdoc bib::mp67
+  :parents (operational-semantics-3__annotated-bibliography)
+
+  :short "J. McCarthy and J. Painter, &ldquo;<a
+  href='http://jmc.stanford.edu/articles/mcpain/mcpain.pdf'>Correctness of a
+  Compiler for Arithmetic Expressions</a>&rdquo;, <i>Proceedings of Symposia in
+  Applied Mathematics</i>, <b>19</b>, American Mathematical Society, 1967.
+
+  <br></br><br></br><b>Relevance:</b> an early (perhaps the first) compiler proof"
+
+  :long "<br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p>This paper by gives a conventional &ldquo;hand proof&rdquo; (not a
+  mechanized proof) of the correctness of a compiler for simple arithmetic
+  expressions.  It demonstrates the use of an operational semantics for the
+  underlying machine.</p>
+
+  <p>This was a famous and popular challenge problem in the early history of
+  formal methods.  See Chapter 17 @(see bib::bm79) for a mechanized proof a
+  similar result and a discussion of the history of the mechanization of such
+  compiler proofs.</p>")
+
+(defxdoc bib::moore03a
+  :parents (operational-semantics-3__annotated-bibliography)
+
+  :short "J S. Moore, &ldquo;<a
+  href='https://www.cs.utexas.edu/~moore/publications/marktoberdorf-02/main_final.pdf'>Proving
+  Theorems about Java and the JVM with ACL2</a>&rdquo;, in M. Broy and
+  M. Pizka, editors, <i>Models, Algebras and Logic of Engineering Software</i>,
+  IOS Press, Amsterdam, pp. 227-290, 2003.
+
+  <br></br><br></br><b>Relevance:</b> M5: a JVM model with method invocation,
+  classes, and threads, with some example proofs including about
+  mutual-exclusion"
+
+  :long "<br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p>This paper was the basis for a series of talks at the 2002 Marktoberdorf
+  Summer School, Germany.  Among other topics, it describes the M5 JVM
+  model (ACL2 script @('books/models/jvm/m5/m5.lisp')) and the use of the model
+  to formalize and prove properties of a variety of JVM programs, including the
+  so-called &ldquo;Apprentice Challenge&rdquo; @(see bib::mp02).  You can find
+  the ACL2 scripts for these proofs on the @('books/models/jvm/m5/').  See the
+  @('README') on that directory.  The M5 work here is both a fairly complicated
+  operational model and a good demonstration of the &ldquo;clock&rdquo;-based
+  proof methodology.</p>")
+
+(defxdoc bib::moore03b
+  :parents (operational-semantics-3__annotated-bibliography)
+
+  :short "J S. Moore, &ldquo;<a
+  href='https://www.cs.utexas.edu/~moore/publications/trecia/long.pdf'>
+  Inductive Assertions and Operational Semantics</a>&rdquo;, in D. Geist,
+  editor, CHARME 2003,, Springer Verlag, LNCS <b>2860</b>, pp. 289-303, 2003.
+
+  <br></br><br></br><b>Relevance:</b>The URL above points to a longer version
+  of the paper presented at CHARME.  Using a subset of M5 the paper shows how
+  partial symbolic evaluation of a program can be used to generate and prove
+  verification conditions produced from inductive assertions"
+
+  :long "<br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p>Abstract</p>
+
+  <p>This paper shows how classic inductive assertions can be used in
+  conjunction with an operational semantics to prove partial correctness
+  properties of programs. The method imposes only the proof obligations that
+  would be produced by a verification condition generator but does not require
+  the definition of a verification condition generator. The paper focuses on
+  iterative programs but recursive programs are briefly discussed. Assertions
+  are attached to the program by defining a predicate on states. This predicate
+  is then &ldquo;completed&rdquo; to an alleged invariant by the definition of
+  a partial function defined in terms of the state transition function of the
+  operational semantics. If this alleged invariant can be proved to be an
+  invariant under the state transition function, it follows that the assertions
+  are true every time they are encountered in execution and thus that the
+  post-condition is true if reached from a state satisfying the
+  pre-condition. But because of the manner in which the alleged invariant is
+  defined, the verification conditions are sufficient to prove
+  invariance. Indeed, the &ldquo;natural&rdquo; proof generates the classical
+  verification conditions as subgoals. The invariant function may be thought of
+  as a state-based verification condition generator for the annotated
+  program. The method allows standard inductive assertion style proofs to be
+  constructed directly in an operational semantics setting. The technique is
+  demonstrated by proving the partial correctness of simple bytecode programs
+  with respect to a pre-existing operational model of the Java Virtual
+  Machine.</p>
+
+  <br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p>See also the paper @(see bib::rm04).</p>")
+
+(defxdoc bib::moore14
+  :parents (operational-semantics-3__annotated-bibliography)
+  :short "J S. Moore, &ldquo;<a
+  href='https://www.cs.utexas.edu/~moore/publications/m1-is-turing-equiv.pdf'>
+  Proof Pearl: Proving a Simple Von Neumann Machine Turing Complete</a>&rdquo;
+  in G. Klein and R. Gamboa, editors, <i>Interactive Theorem Proving, ITP
+  2014</i>, Springer LNCS <b>8558</b>, doi.org/10.1007/978-3-319-08970-6_26,
+  2014.
+
+  <br></br><br></br><b>Relevance:</b>M1 can compute anything a Turing machine
+  can.  (The paper ought to be re-titled &ldquo;Proving M1 Turing
+  Equivalent.&rdquo;)"
+
+  :long "<br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p>The &ldquo;Simple Von Neumann machine&rdquo; in question is M1.  See the
+  ACL2 directory @('books/models/jvm/m1/') and the @('README') file there.</p>
+
+  <p>Abstract</p>
+
+  <p>In this paper we sketch an ACL2-checked proof that a simple but unbounded
+  Von Neumann machine model is Turing Complete, i.e., can do anything a Turing
+  machine can do. The project formally revisits the roots of computer
+  science. It requires re-familiarizing oneself with the definitive model of
+  computation from the 1930s, dealing with a simple &ldquo;modern&rdquo;
+  machine model, thinking carefully about the formal statement of an important
+  theorem and the specification of both total and partial programs, writing a
+  verifying compiler, including implementing an X86-like call/return protocol
+  and implementing computed jumps, codifying a code proof strategy, and a
+  little &ldquo;creative&rdquo; reasoning about the non-termination of two
+  machines.</p>
+
+  <br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p>See the ACL2 book @('books/models/jvm/m1/theorems-a-and-b.lisp').</p>")
+
+(defxdoc bib::moore15
+  :parents (operational-semantics-3__annotated-bibliography)
+  :short "J S. Moore, &ldquo;<a
+    href='https://www.cs.utexas.edu/~moore/publications/stateman.pdf'>
+    Stateman: Using Metafunctions to Manage Large Terms Representing Machine
+    States</a>,&rdquo; in M. Kaufmann and D. Rager, editors, <i>Proceedings of
+    the 13th International Workshop on the ACL2 Theorem Prover</i>, EPTCS,
+    <b>192</b>, pp. 93-109, 2015.
+
+  <br></br><br></br><b>Relevance:</b> some ACL2 tools for managing the terms
+  representing states of operational models"
+
+  :long "<br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p>Abstract</p>
+
+  <p>When ACL2 is used to model the operational semantics of computing
+  machines, machine states are typically represented by terms recording the
+  contents of the state components. When models are realistic and are stepped
+  through thousands of machine cycles, these terms can grow quite large and the
+  cost of simplifying them on each step grows. In this paper we describe an
+  ACL2 book that uses HIDE and metafunctions to facilitate the management of
+  large terms representing such states. Because the metafunctions for each
+  state component updater are solely responsible for creating state
+  expressions (i.e., &ldquo;writing&rdquo;) and the metafunctions for each
+  state component accessor are solely re- sponsible for extracting
+  values (i.e., &ldquo;reading&rdquo;) from such state expressions, they can
+  maintain their own normal form, use HIDE to prevent other parts of ACL2 from
+  inspecting them, and use honsing to uniquely represent state expressions. The
+  last feature makes it possible to memoize the metafunctions, which can
+  improve proof performance in some machine models. This paper describes a
+  general-purpose ACL2 book modeling a byte-addressed memory supporting
+  &ldquo;mixed&rdquo; reads and writes. By &ldquo;mixed&rdquo; we mean that
+  reads need not correspond (in address or number of bytes) with
+  writes. Verified metafunctions simplify such &ldquo;read-over-write&rdquo;
+  expressions while hiding the potentially large state expression. A key
+  utility is a function that determines an upper bound on the value of a
+  symbolic arithmetic expression, which plays a role in resolving writes to
+  addresses given by symbolic expressions. We also report on a preliminary
+  experiment with the book, which involves the production of states containing
+  several million function calls.</p>
+
+  <br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p>The utility described here is available in the ACL2 book
+  @('books/projects/stateman/stateman22.lisp').  See also the other files on
+  that directory.  See @(see bib::moore17) for a description of the &ldquo;key
+  utility,&rdquo; defined in the @('stateman22.lisp') file, that computes the
+  bounds of an address.</p>")
+
+(defxdoc bib::moore17
+  :parents (operational-semantics-3__annotated-bibliography)
+  :short "J S. Moore, &ldquo;<a
+    href='https://www.cs.utexas.edu/~moore/publications/ainni.pdf'> Computing
+    Verified Machine Address Bounds during Symbolic Exploration of
+    Code</a>,&rdquo; in J. Bowen, H. Langmaack and E.-R. Olderog, edsitors,
+    <i>Provably Correct Systems</i>, Springer, pp. 151-172, 2017.
+
+  <br></br><br></br><b>Relevance:</b> an ACL2 tool for determining whether two
+  symbolic machine addresses may be equal"
+
+  :long "<br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p>Abstract</p>
+
+  <p>When operational semantics is used as the basis for mechanized
+  verification of machine code programs it is often necessary for the theorem
+  prover to determine whether one expression denoting a machine address is
+  unequal to another. For example, this problem arises when trying to determine
+  whether a read at the address given by expression <i>a</i> is affected by an
+  earlier write at the address given by <i>b</i>. If it can be determined that
+  <i>a</i> and <i>b</i> are definitely unequal, the write does not affect the
+  read. Such address expressions are typically composed of &ldquo;machine
+  arithmetic function symbols&rdquo; such as @('+'), @('*'), @('mod'),
+  @('ash'), @('logand'), @('logxor'), etc., as well as numeric constants and
+  values read from other addresses. In this paper we present an abstract
+  interpreter for machine address expressions that attempts to produce a
+  bounded natural number interval guaranteed to contain the value of the
+  expression. The interpreter has been proved correct by the ACL2 theorem
+  prover and is one of several key technologies used to do fast symbolic
+  execution of machine code programs with respect to a formal operational
+  semantics. We discuss the interpreter, what has been proved about it by ACL2,
+  and how it is used in symbolic reasoning about machine code.</p>
+
+  <br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p>The utility described here is available in the ACL2 book
+  @('books/projects/stateman/stateman22.lisp').</p>")
+
+(defxdoc bib::moore19
+  :parents (operational-semantics-3__annotated-bibliography)
+
+  :short "J S. Moore, &ldquo;<a
+  href='https://doi.org/10.1007/s00165-019-00490-3'>Milestones from The Pure
+  Lisp Theorem Prover to ACL2</a>&rdquo;, <i>Formal Aspects of Computing</i>,
+  Springer, DOI https://doi.org/10.1007/s00165-019-00490-3, 2019.
+
+  <br></br><br></br><b>Relevance:</b> how the Edinburgh Pure Lisp Theorem
+  Prover (PLTP) evolved into ACL2"
+
+  :long "<br></br>&mdash;&mdash;&mdash;<br></br>
+
+   <p>Abstract</p>
+
+   <p>We discuss the evolutionary path from the Edinburgh Pure Lisp Theorem
+   Prover of the early 1970s to its modern counterpart, A Computational Logic
+   for Applicative Common Lisp, aka ACL2, which is in regular industrial
+   use. Among the milestones in this evolution are the adoption of a
+   first-order subset of a programming language as a logic; the analysis of
+   recursive definitions to guess appropriate mathematical induction schemes;
+   the use of simplification in inductive proofs; the incorporation of rewrite
+   rules derived from user-suggested lemmas; the generalization of that idea to
+   allow the user to affect other proof techniques soundly; the recognition
+   that evaluation efficiency is paramount so that formal models can serve as
+   prototypes and the logic can be used to reprogram the system; use of the
+   system to prove extensions correct; the incorporation of decision
+   procedures; the provision of hierarchically structured libraries of
+   previously certified results to configure the prover; the provision of
+   system programming features to allow verification tools to be built and
+   verified within the system; the release of many verified collections of
+   lemmas supporting floating point, programming languages, and hardware
+   platforms; a verified &ldquo;bit-bashing&rdquo; tool exploiting verified BDD
+   and checked external SAT procedures; and the provision of certain
+   higher-order features within the first-order setting. As will become
+   apparent, some of these milestones were suggested or even prototyped by
+   users. Some additional non-technical aspects of the project are also
+   critical. Among these are a devotion to soundness, good documentation,
+   freely available source code, production of a system usable by industry,
+   responsiveness to user needs, and a dedicated, passionate, and brilliant
+   user community.</p>")
+
+(defxdoc bib::moore73
+  :parents (operational-semantics-3__annotated-bibliography)
+
+  :short "J S. Moore, &ldquo;<a
+  href='http://www.era.lib.ed.ac.uk/handle/1842/2245'>Computational Logic:
+  Structure Sharing and Proof of Program Properties</a>, University of
+  Edinburgh, Ph.D. dissertation, 1973.
+
+  <br></br><br></br><b>Relevance:</b> details of the Edinburgh Pure Lisp
+  Theorem Prover (PLTP)"
+
+  :long "<br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p>Part II of Moore's dissertation describes the Edinburgh Pure Lisp Theorem
+  Prover (PLTP) in detail.  The work was carried out jointly with Bob
+  Boyer.</p>")
+
+(defxdoc bib::moore96
+  :parents (operational-semantics-3__annotated-bibliography)
+  :short "J S. Moore, <i>Piton:  A Mechanically Verified Assembly-Level Language</i>,
+  J S. Moore, Automated Reasoning Series, Kluwer Academic Publishers, 1996.
+
+  <br></br><br></br><b>Relevance:</b> verified assembler/linker/loader and a
+  component of the CLI Verified Stack"
+
+  :long "<br></br>&mdash;&mdash;&mdash;<br></br> <p>The verified
+  assembler/linker/loader in the final version of the CLI Stack (see @(see
+  BIB::BHMY89)) is described here.  See also the 1991 Nqthm script
+  @('examples/fm9001-piton/piton.events').  The Preface to the book and the
+  comment at the top of the @('.events') file give a lot of history of the
+  evolution of the components of the CLI Stack.</p>
+
+  <p>Of particular interest to users who wish to verify the correct
+  implementation of one programming language on top of a state machine is
+  decomposition of the main theorem into &ldquo;commuting diagrams&rdquo; that
+  stack various layers of abstraction between the assembly language and the
+  binary image.  Among other things these layers of abstraction solve the
+  problem of &ldquo;hidden resources,&rdquo; in which the lower level machine
+  state has resources that are not reflected in the upper level.  For example
+  at the high level, if one pushes items on the high level stack and then pops
+  them off, there is no change to the stack when viewed from the high level.
+  But the low level machine still records, in the region of memory dedicated to
+  the stack but beyond the current top of stack, the items last pushed.
+  Furthermore, those residual values can be accessed by the low level machine.
+  So one has to prove that they are not.  The Piton proof dealt with this by
+  imposing an intermediate abstract machine just above the low level machine
+  but with an instruction set in which it is impossible to access beyond the
+  top of stack.</p>")
+
+(defxdoc bib::moore99a
+  :parents (operational-semantics-3__annotated-bibliography)
+  :short "J S. Moore, &ldquo;<a
+  href='https://www.cs.utexas.edu/~moore/publications/tjvm/main.pdf'>Proving
+  Theorems about Java-like Byte Code</a>,&rdquo; in E.-R. Olderog and
+  B. Steffen, editors, <i>Correct System Design -- Recent Insights and
+  Advances</i>, LNCS <b>1710</b>, pp. 139-162, 1999.
+
+  <br></br><br></br><b>Relevance:</b> M2: a JVM model similar to M1 but with
+  method invocation (i.e., subroutine call)"
+
+  :long "<br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p>Recall that in @(see operational-semantics-1__simple-example) we described
+  a simple machine akin to the JVM but providing only a few stack-based
+  arithmetic instructions and conditional and unconditional jump instructions.
+  In this paper a similar machine is formalized which provides method
+  invocation and return for both static and virtual methods, and simple
+  class-like instance objects with inheritance.  In the paper this machine is
+  called the &ldquo;toy JVM&rdquo; or &ldquo;tjvm.&rdquo; But if we place it in
+  the evolving sequence of approximations to the JVM it should be named
+  &ldquo;M2.&rdquo;</p>
+
+  <p>The ACL2 scripts providing the definition and theorems of the
+  paper (but now using the name @('m2') instead of @('tjvm')) may be
+  found in the ACL2 directory @('books/models/jvm/m2/').  See the @('README')
+  file there.</p>")
+
+(defxdoc bib::moore99b
+  :parents (operational-semantics-3__annotated-bibliography)
+  :short "J S. Moore, &ldquo;<a
+  href='https://www.cs.utexas.edu/~moore/publications/multi-v-uni.pdf'>A
+  Mechanically Checked Proof of a Multiprocessor Result via a Uniprocessor
+  View</a>&rdquo;, J S. Moore, <i>Formal Methods in System Design</i>,
+  <b>14</b>(2), pp. 213-228, March, 1999.
+
+  <br></br><br></br><b>Relevance:</b> proving a relationship between two state
+  machines"
+
+  :long "<br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p>Abstract</p>
+
+  <p>We describe a mechanically checked correctness proof for a system of
+  <i>n</i> processes, each running a simple, non-blocking counter algorithm.
+  We prove that if the system runs longer than <i>5n</i> steps, the counter is
+  increased.  The theorem is formalized in applicative Common Lisp and proved
+  with the ACL2 theorem prover.  The value of this paper lies not so much in
+  the trivial algorithm addressed as in the method used to prove it correct.
+  The method allows one to reason accurately about the behavior of a
+  concurrent, multiprocess system by reasoning about the sequential computation
+  carried out by a selected process, against a memory that is changed
+  externally.  Indeed, we prove general lemmas that allow shifting between the
+  multiprocess and uniprocess views.  We prove a safety property using a
+  multiprocess view, project the property to a uniprocess view, and then prove
+  a global progress property via a local, sequential computation argument.  Our
+  uniprocessor view is a formal compositional semantics for a shared memory
+  system.</p>
+
+  <br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p>See the ACL2 script @('books/misc/multi-v-uni.lisp').</p>")
+
+(defxdoc bib::mp02
+  :parents (operational-semantics-3__annotated-bibliography)
+
+  :short "J S. Moore and G. Porter, &ldquo;<a
+  href='https://www.cs.utexas.edu/~moore/publications/m5/apprentice.pdf'>The
+  Apprentice Challenge</a>&rdquo;, <i>ACM TOPLAS</i>, <b>24</b>(3), pp. 1-24,
+  May, 2002.
+
+  <br></br><br></br><b>Relevance:</b> M5 and mutual-exclusion via monitors: an
+  unbounded number of JVM threads competing for access to a shared resource"
+
+  :long "<br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p>Abstract</p>
+
+  <p>We describe a mechanically checked proof of a property of a small system
+  of Java programs involving an unbounded number of threads and synchronization
+  via monitors.  We adopt the output of the @('javac') compiler as the
+  semantics and verify the system at the bytecode level under an operational
+  semantics for the JVM.  We assume a sequentially consistent memory model and
+  atomicity at the bytecode level.  Our operational semantics is expressed in
+  ACL2, a Lisp-based logic of recursive functions.  Our proofs are checked with
+  the ACL2 theorem prover.  The proof involves reasoning about arithmetic,
+  infinite loops, the creation and modification of instance objects in the
+  heap, including threads, the inheritance of fields from superclasses, pointer
+  chasing and smashing, the invocation of instance methods (and the concomitant
+  dynamic method resolution), use of the @('start') method on thread objects,
+  the use of monitors to attain synchronization between threads, and
+  consideration of all possible interleavings (at the bytecode level) over an
+  unbounded number of threads.  Readers familiar with monitor-based proofs of
+  mutual-exclusion will recognize our proof as fairly classical.  The novelty
+  here comes from (i) the complexity of the individual operations on the
+  abstract machine, (ii) the dependencies between Java threads, heap objects,
+  and synchronization, (iii) the bytecode-level interleaving, (iv) the
+  unbounded number of threads, (v) the presence in the heap of incompletely
+  initialized threads and other objects, and (vi) the proof engineering
+  permitting automatic mechanical verification of code-level theorems.  We
+  discuss these issues.  The problem posed here is also put forth as a
+  benchmark against which to measure other approaches to formally proving
+  properties of multi-threaded Java programs.</p>")
+
+(defxdoc bib::plotkin04a
+  :parents (operational-semantics-3__annotated-bibliography)
+  :short "G. D. Plotkin, &ldquo;<a
+  href='https://homepages.inf.ed.ac.uk/gdp/publications/sos_jlap.pdf'> A
+  Structural Approach to Operational Semantics</a>&rdquo;, Computer Science
+  Department, Aarhus University, Denmark, DAIMI FN-19, 1981 (reprised in a 2004
+  submission to the <i>The Journal of Logic and Algebraic Programming</i>).
+
+  <br></br><br></br><b>Relevance:</b> Plotkin's introduction of the term
+  &ldquo;structural operational semantics&rdquo;"
+
+  :long "<br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p>In the introduction to this historically important &ldquo;Aahus
+  note&rdquo; Plotkin wrote:</p>
+
+  <p>1.1 Introduction</p>
+
+  <p>It is the purpose of these notes to develop a simple and direct method for
+  specifying the semantics of programming languages. Very little is required in
+  the way of mathematical background; all that will be involved is
+  &ldquo;symbol-pushing&rdquo; of one kind or another of the sort which will
+  already be familiar to readers with experience of either the non-numerical
+  aspects of programming languages or else formal deductive systems of the kind
+  employed in mathematical logic.</p>
+
+  <p>Apart from a simple kind of mathematics the method is intended to produce
+  concise comprehensible semantic definitions. Indeed the method is even
+  intended as a direct formalisation of (many aspects of) the usual informal
+  natural language descriptions. I should really confess here that while I have
+  some experience what has been expressed above is rather a pious hope than a
+  statement of fact. I would therefore be most grateful to readers for their
+  comments and particularly their criticisms.</p>
+
+  <p>I will follow the approach to programming languages taken by such authors
+  as Gordon [Gor] and Tennent [Ten] considering the main syntactic classes
+  &mdash; expressions, commands and declarations &mdash; and the various
+  features found in each. The linguistic approach is that developed by the
+  Scott-Strachey school (together with Landin and McCarthy and others) but
+  within an operational rather than a denotational framework. These notes
+  should be considered as an attempt at showing the feasibility of such an
+  approach. Apart from various inadequacies of the treatment as presented many
+  topics of importance are omitted. These include data structures and data
+  types; various forms of control structure from jumps to exceptions and
+  coroutines; concurrency including semaphores, monitors and communicating
+  process.</p>")
+
+(defxdoc bib::plotkin04b
+  :parents (operational-semantics-3__annotated-bibliography)
+  :short " G. D. Plotkin, &ldquo;<a
+  href='https://www.sciencedirect.com/science/article/pii/S1567832604000268'>
+  The origins of structural operational semantics</a>&rdquo;, <i>The Journal of
+  Logic and Algebraic Programming</i>, <b>60</b> and <b>61</b>, pp. 3-15, July
+  and December 2004.
+
+  <br></br><br></br><b>Relevance:</b> an interesting historical account of the
+  most popular (non-ACL2) approach to operational semantics"
+
+  :long "<br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p>The term &ldquo;structural Operational Semantics&rdquo; was introduced by
+  Gordon Plotkin in technical note DAIMI FN-19, Computer Science Department,
+  Aarhus University, 1981.  That sense of &ldquo;operational semantics&rdquo;
+  is probably the most popular today and the literature has grown enormously
+  since the original note.  For that reason, we cite this &ldquo;origins&rdquo;
+  paper because it was published in a two volume special issue of <i>The
+  Journal of Logic and Algebraic Programming</i>.  Furthermore, the original
+  1981 &ldquo;Aarhus note&rdquo; is included in that issue, and that special
+  issue can be downloaded in full from this citation.</p>
+
+  <p>The approach to operational semantics most widely used in the ACL2
+  community is different from structural operational semantics.  Plotkin
+  formalized machines operationally but as inference rules (reminiscent of
+  Hoare logic), whereas in ACL2 the logic is fixed &mdash; it is the logic of
+  the ACL2 theorem prover &mdash; and in ACL2 the theory is extended via
+  conservative definitions to describe the operation of the machines in
+  question.</p>
+
+  <p>In this origins paper, Plotkin writes</p>
+
+  <blockquote>
+
+  <p>&ldquo;The IBM Vienna school [41,42] were interested in specifying real
+  programming languages, and, in particular, worked on an abstract interpreting
+  machine for PL/I using VDL, their Vienna Definition Language; they were
+  influenced by the ideas of McCarthy, Landin and Elgot [18].</p>
+
+  <p>I remember attending a seminar at Edinburgh where the intricacies of their
+  PL/I abstract machine were explained. The states of these machines are tuples
+  of various kinds of complex trees and there is also a stack of environments;
+  the transition rules involve much tree traversal to access syntactical
+  control points, handle jumps, and to manage concurrency. I recall not much
+  liking this way of doing operational semantics. It seemed far too complex,
+  burying essential semantical ideas in masses of detail; further, the machine
+  states were too big. The lesson I took from this was that abstract
+  interpreting machines do not scale up well when used as a human-oriented
+  method of specification for real languages (but see below for further
+  comment).&rdquo;</p>
+
+  </blockquote>
+
+  <p>There is no doubt that interpretive operational semantics for commercial
+  microprocessors is enormously complicated and much of that complexity is
+  buried in data structures, but we in the ACL2 community tend to regard that
+  as an unavoidable consequence of how the machines are designed and the fact
+  that the structure of the designs manifest themselves in behaviors that users
+  see.  Would a structural operational semantics for the system-level view of
+  x86 be less complex than the ACL2 x86 model described in @(see bib::goel16)?
+  We also agree with Plotkin's observation that the interpretive approach does
+  not scale well <i>when used as a human-oriented method of specification for
+  real languages</i>.  However, our focus is on <i>mechanized</i> reasoning
+  about machines and we are optimistic that mechanization can manage the
+  complexity.  Furthermore, we believe the examples discussed in @(see
+  operational-semantics-2__other-examples) support our optimism.  Of course, as
+  noted in @(see operational-semantics-1__simple-example), the ACL2 user is
+  responsible for configuring ACL2's prover to manage the complexity but the
+  evidence is that expert users are capable of doing that, exploiting such ACL2
+  features as rewrite rules, metafunctions, enabling and disabling, pragmas for
+  controlling rules, and hints (including computed hints).</p>")
+
+(defxdoc bib::rhmm07
+  :parents (operational-semantics-3__annotated-bibliography)
+
+  :short "S. Ray, W. A. Hunt, Jr., J. Matthews, and J S. Moore, `<a
+  href='https://link.springer.com/article/10.1007/s10817-008-9098-1'>A
+  Mechanical Analysis of Program Verification Strategies</a>,&rdquo; <i>Journal
+  of Automated Reasoning</i>, <b>40</b>(4), pp. 245-269, May, 2008.
+
+  <br></br><br></br><b>Relevance:</b> stepwise invariants, clock functions, and
+  inductive assertion proof styles are all equivalent"
+
+  :long "<br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p>Abstract</p>
+
+  <p>We analyze three proof strategies commonly used in deductive verification
+  of deterministic sequential programs formalized with operational
+  semantics. The strategies are (i) stepwise invariants, (ii) clock functions,
+  and (iii) inductive assertions. We show how to formalize the strategies in
+  the logic of the ACL2 theorem prover. Based on our formalization, we prove
+  that each strategy is both sound and complete. The completeness result
+  implies that given any proof of correctness of a sequential program one can
+  derive a proof in each of the above strategies. The soundness and
+  completeness theorems have been mechanically checked with ACL2.</p>
+
+  <br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p>See also @(see bib::rm04).</p>")
+
+(defxdoc bib::rm04
+  :parents (operational-semantics-3__annotated-bibliography)
+
+  :short "S. Ray and J S. Moore, &ldquo;<a
+  href='https://www.ece.ufl.edu/wp-content/uploads/sites/119/publications/fmcad04.pdf'>Proof
+  Styles in Operational Semantics</a>,&rdquo; in A. J. Hu and A. K. Martin,
+  editors, <i>Formal Methods in Computer-Aided Design (FMCAD-2004)</i>,
+  Springer, LNCS <b>3312</b>, pp. 67-81, 2004.
+
+  <br></br><br></br><b>Relevance:</b> ACL2 tools for transforming inductive
+  assertion-style proofs to clock function style and vice versa"
+
+  :long "<br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p>Abstract</p>
+
+  <p>We relate two well-studied methodologies in deductive verification of
+  operationally modeled sequential programs, namely the use of inductive
+  invariants and clock functions. We show that the two methodologies are
+  equivalent and one can mechanically transform a proof of a program in one
+  methodology to a proof in the other. Both partial and total correctness are
+  considered. This mechanical transformation is compositional; different
+  parts of a program can be verified using different methodologies to achieve a
+  complete proof of the entire program. The equivalence theorems have been
+  mechanically checked by the ACL2 theorem prover and we implement automatic
+  tools to carry out the transformation between the two methodologies in
+  ACL2.</p>
+
+  <br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p>See also the files by S. Ray on the ACL2 directory
+  @('books/proofstyles/').</p>")
+
+(defxdoc bib::sawada00
+  :parents (operational-semantics-3__annotated-bibliography)
+  :short "J. Sawada, &ldquo;Verification of a Simple Pipelined Machine
+  Model,&rdquo; in M. Kaufmann, P. Manolios, J S. Moore, editors,
+  <i>Computer-Aided Reasoning: ACL2 Case Studies</i>, Kluwer Academic
+  Publishers, Chapter 9, pp. 137-150, 2000. (See also <a
+  href='https://www.cs.utexas.edu/~moore/publications/acl2-papers.html#Books'>ACL2
+  books</a>).
+
+  <br></br><br></br><b>Relevance:</b> operational model of a pipelined machine
+  and its verification"
+
+  :long "<br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p>Abstract</p>
+
+  <p>The difficulty of pipelined machine verification derives from the fact
+  that there is a complex time-abstraction between the pipelined implementation
+  and its specification which executes instructions sequentially.  To study
+  this problem, we define a simple three-stage pipelined machine in ACL2.  We
+  prove that this pipelined machine returns the same result as its
+  specification machine.  In order to ease the proof, we define an intermediate
+  abstraction called MAETT.  This abstraction models the behavior of
+  instructions in the pipelined architecture, and it allows us to define
+  directly and verify invariant conditions about executed instructions.  The
+  author used a similar approach to verify a more realistic pipelined machine.
+  This chapter serves as an introduction to the verification of pipelined
+  machines.</p>")
+
+(defxdoc bib::sh98
+  :parents (operational-semantics-3__annotated-bibliography)
+  :short "J. Sawada and W. A. Hunt, Jr, &ldquo;<a
+  href='https://link.springer.com/chapter/10.1007/BFb0028740'>Processor
+  Verification with Precise Exceptions and Speculative Execution</a>&rdquo;, in
+  A. J. Hu and M. Y. Vardi, editors, <i>Computer Aided Verification, (CAV
+  '98)</i>, Springer-Verlag LNCS <b>1427</b>, Heidelberg, pp. 135-146, 1998.
+
+  <br></br><br></br><b>Relevance:</b> proof method for dealing with exceptions
+  and speculative execution"
+
+  :long "<br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p>Abstract</p>
+
+  <p>We describe a framework for verifying a pipelined microprocessor whose
+  implementation contains precise exceptions, external interrupts, and
+  speculative execution. We present our correctness criterion which compares
+  the state transitions of pipelined and non-pipelined machines in presence of
+  external interrupts. To perform the verification, we created a table-based
+  model of pipeline execution. This model records committed and in-flight
+  instructions as performed by the microarchitecture. Given that certain
+  requirements are met by this table-based model, we have mechanically verified
+  our correctness criterion using the ACL2 theorem prover.</p>")
+
+(defxdoc bib::wilding92
+  :parents (operational-semantics-3__annotated-bibliography)
+
+  :short "M. M. Wilding, <i>Machine-checked real-time system verification</i>
+  @('(ftp://ftp.cs.utexas.edu/pub/boyer/diss/wilding.pdf)'), University of
+  Texas at Austin, Ph.D. dissertation, 1996.
+
+  <br></br><br></br><b>Relevance:</b> a non-trivial applications program on the CLI Verified Stack"
+
+  :long "<br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p>In the introduction to this dissertation, the author writes:</p>
+
+  <p>&ldquo;The complexity and importance of real-time systems makes their formalization
+  and verification crucial.  We ensure proper real-time system behavior in several ways
+  through mathematical proof.  We check proofs using Nqthm, a mechanical proof system
+  also known as the Boyer-Moore theorem prover.</p>
+
+  <p>...</p>
+
+  <p>We verify a high-level language application that, using a proved compiler
+  and microprocessor design, assures the optimality and timely behavior of an
+  application.  The verified program uses a clever algorithm to meet its
+  specification and a method for structuring proofs allows large verified
+  programs to be developed.  An interpreter-based language semantics allows
+  reliable execution behavior reasoning, including reasoning about
+  timing.&rdquo;</p>
+
+  <br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p>The dissertation deals with several programs written in the Piton assembly
+  language (@(see bib::moore96)) for the FM9001 (@(see bib::hb92)).  In
+  addition to establishing functional correctness, the proofs ensure that the Piton
+  images fit in the space provided by the fabricated FM9001, provide upper
+  bounds on the instruction counts, and the sizes of both the control stack and
+  the temporary stack implemented by Piton on the FM9001.  See also @(see
+  bib::wilding93) for a discussion of one of these programs, namely one that
+  implements a winning strategy for the game of Nim.</p>
+
+  <p>See the Nqthm scripts by downloading and extracting the @('*.events')
+  files from
+  @('ftp://ftp.cs.utexas.edu/pub/boyer/diss/wilding-diss-events.tar').</p>")
+
+(defxdoc bib::wilding93
+  :parents (operational-semantics-3__annotated-bibliography)
+
+  :short "M. M. Wilding, &ldquo;<a
+        href='https://link.springer.com/content/pdf/10.1007/3-540-56922-7_22'>A
+        Mechanically Verified Application for a Mechanically Verified
+        Environment</a>, in C. Courcoubetis, editor, <i>Proceedings of
+        Computer-Aided Verification -- CAV '93</i>, Springer-Verlag, LNCS
+        <b>697</b>, Heidelberg, pp. 268-279, DOI:10.1007/3-540-56922-7_22,
+        1993.
+
+   <br></br><br></br><b>Relevance:</b> functional correctness and resource
+   utilization of a Nim-playing program on the CLI Verified Stack"
+
+  :long "<br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p>Abstract</p>
+
+  <p>We have developed a verified application proved to be both effective and
+  efficient. The application generates moves in the puzzle-game Nim and is
+  coded in Piton, a language with a formal semantics and a compiler verified
+  to preserve its semantics on the underlying machine. The Piton compiler is
+  targeted to the FM9001, a recently fabricated verified microprocessor. The
+  Nim program correctness proof makes use of the language semantics that the
+  compiler is proved to implement. Like the Piton compiler proof and FM9001
+  design proof, the Nim correctness proof is generated using Nqthm, a proof
+  system sometimes known as the Boyer-Moore theorem prover.</p>
+
+  <br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p>The paper proves that a Piton program constructed by the author implements
+  a winning strategy (if one exists for a given starting state) of the game of
+  Nim.  In addition, he proved a bound on the number of instructions executed
+  on each move as well as bounds on the sizes of both the control stack and the
+  temporary stack.</p>
+
+  <p>In the conclusion of the paper (page 278) the author writes</p>
+
+  <p>&ldquo;Mechanical verification of programs in this manner is time-consuming and
+  difficult. Nevertheless, and quite remarkably, the experience of building the
+  Nim program suggests that development time scales linearly with program
+  length. Once a Piton subroutine has been proved correct, a call to this
+  subroutine can be reasoned about as easily as any basic Piton statement.</p>
+
+  <p>...</p>
+
+  <p>An FM9001 was fabricated and runs a compiled version of the Nim
+  program. The fabricated FM9001 microprocessor, the Piton compiler, and the
+  Nim program were never tested in a conventional manner during development or
+  after completion. Even so, each worked the first time and we would have been
+  surprised if any had not.&rdquo;</p>")
+
+(defxdoc bib::young88
+  :parents (operational-semantics-3__annotated-bibliography)
+  :short "W. D. Young, <i>A Verified Code Generator for a Subset of Gypsy</i>
+  @('(ftp://ftp.cs.utexas.edu/pub/boyer/diss/young.pdf)'), University of Texas
+  at Austin, Ph.D. dissertation, 1988.
+
+  <br></br><br></br><b>Relevance:</b> a verified compiler (from a small
+  Pascal-like subset to an assembly language) and a component of the CLI
+  Verified Stack"
+
+  :long "<br></br>&mdash;&mdash;&mdash;<br></br>
+  <p>The verified compiler used in the CLI Verified Stack as
+  reported in @(see bib::bhmy89) is described here.  By the way, we could not
+  find the original Nqthm script for this effort, but the complete script is included in
+  Appendix B of the linked pdf file above, pages 206-860.</p>")
+
+(defxdoc bib::yu92
+  :parents (operational-semantics-3__annotated-bibliography)
+  :short "Y. Yu, <i>Automated proofs of object code for a widely used
+  microprocessor</i> @('(ftp://ftp.cs.utexas.edu/pub/boyer/diss/yu.pdf)'),
+  University of Texas at Austin, Ph.D. dissertation, 1992.
+
+  <br></br><br></br><b>Relevance:</b> details of the operational model of the
+  Motorola 68020"
+
+  :long "<br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p>Abstract</p>
+
+  <p>Computing devices can be specified and studied mathematically.  Formal
+  specification of computing devices has many advantages &mdash; it provides a
+  precise characterization of the computational model and allows for
+  mathematical reasoning about models of the computing devices and programs
+  executed on them.  While there has been a large body of research on program
+  proving, work has almost exclusively focused on programs written in high
+  level programming languages.  This thesis addresses the very important but
+  largely ignored problem of machine code program proving.  In this thesis we
+  have formally described a substantial subset of the MC68020, a widely used
+  microprocessor built by Motorola, within the mathematical logic of the
+  automated reasoning system Nqthm, a.k.a. the Boyer-Moore Theorem Proving
+  System.  Based on this formal model, we have mechanized a mathematical theory
+  to facilitate automated reasoning about object code programs.  We then have
+  mechanically checked the correctness of MC68020 object code programs for
+  binary search, Hoare's Quick Sort, the Berkeley Unix C string library, and
+  other well-known algorithms.  The object code for these examples were
+  generated using the Gnu C, the Verdix Ada, and the AKCL common Lisp
+  compilers.</p>
+
+  <br></br>&mdash;&mdash;&mdash;<br></br>
+
+  <p>See also the Nqthm scripts @('examples/yu/') where you will find the
+  definition of the MC68020 model and the proofs of the programs mentioned.</p>")
 
 ; Next come defpointers, alphabetically except for those pertaining to dfs,
 ; which follow below.
