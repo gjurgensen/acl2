@@ -141502,7 +141502,7 @@ work on <tt>(q x)</tt>.</p>
 (defxdoc stobj-example-1-implementation
   :parents (stobj)
   :short "The implementation of the @('counters') stobj"
-  :long "<p>the event</p>
+  :long "<p>The event</p>
 
  @({
   (defstobj counters
