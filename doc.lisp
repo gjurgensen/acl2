@@ -140176,7 +140176,7 @@ Subtopics
   (STOBJ)
   "The implementation of the [47mcounters[0m stobj
 
-  the event
+  The event
 
     (defstobj counters
       (NodeCnt     :type integer :initially 0)
