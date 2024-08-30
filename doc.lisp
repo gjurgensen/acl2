@@ -15384,7 +15384,7 @@ Subtopics
        (arithmetic \"[books]/doc/more-topics.lisp\")
        (arithmetic-1 \"[books]/arithmetic/top.lisp\")
        (arithmetic/natp-posp \"[books]/arithmetic/natp-posp.lisp\")
-       (arity+ \"[books]/kestrel/std/system/arity-plus.lisp\")
+       (arity+ \"[books]/std/system/arity-plus.lisp\")
        (assert! \"[books]/std/testing/assert-bang.lisp\")
        (assert!-stobj \"[books]/std/testing/assert-bang-stobj.lisp\")
        (b* \"[books]/std/util/bstar.lisp\")
