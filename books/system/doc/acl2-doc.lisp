@@ -105401,7 +105401,7 @@ it."
 ;   88 ; Changes to Existing Features
 ;   38 ; New Features
 ;   11 ; Heuristic and Efficiency Improvements
-;   39 ; Bug Fixes
+;   40 ; Bug Fixes
 ;   19 ; Changes at the System Level
 ;    8 ; EMACS Support
 ;    1 ; Experimental Versions
@@ -106895,6 +106895,40 @@ it."
  hint for an @(':instance') of @('(:guard-theorem open-input-channel)').  Eric
  also supplied events, incorporated into ACL2 source file @('axioms.lisp'),
  that removed the @(tsee skip-proofs) wrappers from five definitions.</p>
+
+ <p>Fixed a soundness bug that exploited incorrect generation of raw Lisp code
+ for the recognizer of a @(see stobj) field of a stobj.  More precisely, the
+ bug occurred when a concrete stobj has a field whose type is the name of
+ either a concrete or abstract stobj.  Here is an example.</p>
+
+ <blockquote>
+
+ <p>First certify the following book, sub.lisp.</p>
+
+ @({
+ (in-package \"ACL2\")
+ (defstobj lo lo-fld)
+ (defstobj hi (hi-fld :type lo))
+ })
+
+ <p>Then before the bug was fixed, the following book was certifiable.</p>
+
+ @({
+ (in-package \"ACL2\")
+ (include-book \"sub\")
+ (defthm thm1 ; logically correct
+   (hi-fldp '(nil))
+   :rule-classes nil
+   :hints ((\"Goal\" :in-theory (disable (:e hi-fldp)))))
+ (defthm thm2 ; \"proved\" by unsound execution
+   (not (hi-fldp '(nil)))
+   :rule-classes nil)
+ (thm ; proof of nil
+  nil
+  :hints ((\"Goal\" :use (thm1 thm2))))
+ })
+
+ </blockquote>
 
  <p>It was probably a soundness bug to allow a @(tsee defaxiom) event to
  designate a rule of class @(':')@(tsee meta) or @(':')@(tsee clause-processor)
