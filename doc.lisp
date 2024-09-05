@@ -103494,6 +103494,33 @@ Bug Fixes
   incorporated into ACL2 source file [47maxioms.lisp[0m, that removed the
   [47m[skip-proofs][0m wrappers from five definitions.
 
+  Fixed a soundness bug that exploited incorrect generation of raw Lisp
+  code for the recognizer of a [stobj] field of a stobj.  More
+  precisely, the bug occurred when a concrete stobj has a field whose
+  type is the name of either a concrete or abstract stobj.  Here is
+  an example.
+
+      First certify the following book, sub.lisp.
+
+        (in-package \"ACL2\")
+        (defstobj lo lo-fld)
+        (defstobj hi (hi-fld :type lo))
+
+      Then before the bug was fixed, the following book was certifiable.
+
+        (in-package \"ACL2\")
+        (include-book \"sub\")
+        (defthm thm1 ; logically correct
+          (hi-fldp '(nil))
+          :rule-classes nil
+          :hints ((\"Goal\" :in-theory (disable (:e hi-fldp)))))
+        (defthm thm2 ; \"proved\" by unsound execution
+          (not (hi-fldp '(nil)))
+          :rule-classes nil)
+        (thm ; proof of nil
+         nil
+         :hints ((\"Goal\" :use (thm1 thm2))))
+
   It was probably a soundness bug to allow a [47m[defaxiom][0m event to
   designate a rule of class [47m:[0m[47m[meta][0m or [47m:[0m[47m[clause-processor][0m in its
   [47m:[0m[47m[rule-classes][0m.  That is no longer allowed; [47m[skip-proofs][0m may be
