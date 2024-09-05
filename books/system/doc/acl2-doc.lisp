@@ -67,7 +67,7 @@
     (ARITHMETIC "[books]/doc/more-topics.lisp")
     (ARITHMETIC-1 "[books]/arithmetic/top.lisp")
     (ARITHMETIC/NATP-POSP "[books]/arithmetic/natp-posp.lisp")
-    (ARITY+ "[books]/kestrel/std/system/arity-plus.lisp")
+    (ARITY+ "[books]/std/system/arity-plus.lisp")
     (ASSERT! "[books]/std/testing/assert-bang.lisp")
     (ASSERT!-STOBJ "[books]/std/testing/assert-bang-stobj.lisp")
     (B* "[books]/std/util/bstar.lisp")
