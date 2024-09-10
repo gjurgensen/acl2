@@ -108666,7 +108666,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 ; tense from past to present!
 
 ; :DOC operational-semantics-1__simple-example notes that the comments in
-; books/models/jvm/m1/defsys.llisp are out of date.  Fix those comments and
+; books/models/jvm/m1/defsys.lisp are out of date.  Fix those comments and
 ; remove the Warning.
 
   :parents (documentation acl2 about-acl2)
@@ -108926,8 +108926,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   the ACL2 documentation; for example, in these topics you might see utterances
   such as &ldquo;Nqthm source file @('prove.lisp')&rdquo;, &ldquo;ACL2 source
   file @('rewrite.lisp')&rdquo;, &ldquo;Nqthm proof script
-  @('examples/hunt/fm8501.lisp') and &ldquo;ACL2 directory
-  &ldquo;@('books/models/jvm/m1/'); this brief topic explains how to
+  @('examples/hunt/fm8501.lisp')&rdquo; and &ldquo;ACL2 directory
+  @('books/models/jvm/m1/')&rdquo;; this brief topic explains how to
   dereference these utterances.  </li>
 
   <li> @(see operational-semantics-5__history-etc) &mdash; a discussion of
@@ -108943,50 +108943,14 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   :parents (operational-semantics)
   :short "M1: definition, rules, clocks, proofs"
 
-  :long "<p>In this topic we explain, by example, the most common way to
-  formalize a computing machine in ACL2 and then reason about it.  The machine
-  we have in mind will be called &ldquo;M1&rdquo; and is a &ldquo;toy&rdquo;
-  version of the Java Virtual Maching or &ldquo;JVM.&rdquo; More precisely, it
-  is a simple stack machine having a fixed number of registers, hereafter
-  called &ldquo;local variables,&rdquo; and an execute-only program memory.
-  There will only be eight instructions.  We will then write and verify a
-  factorial program for it and mention many more M1 programs that have been
-  verified &mdash; and which we urge you to solve as practice problems.
-  Despite its simplicity, M1 is equivalent to a Turing machine and, in fact,
-  that fact is among the theorems proved about M1.  Full references are given
-  when we survey the M1 results available.</p>
+  :long "<h3>Organization of This Topic</h3>
 
-  <p>(Historical Aside: What we're calling M1 was called ``Small-Machine'' in
-  Nqthm.  See @(see bib::bm96) and the methodology described here was
-  essentially fully developed before ACL2, Java, or the JVM came along.)</p>
-
-  <p>M1 does not support bytecode verification, method invocation (procedure
-  call) and return, data objects other than ACL2's unbounded numbers, threads,
-  exceptions, and many other features of modern machines and languages.
-  However, M1 is an excellent place to start when learning how to formalize a
-  machine and to prove theorems about it.  Furthermore, it is the starting
-  place of a series of machine models in the JVM family that we explore more
-  fully at the end of this documentation topic.</p>
-
-  <p>You can find the definition of M1 and all of the work done with it on the
-  ACL2 directory @('books/models/jvm/m1').  It might be easiest to fire up
-  your ACL2 system and do this.</p>
-
-  @({
-  (include-book \"models/jvm/m1/m1\" :dir :system)
-  (in-package \"M1\")
-  })
-
-  <p>Then, to see the definition of any symbol mentioned below you could just
-  issue the @(':')@(tsee pe) command.  For example, to see the definition of
-  the function @('execute-ILOAD'), aka @('execute-iload'), you could type
-  @(':pe execute-iload') to the interactive prompt in your ACL2 session.  This
-  doc topic will not exhibit all the functions but will give examples of each
-  &ldquo;kind&rdquo; of function involved in M1.</p>
-
-  <h3>Organization of This Topic</h3>
+  <p>As a hypertext document, this topic is &ldquo;flat,&rdquo; not structured
+  as a tree of subtopics.  We implemented it this way to make it easier to
+  search.</p>
 
   <ul>
+  <li>Introduction</li>
   <li>Setting up a Symbol Package</li>
   <li>The Definition of M1</li>
   <li>Programming M1</li>
@@ -109006,15 +108970,83 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   <li>Computing with M1</li>
   <li>Symbolic Execution of M1 Code</li>
   <li>Proving Theorems about M1 Programs</li>
+  <ul>
+  <li>Step 0: The Specification</li>
+  <li>Step 1: The Semantic Function</li>
+  <li>Step 2: Relate the Semantic Function to the Code</li>
+  <li>Step 3: Relate the Semantic Function to the Specification</li>
+  <li>Step 4: Total Correctness</li>
+  </ul>
   </ul>
   <li>More M1 Programs and Proofs</li>
   <li>More Elaborate Models of the JVM: From M1 to M6</li>
   </ul>
 
+  <h3>Introduction</h3>
+
+  <p>In this topic we explain, by example, the most common way to formalize a
+  computing machine in ACL2 and then reason about it. The machine we have in
+  mind will be called &ldquo;M1&rdquo; and is a &ldquo;toy&rdquo; version of
+  the Java Virtual Machine or &ldquo;JVM.&rdquo; More precisely, it is a simple
+  stack machine having a fixed number of registers, hereafter called
+  &ldquo;local variables,&rdquo; and an execute-only program memory.  There
+  will only be eight instructions.  We will then write and verify a factorial
+  program for it and mention many more M1 programs that have been verified
+  &mdash; and which we urge you to solve as practice problems.  Despite its
+  simplicity, M1 is equivalent to a Turing machine and, in fact, that fact is
+  among the theorems proved about M1.  Full references are given when we survey
+  the M1 results available.</p>
+
+  <p>(Historical Aside: What we're calling M1 was called
+  &ldquo;Small-Machine&rdquo; in Nqthm.  See @(see bib::bm96) and the
+  methodology described here was essentially fully developed before ACL2, Java,
+  or the JVM came along.)</p>
+
+  <p>M1 does not support bytecode verification, method invocation (procedure
+  call) and return, data objects other than ACL2's unbounded numbers, threads,
+  exceptions, and many other features of modern machines and languages.
+  However, M1 is an excellent place to start when learning how to formalize a
+  machine and to prove theorems about it.  Furthermore, it is the starting
+  place of a series of machine models in the JVM family that we explore more
+  fully at the end of this documentation topic.</p>
+
+  <p>Our discussion of this simple machine is quite long!  The reason is that
+  we're not trying just to explain the M1 model and how to prove correctness
+  theorems about M1 programs; we're trying to explain how to create your own
+  model, how to configure ACL2 to manipulate it, and how to phrase correctness
+  conjectures so that ACL2 can prove them.  We're using a simple machine as
+  the vehicle.</p>
+
+  <p>The ACL2 book defining M1 and all the necessary configuration lemmas,
+  @('models/jvm/m1/m1.lisp'), is less than 8K bytes, and the script for proving
+  an M1 factorial program correct, @('models/jvm/m1/fact.lisp'), is less than
+  6K bytes.  If we strip out the comments, those two files combined are less
+  than 8K bytes or about 5 pages.  But this doc topic is about 64K bytes or
+  about 35 pages.  So don't despair.  It takes longer to explain how to do it
+  than to do it!</p>
+
+  <p>You can find the definition of M1 and all of the work done with it on the
+  ACL2 directory @('books/models/jvm/m1').  It might be easiest to fire up
+  your ACL2 system and do this.</p>
+
+  @({
+  (include-book \"models/jvm/m1/m1\" :dir :system)
+  (in-package \"M1\")
+  })
+
+  <p>Then, to see the definition of any symbol mentioned below you could just
+  issue the @(':')@(tsee pe) command.  For example, to see the definition of
+  the function @('execute-ILOAD'), aka @('execute-iload'), you could type
+  @(':pe execute-iload') to the interactive prompt in your ACL2 session.  This
+  doc topic will not exhibit all the functions but will give examples of each
+  &ldquo;kind&rdquo; of function involved in M1.</p>
+
   <h3>Setting up a Symbol Package</h3>
 
-  <p>All of the functions involved in the definition of M1 are in a new symbol
-  package named @('\"M1\"')</p>
+  <p>All of the functions defined to describe M1 are in a new symbol package
+  named @('\"M1\"').  This allows us to avoid name clashes with functions like
+  @('pop'), @('program'), and @('pc') that are predefined in the default
+  @('\"ACL2\"') symbol package.</p>
 
   @({
   (defpkg \"M1\"
@@ -109198,7 +109230,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   big-switch.</p>
 
   @({
-  (defun do-inst (inst s)         ; ``do'' instruction inst to state s
+  (defun do-inst (inst s)         ; do instruction inst to state s
     (if (equal (op-code inst) 'ILOAD)
         (execute-ILOAD  inst s)
         (if (equal (op-code inst) 'ICONST)
@@ -109256,11 +109288,13 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   <p>In a model like this one, where we control the length of the run by a
   natural-number step count, we often call the second argument of @('m1') the
   &ldquo;clock.&rdquo; One might think of it as counting &ldquo;cycles&rdquo;
-  but not &ldquo;run time.&rdquo; In some models the &ldquo;clock&rdquo; might
-  more reasonably called a &ldquo;schedule&rdquo; (specifying which process is
-  to step next), or &ldquo;inputs&rdquo; (specifying what signals appear on
-  certain pins in the next cycle), or &ldquo;oracle&rdquo; (specifying
-  &ldquo;random&rdquo; choices).</p>
+  but not &ldquo;run time.&rdquo; Some authors call the argument
+  &ldquo;fuel&rdquo;.  In some models the &ldquo;clock&rdquo; might actually be
+  a list and be called by a different name depending on how that list is used.
+  We've seen it called &ldquo;schedule&rdquo; (because it specifies which
+  process is to step next), &ldquo;inputs&rdquo; (because it specifies what
+  signals appear on certain pins in the each cycle), and
+  &ldquo;oracle&rdquo; (because it specifies &ldquo;random&rdquo; choices).</p>
 
   <h3>Programming M1</h3>
 
@@ -109393,11 +109427,12 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   configuration as we go, but true understanding of the motivation won't come
   until we prove an M1 program correct.  Be patient.</p>
 
-  <p>This section only exhibits some of the rules we introduce.  See the ACL2
-  file @('books/models/jvm/m1/m1.lisp') for all of the events.  By the way, the
-  sequence in which these definitions and lemmas appear below is not identical
-  to the sequence in the @('m1.lisp') file, but they're all there.  In telling
-  the story we just found the sequence below a little more natural.</p>
+  <p>This section only exhibits some of the rules we introduce.  All of the
+  necessary rules can be found in the same file in which M1 is defined, the
+  ACL2 file @('books/models/jvm/m1/m1.lisp').  By the way, the sequence in
+  which these definitions and lemmas appear below is not identical to the
+  sequence in the @('m1.lisp') file, but they're all there.  In telling the
+  story we just found the sequence below a little more natural.</p>
 
   <h4>Arithmetic</h4>
 
@@ -109503,7 +109538,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   constants and @('program') is a well-formed program.  But we don't want to
   require exactly that because it is too restrictive.  For example, in machine
   models supporting subroutine calls, the typical correctness theorem for a
-  subroutine says very little about the entire ``program space'' but deals with
+  subroutine says very little about the entire &ldquo;program space&rdquo; but deals with
   an @('invoke')- or @('jsr')-type instruction to a place where the code for
   the subroutine is found.  (If you inspect
   @('books/models/jvm/m2/examples.lisp') and look at @('example4') you will see
@@ -109668,9 +109703,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   bib::rm04)).</p>
 
   <p>Clock functions for @('m1') are recursive functions defined that use
-  arithmetic expressions to compute the lengths of straightline code segments.
-  However, a key part of our strategy for controlling proofs is to use the
-  structure of the clock function and its arithmetic expressions to decompose
+  arithmetic expressions to compute the lengths of code segments.  However, a
+  key part of our strategy for controlling proofs is to use the structure of
+  the clock function and its arithmetic expressions to decompose
   &ldquo;long&rdquo; runs of @('m1') into compositions of shorter runs.  In
   order to do that, we must prevent the prover from rearranging our clocks!
   That is, @('(m1 s (+ i j))') will decompose differently than @('(m1 s (+ j
@@ -109906,9 +109941,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   <p>It takes SBCL about 0.02 seconds to compute the answer.  The answer is a
   natural number with 2,568 decimal digits, so we won't show it here, but you
   can try it on your own.  @('(Clk 1000)') is 11,005, so during this particular
-  computation, ACL2 was executing 550,250 @('m1') instructures per second.  Our
-  model would run faster if we used a single-thread object (see @('stobj')) to
-  hold the state and faster still if we verified the guards of @('m1').  We
+  computation, ACL2 was executing 550,250 M1 instructures per second.  Our
+  model would run faster if we used a single-threaded object (see @('stobj'))
+  to hold the state and faster still if we verified the guards of @('m1').  We
   point to discussions and examples of these ideas at the end of this
   topic.</p>
 
@@ -109966,18 +110001,18 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
   <p>In this section we prove that @('*pi*') computes factorial.</p>
 
-  <p><b>Step 0</b>: Define the specification.  We've already done that:
-  @('*pi*') allegedly computes @('(fact n)') when @('n') is a natural number.
-  This is just shorthand for the more precise understanding that if we start at
-  @('pc') 0 with a natural, @('n'), in local 0 and run program @('*pi*')
-  @('(clk n)') steps, the final state has @('pc') 14 (meaning execution reached
-  the @('(HALT)')), local 0 has been zeroed, local 1 contains @('(fact n)'),
-  and @('(fact n)') is on top of the otherwise unchanged initial
+  <p><b>Step 0: The Specification</b> We've already specified, informally, that
+  we intend that @('*pi*') computes @('(fact n)') when @('n') is a natural
+  number.  This is just shorthand for the more precise understanding that if we
+  start at @('pc') 0 with a natural, @('n'), in local 0 and run program
+  @('*pi*') @('(clk n)') steps, the final state has @('pc') 14 (meaning
+  execution reached the @('(HALT)')), local 0 has been zeroed, local 1 contains
+  @('(fact n)'), and @('(fact n)') is on top of the otherwise unchanged initial
   @('stack').</p>
 
-  <p><b>Step 1</b>: We start by defining an ACL2 function that &ldquo;does what
-  the loop does.&rdquo;  We sometimes call this the <i>semantic function</i>
-  corresponding to the program.</p>
+  <p><b>Step 1: The Semantic Function</b> Define an ACL2 function that
+  &ldquo;does what the loop does.&rdquo; We sometimes call this the <i>semantic
+  function</i> corresponding to the loop.</p>
 
   @({
   (defun helper (n ans)
@@ -109986,7 +110021,15 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
         (helper (- n 1) (* ans n))))
   })
 
-  <p><b>Step 2</b>: Prove that the loop does what we said it would do.</p>
+  <p>The function above captures @('*pi*')'s behavior from entry to the loop at
+  @('pc') 2 through the halt at @('pc') 14.  Programs that have elaborate
+  initialization and finalizations and/or multiple loops require defining a
+  series of functions for each segment and loop.  But for this program, we can
+  capture all of @('*pi*')'s behavior by calling the semantic function on the
+  values the locals have upon entering the loop, i.e., @('(helper n 1)').</p>
+
+  <p><b>Step 2: Relate the Semantic Function to the Code</b> Prove that the loop
+  does what we said it would do.</p>
 
   @({
   (defthm loop-correct
@@ -110030,7 +110073,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   @('(loop-clk n)') is 3, the @('IFEQ') jumps to the exit to push @('ans') onto
   the stack and advance the @('pc') to the @('(HALT)') at 14.)  </p>
 
-  <p><b>Step 3</b>:  Relate the @('helper') to the specification.</p>
+  <p><b>Step 3: Relate the Semantic Function to the Specification</b></p>
+
 
   @({
   (defthm helper-is-fact
@@ -110046,8 +110090,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   explaining how the &ldquo;iterative&rdquo; (tail-recursive) accumulation of
   the answer relates to the recursive computation of the answer.</p>
 
-  <p><b>Step 4</b>: Put it all together in a statement of the total correctness
-  of @('*pi*').</p>
+  <p><b>Step 4: Total Correctness</b> Combine the foregoing into the statement
+  of the total correctness of @('*pi*').</p>
 
   @({
   (defthm correctness-of-*pi*
@@ -110484,8 +110528,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
   <p>The first major external applications of ACL2 after it was developed at
   Computational Logic, Inc., were at Motorola Government Systems, in
-  Scottsdale, Arizona, between 1994 and 1997, and at Advanced Micro Devices,
-  Inc., in Austin, Texas, in 1995.  Only the first of these two projects
+  Scottsdale, Arizona, between 1993 and 1997, and at Advanced Micro Devices,
+  Inc. (AMD), in Austin, Texas, in 1995.  Only the first of these two projects
   employed operational semantics &mdash; and it was a <i>tour de force</i>.</p>
 
   <p>A CLI employee, Bishop Brock, relocated to Scottsdale and embedded with a
@@ -110838,11 +110882,16 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   of Computation,&rdquo; 1963, and &ldquo;Correctness of a Compiler for
   Arithmetic Expressions,&rdquo; with James Painter, 1967).  But we would be
   hard-pressed to attribute this style of operational semantics even to
-  McCarthy.  Machine designers and programmers have been writing software to
-  emulate other machines for almost as long as computers have existed and ACL2
-  is just another programming language &mdash; albeit one that comes with a
-  logical foundation and theorem prover allowing one to reason about programs
-  running on the machine or even properties of the machine itself.</p>
+  McCarthy.  In the first place, mathematicians have used formal state machines
+  at least since since Goedel's 1931 incompleteness paper: he modeled proofs as
+  objects (specifically, integers) and defined a non-terminating function that
+  stepped through all possible proofs looking for a particular proof.  In the
+  second place, machine designers and programmers have been writing software to
+  emulate other machines for almost as long as computers have existed. ACL2 is
+  just another programming language in which such software can be written
+  &mdash; albeit one that comes with a logical foundation and theorem prover
+  allowing one to reason about programs running on the machine or even
+  properties of the machine itself.</p>
 
   <p>In fact, such operational semantics models played an important role in the
   evolution of ACL2.</p>
@@ -169584,9 +169633,10 @@ expand function call at the current subterm, without simplifying"
 (defxdoc bib::hb92
   :parents (operational-semantics-3__annotated-bibliography)
 
-  :short "W. A. Hunt, Jr. and B. Brock, &ldquo;A Formal HDL and its use in the
-  FM9001 Verification,&rdquo; <i>Proceedings of the Royal Society</i>, North
-  Holland, April, 1992.
+  :short "W. A. Hunt, Jr. and B. Brock, &ldquo;<a
+  href='https://royalsocietypublishing.org/doi/abs/10.1098/rsta.1992.0024'>A
+  Formal HDL and its use in the FM9001 Verification</a>&rdquo;, <i>Proceedings
+  of the Royal Society</i>, North Holland, April, 1992.
 
   <br></br><br></br><b>Relevance:</b> a formalized hardware description language
   and the verification of a fabricated microprocessor described with it; this

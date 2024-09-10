@@ -105857,8 +105857,8 @@ Overview of the Remaining Topics on Operational Semantics
       part of the ACL2 documentation; for example, in these topics
       you might see utterances such as ``Nqthm source file
       [47mprove.lisp[0m'', ``ACL2 source file [47mrewrite.lisp[0m'', ``Nqthm proof
-      script [47mexamples/hunt/fm8501.lisp[0m and ``ACL2 directory
-      ``[47mbooks/models/jvm/m1/[0m; this brief topic explains how to
+      script [47mexamples/hunt/fm8501.lisp[0m'' and ``ACL2 directory
+      [47mbooks/models/jvm/m1/[0m''; this brief topic explains how to
       dereference these utterances.
     * [operational-semantics-5__history-etc] --- a discussion of early
       work in the 1970s and 1980s by members of the Boyer-Moore
@@ -105886,10 +105886,47 @@ Subtopics
   (OPERATIONAL-SEMANTICS)
   "M1: definition, rules, clocks, proofs
 
+
+Organization of This Topic
+
+  As a hypertext document, this topic is ``flat,'' not structured as a
+  tree of subtopics.  We implemented it this way to make it easier to
+  search.
+
+    * Introduction
+    * Setting up a Symbol Package
+    * The Definition of M1
+    * Programming M1
+    * ``Teaching'' the Prover How to Control M1
+          * Arithmetic
+          * Resolving ``Reads'' and ``Writes''
+          * Keeping ``Abstractions'' Abstract
+          * Controlling Case Explosion due to Step
+          * Clock Expressions
+          * Expanding [47mm1[0m
+
+    * Playing with Program *pi*: Execution, Symbolic Execution, and Proof
+      of Correctness
+          * The Clock for Factorial
+          * Computing with M1
+          * Symbolic Execution of M1 Code
+          * Proving Theorems about M1 Programs
+                * Step 0: The Specification
+                * Step 1: The Semantic Function
+                * Step 2: Relate the Semantic Function to the Code
+                * Step 3: Relate the Semantic Function to the Specification
+                * Step 4: Total Correctness
+
+    * More M1 Programs and Proofs
+    * More Elaborate Models of the JVM: From M1 to M6
+
+
+Introduction
+
   In this topic we explain, by example, the most common way to
-  formalize a computing machine in ACL2 and then reason about it.
-  The machine we have in mind will be called ``M1'' and is a ``toy''
-  version of the Java Virtual Maching or ``JVM.'' More precisely, it
+  formalize a computing machine in ACL2 and then reason about it. The
+  machine we have in mind will be called ``M1'' and is a ``toy''
+  version of the Java Virtual Machine or ``JVM.'' More precisely, it
   is a simple stack machine having a fixed number of registers,
   hereafter called ``local variables,'' and an execute-only program
   memory.  There will only be eight instructions.  We will then write
@@ -105914,6 +105951,21 @@ Subtopics
   series of machine models in the JVM family that we explore more
   fully at the end of this documentation topic.
 
+  Our discussion of this simple machine is quite long!  The reason is
+  that we're not trying just to explain the M1 model and how to prove
+  correctness theorems about M1 programs; we're trying to explain how
+  to create your own model, how to configure ACL2 to manipulate it,
+  and how to phrase correctness conjectures so that ACL2 can prove
+  them.  We're using a simple machine as the vehicle.
+
+  The ACL2 book defining M1 and all the necessary configuration lemmas,
+  [47mmodels/jvm/m1/m1.lisp[0m, is less than 8K bytes, and the script for
+  proving an M1 factorial program correct, [47mmodels/jvm/m1/fact.lisp[0m,
+  is less than 6K bytes.  If we strip out the comments, those two
+  files combined are less than 8K bytes or about 5 pages.  But this
+  doc topic is about 64K bytes or about 35 pages.  So don't despair.
+  It takes longer to explain how to do it than to do it!
+
   You can find the definition of M1 and all of the work done with it on
   the ACL2 directory [47mbooks/models/jvm/m1[0m.  It might be easiest to
   fire up your ACL2 system and do this.
@@ -105929,34 +105981,12 @@ Subtopics
   examples of each ``kind'' of function involved in M1.
 
 
-Organization of This Topic
-
-    * Setting up a Symbol Package
-    * The Definition of M1
-    * Programming M1
-    * ``Teaching'' the Prover How to Control M1
-          * Arithmetic
-          * Resolving ``Reads'' and ``Writes''
-          * Keeping ``Abstractions'' Abstract
-          * Controlling Case Explosion due to Step
-          * Clock Expressions
-          * Expanding [47mm1[0m
-
-    * Playing with Program *pi*: Execution, Symbolic Execution, and Proof
-      of Correctness
-          * The Clock for Factorial
-          * Computing with M1
-          * Symbolic Execution of M1 Code
-          * Proving Theorems about M1 Programs
-
-    * More M1 Programs and Proofs
-    * More Elaborate Models of the JVM: From M1 to M6
-
-
 Setting up a Symbol Package
 
-  All of the functions involved in the definition of M1 are in a new
-  symbol package named [47m\"M1\"[0m
+  All of the functions defined to describe M1 are in a new symbol
+  package named [47m\"M1\"[0m.  This allows us to avoid name clashes with
+  functions like [47mpop[0m, [47mprogram[0m, and [47mpc[0m that are predefined in the
+  default [47m\"ACL2\"[0m symbol package.
 
     (defpkg \"M1\"
       (set-difference-eq
@@ -106107,7 +106137,7 @@ The Definition of M1
 
   We wrap all those ``execute'' functions up into a big-switch.
 
-    (defun do-inst (inst s)         ; ``do'' instruction inst to state s
+    (defun do-inst (inst s)         ; do instruction inst to state s
       (if (equal (op-code inst) 'ILOAD)
           (execute-ILOAD  inst s)
           (if (equal (op-code inst) 'ICONST)
@@ -106156,10 +106186,13 @@ The Definition of M1
   In a model like this one, where we control the length of the run by a
   natural-number step count, we often call the second argument of [47mm1[0m
   the ``clock.'' One might think of it as counting ``cycles'' but not
-  ``run time.'' In some models the ``clock'' might more reasonably
-  called a ``schedule'' (specifying which process is to step next),
-  or ``inputs'' (specifying what signals appear on certain pins in
-  the next cycle), or ``oracle'' (specifying ``random'' choices).
+  ``run time.'' Some authors call the argument ``fuel''.  In some
+  models the ``clock'' might actually be a list and be called by a
+  different name depending on how that list is used.  We've seen it
+  called ``schedule'' (because it specifies which process is to step
+  next), ``inputs'' (because it specifies what signals appear on
+  certain pins in the each cycle), and ``oracle'' (because it
+  specifies ``random'' choices).
 
 
 Programming M1
@@ -106291,12 +106324,13 @@ Programming M1
   of the motivation won't come until we prove an M1 program correct.
   Be patient.
 
-  This section only exhibits some of the rules we introduce.  See the
-  ACL2 file [47mbooks/models/jvm/m1/m1.lisp[0m for all of the events.  By
-  the way, the sequence in which these definitions and lemmas appear
-  below is not identical to the sequence in the [47mm1.lisp[0m file, but
-  they're all there.  In telling the story we just found the sequence
-  below a little more natural.
+  This section only exhibits some of the rules we introduce.  All of
+  the necessary rules can be found in the same file in which M1 is
+  defined, the ACL2 file [47mbooks/models/jvm/m1/m1.lisp[0m.  By the way,
+  the sequence in which these definitions and lemmas appear below is
+  not identical to the sequence in the [47mm1.lisp[0m file, but they're all
+  there.  In telling the story we just found the sequence below a
+  little more natural.
 
   Arithmetic
 
@@ -106550,19 +106584,19 @@ Programming M1
   [bib::rm04]).
 
   Clock functions for [47mm1[0m are recursive functions defined that use
-  arithmetic expressions to compute the lengths of straightline code
-  segments.  However, a key part of our strategy for controlling
-  proofs is to use the structure of the clock function and its
-  arithmetic expressions to decompose ``long'' runs of [47mm1[0m into
-  compositions of shorter runs.  In order to do that, we must prevent
-  the prover from rearranging our clocks!  That is, [47m(m1 s (+ i j))[0m
-  will decompose differently than [47m(m1 s (+ j i))[0m, but the arithmetic
-  library might rearrange the clock, e.g., by using the commutativity
-  of addition.  So instead of using [47m+[0m to express the the addition of
-  two clocks we define [47mclk+[0m to be [47m+[0m, but we'll disable its definition
-  to protect clocks from arithmetic reasoning.  We will arrange for
-  [47mclk+[0m to take more than just two arguments and will reveal that it
-  is associative.
+  arithmetic expressions to compute the lengths of code segments.
+  However, a key part of our strategy for controlling proofs is to
+  use the structure of the clock function and its arithmetic
+  expressions to decompose ``long'' runs of [47mm1[0m into compositions of
+  shorter runs.  In order to do that, we must prevent the prover from
+  rearranging our clocks!  That is, [47m(m1 s (+ i j))[0m will decompose
+  differently than [47m(m1 s (+ j i))[0m, but the arithmetic library might
+  rearrange the clock, e.g., by using the commutativity of addition.
+  So instead of using [47m+[0m to express the the addition of two clocks we
+  define [47mclk+[0m to be [47m+[0m, but we'll disable its definition to protect
+  clocks from arithmetic reasoning.  We will arrange for [47mclk+[0m to take
+  more than just two arguments and will reveal that it is
+  associative.
 
     (defun binary-clk+ (i j)
       (+ (nfix i) (nfix j)))
@@ -106773,10 +106807,10 @@ of Correctness
   It takes SBCL about 0.02 seconds to compute the answer.  The answer
   is a natural number with 2,568 decimal digits, so we won't show it
   here, but you can try it on your own.  [47m(Clk 1000)[0m is 11,005, so
-  during this particular computation, ACL2 was executing 550,250 [47mm1[0m
+  during this particular computation, ACL2 was executing 550,250 M1
   instructures per second.  Our model would run faster if we used a
-  single-thread object (see [47mstobj[0m) to hold the state and faster still
-  if we verified the guards of [47mm1[0m.  We point to discussions and
+  single-threaded object (see [47mstobj[0m) to hold the state and faster
+  still if we verified the guards of [47mm1[0m.  We point to discussions and
   examples of these ideas at the end of this topic.
 
   Symbolic Execution of M1 Code
@@ -106831,24 +106865,33 @@ of Correctness
 
   In this section we prove that [47m*pi*[0m computes factorial.
 
-  [31;1mStep 0[0m: Define the specification.  We've already done that: [47m*pi*[0m
-  allegedly computes [47m(fact n)[0m when [47mn[0m is a natural number.  This is
-  just shorthand for the more precise understanding that if we start
-  at [47mpc[0m 0 with a natural, [47mn[0m, in local 0 and run program [47m*pi*[0m [47m(clk n)[0m
-  steps, the final state has [47mpc[0m 14 (meaning execution reached the
-  [47m(HALT)[0m), local 0 has been zeroed, local 1 contains [47m(fact n)[0m, and
-  [47m(fact n)[0m is on top of the otherwise unchanged initial [47mstack[0m.
+  [31;1mStep 0: The Specification[0m We've already specified, informally, that
+  we intend that [47m*pi*[0m computes [47m(fact n)[0m when [47mn[0m is a natural number.
+  This is just shorthand for the more precise understanding that if
+  we start at [47mpc[0m 0 with a natural, [47mn[0m, in local 0 and run program [47m*pi*[0m
+  [47m(clk n)[0m steps, the final state has [47mpc[0m 14 (meaning execution reached
+  the [47m(HALT)[0m), local 0 has been zeroed, local 1 contains [47m(fact n)[0m,
+  and [47m(fact n)[0m is on top of the otherwise unchanged initial [47mstack[0m.
 
-  [31;1mStep 1[0m: We start by defining an ACL2 function that ``does what the
-  loop does.'' We sometimes call this the [3msemantic function[0m
-  corresponding to the program.
+  [31;1mStep 1: The Semantic Function[0m Define an ACL2 function that ``does
+  what the loop does.'' We sometimes call this the [3msemantic function[0m
+  corresponding to the loop.
 
     (defun helper (n ans)
       (if (zp n)
           ans
           (helper (- n 1) (* ans n))))
 
-  [31;1mStep 2[0m: Prove that the loop does what we said it would do.
+  The function above captures [47m*pi*[0m's behavior from entry to the loop at
+  [47mpc[0m 2 through the halt at [47mpc[0m 14.  Programs that have elaborate
+  initialization and finalizations and/or multiple loops require
+  defining a series of functions for each segment and loop.  But for
+  this program, we can capture all of [47m*pi*[0m's behavior by calling the
+  semantic function on the values the locals have upon entering the
+  loop, i.e., [47m(helper n 1)[0m.
+
+  [31;1mStep 2: Relate the Semantic Function to the Code[0m Prove that the loop
+  does what we said it would do.
 
     (defthm loop-correct
       (implies (and (natp n)
@@ -106890,7 +106933,7 @@ of Correctness
   the exit to push [47mans[0m onto the stack and advance the [47mpc[0m to the
   [47m(HALT)[0m at 14.)
 
-  [31;1mStep 3[0m: Relate the [47mhelper[0m to the specification.
+  [31;1mStep 3: Relate the Semantic Function to the Specification[0m
 
     (defthm helper-is-fact
       (implies (and (natp n)
@@ -106905,8 +106948,8 @@ of Correctness
   accumulation of the answer relates to the recursive computation of
   the answer.
 
-  [31;1mStep 4[0m: Put it all together in a statement of the total correctness
-  of [47m*pi*[0m.
+  [31;1mStep 4: Total Correctness[0m Combine the foregoing into the statement of
+  the total correctness of [47m*pi*[0m.
 
     (defthm correctness-of-*pi*
       (implies (natp n)
@@ -107337,10 +107380,10 @@ Other Machines
 
   The first major external applications of ACL2 after it was developed
   at Computational Logic, Inc., were at Motorola Government Systems,
-  in Scottsdale, Arizona, between 1994 and 1997, and at Advanced
-  Micro Devices, Inc., in Austin, Texas, in 1995.  Only the first of
-  these two projects employed operational semantics --- and it was a
-  [3mtour de force[0m.
+  in Scottsdale, Arizona, between 1993 and 1997, and at Advanced
+  Micro Devices, Inc. (AMD), in Austin, Texas, in 1995.  Only the
+  first of these two projects employed operational semantics --- and
+  it was a [3mtour de force[0m.
 
   A CLI employee, Bishop Brock, relocated to Scottsdale and embedded
   with a design group there to formalize the evolving design of the
@@ -107733,9 +107776,10 @@ Subtopics
       [31;1mRelevance:[0m details of the x86 model
 
   [Bib::hb92]
-      W. A. Hunt, Jr. and B. Brock, ``A Formal HDL and its use in the
-      FM9001 Verification,'' [3mProceedings of the Royal Society[0m, North
-      Holland, April, 1992.
+      W. A. Hunt, Jr. and B. Brock, ``{A Formal HDL and its use in the
+      FM9001 Verification |
+      https://royalsocietypublishing.org/doi/abs/10.1098/rsta.1992.0024}'',
+      [3mProceedings of the Royal Society[0m, North Holland, April, 1992.
       [31;1mRelevance:[0m a formalized hardware description language and the
       verification of a fabricated microprocessor described with it;
       this describes three foundational achievements in formal
@@ -108141,13 +108185,18 @@ Quick Index to Related Topics
   Basis for a Mathematical Theory of Computation,'' 1963, and
   ``Correctness of a Compiler for Arithmetic Expressions,'' with
   James Painter, 1967).  But we would be hard-pressed to attribute
-  this style of operational semantics even to McCarthy.  Machine
-  designers and programmers have been writing software to emulate
-  other machines for almost as long as computers have existed and
-  ACL2 is just another programming language --- albeit one that comes
-  with a logical foundation and theorem prover allowing one to reason
-  about programs running on the machine or even properties of the
-  machine itself.
+  this style of operational semantics even to McCarthy.  In the first
+  place, mathematicians have used formal state machines at least
+  since since Goedel's 1931 incompleteness paper: he modeled proofs
+  as objects (specifically, integers) and defined a non-terminating
+  function that stepped through all possible proofs looking for a
+  particular proof.  In the second place, machine designers and
+  programmers have been writing software to emulate other machines
+  for almost as long as computers have existed. ACL2 is just another
+  programming language in which such software can be written ---
+  albeit one that comes with a logical foundation and theorem prover
+  allowing one to reason about programs running on the machine or
+  even properties of the machine itself.
 
   In fact, such operational semantics models played an important role
   in the evolution of ACL2.
@@ -167423,9 +167472,10 @@ Subtopics
   See the collection ACL2 books and files at [47mbooks/projects/x86isa/[0m.")
  (BIB::HB92
   (OPERATIONAL-SEMANTICS-3__ANNOTATED-BIBLIOGRAPHY)
-  "W. A. Hunt, Jr. and B. Brock, ``A Formal HDL and its use in the
-  FM9001 Verification,'' [3mProceedings of the Royal Society[0m, North
-  Holland, April, 1992.
+  "W. A. Hunt, Jr. and B. Brock, ``{A Formal HDL and its use in the
+  FM9001 Verification |
+  https://royalsocietypublishing.org/doi/abs/10.1098/rsta.1992.0024}'',
+  [3mProceedings of the Royal Society[0m, North Holland, April, 1992.
   [31;1mRelevance:[0m a formalized hardware description language and the
   verification of a fabricated microprocessor described with it; this
   describes three foundational achievements in formal methods
