@@ -77,7 +77,7 @@ Subtopics
   [defthm], [in-theory], [xargs], [state], etc., without an [47macl2::[0m
   prefix.
 
-  The constant [47m*acl2-exports*[0m lists [47m1657[0m symbols, including most
+  The constant [47m*acl2-exports*[0m lists [47m1658[0m symbols, including most
   documented ACL2 system constants, functions, and macros.  You will
   typically also want to import many symbols from Common Lisp; see
   [*common-lisp-symbols-from-main-lisp-package*].
@@ -137,7 +137,7 @@ Subtopics
        associativity-of-* associativity-of-+
        assume atom atom-listp
        atom-listp-forward-to-true-listp
-       backchain-limit
+       attach-stobj backchain-limit
        badge badge-userfn binary-*
        binary-+ binary-append binary-df*
        binary-df+ binary-df-log binary-df/
@@ -10684,6 +10684,102 @@ Subtopics
       (cond ((atom lst) (eq lst nil))
             (t (and (atom (car lst))
                     (atom-listp (cdr lst))))))")
+ (ATTACH-STOBJ
+  (DEFABSSTOBJ)
+  "Attach an ``implementation [stobj]'' to an attachable stobj
+
+  This topic assumes familiarity with abstract [stobj]s; see
+  [defabsstobj].  It documents a way to modify the foundation and
+  primitives of an abstract [stobj], [47mgen[0m, that is introduced by
+  [47mdefabsstobj[0m using the keyword argument [47m:attachable t[0m.  Such a stobj
+  is called an [3mattachable[0m stobj.  Execution of its primitives can be
+  provided by corresponding primitives of a specified abstract stobj,
+  [47mimpl[0m, which we say is [3mattached to[0m [47mgen[0m (or: [47mimpl[0m is the
+  [3mimplementation stobj attached to[0m [47mgen[0m); said differently, [47mgen[0m has
+  [47mimpl[0m as an attachment.  That relationship is specified by the
+  following
+
+    General Form:
+    (attach-stobj gen impl)
+
+  where [47mgen[0m and [47mimpl[0m are symbols, [47mgen[0m is not currently the [name] of
+  any [event] (function, macro, constant, stobj, etc.), and [47mimpl[0m is
+  an abstract stobj.  A subsequent attempt to introduce [47mgen[0m as an
+  attachabnle stobj will require [47mgen[0m and [47mimpl[0m to have [3mcorresponding
+  logical skeletons[0m as described below.  In that case, the foundation
+  of [47mgen[0m, as well as execution of the primitives of [47mgen[0m, will
+  effectively be provided by [47mimpl[0m; details are below.
+
+  In the General Form above, [47mimpl[0m is allowed to be [47mnil[0m, in which case
+  any existing attachment for [47mgen[0m will be removed.  Below, we assume
+  the common case that [47mimpl[0m is not [47mnil[0m.
+
+  Note that [47mimpl[0m may itself have an attachment, say, [47mimpl2[0m, in which
+  case we say that [47mimpl2[0m is attached to [47mgen[0m.  If furthermore [47mimpl3[0m is
+  attached to [47mimpl2[0m, then [47mimpl3[0m is said to be attached to [47mgen[0m; and so
+  on.
+
+  The guiding principle is that [47mgen[0m is modified by its attachment to
+  [47mimpl[0m so that [47mgen[0m behaves exactly as [47mimpl[0m except for the names
+  introduced and the [47m:non-executable[0m keyword.  Specifically, if [47mimpl[0m
+  is attached to [47mgen[0m, then the following properties hold.  (See
+  [defabsstobj] for the notion of a ``function spec'' and its
+  ``completion''.)
+
+    * Both [47mgen[0m and [47mimpl[0m are abstract stobjs, and moreover, [47mgen[0m is an
+      attachable stobj.
+    * [47mImpl[0m was introduced before the use of [47mattach-stobj[0m to attach [47mimpl[0m to
+      [47mgen[0m, which took place before [47mgen[0m was introduced.
+    * [47mGen[0m and [47mimpl[0m have corresponding logical skeletons (as defined below).
+      In particular, each primitive of [47mgen[0m has the same logical
+      meaning (i.e., the same [47m:logic[0m function) as the corresponding
+      primitive of [47mimpl[0m.
+    * For each primitive [47mp_gen[0m of [47mgen[0m and corresponding primitive [47mp_impl[0m of
+      [47mimpl[0m, if [47m(p_impl . kwd-alist)[0m is the completion of the
+      corresponding function spec for [47mp_impl[0m, then the function spec
+      for [47mp_gen[0m is effectively given as [47m(p_gen . kwd-alist)[0m, with the
+      following exception.  Each [47m:updater[0m keyword is replaced
+      appropriately, as follows: if [47mkwd-alist[0m specifies [47m:updater
+      u_impl[0m and primitive [47mu_gen[0m of [47mgen[0m corresponds to primitive
+      [47mu_impl[0m of [47mimpl[0m, then [47m:updater u_impl[0m is replaced by [47m:updater
+      u_gen[0m to obtain the effective function spec for [47mp_gen[0m.
+    * The [47m:protect-default[0m and [47m:congruent-to[0m keyword arguments for [47mgen[0m are
+      effectively those of [47mimpl[0m.
+    * The [47m:non-executable[0m keyword argument for [47mgen[0m is unchanged by the
+      attachment.
+
+  As promised above, we now define when two [47mdefabsstobj[0m events have
+  [3mcorresponding logical skeletons[0m, as follows.  The [47m:exports[0m keyword
+  argument of each must be of the same length, establishing a
+  positional one-one correspondence between them.  Corresponding
+  exports (i.e., exports in the same position) must have the same
+  [47m:logic[0m functions and, if one of them specifies [47m:updater u1[0m, then
+  the other must specify [47m:updater u2[0m where [47mu1[0m and [47mu2[0m correspond.
+
+  Remarks on Performance.  Stobj attachments are designed to be
+  efficient.  There is no indirection: in raw Lisp, each primitive
+  macroexpands to a call of the [47m:exec[0m primitive of the attachment
+  (which is itself a macro call).  The trade-off is that when a
+  function [47mF[0m is defined in the course of evaluating an [47m[include-book][0m
+  event, then if the guard or body of [47mF[0m calls an attachable stobj
+  primitive --- either directly or by way of inline functions or
+  macroexpansion, and whether or not that stobj has an attachment ---
+  then [47mF[0m will be compiled at that time.  (This is in contrast to the
+  usual case, where compiled code from the book's compiled file will
+  be installed to avoid such recompilation.)  Most likely this will
+  not be a noticeable problem in practice, but if it is, then one can
+  define a wrapper --- a function that does nothing more than call
+  the primitive --- to avoid such recompilation at the cost of a
+  runtime function call for each such primitive.  End of Remarks on
+  Performance.
+
+  Note that the notion of redundancy for [47mdefabsstobj[0m was not changed by
+  support for the [47m:attachable[0m keyword.  As noted in the topic
+  [redundant-events], a [47mdefabsstobj[0m event is redundant if there is
+  already an identical such event in the logical [world].
+
+  The [community-books] directory [47msystem/tests/attachable-stobjs/[0m has
+  examples that use attachable stobjs.")
  (AUTO-INSTANCE (POINTERS)
                 "See [defthm<w].")
  (A_FLYING_TOUR_OF_ACL2
@@ -24342,6 +24438,9 @@ Subtopics
 
 
 Subtopics
+
+  [Attach-stobj]
+      Attach an ``implementation [stobj]'' to an attachable stobj
 
   [Illegal-state]
       Illegal ACL2 state
@@ -103385,6 +103484,14 @@ New Features
   thus modifying the effect of the keyword [47m:non-executable[0m of events
   [47m[defstobj][0m and [47m[defabsstobj][0m.  Thanks to Yahya Sohail and Warren
   Hunt for discussions leading to the addition of these utilities.
+
+  A new [47m[defabsstobj][0m keyword, [47m:attachable[0m, allows a single abstract
+  [stobj] to have more than one foundation and associated functions
+  for execution, without the need to recertify the book that
+  introduces the stobj.  See [47m[attach-stobj][0m.  Thanks to Warren Hunt
+  and Yahya Sohail for requesting this feature.  We thank Sol Swords,
+  Warren, and especially Yahya for helpful input on its high-level
+  design.
 
 
 Heuristic and Efficiency Improvements

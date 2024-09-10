@@ -7730,6 +7730,112 @@ and @(tsee include-book)"
 
  @(def atom-listp)")
 
+(defxdoc attach-stobj
+  :parents (defabsstobj)
+  :short "Attach an &ldquo;implementation @(see stobj)&rdquo; to an attachable
+ stobj"
+  :long "<p>This topic assumes familiarity with abstract @(see stobj)s; see
+ @(see defabsstobj).  It documents a way to modify the foundation and
+ primitives of an abstract @(see stobj), @('gen'), that is introduced by
+ @('defabsstobj') using the keyword argument @(':attachable t').  Such a stobj
+ is called an <i>attachable</i> stobj.  Execution of its primitives can be
+ provided by corresponding primitives of a specified abstract stobj, @('impl'),
+ which we say is <i>attached to</i> @('gen') (or: @('impl') is the
+ <i>implementation stobj attached to</i> @('gen')); said differently, @('gen')
+ has @('impl') as an attachment.  That relationship is specified by the
+ following</p>
+
+ @({
+ General Form:
+ (attach-stobj gen impl)
+ })
+
+ <p>where @('gen') and @('impl') are symbols, @('gen') is not currently the
+ @(see name) of any @(see event) (function, macro, constant, stobj, etc.), and
+ @('impl') is an abstract stobj.  A subsequent attempt to introduce @('gen') as
+ an attachabnle stobj will require @('gen') and @('impl') to have
+ <i>corresponding logical skeletons</i> as described below.  In that case, the
+ foundation of @('gen'), as well as execution of the primitives of @('gen'),
+ will effectively be provided by @('impl'); details are below.</p>
+
+ <p>In the General Form above, @('impl') is allowed to be @('nil'), in which
+ case any existing attachment for @('gen') will be removed.  Below, we assume
+ the common case that @('impl') is not @('nil').</p>
+
+ <p>Note that @('impl') may itself have an attachment, say, @('impl2'), in
+ which case we say that @('impl2') is attached to @('gen').  If furthermore
+ @('impl3') is attached to @('impl2'), then @('impl3') is said to be attached
+ to @('gen'); and so on.</p>
+
+ <p>The guiding principle is that @('gen') is modified by its attachment to
+ @('impl') so that @('gen') behaves exactly as @('impl') except for the names
+ introduced and the @(':non-executable') keyword.  Specifically, if @('impl')
+ is attached to @('gen'), then the following properties hold.  (See @(see
+ defabsstobj) for the notion of a &ldquo;function spec&rdquo; and its
+ &ldquo;completion&rdquo;.)</p>
+
+ <ul>
+
+ <li>Both @('gen') and @('impl') are abstract stobjs, and moreover, @('gen') is
+ an attachable stobj.</li>
+
+ <li>@('Impl') was introduced before the use of @('attach-stobj') to attach
+ @('impl') to @('gen'), which took place before @('gen') was introduced.</li>
+
+ <li>@('Gen') and @('impl') have corresponding logical skeletons (as defined
+ below).  In particular, each primitive of @('gen') has the same logical
+ meaning (i.e., the same @(':logic') function) as the corresponding primitive
+ of @('impl').</li>
+
+ <li>For each primitive @('p_gen') of @('gen') and corresponding primitive
+ @('p_impl') of @('impl'), if @('(p_impl . kwd-alist)') is the completion of
+ the corresponding function spec for @('p_impl'), then the function spec for
+ @('p_gen') is effectively given as @('(p_gen . kwd-alist)'), with the
+ following exception.  Each @(':updater') keyword is replaced appropriately, as
+ follows: if @('kwd-alist') specifies @(':updater u_impl') and primitive
+ @('u_gen') of @('gen') corresponds to primitive @('u_impl') of @('impl'), then
+ @(':updater u_impl') is replaced by @(':updater u_gen') to obtain the
+ effective function spec for @('p_gen').</li>
+
+ <li>The @(':protect-default') and @(':congruent-to') keyword arguments for
+ @('gen') are effectively those of @('impl').</li>
+
+ <li>The @(':non-executable') keyword argument for @('gen') is unchanged by the
+ attachment.</li>
+
+ </ul>
+
+ <p>As promised above, we now define when two @('defabsstobj') events have
+ <i>corresponding logical skeletons</i>, as follows.  The @(':exports') keyword
+ argument of each must be of the same length, establishing a positional one-one
+ correspondence between them.  Corresponding exports (i.e., exports in the same
+ position) must have the same @(':logic') functions and, if one of them
+ specifies @(':updater u1'), then the other must specify @(':updater u2') where
+ @('u1') and @('u2') correspond.</p>
+
+ <p>Remarks on Performance.  Stobj attachments are designed to be efficient.
+ There is no indirection: in raw Lisp, each primitive macroexpands to a call of
+ the @(':exec') primitive of the attachment (which is itself a macro call).
+ The trade-off is that when a function @('F') is defined in the course of
+ evaluating an @(tsee include-book) event, then if the guard or body of @('F')
+ calls an attachable stobj primitive &mdash; either directly or by way of
+ inline functions or macroexpansion, and whether or not that stobj has an
+ attachment &mdash; then @('F') will be compiled at that time.  (This is in
+ contrast to the usual case, where compiled code from the book's compiled file
+ will be installed to avoid such recompilation.)  Most likely this will not be
+ a noticeable problem in practice, but if it is, then one can define a wrapper
+ &mdash; a function that does nothing more than call the primitive &mdash; to
+ avoid such recompilation at the cost of a runtime function call for each such
+ primitive.  End of Remarks on Performance.</p>
+
+ <p>Note that the notion of redundancy for @('defabsstobj') was not changed by
+ support for the @(':attachable') keyword.  As noted in the topic @(see
+ redundant-events), a @('defabsstobj') event is redundant if there is already
+ an identical such event in the logical @(see world).</p>
+
+ <p>The @(see community-books) directory @('system/tests/attachable-stobjs/')
+ has examples that use attachable stobjs.</p>")
+
 (defxdoc |About Models|
   :parents (|Pages Written Especially for the Tours|)
   :short "About Models"
@@ -105399,7 +105505,7 @@ it."
 ; utilities to guard-verified :logic mode.
 
 ;   88 ; Changes to Existing Features
-;   38 ; New Features
+;   39 ; New Features
 ;   11 ; Heuristic and Efficiency Improvements
 ;   40 ; Bug Fixes
 ;   19 ; Changes at the System Level
@@ -106792,6 +106898,13 @@ it."
  name, thus modifying the effect of the keyword @(':non-executable') of events
  @(tsee defstobj) and @(tsee defabsstobj).  Thanks to Yahya Sohail and Warren
  Hunt for discussions leading to the addition of these utilities.</p>
+
+ <p>A new @(tsee defabsstobj) keyword, @(':attachable'), allows a single
+ abstract @(see stobj) to have more than one foundation and associated
+ functions for execution, without the need to recertify the book that
+ introduces the stobj.  See @(tsee attach-stobj).  Thanks to Warren Hunt and
+ Yahya Sohail for requesting this feature.  We thank Sol Swords, Warren, and
+ especially Yahya for helpful input on its high-level design.</p>
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
