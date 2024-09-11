@@ -7730,6 +7730,112 @@ and @(tsee include-book)"
 
  @(def atom-listp)")
 
+(defxdoc attach-stobj
+  :parents (defabsstobj)
+  :short "Attach an &ldquo;implementation @(see stobj)&rdquo; to an attachable
+ stobj"
+  :long "<p>This topic assumes familiarity with abstract @(see stobj)s; see
+ @(see defabsstobj).  It documents a way to modify the foundation and
+ primitives of an abstract @(see stobj), @('gen'), that is introduced by
+ @('defabsstobj') using the keyword argument @(':attachable t').  Such a stobj
+ is called an <i>attachable</i> stobj.  Execution of its primitives can be
+ provided by corresponding primitives of a specified abstract stobj, @('impl'),
+ which we say is <i>attached to</i> @('gen') (or: @('impl') is the
+ <i>implementation stobj attached to</i> @('gen')); said differently, @('gen')
+ has @('impl') as an attachment.  That relationship is specified by the
+ following</p>
+
+ @({
+ General Form:
+ (attach-stobj gen impl)
+ })
+
+ <p>where @('gen') and @('impl') are symbols, @('gen') is not currently the
+ @(see name) of any @(see event) (function, macro, constant, stobj, etc.), and
+ @('impl') is an abstract stobj.  A subsequent attempt to introduce @('gen') as
+ an attachabnle stobj will require @('gen') and @('impl') to have
+ <i>corresponding logical skeletons</i> as described below.  In that case, the
+ foundation of @('gen'), as well as execution of the primitives of @('gen'),
+ will effectively be provided by @('impl'); details are below.</p>
+
+ <p>In the General Form above, @('impl') is allowed to be @('nil'), in which
+ case any existing attachment for @('gen') will be removed.  Below, we assume
+ the common case that @('impl') is not @('nil').</p>
+
+ <p>Note that @('impl') may itself have an attachment, say, @('impl2'), in
+ which case we say that @('impl2') is attached to @('gen').  If furthermore
+ @('impl3') is attached to @('impl2'), then @('impl3') is said to be attached
+ to @('gen'); and so on.</p>
+
+ <p>The guiding principle is that @('gen') is modified by its attachment to
+ @('impl') so that @('gen') behaves exactly as @('impl') except for the names
+ introduced and the @(':non-executable') keyword.  Specifically, if @('impl')
+ is attached to @('gen'), then the following properties hold.  (See @(see
+ defabsstobj) for the notion of a &ldquo;function spec&rdquo; and its
+ &ldquo;completion&rdquo;.)</p>
+
+ <ul>
+
+ <li>Both @('gen') and @('impl') are abstract stobjs, and moreover, @('gen') is
+ an attachable stobj.</li>
+
+ <li>@('Impl') was introduced before the use of @('attach-stobj') to attach
+ @('impl') to @('gen'), which took place before @('gen') was introduced.</li>
+
+ <li>@('Gen') and @('impl') have corresponding logical skeletons (as defined
+ below).  In particular, each primitive of @('gen') has the same logical
+ meaning (i.e., the same @(':logic') function) as the corresponding primitive
+ of @('impl').</li>
+
+ <li>For each primitive @('p_gen') of @('gen') and corresponding primitive
+ @('p_impl') of @('impl'), if @('(p_impl . kwd-alist)') is the completion of
+ the corresponding function spec for @('p_impl'), then the function spec for
+ @('p_gen') is effectively given as @('(p_gen . kwd-alist)'), with the
+ following exception.  Each @(':updater') keyword is replaced appropriately, as
+ follows: if @('kwd-alist') specifies @(':updater u_impl') and primitive
+ @('u_gen') of @('gen') corresponds to primitive @('u_impl') of @('impl'), then
+ @(':updater u_impl') is replaced by @(':updater u_gen') to obtain the
+ effective function spec for @('p_gen').</li>
+
+ <li>The @(':protect-default') and @(':congruent-to') keyword arguments for
+ @('gen') are effectively those of @('impl').</li>
+
+ <li>The @(':non-executable') keyword argument for @('gen') is unchanged by the
+ attachment.</li>
+
+ </ul>
+
+ <p>As promised above, we now define when two @('defabsstobj') events have
+ <i>corresponding logical skeletons</i>, as follows.  The @(':exports') keyword
+ argument of each must be of the same length, establishing a positional one-one
+ correspondence between them.  Corresponding exports (i.e., exports in the same
+ position) must have the same @(':logic') functions and, if one of them
+ specifies @(':updater u1'), then the other must specify @(':updater u2') where
+ @('u1') and @('u2') correspond.</p>
+
+ <p>Remarks on Performance.  Stobj attachments are designed to be efficient.
+ There is no indirection: in raw Lisp, each primitive macroexpands to a call of
+ the @(':exec') primitive of the attachment (which is itself a macro call).
+ The trade-off is that when a function @('F') is defined in the course of
+ evaluating an @(tsee include-book) event, then if the guard or body of @('F')
+ calls an attachable stobj primitive &mdash; either directly or by way of
+ inline functions or macroexpansion, and whether or not that stobj has an
+ attachment &mdash; then @('F') will be compiled at that time.  (This is in
+ contrast to the usual case, where compiled code from the book's compiled file
+ will be installed to avoid such recompilation.)  Most likely this will not be
+ a noticeable problem in practice, but if it is, then one can define a wrapper
+ &mdash; a function that does nothing more than call the primitive &mdash; to
+ avoid such recompilation at the cost of a runtime function call for each such
+ primitive.  End of Remarks on Performance.</p>
+
+ <p>Note that the notion of redundancy for @('defabsstobj') was not changed by
+ support for the @(':attachable') keyword.  As noted in the topic @(see
+ redundant-events), a @('defabsstobj') event is redundant if there is already
+ an identical such event in the logical @(see world).</p>
+
+ <p>The @(see community-books) directory @('system/tests/attachable-stobjs/')
+ has examples that use attachable stobjs.</p>")
+
 (defxdoc |About Models|
   :parents (|Pages Written Especially for the Tours|)
   :short "About Models"
@@ -105399,9 +105505,9 @@ it."
 ; utilities to guard-verified :logic mode.
 
 ;   88 ; Changes to Existing Features
-;   38 ; New Features
+;   39 ; New Features
 ;   11 ; Heuristic and Efficiency Improvements
-;   39 ; Bug Fixes
+;   40 ; Bug Fixes
 ;   19 ; Changes at the System Level
 ;    8 ; EMACS Support
 ;    1 ; Experimental Versions
@@ -106793,6 +106899,13 @@ it."
  @(tsee defstobj) and @(tsee defabsstobj).  Thanks to Yahya Sohail and Warren
  Hunt for discussions leading to the addition of these utilities.</p>
 
+ <p>A new @(tsee defabsstobj) keyword, @(':attachable'), allows a single
+ abstract @(see stobj) to have more than one foundation and associated
+ functions for execution, without the need to recertify the book that
+ introduces the stobj.  See @(tsee attach-stobj).  Thanks to Warren Hunt and
+ Yahya Sohail for requesting this feature.  We thank Sol Swords, Warren, and
+ especially Yahya for helpful input on its high-level design.</p>
+
  <h3>Heuristic and Efficiency Improvements</h3>
 
  <p>Added a &ldquo;desperation heuristic&rdquo; to compute a stronger context,
@@ -106895,6 +107008,40 @@ it."
  hint for an @(':instance') of @('(:guard-theorem open-input-channel)').  Eric
  also supplied events, incorporated into ACL2 source file @('axioms.lisp'),
  that removed the @(tsee skip-proofs) wrappers from five definitions.</p>
+
+ <p>Fixed a soundness bug that exploited incorrect generation of raw Lisp code
+ for the recognizer of a @(see stobj) field of a stobj.  More precisely, the
+ bug occurred when a concrete stobj has a field whose type is the name of
+ either a concrete or abstract stobj.  Here is an example.</p>
+
+ <blockquote>
+
+ <p>First certify the following book, sub.lisp.</p>
+
+ @({
+ (in-package \"ACL2\")
+ (defstobj lo lo-fld)
+ (defstobj hi (hi-fld :type lo))
+ })
+
+ <p>Then before the bug was fixed, the following book was certifiable.</p>
+
+ @({
+ (in-package \"ACL2\")
+ (include-book \"sub\")
+ (defthm thm1 ; logically correct
+   (hi-fldp '(nil))
+   :rule-classes nil
+   :hints ((\"Goal\" :in-theory (disable (:e hi-fldp)))))
+ (defthm thm2 ; \"proved\" by unsound execution
+   (not (hi-fldp '(nil)))
+   :rule-classes nil)
+ (thm ; proof of nil
+  nil
+  :hints ((\"Goal\" :use (thm1 thm2))))
+ })
+
+ </blockquote>
 
  <p>It was probably a soundness bug to allow a @(tsee defaxiom) event to
  designate a rule of class @(':')@(tsee meta) or @(':')@(tsee clause-processor)
@@ -108519,7 +108666,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 ; tense from past to present!
 
 ; :DOC operational-semantics-1__simple-example notes that the comments in
-; books/models/jvm/m1/defsys.llisp are out of date.  Fix those comments and
+; books/models/jvm/m1/defsys.lisp are out of date.  Fix those comments and
 ; remove the Warning.
 
   :parents (documentation acl2 about-acl2)
@@ -108779,8 +108926,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   the ACL2 documentation; for example, in these topics you might see utterances
   such as &ldquo;Nqthm source file @('prove.lisp')&rdquo;, &ldquo;ACL2 source
   file @('rewrite.lisp')&rdquo;, &ldquo;Nqthm proof script
-  @('examples/hunt/fm8501.lisp') and &ldquo;ACL2 directory
-  &ldquo;@('books/models/jvm/m1/'); this brief topic explains how to
+  @('examples/hunt/fm8501.lisp')&rdquo; and &ldquo;ACL2 directory
+  @('books/models/jvm/m1/')&rdquo;; this brief topic explains how to
   dereference these utterances.  </li>
 
   <li> @(see operational-semantics-5__history-etc) &mdash; a discussion of
@@ -108796,50 +108943,14 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   :parents (operational-semantics)
   :short "M1: definition, rules, clocks, proofs"
 
-  :long "<p>In this topic we explain, by example, the most common way to
-  formalize a computing machine in ACL2 and then reason about it.  The machine
-  we have in mind will be called &ldquo;M1&rdquo; and is a &ldquo;toy&rdquo;
-  version of the Java Virtual Maching or &ldquo;JVM.&rdquo; More precisely, it
-  is a simple stack machine having a fixed number of registers, hereafter
-  called &ldquo;local variables,&rdquo; and an execute-only program memory.
-  There will only be eight instructions.  We will then write and verify a
-  factorial program for it and mention many more M1 programs that have been
-  verified &mdash; and which we urge you to solve as practice problems.
-  Despite its simplicity, M1 is equivalent to a Turing machine and, in fact,
-  that fact is among the theorems proved about M1.  Full references are given
-  when we survey the M1 results available.</p>
+  :long "<h3>Organization of This Topic</h3>
 
-  <p>(Historical Aside: What we're calling M1 was called ``Small-Machine'' in
-  Nqthm.  See @(see bib::bm96) and the methodology described here was
-  essentially fully developed before ACL2, Java, or the JVM came along.)</p>
-
-  <p>M1 does not support bytecode verification, method invocation (procedure
-  call) and return, data objects other than ACL2's unbounded numbers, threads,
-  exceptions, and many other features of modern machines and languages.
-  However, M1 is an excellent place to start when learning how to formalize a
-  machine and to prove theorems about it.  Furthermore, it is the starting
-  place of a series of machine models in the JVM family that we explore more
-  fully at the end of this documentation topic.</p>
-
-  <p>You can find the definition of M1 and all of the work done with it on the
-  ACL2 directory @('books/models/jvm/m1').  It might be easiest to fire up
-  your ACL2 system and do this.</p>
-
-  @({
-  (include-book \"models/jvm/m1/m1\" :dir :system)
-  (in-package \"M1\")
-  })
-
-  <p>Then, to see the definition of any symbol mentioned below you could just
-  issue the @(':')@(tsee pe) command.  For example, to see the definition of
-  the function @('execute-ILOAD'), aka @('execute-iload'), you could type
-  @(':pe execute-iload') to the interactive prompt in your ACL2 session.  This
-  doc topic will not exhibit all the functions but will give examples of each
-  &ldquo;kind&rdquo; of function involved in M1.</p>
-
-  <h3>Organization of This Topic</h3>
+  <p>As a hypertext document, this topic is &ldquo;flat,&rdquo; not structured
+  as a tree of subtopics.  We implemented it this way to make it easier to
+  search.</p>
 
   <ul>
+  <li>Introduction</li>
   <li>Setting up a Symbol Package</li>
   <li>The Definition of M1</li>
   <li>Programming M1</li>
@@ -108859,15 +108970,83 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   <li>Computing with M1</li>
   <li>Symbolic Execution of M1 Code</li>
   <li>Proving Theorems about M1 Programs</li>
+  <ul>
+  <li>Step 0: The Specification</li>
+  <li>Step 1: The Semantic Function</li>
+  <li>Step 2: Relate the Semantic Function to the Code</li>
+  <li>Step 3: Relate the Semantic Function to the Specification</li>
+  <li>Step 4: Total Correctness</li>
+  </ul>
   </ul>
   <li>More M1 Programs and Proofs</li>
   <li>More Elaborate Models of the JVM: From M1 to M6</li>
   </ul>
 
+  <h3>Introduction</h3>
+
+  <p>In this topic we explain, by example, the most common way to formalize a
+  computing machine in ACL2 and then reason about it. The machine we have in
+  mind will be called &ldquo;M1&rdquo; and is a &ldquo;toy&rdquo; version of
+  the Java Virtual Machine or &ldquo;JVM.&rdquo; More precisely, it is a simple
+  stack machine having a fixed number of registers, hereafter called
+  &ldquo;local variables,&rdquo; and an execute-only program memory.  There
+  will only be eight instructions.  We will then write and verify a factorial
+  program for it and mention many more M1 programs that have been verified
+  &mdash; and which we urge you to solve as practice problems.  Despite its
+  simplicity, M1 is equivalent to a Turing machine and, in fact, that fact is
+  among the theorems proved about M1.  Full references are given when we survey
+  the M1 results available.</p>
+
+  <p>(Historical Aside: What we're calling M1 was called
+  &ldquo;Small-Machine&rdquo; in Nqthm.  See @(see bib::bm96) and the
+  methodology described here was essentially fully developed before ACL2, Java,
+  or the JVM came along.)</p>
+
+  <p>M1 does not support bytecode verification, method invocation (procedure
+  call) and return, data objects other than ACL2's unbounded numbers, threads,
+  exceptions, and many other features of modern machines and languages.
+  However, M1 is an excellent place to start when learning how to formalize a
+  machine and to prove theorems about it.  Furthermore, it is the starting
+  place of a series of machine models in the JVM family that we explore more
+  fully at the end of this documentation topic.</p>
+
+  <p>Our discussion of this simple machine is quite long!  The reason is that
+  we're not trying just to explain the M1 model and how to prove correctness
+  theorems about M1 programs; we're trying to explain how to create your own
+  model, how to configure ACL2 to manipulate it, and how to phrase correctness
+  conjectures so that ACL2 can prove them.  We're using a simple machine as
+  the vehicle.</p>
+
+  <p>The ACL2 book defining M1 and all the necessary configuration lemmas,
+  @('models/jvm/m1/m1.lisp'), is less than 8K bytes, and the script for proving
+  an M1 factorial program correct, @('models/jvm/m1/fact.lisp'), is less than
+  6K bytes.  If we strip out the comments, those two files combined are less
+  than 8K bytes or about 5 pages.  But this doc topic is about 64K bytes or
+  about 35 pages.  So don't despair.  It takes longer to explain how to do it
+  than to do it!</p>
+
+  <p>You can find the definition of M1 and all of the work done with it on the
+  ACL2 directory @('books/models/jvm/m1').  It might be easiest to fire up
+  your ACL2 system and do this.</p>
+
+  @({
+  (include-book \"models/jvm/m1/m1\" :dir :system)
+  (in-package \"M1\")
+  })
+
+  <p>Then, to see the definition of any symbol mentioned below you could just
+  issue the @(':')@(tsee pe) command.  For example, to see the definition of
+  the function @('execute-ILOAD'), aka @('execute-iload'), you could type
+  @(':pe execute-iload') to the interactive prompt in your ACL2 session.  This
+  doc topic will not exhibit all the functions but will give examples of each
+  &ldquo;kind&rdquo; of function involved in M1.</p>
+
   <h3>Setting up a Symbol Package</h3>
 
-  <p>All of the functions involved in the definition of M1 are in a new symbol
-  package named @('\"M1\"')</p>
+  <p>All of the functions defined to describe M1 are in a new symbol package
+  named @('\"M1\"').  This allows us to avoid name clashes with functions like
+  @('pop'), @('program'), and @('pc') that are predefined in the default
+  @('\"ACL2\"') symbol package.</p>
 
   @({
   (defpkg \"M1\"
@@ -109051,7 +109230,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   big-switch.</p>
 
   @({
-  (defun do-inst (inst s)         ; ``do'' instruction inst to state s
+  (defun do-inst (inst s)         ; do instruction inst to state s
     (if (equal (op-code inst) 'ILOAD)
         (execute-ILOAD  inst s)
         (if (equal (op-code inst) 'ICONST)
@@ -109109,11 +109288,13 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   <p>In a model like this one, where we control the length of the run by a
   natural-number step count, we often call the second argument of @('m1') the
   &ldquo;clock.&rdquo; One might think of it as counting &ldquo;cycles&rdquo;
-  but not &ldquo;run time.&rdquo; In some models the &ldquo;clock&rdquo; might
-  more reasonably called a &ldquo;schedule&rdquo; (specifying which process is
-  to step next), or &ldquo;inputs&rdquo; (specifying what signals appear on
-  certain pins in the next cycle), or &ldquo;oracle&rdquo; (specifying
-  &ldquo;random&rdquo; choices).</p>
+  but not &ldquo;run time.&rdquo; Some authors call the argument
+  &ldquo;fuel&rdquo;.  In some models the &ldquo;clock&rdquo; might actually be
+  a list and be called by a different name depending on how that list is used.
+  We've seen it called &ldquo;schedule&rdquo; (because it specifies which
+  process is to step next), &ldquo;inputs&rdquo; (because it specifies what
+  signals appear on certain pins in the each cycle), and
+  &ldquo;oracle&rdquo; (because it specifies &ldquo;random&rdquo; choices).</p>
 
   <h3>Programming M1</h3>
 
@@ -109246,11 +109427,12 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   configuration as we go, but true understanding of the motivation won't come
   until we prove an M1 program correct.  Be patient.</p>
 
-  <p>This section only exhibits some of the rules we introduce.  See the ACL2
-  file @('books/models/jvm/m1/m1.lisp') for all of the events.  By the way, the
-  sequence in which these definitions and lemmas appear below is not identical
-  to the sequence in the @('m1.lisp') file, but they're all there.  In telling
-  the story we just found the sequence below a little more natural.</p>
+  <p>This section only exhibits some of the rules we introduce.  All of the
+  necessary rules can be found in the same file in which M1 is defined, the
+  ACL2 file @('books/models/jvm/m1/m1.lisp').  By the way, the sequence in
+  which these definitions and lemmas appear below is not identical to the
+  sequence in the @('m1.lisp') file, but they're all there.  In telling the
+  story we just found the sequence below a little more natural.</p>
 
   <h4>Arithmetic</h4>
 
@@ -109356,7 +109538,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   constants and @('program') is a well-formed program.  But we don't want to
   require exactly that because it is too restrictive.  For example, in machine
   models supporting subroutine calls, the typical correctness theorem for a
-  subroutine says very little about the entire ``program space'' but deals with
+  subroutine says very little about the entire &ldquo;program space&rdquo; but deals with
   an @('invoke')- or @('jsr')-type instruction to a place where the code for
   the subroutine is found.  (If you inspect
   @('books/models/jvm/m2/examples.lisp') and look at @('example4') you will see
@@ -109521,9 +109703,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   bib::rm04)).</p>
 
   <p>Clock functions for @('m1') are recursive functions defined that use
-  arithmetic expressions to compute the lengths of straightline code segments.
-  However, a key part of our strategy for controlling proofs is to use the
-  structure of the clock function and its arithmetic expressions to decompose
+  arithmetic expressions to compute the lengths of code segments.  However, a
+  key part of our strategy for controlling proofs is to use the structure of
+  the clock function and its arithmetic expressions to decompose
   &ldquo;long&rdquo; runs of @('m1') into compositions of shorter runs.  In
   order to do that, we must prevent the prover from rearranging our clocks!
   That is, @('(m1 s (+ i j))') will decompose differently than @('(m1 s (+ j
@@ -109759,9 +109941,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   <p>It takes SBCL about 0.02 seconds to compute the answer.  The answer is a
   natural number with 2,568 decimal digits, so we won't show it here, but you
   can try it on your own.  @('(Clk 1000)') is 11,005, so during this particular
-  computation, ACL2 was executing 550,250 @('m1') instructures per second.  Our
-  model would run faster if we used a single-thread object (see @('stobj')) to
-  hold the state and faster still if we verified the guards of @('m1').  We
+  computation, ACL2 was executing 550,250 M1 instructures per second.  Our
+  model would run faster if we used a single-threaded object (see @('stobj'))
+  to hold the state and faster still if we verified the guards of @('m1').  We
   point to discussions and examples of these ideas at the end of this
   topic.</p>
 
@@ -109819,18 +110001,18 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
   <p>In this section we prove that @('*pi*') computes factorial.</p>
 
-  <p><b>Step 0</b>: Define the specification.  We've already done that:
-  @('*pi*') allegedly computes @('(fact n)') when @('n') is a natural number.
-  This is just shorthand for the more precise understanding that if we start at
-  @('pc') 0 with a natural, @('n'), in local 0 and run program @('*pi*')
-  @('(clk n)') steps, the final state has @('pc') 14 (meaning execution reached
-  the @('(HALT)')), local 0 has been zeroed, local 1 contains @('(fact n)'),
-  and @('(fact n)') is on top of the otherwise unchanged initial
+  <p><b>Step 0: The Specification</b> We've already specified, informally, that
+  we intend that @('*pi*') computes @('(fact n)') when @('n') is a natural
+  number.  This is just shorthand for the more precise understanding that if we
+  start at @('pc') 0 with a natural, @('n'), in local 0 and run program
+  @('*pi*') @('(clk n)') steps, the final state has @('pc') 14 (meaning
+  execution reached the @('(HALT)')), local 0 has been zeroed, local 1 contains
+  @('(fact n)'), and @('(fact n)') is on top of the otherwise unchanged initial
   @('stack').</p>
 
-  <p><b>Step 1</b>: We start by defining an ACL2 function that &ldquo;does what
-  the loop does.&rdquo;  We sometimes call this the <i>semantic function</i>
-  corresponding to the program.</p>
+  <p><b>Step 1: The Semantic Function</b> Define an ACL2 function that
+  &ldquo;does what the loop does.&rdquo; We sometimes call this the <i>semantic
+  function</i> corresponding to the loop.</p>
 
   @({
   (defun helper (n ans)
@@ -109839,7 +110021,15 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
         (helper (- n 1) (* ans n))))
   })
 
-  <p><b>Step 2</b>: Prove that the loop does what we said it would do.</p>
+  <p>The function above captures @('*pi*')'s behavior from entry to the loop at
+  @('pc') 2 through the halt at @('pc') 14.  Programs that have elaborate
+  initialization and finalizations and/or multiple loops require defining a
+  series of functions for each segment and loop.  But for this program, we can
+  capture all of @('*pi*')'s behavior by calling the semantic function on the
+  values the locals have upon entering the loop, i.e., @('(helper n 1)').</p>
+
+  <p><b>Step 2: Relate the Semantic Function to the Code</b> Prove that the loop
+  does what we said it would do.</p>
 
   @({
   (defthm loop-correct
@@ -109883,7 +110073,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   @('(loop-clk n)') is 3, the @('IFEQ') jumps to the exit to push @('ans') onto
   the stack and advance the @('pc') to the @('(HALT)') at 14.)  </p>
 
-  <p><b>Step 3</b>:  Relate the @('helper') to the specification.</p>
+  <p><b>Step 3: Relate the Semantic Function to the Specification</b></p>
+
 
   @({
   (defthm helper-is-fact
@@ -109899,8 +110090,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   explaining how the &ldquo;iterative&rdquo; (tail-recursive) accumulation of
   the answer relates to the recursive computation of the answer.</p>
 
-  <p><b>Step 4</b>: Put it all together in a statement of the total correctness
-  of @('*pi*').</p>
+  <p><b>Step 4: Total Correctness</b> Combine the foregoing into the statement
+  of the total correctness of @('*pi*').</p>
 
   @({
   (defthm correctness-of-*pi*
@@ -110337,8 +110528,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
   <p>The first major external applications of ACL2 after it was developed at
   Computational Logic, Inc., were at Motorola Government Systems, in
-  Scottsdale, Arizona, between 1994 and 1997, and at Advanced Micro Devices,
-  Inc., in Austin, Texas, in 1995.  Only the first of these two projects
+  Scottsdale, Arizona, between 1993 and 1997, and at Advanced Micro Devices,
+  Inc. (AMD), in Austin, Texas, in 1995.  Only the first of these two projects
   employed operational semantics &mdash; and it was a <i>tour de force</i>.</p>
 
   <p>A CLI employee, Bishop Brock, relocated to Scottsdale and embedded with a
@@ -110691,11 +110882,16 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   of Computation,&rdquo; 1963, and &ldquo;Correctness of a Compiler for
   Arithmetic Expressions,&rdquo; with James Painter, 1967).  But we would be
   hard-pressed to attribute this style of operational semantics even to
-  McCarthy.  Machine designers and programmers have been writing software to
-  emulate other machines for almost as long as computers have existed and ACL2
-  is just another programming language &mdash; albeit one that comes with a
-  logical foundation and theorem prover allowing one to reason about programs
-  running on the machine or even properties of the machine itself.</p>
+  McCarthy.  In the first place, mathematicians have used formal state machines
+  at least since since Goedel's 1931 incompleteness paper: he modeled proofs as
+  objects (specifically, integers) and defined a non-terminating function that
+  stepped through all possible proofs looking for a particular proof.  In the
+  second place, machine designers and programmers have been writing software to
+  emulate other machines for almost as long as computers have existed. ACL2 is
+  just another programming language in which such software can be written
+  &mdash; albeit one that comes with a logical foundation and theorem prover
+  allowing one to reason about programs running on the machine or even
+  properties of the machine itself.</p>
 
   <p>In fact, such operational semantics models played an important role in the
   evolution of ACL2.</p>
@@ -169437,9 +169633,10 @@ expand function call at the current subterm, without simplifying"
 (defxdoc bib::hb92
   :parents (operational-semantics-3__annotated-bibliography)
 
-  :short "W. A. Hunt, Jr. and B. Brock, &ldquo;A Formal HDL and its use in the
-  FM9001 Verification,&rdquo; <i>Proceedings of the Royal Society</i>, North
-  Holland, April, 1992.
+  :short "W. A. Hunt, Jr. and B. Brock, &ldquo;<a
+  href='https://royalsocietypublishing.org/doi/abs/10.1098/rsta.1992.0024'>A
+  Formal HDL and its use in the FM9001 Verification</a>&rdquo;, <i>Proceedings
+  of the Royal Society</i>, North Holland, April, 1992.
 
   <br></br><br></br><b>Relevance:</b> a formalized hardware description language
   and the verification of a fabricated microprocessor described with it; this
