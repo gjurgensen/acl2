@@ -175443,7 +175443,7 @@ Definitions and Theorems
       (implies (not (equal key (mv-nth 0 (head map))))
                (equal (assoc key (tail map))
                       (assoc key map))))"
-  "kestrel/utilities/omaps/core.lisp :DIR :SYSTEM")
+  "std/omaps/core.lisp :DIR :SYSTEM")
  (XDOC::B
   (XDOC::PRIMITIVE-CONSTRUCTORS)
   "Construct an XDOC tree for HTML bold text [47m<b>...</b>[0m.
@@ -176795,7 +176795,7 @@ Definitions and Theorems
     (defthm compatiblep-when-right-emptyp
       (implies (emptyp map2)
                (compatiblep map1 map2)))"
-  "kestrel/utilities/omaps/core.lisp :DIR :SYSTEM")
+  "std/omaps/core.lisp :DIR :SYSTEM")
  (XDOC::COMPOSITE-CONSTRUCTORS
   (XDOC::CONSTRUCTORS)
   "Composite XDOC constructors.
@@ -178673,7 +178673,7 @@ Definitions and Theorems
     (defthm delete-when-emptyp
       (implies (emptyp map)
                (equal (delete key map) nil)))"
-  "kestrel/utilities/omaps/core.lisp :DIR :SYSTEM")
+  "std/omaps/core.lisp :DIR :SYSTEM")
  (SET::DELETE
   (STD/OSETS)
   "[47m(delete a x)[0m removes the element [47ma[0m from the set [47mX[0m.
@@ -178806,7 +178806,7 @@ Definitions and Theorems
     (defthm delete*-when-right-emptyp
       (implies (emptyp map)
                (equal (delete* keys map) nil)))"
-  "kestrel/utilities/omaps/core.lisp :DIR :SYSTEM")
+  "std/omaps/core.lisp :DIR :SYSTEM")
  (XDOC::DESC
   (XDOC::GENERIC-COMPOSITE-CONSTRUCTORS)
   "Construct an XDOC tree for a description.
@@ -179748,7 +179748,7 @@ Definitions and Theorems
                (< (+ (acl2-count (car (car map)))
                      (acl2-count (cdr (car map))))
                   (acl2-count map))))"
-  "kestrel/utilities/omaps/core.lisp :DIR :SYSTEM")
+  "std/omaps/core.lisp :DIR :SYSTEM")
  (SET::EMPTYP
   (SET::PRIMITIVES)
   "[47m(emptyp x)[0m recognizes empty sets.
@@ -181667,7 +181667,7 @@ Definitions and Theorems
       (b* ((map (from-lists keys vals)))
         (mapp map))
       :rule-classes :rewrite)"
-  "kestrel/utilities/omaps/core.lisp :DIR :SYSTEM")
+  "std/omaps/core.lisp :DIR :SYSTEM")
  (XDOC::GENERATE-PRIMITIVE-CONSTRUCTOR-FOR-DIR/&&
   (XDOC::PRIMITIVE-CONSTRUCTORS)
   "Generate a primitive constructor for a preprocessor directive or tree
@@ -182493,7 +182493,7 @@ Definitions and Theorems
                (o< (acl2-count (mv-nth 1 (head map)))
                    (acl2-count map)))
       :rule-classes :built-in-clause)"
-  "kestrel/utilities/omaps/core.lisp :DIR :SYSTEM")
+  "std/omaps/core.lisp :DIR :SYSTEM")
  (SET::HEAD
   (SET::PRIMITIVES)
   "[47m(head x)[0m returns the smallest element in a set.
@@ -182582,7 +182582,7 @@ Definitions and Theorems
                 (head map)
           (declare (ignore val))
           key)))"
-  "kestrel/utilities/omaps/core.lisp :DIR :SYSTEM")
+  "std/omaps/core.lisp :DIR :SYSTEM")
  (OMAP::HEAD-VAL
   (OMAP::OMAPS)
   "Value associated to the smallest key of a non-empty omap.
@@ -182610,7 +182610,7 @@ Definitions and Theorems
                 (head map)
           (declare (ignore key))
           val)))"
-  "kestrel/utilities/omaps/core.lisp :DIR :SYSTEM")
+  "std/omaps/core.lisp :DIR :SYSTEM")
  (XDOC::I
   (XDOC::PRIMITIVE-CONSTRUCTORS)
   "Construct an XDOC tree for HTML italic text [47m<i>...</i>[0m.
@@ -183155,7 +183155,7 @@ Definitions and Theorems
     (defthm in*-of-tail
       (implies (in* keys map)
                (in* (set::tail keys) map)))"
-  "kestrel/utilities/omaps/core.lisp :DIR :SYSTEM")
+  "std/omaps/core.lisp :DIR :SYSTEM")
  (SET::INSERT
   (SET::PRIMITIVES)
   "[47m(insert a x)[0m adds the element [47ma[0m to the set [47mX[0m.
@@ -184486,7 +184486,7 @@ Definitions and Theorems
     (defthm keys-of-restrict
       (equal (keys (restrict keys map))
              (intersect keys (keys map))))"
-  "kestrel/utilities/omaps/core.lisp :DIR :SYSTEM")
+  "std/omaps/core.lisp :DIR :SYSTEM")
  (STD::KEYWORD-LEGALITY
   (STD::SUPPORT)
   "Check whether x is a legal keyword
@@ -184791,7 +184791,7 @@ Definitions and Theorems
       (implies (assoc key (tail map))
                (equal (lookup key (tail map))
                       (lookup key map))))"
-  "kestrel/utilities/omaps/core.lisp :DIR :SYSTEM")
+  "std/omaps/core.lisp :DIR :SYSTEM")
  (OMAP::LOOKUP*
   (OMAP::OMAPS)
   "Set of values associated to a set of keys in an omap.
@@ -184843,7 +184843,7 @@ Definitions and Theorems
     (defthm lookup*-when-right-emptyp
       (implies (emptyp map)
                (equal (lookup* keys map) nil)))"
-  "kestrel/utilities/omaps/core.lisp :DIR :SYSTEM")
+  "std/omaps/core.lisp :DIR :SYSTEM")
  (OSLIB::LS
   (OSLIB)
   "Get a (full) directory listing.
@@ -185531,7 +185531,7 @@ Definitions and Theorems
     (defthm alistp-when-mapp
       (implies (mapp x) (alistp x))
       :rule-classes (:rewrite :forward-chaining))"
-  "kestrel/utilities/omaps/core.lisp :DIR :SYSTEM")
+  "std/omaps/core.lisp :DIR :SYSTEM")
  (SET::MERGESORT
   (STD/OSETS)
   "[47m(mergesort x)[0m converts the list [47mX[0m into an ordered set.
@@ -185662,7 +185662,7 @@ Definitions and Theorems
 
     (defthm mfix-implies-mapp
       (implies (mfix x) (mapp x)))"
-  "kestrel/utilities/omaps/core.lisp :DIR :SYSTEM")
+  "std/omaps/core.lisp :DIR :SYSTEM")
  (OSLIB::MISSING-PATHS
   (OSLIB::FILE-TYPES)
   "Collect paths that do not exist (see [OSLIB::PATH-EXISTS-P]).
@@ -186520,10 +186520,10 @@ Definitions and Theorems
             ((emptyp map2) nil)
             (t (omap-induction2 (tail map1)
                                 (tail map2)))))"
-  "kestrel/utilities/omaps/core.lisp :DIR :SYSTEM")
+  "std/omaps/core.lisp :DIR :SYSTEM")
  (OMAP::OMAP-ORDER-RULES (OMAP::OMAPS)
                          "Some rules involving the ordering in omaps."
-                         "kestrel/utilities/omaps/core.lisp :DIR :SYSTEM")
+                         "std/omaps/core.lisp :DIR :SYSTEM")
  (OMAP::OMAPS
   (KESTREL-UTILITIES STD/OSETS ALISTS)
   "A library of omaps (ordered maps), i.e. finite maps represented as
@@ -186691,7 +186691,7 @@ Subtopics
 
   [Omap::values]
       Oset of the values of an omap."
-  "kestrel/utilities/omaps/core.lisp :DIR :SYSTEM")
+  "std/omaps/core.lisp :DIR :SYSTEM")
  (BIGMEM-ASYMMETRIC::ORDERED-BYTES
   (BIGMEM-ASYMMETRIC::BIGMEM-ASYMMETRIC)
   "Alists with ordered keys.
@@ -188583,7 +188583,7 @@ Definitions and Theorems
       (implies (set::in key keys)
                (equal (assoc key (restrict keys map))
                       (assoc key map))))"
-  "kestrel/utilities/omaps/core.lisp :DIR :SYSTEM")
+  "std/omaps/core.lisp :DIR :SYSTEM")
  (STD::RETURNS-SPECIFIERS
   (STD/UTIL DEFINE)
   "A concise way to name, document, and prove basic type-like theorems
@@ -188984,7 +188984,7 @@ Definitions and Theorems
       (implies (emptyp map)
                (equal (rlookup val map) nil))
       :rule-classes (:rewrite :type-prescription))"
-  "kestrel/utilities/omaps/core.lisp :DIR :SYSTEM")
+  "std/omaps/core.lisp :DIR :SYSTEM")
  (OMAP::RLOOKUP*
   (OMAP::OMAPS)
   "Set of keys to which any value in a set is associated.
@@ -189034,7 +189034,7 @@ Definitions and Theorems
       (implies (emptyp map)
                (equal (rlookup* vals map) nil))
       :rule-classes (:rewrite :type-prescription))"
-  "kestrel/utilities/omaps/core.lisp :DIR :SYSTEM")
+  "std/omaps/core.lisp :DIR :SYSTEM")
  (OSLIB::RMTREE
   (OSLIB)
   "Recursively delete files, like the shell command [47mrm -rf[0m, and return a
@@ -189377,7 +189377,7 @@ Definitions and Theorems
                       (or (< (fix c) 0)
                           (and (not (emptyp map))
                                (> (size (tail map)) (1- c)))))))"
-  "kestrel/utilities/omaps/core.lisp :DIR :SYSTEM")
+  "std/omaps/core.lisp :DIR :SYSTEM")
  (STR::SKIP-LEADING-DIGITS
   (STR::DECIMAL)
   "Skip over any leading digits at the start of a character list.
@@ -190033,7 +190033,7 @@ Definitions and Theorems
     (defthm submap-when-right-emptyp
       (implies (emptyp sup)
                (equal (submap sub sup) (emptyp sub))))"
-  "kestrel/utilities/omaps/core.lisp :DIR :SYSTEM")
+  "std/omaps/core.lisp :DIR :SYSTEM")
  (XDOC::SUBSECTION
   (XDOC::GENERIC-COMPOSITE-CONSTRUCTORS)
   "Construct a subsection with a title and some content.
@@ -190393,7 +190393,7 @@ Definitions and Theorems
       (implies (not (<< (mv-nth 0 (head x))
                         (mv-nth 0 (head (tail x)))))
                (emptyp (tail x))))"
-  "kestrel/utilities/omaps/core.lisp :DIR :SYSTEM")
+  "std/omaps/core.lisp :DIR :SYSTEM")
  (SET::TAIL
   (SET::PRIMITIVES)
   "[47m(tail x)[0m returns the remainder of a set after removing its
@@ -191531,7 +191531,7 @@ Definitions and Theorems
                     (<< (mv-nth 0 (head map)) key))
                (equal (tail (update key val map))
                       (update key val (tail map)))))"
-  "kestrel/utilities/omaps/core.lisp :DIR :SYSTEM")
+  "std/omaps/core.lisp :DIR :SYSTEM")
  (OMAP::UPDATE*
   (OMAP::OMAPS)
   "Update a map with another map.
@@ -191589,7 +191589,7 @@ Definitions and Theorems
     (defthm update*-when-right-emptyp
       (implies (emptyp old)
                (equal (update* new old) (mfix new))))"
-  "kestrel/utilities/omaps/core.lisp :DIR :SYSTEM")
+  "std/omaps/core.lisp :DIR :SYSTEM")
  (OMAP::UPDATE-INDUCTION-ON-MAPS
   (OMAP::OMAPS)
   "Induction on omaps based on abstract characterization of
@@ -191651,7 +191651,7 @@ Definitions and Theorems
       :rule-classes
       ((:induction :pattern (update key val m)
                    :scheme (weak-update-induction key val m))))"
-  "kestrel/utilities/omaps/core.lisp :DIR :SYSTEM")
+  "std/omaps/core.lisp :DIR :SYSTEM")
  (XDOC::U_
   (XDOC::PRIMITIVE-CONSTRUCTORS)
   "Construct an XDOC tree for HTML underlined text [47m<u>...</u>[0m.
@@ -191740,7 +191740,7 @@ Definitions and Theorems
       (implies (not (consp (assoc key map)))
                (equal (values (update key val map))
                       (insert val (values map)))))"
-  "kestrel/utilities/omaps/core.lisp :DIR :SYSTEM")
+  "std/omaps/core.lisp :DIR :SYSTEM")
  (STD::VAR-IS-STOBJ-P
   (STD::SUPPORT)
   "[47m(var-is-stobj-p var world)[0m checks whether [47mvar[0m is currently the name
