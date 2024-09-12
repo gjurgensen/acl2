@@ -47783,29 +47783,33 @@ current fast alists."
   :long "<p>This note addresses the question: what is the use of @(see guard)s
  in ACL2?  Although we recommend that beginners try to avoid @(see guard)s for
  a while, we hope that the summary here is reasonably self-contained and will
- provide a reasonable introduction to guards in ACL2.  For a more systematic
+ provide a helpful introduction to guards in ACL2.  For a more systematic
  discussion, see @(see guard).  For a summary of that topic, see @(see
  guard-quick-reference).</p>
 
  <p>Before we get into the issue of @(see guard)s, let us note that there are
- two important ``modes'':</p>
+ two important &ldquo;modes&rdquo;:</p>
 
- <p>@(see defun-mode) &mdash; ``Does this @(see defun) add an axiom (`:logic
- mode') or not (`:program mode')?''  (See @(see defun-mode).)  Only
- @(':')@(tsee logic) mode functions can have their ``@(see guard)s verified''
- via mechanized proof; see @(see verify-guards).</p>
+ <blockquote>
 
- <p>@(tsee set-guard-checking) &mdash; ``Should runtime @(see guard) violations
+ <p>@(see defun-mode) &mdash; &ldquo;Does this @(see defun) add an
+ axiom (&lsquo;logic mode&rsquo;) or not (`:program mode')?&rdquo;  (See @(see
+ defun-mode).)  Only @(see logic) mode functions can have their &ldquo;@(see guard)s
+ verified&rdquo; via mechanized proof; see @(see verify-guards).</p>
+
+ <p>@(tsee set-guard-checking) &mdash; &ldquo;Should runtime @(see guard) violations
  signal an error (@(':all'), and usually with @('t') or @(':nowarn')) or go
- undetected (@('nil'), @(':none'))?  Equivalently, are expressions evaluated in
- Common Lisp or in the logic?''  (See @(see set-guard-checking).)</p>
+ undetected (@('nil'), @(':none'))?  The question relates to the use of Common
+ Lisp to evaluate expressions; see @(see set-guard-checking).</p>
 
- <p><i>Prompt examples</i></p>
+ </blockquote>
 
- <p>Here some examples of the relation between the ACL2 @(see prompt) and the
- ``modes'' discussed above.  Also see @(see default-print-prompt).  The first
- examples all have @('ld-skip-proofsp nil'); that is, proofs are <i>not</i>
- skipped.</p>
+ <h3>Examples of prompts</h3>
+
+ <p>Here are some examples of the relation between the ACL2 @(see prompt) and
+ the &ldquo;modes&rdquo; discussed above.  Also see @(see
+ default-print-prompt).  The first examples all have @(tsee ld-skip-proofsp)
+ equal to @('nil'); that is, proofs are <i>not</i> skipped.</p>
 
  @({
     ACL2 !>    ; logic mode with guard checking on
@@ -47814,8 +47818,8 @@ current fast alists."
     ACL2 p>    ; program mode with guard checking off
  })
 
- <p>Here are some examples with @(tsee default-defun-mode) of @(':')@(tsee
- logic).</p>
+ <p>Here are some examples with @(tsee default-defun-mode) equal to
+ @(':logic').</p>
 
  @({
     ACL2 >     ; guard checking off, ld-skip-proofsp nil
@@ -47824,17 +47828,21 @@ current fast alists."
     ACL2 !s>   ; guard checking on, ld-skip-proofsp t
  })
 
- <p><i>Sample session</i></p>
+ <h3>Sample session</h3>
 
  @({
   ACL2 !>(+ 'abc 3)
 
-  ACL2 Error in TOP-LEVEL: The guard for the function symbol
-  BINARY-+, which is (AND (ACL2-NUMBERP X) (ACL2-NUMBERP Y)),
-  is violated by the arguments in the call (+ 'ABC 3).
+
+  ACL2 Error [Evaluation] in TOP-LEVEL:  The guard for the function call
+  (BINARY-+ X Y), which is (AND (ACL2-NUMBERP X) (ACL2-NUMBERP Y)), is
+  violated by the arguments in the call (BINARY-+ 'ABC 3).
+  See :DOC set-guard-checking for information about suppressing this
+  check with (set-guard-checking :none), as recommended for new users.
+  To debug see :DOC print-gv, see :DOC trace, and see :DOC wet.
 
   ACL2 !>:set-guard-checking nil
-  ;;;; verbose output omitted here
+  [[.. output elided ..]]
   ACL2 >(+ 'abc 3)
   3
   ACL2 >(< 'abc 3)
@@ -47863,51 +47871,63 @@ current fast alists."
   Summary
   Form:  ( DEFUN SUM-LIST ...)
   Rules: ((:FAKE-RUNE-FOR-TYPE-SET NIL))
-  Warnings:  None
-  Time:  0.03 seconds
-     (prove: 0.00, print: 0.00, proof tree: 0.00, other: 0.03)
+  Time:  0.01 seconds (prove: 0.00, print: 0.00, other: 0.03)
    SUM-LIST
   ACL2 !>(sum-list '(1 2 3))
 
   ACL2 Warning [Guards] in TOP-LEVEL:  Guard-checking will be inhibited
-  on recursive calls of the executable-counterpart (i.e., in the ACL2
-  logic) of SUM-LIST.  To check guards on all recursive calls:
-    (set-guard-checking :all)
-  To leave behavior unchanged except for inhibiting this message:
-    (set-guard-checking :nowarn)
+  for some recursive calls, including SUM-LIST; see :DOC guard-checking-
+  inhibited.
 
   6
   ACL2 !>(sum-list '(1 2 abc 3))
 
-  ACL2 Error in TOP-LEVEL: The guard for the function symbol
-  BINARY-+, which is (AND (ACL2-NUMBERP X) (ACL2-NUMBERP Y)),
-  is violated by the arguments in the call (+ 'ABC 3).
+
+  ACL2 Error [Evaluation] in TOP-LEVEL:  The guard for the function call
+  (SUM-LIST X), which is (INTEGER-LISTP X), is violated by the arguments
+  in the call (SUM-LIST '(1 2 ABC 3)).
+  See :DOC set-guard-checking for information about suppressing this
+  check with (set-guard-checking :none), as recommended for new users.
+  To debug see :DOC print-gv, see :DOC trace, and see :DOC wet.
 
   ACL2 !>:set-guard-checking nil
-  ;;;; verbose output omitted here
+  [[.. output elided ..]]
   ACL2 >(sum-list '(1 2 abc 3))
   6
   ACL2 >(defthm sum-list-append
          (equal (sum-list (append a b))
                 (+ (sum-list a) (sum-list b))))
 
-  << Starting proof tree logging >>
+  *1 (the initial Goal, a key checkpoint) is pushed for proof by induction.
 
-  Name the formula above *1.
+  Perhaps we can prove *1 by induction.  Three induction schemes are
+  suggested by this conjecture.  Subsumption reduces that number to two.
+  However, one of these is flawed and so we are left with one viable
+  candidate.
 
-  Perhaps we can prove *1 by induction.  Three induction
-  schemes are suggested by this conjecture.  Subsumption
-  reduces that number to two.  However, one of these is flawed
-  and so we are left with one viable candidate.
+  [[.. output elided ..]]
 
-  ...
-
-  That completes the proof of *1.
+  *1 is COMPLETED!
+  Thus key checkpoint Goal is COMPLETED!
 
   Q.E.D.
+
+  Summary
+  Form:  ( DEFTHM SUM-LIST-APPEND ...)
+  Rules: ((:DEFINITION BINARY-APPEND)
+          (:DEFINITION ENDP)
+  [[.. output elided ..]]
+          (:TYPE-PRESCRIPTION SUM-LIST))
+
+  Time:  0.01 seconds (prove: 0.01, print: 0.00, other: 0.00)
+  Prover steps counted:  470
+   SUM-LIST-APPEND
  })
 
- <p><i>Guard verification vs. defun</i></p>
+ <h3>Guard verification for functions</h3>
+
+ <p>See @(see declare), and @(see xargs), and @(see verify-guards) for related
+ background, though we intend what follows to be self-explanatory.</p>
 
  @({
         Declare Form                        Guards Verified?
@@ -47918,87 +47938,103 @@ current fast alists."
     (declare (xargs ...<no :guard>...))           no
 
   ACL2 >:pe sum-list
-   l        8  (DEFUN SUM-LIST (X)
-                (DECLARE (XARGS :GUARD (INTEGER-LISTP X)
-                                :VERIFY-GUARDS NIL))
-                (COND ((ENDP X) 0)
-                      (T (+ (CAR X) (SUM-LIST (CDR X))))))
+   L         1  (DEFUN SUM-LIST (X)
+                  (DECLARE (XARGS :GUARD (INTEGER-LISTP X)
+                                  :VERIFY-GUARDS NIL))
+                  (COND ((ENDP X) 0)
+                        (T (+ (CAR X) (SUM-LIST (CDR X))))))
   ACL2 >(verify-guards sum-list)
-  The non-trivial part of the guard conjecture for SUM-LIST,
-  given the :type-prescription rule SUM-LIST, is
 
-  Goal
-  (AND (IMPLIES (AND (INTEGER-LISTP X) (NOT (CONSP X)))
-                (EQUAL X NIL))
-       (IMPLIES (AND (INTEGER-LISTP X) (NOT (ENDP X)))
-                (INTEGER-LISTP (CDR X)))
-       (IMPLIES (AND (INTEGER-LISTP X) (NOT (ENDP X)))
-                (ACL2-NUMBERP (CAR X)))).
+  Computing the guard conjecture for SUM-LIST....
 
-  ...
+  The non-trivial part of the guard conjecture for SUM-LIST, given the
 
+  [[.. output elided ..]]
+
+  Q.E.D.
+
+  That completes the proof of the guard theorem for SUM-LIST.  SUM-LIST
+  is compliant with Common Lisp.
+
+  Summary
+  Form:  ( VERIFY-GUARDS SUM-LIST)
+  Rules: ((:DEFINITION ENDP)
+  [[.. output elided ..]]
+          (:TYPE-PRESCRIPTION SUM-LIST))
+  Time:  0.00 seconds (prove: 0.00, print: 0.00, other: 0.00)
+  Prover steps counted:  115
+   SUM-LIST
   ACL2 >:pe sum-list
-   lv       8  (DEFUN SUM-LIST (X)
-                (DECLARE (XARGS :GUARD (INTEGER-LISTP X)
-                                :VERIFY-GUARDS NIL))
+   LV        1  (DEFUN SUM-LIST (X)
+                  (DECLARE (XARGS :GUARD (INTEGER-LISTP X)
+                                  :VERIFY-GUARDS NIL))
+                  (COND ((ENDP X) 0)
+                        (T (+ (CAR X) (SUM-LIST (CDR X))))))
   ACL2 >:set-guard-checking t
 
   Turning guard checking on, value T.
 
   ACL2 !>(sum-list '(1 2 abc 3))
 
-  ACL2 Error in TOP-LEVEL: The guard for the function symbol
-  SUM-LIST, which is (INTEGER-LISTP X), is violated by the
-  arguments in the call (SUM-LIST '(1 2 ABC ...)).  See :DOC trace for a useful
-  debugging utility.  See :DOC set-guard-checking for information about
-  suppressing this check with (set-guard-checking :none), as recommended for
-  new users.
+
+  ACL2 Error [Evaluation] in TOP-LEVEL:  The guard for the function call
+  (SUM-LIST X), which is (INTEGER-LISTP X), is violated by the arguments
+  in the call (SUM-LIST '(1 2 ABC 3)).
+  See :DOC set-guard-checking for information about suppressing this
+  check with (set-guard-checking :none), as recommended for new users.
+  To debug see :DOC print-gv, see :DOC trace, and see :DOC wet.
 
   ACL2 !>:set-guard-checking nil
-  ;;;; verbose output omitted here
+  [[.. output elided ..]]
   ACL2 >(sum-list '(1 2 abc 3))
   6
-  ACL2 >:comp sum-list
-  Compiling gazonk0.lsp.
-  End of Pass 1.
-  End of Pass 2.
-  Finished compiling gazonk0.lsp.
-  Loading gazonk0.o
-  start address -T 1bbf0b4 Finished loading gazonk0.o
-  Compiling gazonk0.lsp.
-  End of Pass 1.
-  End of Pass 2.
-  Finished compiling gazonk0.lsp.
-  Loading gazonk0.o
-  start address -T 1bc4408 Finished loading gazonk0.o
-   SUM-LIST
-  ACL2 >:q
+  ACL2 >
+  })
 
-  Exiting the ACL2 read-eval-print loop.
-  ACL2>(trace sum-list)
-  (SUM-LIST)
+  <p>We continue this demo by tracing @('sum-list').  (See @(see trace$).)  The
+  calls shown below of @('ACL2_*1*_ACL2::SUM-LIST') are calls of the logical
+  version, or <i>executable-counterpart</i>, of @('sum-list'); also see @(see
+  evaluation).  Note that the guard-checking value is still @('nil').  So the
+  logical version of @('sum-list') calls the Common Lisp @('sum-list') function
+  when the @(see guard) of &ldquo;list of integers&rdquo; is true of its input,
+  i.e., its input satisfies @(tsee integer-listp); but otherwise, evaluation
+  continues using its executable-counterpart.</p>
 
-  ACL2>(lp)
-
-  ACL2 Version 1.8.  Level 1.  Cbd \"/slocal/src/acl2/v1-9/\".
-  Type :help for help.
+  @({
+  ACL2 >(trace$ sum-list)
+   ((SUM-LIST))
   ACL2 >(sum-list '(1 2 abc 3))
+  1> (ACL2_*1*_ACL2::SUM-LIST (1 2 ABC 3))
+    2> (ACL2_*1*_ACL2::SUM-LIST (2 ABC 3))
+      3> (ACL2_*1*_ACL2::SUM-LIST (ABC 3))
+        4> (ACL2_*1*_ACL2::SUM-LIST (3))
+          5> (SUM-LIST (3))
+            6> (SUM-LIST NIL)
+            <6 (SUM-LIST 0)
+          <5 (SUM-LIST 3)
+        <4 (ACL2_*1*_ACL2::SUM-LIST 3)
+      <3 (ACL2_*1*_ACL2::SUM-LIST 3)
+    <2 (ACL2_*1*_ACL2::SUM-LIST 5)
+  <1 (ACL2_*1*_ACL2::SUM-LIST 6)
   6
-  ACL2 >(sum-list '(1 2 3))
-    1> (SUM-LIST (1 2 3))>
-      2> (SUM-LIST (2 3))>
-        3> (SUM-LIST (3))>
-          4> (SUM-LIST NIL)>
-          <4 (SUM-LIST 0)>
-        <3 (SUM-LIST 3)>
-      <2 (SUM-LIST 5)>
-    <1 (SUM-LIST 6)>
-  6
+  ACL2 >
+  })
+
+  <h3>Guard verification for theorems</h3>
+
+  <p>For a theorem to be guard-verified, its statement should be executable
+  without error in Common Lisp.  The following is thus not guard-verifiable,
+  since its evaluation can cause an error if @('A') and @('B') are not both
+  lists of numbers.</p>
+
+  @({
   ACL2 >:pe sum-list-append
-            9  (DEFTHM SUM-LIST-APPEND
-                       (EQUAL (SUM-LIST (APPEND A B))
-                              (+ (SUM-LIST A) (SUM-LIST B))))
+             2  (DEFTHM SUM-LIST-APPEND
+                  (EQUAL (SUM-LIST (APPEND A B))
+                         (+ (SUM-LIST A) (SUM-LIST B))))
   ACL2 >(verify-guards sum-list-append)
+
+  Computing the guard conjecture for SUM-LIST-APPEND....
 
   The non-trivial part of the guard conjecture for
   SUM-LIST-APPEND, given the :type-prescription rule SUM-LIST,
@@ -48006,13 +48042,29 @@ current fast alists."
 
   Goal
   (AND (TRUE-LISTP A)
-       (INTEGER-LISTP (APPEND A B))
        (INTEGER-LISTP A)
+       (INTEGER-LISTP (APPEND A B))
        (INTEGER-LISTP B)).
 
-  ...
+  ******** FAILED ********
+  ACL2 >
+  })
 
-  ****** FAILED ******* See :DOC failure ****** FAILED ******
+  <p>Perhaps surprisingly, a @(tsee defthm) event with statement</p>
+
+  @({
+  (implies (and (integer-listp a)
+                (integer-listp b))
+           (equal (sum-list (append a b))
+                  (+ (sum-list a) (sum-list b))))
+  })
+
+  <p>is still not guard-verifiable.  The reason is that @(tsee implies) is a
+  function, so its arguments are both always evaluated &mdash; in particular,
+  its second argument is evaluated even if its first argument evaluates to
+  @('nil').  Here is a way to fix that problem.</p>
+
+  @({
   ACL2 >(defthm common-lisp-sum-list-append
            (if (and (integer-listp a)
                     (integer-listp b))
@@ -48021,63 +48073,82 @@ current fast alists."
                t)
            :rule-classes nil)
 
-  << Starting proof tree logging >>
-
-  By the simple :rewrite rule SUM-LIST-APPEND we reduce the
-  conjecture to
-
-  Goal'
-  (IMPLIES (AND (INTEGER-LISTP A)
-                (INTEGER-LISTP B))
-           (EQUAL (+ (SUM-LIST A) (SUM-LIST B))
-                  (+ (SUM-LIST A) (SUM-LIST B)))).
-
-  But we reduce the conjecture to T, by primitive type
-  reasoning.
-
   Q.E.D.
-  ;;;; summary omitted here
+
+  Summary
+  Form:  ( DEFTHM COMMON-LISP-SUM-LIST-APPEND ...)
+  Rules: ((:REWRITE SUM-LIST-APPEND))
+  Time:  0.00 seconds (prove: 0.00, print: 0.00, other: 0.00)
+  Prover steps counted:  23
+   COMMON-LISP-SUM-LIST-APPEND
   ACL2 >(verify-guards common-lisp-sum-list-append)
 
-  The non-trivial part of the guard conjecture for
-  COMMON-LISP-SUM-LIST-APPEND, given the :type-prescription
-  rule SUM-LIST, is
+  Computing the guard conjecture for COMMON-LISP-SUM-LIST-APPEND....
+
+  The non-trivial part of the guard conjecture for COMMON-LISP-SUM-LIST-APPEND,
+  given the :forward-chaining rules ACL2-NUMBER-LISTP-FORWARD-TO-TRUE-LISTP,
+  INTEGER-LISTP-FORWARD-TO-RATIONAL-LISTP and 
+  RATIONAL-LISTP-FORWARD-TO-ACL2-NUMBER-LISTP and the :type-prescription
+  rules ACL2-NUMBER-LISTP, INTEGER-LISTP, RATIONAL-LISTP and SUM-LIST,
+  is
 
   Goal
-  (AND (IMPLIES (AND (INTEGER-LISTP A)
-                     (INTEGER-LISTP B))
-                (TRUE-LISTP A))
-       (IMPLIES (AND (INTEGER-LISTP A)
-                     (INTEGER-LISTP B))
-                (INTEGER-LISTP (APPEND A B)))).
+  (IMPLIES (AND (INTEGER-LISTP A)
+                (INTEGER-LISTP B))
+           (INTEGER-LISTP (APPEND A B))).
 
-  ...
+  [[.. output elided ..]]
 
   Q.E.D.
 
-  That completes the proof of the guard theorem for
-  COMMON-LISP-SUM-LIST-APPEND.  COMMON-LISP-SUM-LIST-APPEND
-  is compliant with Common Lisp.
-  ;;;; Summary omitted here.
-  ACL2 >(defthm foo (consp (mv x y)))
+  That completes the proof of the guard theorem for 
+  COMMON-LISP-SUM-LIST-APPEND.  COMMON-LISP-SUM-LIST-APPEND is compliant
+  with Common Lisp.
 
-  ...
-
-  Q.E.D.
+  Summary
+  Form:  ( VERIFY-GUARDS COMMON-LISP-SUM-LIST-APPEND)
+  Rules: ((:DEFINITION BINARY-APPEND)
+  [[.. output elided ..]]
+          (:TYPE-PRESCRIPTION SUM-LIST))
+  Time:  0.00 seconds (prove: 0.00, print: 0.00, other: 0.00)
+  Prover steps counted:  565
+   COMMON-LISP-SUM-LIST-APPEND
+  ACL2 >
  })
 
+ <p>Guard verification fails when the theorem is for &ldquo;code&rdquo; that
+ cannot even be parsed (or &ldquo;translated&rdquo;; see @(see term)) as
+ executable code.</p>
+
  @({
+  ACL2 >(defthm foo (consp (mv x y)))
+
+  Q.E.D.
+
+  The storage of FOO depends upon primitive type reasoning.
+
+  Summary
+  Form:  ( DEFTHM FOO ...)
+  Rules: ((:FAKE-RUNE-FOR-TYPE-SET NIL))
+  Time:  0.00 seconds (prove: 0.00, print: 0.00, other: 0.00)
+   FOO
   ACL2 >(verify-guards foo)
 
-  ACL2 Error in (VERIFY-GUARDS FOO): The number of values we
-  need to return is 1 but the number of values returned by the
-  call (MV X Y) is 2.
 
-  > (CONSP (MV X Y))
+  ACL2 Error in ( VERIFY-GUARDS FOO):  The guards for FOO cannot be verified
+  because its formula has the wrong syntactic form for evaluation, perhaps
+  due to multiple-value or stobj restrictions.  See :DOC verify-guards.
 
-  ACL2 Error in (VERIFY-GUARDS FOO): The guards for FOO cannot
-  be verified because the theorem has the wrong syntactic
-  form.  See :DOC verify-guards.
+
+  Summary
+  Form:  ( VERIFY-GUARDS FOO)
+  Rules: NIL
+  Time:  0.00 seconds (prove: 0.00, print: 0.00, other: 0.00)
+
+  ACL2 Error [Failure] in ( VERIFY-GUARDS FOO):  See :DOC failure.
+
+  ******** FAILED ********
+  ACL2 >
  })")
 
 (defxdoc guard-formula-utilities
@@ -106010,6 +106081,8 @@ it."
 ; Improved error messages when non-executable stobjs are present when
 ; evaluating a top-level form.
 
+; Modernized :DOC guard-example.
+
   :parents (release-notes)
   :short "ACL2 Version  8.6 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -134421,9 +134494,9 @@ work on <tt>(q x)</tt>.</p>
  present topic.</p>
 
  <p>The top-level ACL2 loop has a variable which controls which sense of
- execution is provided.  To turn ``@(see guard) checking on,'' by which we mean
- that @(see guard)s are checked at runtime, execute the top-level form
- @(':set-guard-checking t').  To allow guard violations, do
+ execution is provided.  To turn &ldquo;@(see guard) checking on,&rdquo; by
+ which we mean that @(see guard)s are checked at runtime, execute the top-level
+ form @(':set-guard-checking t').  To allow guard violations, do
  @(':set-guard-checking nil'), or do @(':set-guard-checking :none') to turn off
  all guard-checking, so that raw Lisp definitions of user-defined functions are
  avoided unless their @(see guard) is @('t'). The status of guard-checking is
@@ -134440,9 +134513,9 @@ work on <tt>(q x)</tt>.</p>
  })
 
  <p>means @(see guard) checking is off.  The exclamation mark can be thought of
- as ``barring'' certain computations.  The absence of the mark suggests the
- absence of error messages or unbarred access to the logical axioms.  Thus, for
- example</p>
+ as &ldquo;barring&rdquo; certain computations.  The absence of the mark
+ suggests the absence of error messages or unbarred access to the logical
+ axioms.  Thus, for example</p>
 
  @({
   ACL2 !>(car 'abc)
@@ -134463,19 +134536,20 @@ work on <tt>(q x)</tt>.</p>
 
  <p>Whether @(see guard)s are checked during evaluation is independent of the
  @(tsee default-defun-mode).  We note this simply because it is easy to confuse
- ``@(':')@(tsee program) mode'' with ``evaluation in Common Lisp'' and thus
- with ``@(see guard) checking on;'' and it is easy to confuse ``@(':')@(tsee
- logic) mode'' with ``evaluation in the logic'' and with ``@(see guard)
- checking off.''  But the @(tsee default-defun-mode) determines whether newly
- submitted definitions introduce programs or add logical axioms.  That mode is
- independent of whether evaluation checks @(see guard)s or not.  You can
- operate in @(':')@(tsee logic) mode with runtime @(see guard) checking on or
- off.  Analogously, you can operate in @(':')@(tsee program) mode with runtime
- @(see guard) checking on or off.</p>
+ &ldquo;@(':')@(tsee program) mode&rdquo; with &ldquo;evaluation in Common
+ Lisp&rdquo; and thus with &ldquo;@(see guard) checking on;&rdquo; and it is
+ easy to confuse &ldquo;@(':')@(tsee logic) mode&rdquo; with &ldquo;evaluation
+ in the logic&rdquo; and with &ldquo;@(see guard) checking off.&rdquo; But the
+ @(tsee default-defun-mode) determines whether newly submitted definitions
+ introduce programs or add logical axioms.  That mode is independent of whether
+ evaluation checks @(see guard)s or not.  You can operate in @(':')@(tsee
+ logic) mode with runtime @(see guard) checking on or off.  Analogously, you
+ can operate in @(':')@(tsee program) mode with runtime @(see guard) checking
+ on or off.</p>
 
  <p>For further discussion on evaluation and guards see @(see
  guards-and-evaluation), in particular the exception for safe-mode in the
- ``Aside'' there.  See @(see guard) for a general discussion of @(see
+ &ldquo;Aside&rdquo; there.  See @(see guard) for a general discussion of @(see
  guard)s.</p>
 
  <p>Now we fulfill our promise above to discuss two other values for
@@ -134536,15 +134610,15 @@ work on <tt>(q x)</tt>.</p>
  &mdash; unless, of course, a call is made of a function whose guard has been
  verified (see @(see verify-guards)), where the arguments satisfy the guard, in
  which case the corresponding call is made in raw Lisp without subsidiary
- guard-checking.  We still say that ``guard-checking is on'' after
+ guard-checking.  We still say that &ldquo;guard-checking is on&rdquo; after
  @(':set-guard-checking') is invoked with values @('t'), @(':nowarn'), and
- @(':all'), otherwise (after value @('nil')) we say ``guard-checking is
+ @(':all'), otherwise (after value @('nil')) we say &ldquo;guard-checking is
  off.</p>
 
  <p>For technical reasons, @(':all') does not have its advertised effect in the
  case of built-in @(':')@(tsee program)-mode functions.  If you are interested
- in this technical detail, see the comment ``In the boot-strap world...'' in
- source function @('oneify-cltl-code').</p>
+ in this technical detail, see the comment &ldquo;In the boot-strap
+ world...&rdquo; in source function @('oneify-cltl-code').</p>
 
  <p>We conclude with a remark about the use of @(':set-guard-checking') for
  experimenting with ACL2 as a logic or as a programming language.  If one views
