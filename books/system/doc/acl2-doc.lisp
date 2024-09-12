@@ -104757,7 +104757,7 @@ it."
 ; the 'stobj property of a stobj name.
 
 ; Changed a function name, print-list-without-stobj-arrays, to
-; replace-live-stobjs-in-list, since live stobjs can now be hash-tables (in the
+; replace-live-stobjs-in-list, since live stobjs can now be hash tables (in the
 ; case of stobjs with a single field that is of stobj-table type).
 
 ; Built-in raw Lisp function with-reckless-read did some unnecessary work as
@@ -105507,7 +105507,7 @@ it."
 ;   88 ; Changes to Existing Features
 ;   39 ; New Features
 ;   11 ; Heuristic and Efficiency Improvements
-;   40 ; Bug Fixes
+;   41 ; Bug Fixes
 ;   19 ; Changes at the System Level
 ;    8 ; EMACS Support
 ;    1 ; Experimental Versions
@@ -107371,6 +107371,12 @@ it."
    (with-global-stobj st (fld st)))
  (read-state state)
  })
+
+ <p>Fixed two bugs when attempting to redefine with @(tsee defabsstobj).  The
+ visible bug was a printing error.  A second bug, not visible to the user
+ because of the first bug, was a low-level bug that prevented one of the
+ supporting names from being recorded in the @(see world) as a supporter of the
+ given stobj.</p>
 
  <h3>Changes at the System Level</h3>
 
@@ -138767,10 +138773,10 @@ work on <tt>(q x)</tt>.</p>
  trivial example; the labels A1, A2, etc. are explained later.</p>
 
  @({
- ; (A1) Create a hash-table HT1 and associate it with the resulting alist.
+ ; (A1) Create a hash table HT1 and associate it with the resulting alist.
  (assign a (hons-acons 'fn1 1 nil))
 
- ; (A2) Create a hash-table HT2 and associate it with the resulting alist.
+ ; (A2) Create a hash table HT2 and associate it with the resulting alist.
  ; (Minor observation: HT1 is no longer accessible.)
  (assign a (hons-acons 'fn1 1 nil))
 
@@ -138779,15 +138785,15 @@ work on <tt>(q x)</tt>.</p>
  (assign b (hons-acons 'fn2 2 (@ a)))
 
  ; (B2) Fast alist warning (with a Lisp break, by default): discipline is
- ; violated because (@ a) no longer has a backing hash-table.
+ ; violated because (@ a) no longer has a backing hash table.
  (assign b (hons-acons 'fn2 2 (@ a)))
 
  ; (C1) Fast alist warning/break: discipline is violated because (@ b) does not
- ; have a backing hash-table.
+ ; have a backing hash table.
  (assign c (hons-acons 'fn3 3 (@ b)))
 
  ; (C2) Fast alist warning/break: discipline is violated because (@ b) does not
- ; have a backing hash-table.
+ ; have a backing hash table.
  (assign c (hons-acons 'fn3 3 (@ b)))
  })
 
@@ -142310,7 +142316,7 @@ work on <tt>(q x)</tt>.</p>
  satisfies the recognizer for that stobj name.  This requirement is not
  enforced in the logic (i.e., in recognizer functions).  But it is essentially
  maintained in raw Lisp as an invariant, except that for efficiency, a
- stobj-table field is implemented as a hash-table (again, mapping stobj names
+ stobj-table field is implemented as a hash table (again, mapping stobj names
  to corresponding stobjs).  Below we give more details and explain how
  @('stobj-let') may be used to access and update stobjs that are in such a
  table.</p>
@@ -142379,10 +142385,10 @@ work on <tt>(q x)</tt>.</p>
 
  <p><b>Remark</b>.  This remark on the implementation may be skipped, but it
  may provide some intuition.  When a stobj name is not bound in the underlying
- hash-table, then the default value (in the example above, @('(CREATE-ST)'))
+ hash table, then the default value (in the example above, @('(CREATE-ST)'))
  provides a suitable stobj nonetheless.  And if that stobj name is among the
  producer variables of a @('stobj-let') form, it will be bound in the
- underlying hash-table when the @('stobj-let') form completes.  End of
+ underlying hash table when the @('stobj-let') form completes.  End of
  remark.</p>
 
  <p>The remainder of this topic explains the use of stobj-tables by following
@@ -155239,9 +155245,9 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
 
  <p>When executing calls of @(tsee hons-get) in parallel, you may see messages
  about @('\"Fast alist discipline\"') violations.  This can happen because each
- thread uses its own underlying hash-table for fast access by @('hons-get'),
+ thread uses its own underlying hash table for fast access by @('hons-get'),
  but typical top-level calls of @(tsee hons-acons) and @(tsee make-fast-alist)
- only affect that main thread's hash-table.  You can use
+ only affect that main thread's hash table.  You can use
  @('(set-slow-alist-action nil)') to eliminate this warning entirely; see @(see
  slow-alist-warning).</p>")
 
@@ -155402,9 +155408,9 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  <p>During proofs with @(see waterfall-parallelism) enabled, you may see
  messages about @('\"Fast alist discipline\"') violations, even when using
  @(tsee hons-get) appropriately.  This can happen because each thread uses its
- own underlying hash-table for fast access by @('hons-get'), but typical
+ own underlying hash table for fast access by @('hons-get'), but typical
  top-level calls of @(tsee hons-acons) and @(tsee make-fast-alist) only affect
- that main thread's hash-table.  You can use @('(set-slow-alist-action nil)')
+ that main thread's hash table.  You can use @('(set-slow-alist-action nil)')
  to eliminate this warning entirely; see @(see slow-alist-warning).</p>")
 
 (defxdoc untouchable

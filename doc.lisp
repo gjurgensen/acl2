@@ -103928,6 +103928,12 @@ Bug Fixes
       (with-global-stobj st (fld st)))
     (read-state state)
 
+  Fixed two bugs when attempting to redefine with [47m[defabsstobj][0m.  The
+  visible bug was a printing error.  A second bug, not visible to the
+  user because of the first bug, was a low-level bug that prevented
+  one of the supporting names from being recorded in the [world] as a
+  supporter of the given stobj.
+
 
 Changes at the System Level
 
@@ -137474,10 +137480,10 @@ Extended Example
   rather trivial example; the labels A1, A2, etc. are explained
   later.
 
-    ; (A1) Create a hash-table HT1 and associate it with the resulting alist.
+    ; (A1) Create a hash table HT1 and associate it with the resulting alist.
     (assign a (hons-acons 'fn1 1 nil))
 
-    ; (A2) Create a hash-table HT2 and associate it with the resulting alist.
+    ; (A2) Create a hash table HT2 and associate it with the resulting alist.
     ; (Minor observation: HT1 is no longer accessible.)
     (assign a (hons-acons 'fn1 1 nil))
 
@@ -137486,15 +137492,15 @@ Extended Example
     (assign b (hons-acons 'fn2 2 (@ a)))
 
     ; (B2) Fast alist warning (with a Lisp break, by default): discipline is
-    ; violated because (@ a) no longer has a backing hash-table.
+    ; violated because (@ a) no longer has a backing hash table.
     (assign b (hons-acons 'fn2 2 (@ a)))
 
     ; (C1) Fast alist warning/break: discipline is violated because (@ b) does not
-    ; have a backing hash-table.
+    ; have a backing hash table.
     (assign c (hons-acons 'fn3 3 (@ b)))
 
     ; (C2) Fast alist warning/break: discipline is violated because (@ b) does not
-    ; have a backing hash-table.
+    ; have a backing hash table.
     (assign c (hons-acons 'fn3 3 (@ b)))
 
   Now consider the following related example (in a fresh session),
@@ -140913,7 +140919,7 @@ Subtopics
   requirement is not enforced in the logic (i.e., in recognizer
   functions).  But it is essentially maintained in raw Lisp as an
   invariant, except that for efficiency, a stobj-table field is
-  implemented as a hash-table (again, mapping stobj names to
+  implemented as a hash table (again, mapping stobj names to
   corresponding stobjs).  Below we give more details and explain how
   [47mstobj-let[0m may be used to access and update stobjs that are in such
   a table.
@@ -140984,10 +140990,10 @@ Subtopics
 
   [31;1mRemark[0m.  This remark on the implementation may be skipped, but it may
   provide some intuition.  When a stobj name is not bound in the
-  underlying hash-table, then the default value (in the example
+  underlying hash table, then the default value (in the example
   above, [47m(CREATE-ST)[0m) provides a suitable stobj nonetheless.  And if
   that stobj name is among the producer variables of a [47mstobj-let[0m
-  form, it will be bound in the underlying hash-table when the
+  form, it will be bound in the underlying hash table when the
   [47mstobj-let[0m form completes.  End of remark.
 
   The remainder of this topic explains the use of stobj-tables by
@@ -153932,9 +153938,9 @@ Subtopics
 
   When executing calls of [47m[hons-get][0m in parallel, you may see messages
   about [47m\"Fast alist discipline\"[0m violations.  This can happen because
-  each thread uses its own underlying hash-table for fast access by
+  each thread uses its own underlying hash table for fast access by
   [47mhons-get[0m, but typical top-level calls of [47m[hons-acons][0m and
-  [47m[make-fast-alist][0m only affect that main thread's hash-table.  You
+  [47m[make-fast-alist][0m only affect that main thread's hash table.  You
   can use [47m(set-slow-alist-action nil)[0m to eliminate this warning
   entirely; see [slow-alist-warning].")
  (UNSUPPORTED-WATERFALL-PARALLELISM-FEATURES
@@ -154088,9 +154094,9 @@ Subtopics
   During proofs with [waterfall-parallelism] enabled, you may see
   messages about [47m\"Fast alist discipline\"[0m violations, even when using
   [47m[hons-get][0m appropriately.  This can happen because each thread uses
-  its own underlying hash-table for fast access by [47mhons-get[0m, but
+  its own underlying hash table for fast access by [47mhons-get[0m, but
   typical top-level calls of [47m[hons-acons][0m and [47m[make-fast-alist][0m only
-  affect that main thread's hash-table.  You can use
+  affect that main thread's hash table.  You can use
   [47m(set-slow-alist-action nil)[0m to eliminate this warning entirely; see
   [slow-alist-warning].")
  (UNTIL$ (POINTERS) "See [loop$].")
