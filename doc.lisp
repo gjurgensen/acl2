@@ -104469,6 +104469,29 @@ Heuristic and Efficiency Improvements
   [47m[defstobj][0m or [47m[defabsstobj][0m event is processed.  The former
   initialization is unnecessary and has been eliminated.
 
+  A limit has been placed on generation of equality hypotheses by
+  linear arithmetic.  For example, if a goal has hypotheses
+  (technically: negative literals) [47m(<= term1 term2)[0m and [47m(<= term2
+  term1)[0m, it may generate the hypothesis [47m(equal term1 term2)[0m.  This
+  is now indicated by the phrase \"equality generation from
+  inequalities\" found in proof output if you have evaluated the form
+  [47m(set-gag-mode nil)[0m, and it is now indicated in the proof [summary]
+  by the presence of the [rune], [47m(:FAKE-RUNE-FOR-LINEAR-EQUALITIES
+  NIL)[0m.  By default, there is a limit of five ``levels'' of such
+  equality generation, for example in goals [47m\"Subgoal 2\"[0m, [47m\"Subgoal
+  2.1\"[0m, [47m\"Subgoal 2.1.3.4.5\"[0m, [47m\"Subgoal 2.1.3.4.5'\"[0m, and [47m\"Subgoal
+  2.1.3.4.5''\"[0m --- in general, such addition of equalities can only
+  be performed five times along a chain of goals where each is a
+  descendent (not necessarily an immediate subgoal) of the one
+  before, and each induction and forcing round provides a fresh
+  start.  You can change that default from 5 to [47mn[0m, where [47mn[0m is a
+  natural number, by evaluating the following form.
+
+    (table equational-polyp-limit-table t n)
+
+  Thanks to Eric Smith for sending an example with looping behavior,
+  which motivated the change above (as a way to break such loops).
+
 
 Bug Fixes
 
@@ -131563,6 +131586,7 @@ Subtopics
   and are always [enable]d.  Here is the list of fake runes.
 
       ((:fake-rune-for-linear nil)
+       (:fake-rune-for-linear-equalities nil)
        (:fake-rune-for-type-set nil)
        (:fake-rune-for-cert-data nil))
 
