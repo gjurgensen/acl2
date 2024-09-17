@@ -30,7 +30,7 @@
 
 (in-package "BIGMEM")
 (include-book "concrete")
-(include-book "centaur/defrstobj2/def-multityped-record" :dir :system)
+(include-book "../logic")
 ; (include-book "std/lists/repeat" :dir :system)
 (include-book "std/stobjs/absstobjs" :dir :system)
 (local (include-book "centaur/bitops/signed-byte-p" :dir :system))
@@ -39,32 +39,6 @@
 (local (xdoc::set-default-parents bigmem))
 
 ;; ----------------------------------------------------------------------
-
-(defn ubp8-fix (x)
-  (acl2::loghead 8 (ifix x)))
-
-#!RSTOBJ2
-(def-multityped-record ubp8
-  :elem-p       (unsigned-byte-p 8 x)
-  :elem-default 0
-  :elem-fix     (bigmem::ubp8-fix x)
-  :in-package-of bigmem::bigmem-pkg)
-
-(defn mem$ap (mem$a)
-  (declare (ignore mem$a))
-  t)
-
-(defn create-mem$a ()
-  nil)
-
-(define read-mem$a ((addr :type (unsigned-byte 64))
-                    (mem$a mem$ap))
-  (ubp8-get addr mem$a))
-
-(define write-mem$a ((addr :type (unsigned-byte 64))
-                     (val  :type (unsigned-byte 8))
-                     (mem$a mem$ap))
-  (ubp8-set addr val mem$a))
 
 (defun-sk mem$corr (mem$c mem$a)
   (forall idx
@@ -223,6 +197,7 @@
 
 (acl2::defabsstobj-events mem
 
+    :attachable t
     :foundation mem$c
 
     :recognizer (memp :logic mem$ap :exec mem$cp)
@@ -508,7 +483,7 @@
 
 (defxdoc bigmem
   :pkg "BIGMEM"
-  :parents (acl2::projects)
+  :parents (bigmems)
   :short "A @('2^64')-byte memory model that is logically a record but
   provides array-like performance during execution"
 

@@ -40,15 +40,13 @@
 
 (in-package "BIGMEM-ASYMMETRIC")
 
-(include-book "concrete-asymmetric")  ;; Contents replaced with what is below...
+(include-book "concrete-asymmetric")
+(include-book "../logic")
 
 (include-book "centaur/defrstobj2/def-multityped-record" :dir :system)
 
-; (include-book "std/lists/repeat" :dir :system)  ;; Redundant with above
-
 (include-book "std/stobjs/absstobjs" :dir :system)
 
-; Removed the ``local'' designation to process this file with ``cert.pl''.
 (local (include-book "centaur/bitops/signed-byte-p" :dir :system))
 (local (include-book "centaur/bitops/ihs-extensions" :dir :system))
 
@@ -57,33 +55,6 @@
 (local (xdoc::set-default-parents bigmem-asymmetric))
 
 ;; ----------------------------------------------------------------------
-
-(defn ubp8-fix (x)
-  (acl2::loghead 8 (ifix x)))
-
-#!RSTOBJ2
-(def-multityped-record ubp8
-  :elem-p       (unsigned-byte-p 8 x)
-  :elem-default 0
-  :elem-fix     (bigmem-asymmetric::ubp8-fix x)
-  :in-package-of bigmem-asymmetric::bigmem-pkg)
-
-(defn mem$ap (mem$a)
-  (declare (ignore mem$a))
-  t)
-
-(defn create-mem$a ()
-  nil)
-
-(define read-mem$a ((addr :type (unsigned-byte 64))
-                    (mem$a mem$ap))
-  (ubp8-get addr mem$a))
-
-(define write-mem$a ((addr :type (unsigned-byte 64))
-                     (val  :type (unsigned-byte 8))
-                     (mem$a mem$ap))
-  (ubp8-set addr val mem$a))
-
 
 ; Different from the original "bigmem.lisp" (a 2^64-byte memory model), we
 ; define the correspondence theorem in a somewhat different manner; in the
@@ -791,7 +762,7 @@
 
 (defxdoc bigmem-asymmetric
   :pkg "BIGMEM-ASYMMETRIC"
-  :parents (acl2::projects)
+  :parents (bigmems)
   :short "A @('2^64')-byte memory model that is logically a record but
   provides array-like performance for a fixed amount of emulated memory
   and slow(er) performance for the remaining (higher) memory locations."
