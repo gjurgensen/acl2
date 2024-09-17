@@ -23170,7 +23170,6 @@ Subtopics
     NIL
     ACL2 !>
 
-    @({
     General Forms:
 
     (cw-print-base-radix print-base fmt-string arg1 arg2 ... argn)
@@ -31245,10 +31244,10 @@ Section 3: How the challenges are addressed
 
   We return now to Problem #2, that the functions [47mEQUAL[0m and [47m=[0m are
   logically the same in ACL2 but not in raw Lisp, as seen by
-  evaluation in raw Lisp, where [47m(equal 1 1.0)[0m evaluates to [47mnil) but
-  @('(= 1 1.0)[0m evaluates to [47mt[0m.  This problem is avoided by our
-  syntactic tracking of df expressions.  The following example shows
-  that [47mequal[0m cannot be called on a df expression.
+  evaluation in raw Lisp, where [47m(equal 1 1.0)[0m evaluates to [47mnil[0m but [47m(=
+  1 1.0)[0m evaluates to [47mt[0m.  This problem is avoided by our syntactic
+  tracking of df expressions.  The following example shows that [47mequal[0m
+  cannot be called on a df expression.
 
     ACL2 !>(equal 1 (to-df 1))
 
@@ -46457,7 +46456,7 @@ Salient Facts about the ACL2 Rewriter
       literal is [47m[iff][0m.
 
     * Each [47m:[0m[47m[rewrite][0m rule in ACL2 effectively concludes with a term of the
-      form [47m(@('eqv lhs rhs)[0m, where [47meqv[0m is an equivalence relation.
+      form [47meqv lhs rhs), where @('eqv[0m is an equivalence relation.
       Such a rule may be used to replace instances of [47mlhs[0m by the
       corresponding instance of [47mrhs[0m, and maintains the equivalence
       relation [47meqv[0m.  But the rule is only applicable if [47meqv[0m [3mrefines[0m
@@ -75041,8 +75040,8 @@ The [47m:save-event-data[0m keyword argument
 
     (er-progn
 
-    ; Each of the two forms below returns an error triple (see @(see
-    ; error-triple)), so we can evaluate both by using er-progn, which
+    ; Each of the two forms below returns an error triple (see :DOC
+    ; error-triple), so we can evaluate both by using er-progn, which
     ; returns the last (second) error triple.
 
      (defun foo (x) (cons x x)) ; (a)
@@ -76331,7 +76330,7 @@ Subtopics
                                         ;   guards of condition-fn
              :recursive    t/nil        ; optional (default t)
              :stats        t/nil        ; optional (default t (unless :invoke))
-             :total        ; see :DOC memoize-partial
+             :total        ;            ; see :DOC memoize-partial
              :verbose      t/nil        ; optional (default nil)
              )
 
@@ -115731,8 +115730,8 @@ Remarks
     (print-object$+ x       ; an ACL2 object
                     channel ; an open object output channel
                     &key
-                    header ; nil or a comment string (see below)
-                    serialize-character ; as in @(see with-serialize-character)
+                    header  ; nil or a comment string (see below)
+                    serialize-character       ; as in with-serialize-character
                     print-base print-case ... ; print-control variables
                     )
 
