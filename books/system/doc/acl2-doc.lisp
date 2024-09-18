@@ -105577,7 +105577,7 @@ it."
 
 ;   88 ; Changes to Existing Features
 ;   39 ; New Features
-;   11 ; Heuristic and Efficiency Improvements
+;   12 ; Heuristic and Efficiency Improvements
 ;   41 ; Bug Fixes
 ;   19 ; Changes at the System Level
 ;    8 ; EMACS Support
@@ -107056,6 +107056,30 @@ it."
  when the book's compiled file is loaded and once when the @(tsee defstobj) or
  @(tsee defabsstobj) event is processed.  The former initialization is
  unnecessary and has been eliminated.</p>
+
+ <p>A limit has been placed on generation of equality hypotheses by linear
+ arithmetic.  For example, if a goal has hypotheses (technically: negative
+ literals) @('(<= term1 term2)') and @('(<= term2 term1)'), it may generate the
+ hypothesis @('(equal term1 term2)').  This is now indicated by the phrase
+ \"equality generation from inequalities\" found in proof output if you have
+ evaluated the form @('(set-gag-mode nil)'), and it is now indicated in the
+ proof @(see summary) by the presence of the @(see rune),
+ @('(:FAKE-RUNE-FOR-LINEAR-EQUALITIES NIL)').  By default, there is a limit of
+ five &ldquo;levels&rdquo; of such equality generation, for example in goals
+ @('\"Subgoal 2\"'), @('\"Subgoal 2.1\"'), @('\"Subgoal 2.1.3.4.5\"'),
+ @('\"Subgoal 2.1.3.4.5'\"'), and @('\"Subgoal 2.1.3.4.5''\"') &mdash; in
+ general, such addition of equalities can only be performed five times along a
+ chain of goals where each is a descendent (not necessarily an immediate
+ subgoal) of the one before, and each induction and forcing round provides a
+ fresh start.  You can change that default from 5 to @('n'), where @('n') is a
+ natural number, by evaluating the following form.</p>
+
+ @({
+ (table equational-polyp-limit-table t n)
+ })
+
+ <p>Thanks to Eric Smith for sending an example with looping behavior, which
+ motivated the change above (as a way to break such loops).</p>
 
  <h3>Bug Fixes</h3>
 
