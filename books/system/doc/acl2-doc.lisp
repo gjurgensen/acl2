@@ -106081,6 +106081,15 @@ it."
 
 ; Modernized :DOC guard-example.
 
+; A bug was fixed that was probably present in Version 8.5 (and perhaps earlier
+; versions), and definitely present in a github version of ACL2 before the
+; release of Version 8.6, that permitted an out-of-bounds array access when
+; updating a theory to accommodate useless-runes.  That error could occur
+; during a call of compress1 from update-enabled-structure, from
+; load-theory-into-enabled-structure-1, from useless-runes-ens.  The latter two
+; functions were fixed to avoid the error.  This error was found during a run
+; with ACL2 built using safety 3.
+
   :parents (release-notes)
   :short "ACL2 Version  8.6 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
