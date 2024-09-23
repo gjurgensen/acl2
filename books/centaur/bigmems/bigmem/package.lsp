@@ -33,6 +33,7 @@
 (include-book "centaur/bitops/portcullis" :dir :system)
 (include-book "centaur/fty/portcullis" :dir :system)
 (include-book "std/portcullis" :dir :system)
+(include-book "../portcullis")
 
 (defpkg "BIGMEM"
   (union-eq
@@ -57,6 +58,7 @@
      defsection
      defxdoc)
    (union-eq *acl2-exports*
+             bigmems::*bigmems-exports*
              acl2::*bitops-exports*
              std::*std-exports*
              *common-lisp-symbols-from-main-lisp-package*)))
