@@ -19669,7 +19669,6 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
  NIL
  ACL2 !>
 
- @({
  General Forms:
 
  (cw-print-base-radix print-base fmt-string arg1 arg2 ... argn)
@@ -27833,7 +27832,7 @@ ld) and @(tsee include-book)"
 
  <p>We return now to Problem #2, that the functions @('EQUAL') and @('=') are
  logically the same in ACL2 but not in raw Lisp, as seen by evaluation in raw
- Lisp, where @('(equal 1 1.0)') evaluates to @('nil) but @('(= 1 1.0)')
+ Lisp, where @('(equal 1 1.0)') evaluates to @('nil') but @('(= 1 1.0)')
  evaluates to @('t').  This problem is avoided by our syntactic tracking of df
  expressions.  The following example shows that @('equal') cannot be called on
  a df expression.</p>
@@ -42897,13 +42896,12 @@ current fast alists."
   <li>The initial equivalence relation to be maintained while rewriting a
   literal is @(tsee iff).</li>
 
-  <li>Each @(':')@(tsee rewrite) rule in ACL2 effectively concludes with a
-  term of the form @('(@('eqv lhs rhs)'), where @('eqv') is an equivalence
-  relation.  Such a rule may be used to replace instances of @('lhs') by the
-  corresponding instance of @('rhs'), and maintains the equivalence relation
-  @('eqv').  But the rule is only applicable if @('eqv') <i>refines</i> the
-  equivalence relation to be maintained by rewrite.  See @(see
-  refinement).</li>
+  <li>Each @(':')@(tsee rewrite) rule in ACL2 effectively concludes with a term
+  of the form @('eqv lhs rhs), where @('eqv') is an equivalence relation.  Such
+  a rule may be used to replace instances of @('lhs') by the corresponding
+  instance of @('rhs'), and maintains the equivalence relation @('eqv').  But
+  the rule is only applicable if @('eqv') <i>refines</i> the equivalence
+  relation to be maintained by rewrite.  See @(see refinement).</li>
 
   <li>If the term to be rewritten is a function call, @('(fn a1 ... ak)'),
   the rewriter rewrites each @('ai') to, say, @('ai''), before applying rules
@@ -48087,7 +48085,7 @@ current fast alists."
 
   The non-trivial part of the guard conjecture for COMMON-LISP-SUM-LIST-APPEND,
   given the :forward-chaining rules ACL2-NUMBER-LISTP-FORWARD-TO-TRUE-LISTP,
-  INTEGER-LISTP-FORWARD-TO-RATIONAL-LISTP and 
+  INTEGER-LISTP-FORWARD-TO-RATIONAL-LISTP and
   RATIONAL-LISTP-FORWARD-TO-ACL2-NUMBER-LISTP and the :type-prescription
   rules ACL2-NUMBER-LISTP, INTEGER-LISTP, RATIONAL-LISTP and SUM-LIST,
   is
@@ -48101,7 +48099,7 @@ current fast alists."
 
   Q.E.D.
 
-  That completes the proof of the guard theorem for 
+  That completes the proof of the guard theorem for
   COMMON-LISP-SUM-LIST-APPEND.  COMMON-LISP-SUM-LIST-APPEND is compliant
   with Common Lisp.
 
@@ -71242,8 +71240,8 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
  @({
  (er-progn
 
- ; Each of the two forms below returns an error triple (see @(see
- ; error-triple)), so we can evaluate both by using er-progn, which
+ ; Each of the two forms below returns an error triple (see :DOC
+ ; error-triple), so we can evaluate both by using er-progn, which
  ; returns the last (second) error triple.
 
   (defun foo (x) (cons x x)) ; (a)
@@ -72533,7 +72531,7 @@ it."
                                       ;   guards of condition-fn
            :recursive    t/nil        ; optional (default t)
            :stats        t/nil        ; optional (default t (unless :invoke))
-           :total        ; see :DOC memoize-partial
+           :total        ;            ; see :DOC memoize-partial
            :verbose      t/nil        ; optional (default nil)
            )
  })
@@ -106083,6 +106081,15 @@ it."
 
 ; Modernized :DOC guard-example.
 
+; A bug was fixed that was probably present in Version 8.5 (and perhaps earlier
+; versions), and definitely present in a github version of ACL2 before the
+; release of Version 8.6, that permitted an out-of-bounds array access when
+; updating a theory to accommodate useless-runes.  That error could occur
+; during a call of compress1 from update-enabled-structure, from
+; load-theory-into-enabled-structure-1, from useless-runes-ens.  The latter two
+; functions were fixed to avoid the error.  This error was found during a run
+; with ACL2 built using safety 3.
+
   :parents (release-notes)
   :short "ACL2 Version  8.6 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -115535,8 +115542,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  (print-object$+ x       ; an ACL2 object
                  channel ; an open object output channel
                  &key
-                 header ; nil or a comment string (see below)
-                 serialize-character ; as in @(see with-serialize-character)
+                 header  ; nil or a comment string (see below)
+                 serialize-character       ; as in with-serialize-character
                  print-base print-case ... ; print-control variables
                  )
  })
