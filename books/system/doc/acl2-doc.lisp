@@ -63824,9 +63824,9 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
 
  <p>@('Loop$') was introduced into ACL2 in Version 8.2 (May, 2019), over 20
  years after ACL2 was first released.  So there are many experienced ACL2 users
- have never used @('loop$').  The @('Loop$') Primer, see @(see loop$-primer),
- is textbook-style introduction, meant to be read linearly and may be a good
- starting place for you.  The primer follows a &ldquo;monkey-see
+ who have never used @('loop$').  The @('Loop$') Primer, see @(see
+ loop$-primer), is textbook-style introduction, meant to be read linearly and
+ may be a good starting place for you.  The primer follows a &ldquo;monkey-see
  monkey-do&rdquo; approach, showing lots of examples.  Sample proofs are worked
  out in detail and then the reader is challenged to apply those lessons to
  exercises.  Solutions to the exercises are provided in books among the
@@ -132316,11 +132316,11 @@ work on <tt>(q x)</tt>.</p>
 
  <li>The final part of the screen output will suggest
  to run the tests, via:
- @({cd ./tests &amp;&amp; sh ./run-tests.sh})
+ @({cd ./tests && sh ./run-tests.sh})
  They will take a while, but should eventually succeed.</li>
 
  <li>The final part of the screen output will also suggest
- to build the documentation, via @({cd ./doc/manual &amp;&amp; make})
+ to build the documentation, via @({cd ./doc/manual && make})
  &mdash; this may fail, but that does not seem to matter.</li>
 
  <li>Finally, install the just compiled SBCL
