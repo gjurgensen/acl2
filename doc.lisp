@@ -68036,7 +68036,7 @@ Subtopics
 
   [47mLoop$[0m was introduced into ACL2 in Version 8.2 (May, 2019), over 20
   years after ACL2 was first released.  So there are many experienced
-  ACL2 users have never used [47mloop$[0m.  The [47mLoop$[0m Primer, see
+  ACL2 users who have never used [47mloop$[0m.  The [47mLoop$[0m Primer, see
   [loop$-primer], is textbook-style introduction, meant to be read
   linearly and may be a good starting place for you.  The primer
   follows a ``monkey-see monkey-do'' approach, showing lots of
@@ -132403,14 +132403,14 @@ Further information
    9. The final part of the screen output will suggest to run the tests,
       via:
 
-          cd ./tests &amp;&amp; sh ./run-tests.sh
+          cd ./tests && sh ./run-tests.sh
 
       They will take a while, but should eventually succeed.
 
   10. The final part of the screen output will also suggest to build the
       documentation, via
 
-          cd ./doc/manual &amp;&amp; make
+          cd ./doc/manual && make
 
       --- this may fail, but that does not seem to matter.
 
