@@ -14782,14 +14782,10 @@ with any questions about building the community books.</p>")
  a compiled file with a temporary file name, and then moves that temporary file
  to the final compiled file name obtained by adding a suitable extension to the
  book's filename.  Thus, a compiled file will appear atomically in its intended
- location.)  Finally, suppose that @('compile-flg') is not supplied (or is
- @(':default')).  If environment variable @('ACL2_COMPILE_FLG') is defined and
- not the empty string, then its value should be @('T'), @('NIL'), or @('ALL')
- after converting to upper case, in which case @('compile-flg') is considered
- to have value @('t'), @('nil'), or @(':all') (respectively).  Otherwise
- @('compile-flg') defaults to @('t').  Note that the value @(':all') is
- equivalent to @('t') except for during the Convert procedure of provisional
- certification; see @(see provisional-certification).</p>
+ location.)  Finally, if @('compile-flg') is not supplied (or is @(':default'))
+ then it is treated as @('t').  Note that the value @(':all') is equivalent to
+ @('t') except for during the Convert procedure of provisional certification;
+ see @(see provisional-certification).</p>
 
  <p>Two keyword arguments, @(':defaxioms-okp') and @(':skip-proofs-okp'),
  determine how the system handles the inclusion of @(tsee defaxiom) events and
