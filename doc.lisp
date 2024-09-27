@@ -17833,14 +17833,10 @@ Subtopics
   compiled file with a temporary file name, and then moves that
   temporary file to the final compiled file name obtained by adding a
   suitable extension to the book's filename.  Thus, a compiled file
-  will appear atomically in its intended location.)  Finally, suppose
-  that [47mcompile-flg[0m is not supplied (or is [47m:default[0m).  If environment
-  variable [47mACL2_COMPILE_FLG[0m is defined and not the empty string, then
-  its value should be [47mT[0m, [47mNIL[0m, or [47mALL[0m after converting to upper case,
-  in which case [47mcompile-flg[0m is considered to have value [47mt[0m, [47mnil[0m, or
-  [47m:all[0m (respectively).  Otherwise [47mcompile-flg[0m defaults to [47mt[0m.  Note
-  that the value [47m:all[0m is equivalent to [47mt[0m except for during the
-  Convert procedure of provisional certification; see
+  will appear atomically in its intended location.)  Finally, if
+  [47mcompile-flg[0m is not supplied (or is [47m:default[0m) then it is treated as
+  [47mt[0m.  Note that the value [47m:all[0m is equivalent to [47mt[0m except for during
+  the Convert procedure of provisional certification; see
   [provisional-certification].
 
   Two keyword arguments, [47m:defaxioms-okp[0m and [47m:skip-proofs-okp[0m, determine
