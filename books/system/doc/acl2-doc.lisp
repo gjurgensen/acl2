@@ -6667,7 +6667,7 @@ and @(tsee include-book)"
 
  <p>Note that if simplification produces a subgoal, that subgoal is
  re-simplified.  This process continues until the subgoal cannot be simplified
- further.  Only then is the next proof technique is tried.  Such subgoals are
+ further.  Only then is the next proof technique tried.  Such subgoals are
  said to be <i>stable under simplification</i>.</p>
 
  <p>While this is happening, the prover prints an English narrative describing

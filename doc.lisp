@@ -9622,8 +9622,8 @@ Subtopics
 
   Note that if simplification produces a subgoal, that subgoal is
   re-simplified.  This process continues until the subgoal cannot be
-  simplified further.  Only then is the next proof technique is
-  tried.  Such subgoals are said to be [3mstable under simplification[0m.
+  simplified further.  Only then is the next proof technique tried.
+  Such subgoals are said to be [3mstable under simplification[0m.
 
   While this is happening, the prover prints an English narrative
   describing the process.  Basically, after each goal is printed, the
