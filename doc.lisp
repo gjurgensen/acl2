@@ -141191,7 +141191,9 @@ Other Relevant :DOC Topics
       ``evaluates to an obj''; thus, such functions can only operate
       on the current object.  So for example, instead of [47m(FOO
       (UPDATE-FIELD1 3 ST))[0m write [47m(LET ((ST (UPDATE-FIELD1 3 ST)))
-      (FOO ST))[0m.
+      (FOO ST))[0m.  And instead of [47m(MV X (LET ((ST (UPDATE-FIELD1 3
+      ST))) (FOO ST)))[0m write [47m(LET ((ST (UPDATE-FIELD1 3 ST))) (MV X
+      ST))[0m.
 
     * The accessors and updaters have a formal parameter named [47mOBJ[0m, so by
       the rule just above, those functions can only be applied to the

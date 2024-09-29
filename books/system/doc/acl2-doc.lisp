@@ -141384,7 +141384,8 @@ work on <tt>(q x)</tt>.</p>
  variable @('OBJ'), not merely a term that ``evaluates to an obj''; thus, such
  functions can only operate on the current object.  So for example, instead of
  @('(FOO (UPDATE-FIELD1 3 ST))') write @('(LET ((ST (UPDATE-FIELD1 3 ST))) (FOO
- ST))').</li>
+ ST))').  And instead of @('(MV X (LET ((ST (UPDATE-FIELD1 3 ST))) (FOO
+ ST)))') write @('(LET ((ST (UPDATE-FIELD1 3 ST))) (MV X ST))').</li>
 
  <li>The accessors and updaters have a formal parameter named @('OBJ'), so by
  the rule just above, those functions can only be applied to the current
