@@ -1820,7 +1820,7 @@ Subtopics
   The function [31;1mapp[0m does not print anything and does not change the
   ``world.''
 
-  A third kind of command is one that display information about the
+  A third kind of command is one that displays information about the
   current logical world or that ``roll back'' to previous versions of
   the world.  Such commands are called ``[history]'' {ICON} (see
   [A_Tiny_Warning_Sign]) commands.
@@ -5466,7 +5466,7 @@ Silent loading of ACL2 customization files
 
   See [ACL2-doc] for information about the custom Emacs browser for
   viewing ACL2 [documentation].  In the present topic we list the
-  commands with extremely abbreviation documentation: only a single
+  commands with extremely abbreviated documentation: only a single
   line for each.  For even briefer summaries, you can use the
   standard Emacs command, [47mControl-h m[0m.
 
@@ -5570,7 +5570,7 @@ Silent loading of ACL2 customization files
   (ACL2-TUTORIAL)
   "ACL2 Sedan interface
 
-  Many successful ACL2 users run in an shell under Emacs; see [emacs].
+  Many successful ACL2 users run in a shell under Emacs; see [emacs].
   However, those not familiar with Emacs may prefer to start with an
   Eclipse-based interface initially developed by Peter Dillinger and
   Pete Manolios called the ACL2 Sedan or ``ACL2s''.
@@ -6150,7 +6150,7 @@ Subtopics
   first --- or, if [47mflg[0m is supplied and evaluates to other than [47mnil[0m,
   at the end of the list, so that they are tried last --- rather than
   [31;1mreplacing[0m the default hints with the indicated hints.  Each new
-  hint is thus considered after each existing hints when both are
+  hint is thus considered after each existing hint when both are
   applied to the same goal.  Also See [set-default-hints], see
   [remove-default-hints], and see [default-hints].
 
@@ -6522,7 +6522,7 @@ Subtopics
   as necessary.  (But note: [47madd-match-free-override[0m is not relevant
   for [type-prescription] rules.)  The event [47m(add-match-free-override
   :once t)[0m has that effect.  Or at the other extreme, perhaps you
-  want to specify all rules as [47m:all[0m rules except for a some specific
+  want to specify all rules as [47m:all[0m rules except for some specific
   exceptions.  Then you can execute [47m(add-match-free-override :all t)[0m
   followed by, say, [47m(add-match-free-override :once (:rewrite foo)
   (:linear bar))[0m.
@@ -13373,7 +13373,7 @@ Subtopics
 
   We conclude by discussing a rather insidious book-hash mismatch that
   can occur when including a book using an ACL2 executable that
-  differs from the executable that was used when certified the book.
+  differs from the executable that was used when certifying the book.
   Here is an example.  Consider a book, [47m\"foo.lisp\"[0m, containing the
   event [47m(include-book \"tools/remove-hyps\" :dir :system)[0m.  Suppose we
   have ACL2 executables [47macl2-cksum[0m and [47macl2-alist[0m, in different ACL2
@@ -16244,8 +16244,8 @@ Subtopics
 
     make LISP=<my-lisp>
 
-  You should find \"Initialization SUCCEEDED.\" near the end the of the
-  log.  Note: There may be ACL2 warnings, for example: \"ACL2 Warning
+  You should find \"Initialization SUCCEEDED.\" near the end of the log.
+  Note: There may be ACL2 warnings, for example: \"ACL2 Warning
   [Skip-proofs] in....\".  These may be safely ignored.
 
   Note that you will want to certify [books] in order to take full
@@ -16944,7 +16944,7 @@ Subtopics
   character that specifies a directory as an absolute pathname.  (See
   [pathname] for a discussion of file naming conventions.)  When
   utilities that take a filename argument, such as [47m[include-book][0m,
-  are given a relative pathname, it is elaborated it into an absolute
+  are given a relative pathname, it is elaborated into an absolute
   pathname, essentially by appending the connected book directory
   string to the left and [47m\".lisp\"[0m to the right.  (This absolute
   pathname is actually canonical when elaborating book names.  For
@@ -21666,7 +21666,7 @@ Subtopics
   The case (phi_1 & phi_2) follows easily from the inductive
   hypothesis.  For the forward direction, apply Proposition 4 and the
   observation that by genericity, if p0 \\in G and p1 \\in G then p0
-  and p1 they have a common extension in G.
+  and p1 have a common extension in G.
 
   Finally, the case (exists x) phi follows trivially from the inductive
   hypothesis. -|
@@ -22176,9 +22176,9 @@ Subtopics
   Another aspect we have not discussed is what happens to nested
   encapsulations when each introduces constrained functions.  We say
   an [47mencapsulate[0m event is ``trivial'' if it introduces no constrained
-  functions, i.e., if its signatures is [47mnil[0m.  Trivial encapsulations
-  are just a way to wrap up a collection of events into a single
-  event.
+  functions, i.e., if its list of signatures is [47mnil[0m.  Trivial
+  encapsulations are just a way to wrap up a collection of events
+  into a single event.
 
   From the foregoing discussion we see we are interested in exactly how
   we can ``rearrange'' the events in a non-trivial encapsulation ---
@@ -23504,7 +23504,7 @@ Subtopics
   typical such predicates in ACL2 applications are those that check
   invariants, e.g., that recognize ``good states'' or ``well-formed
   data.'' These are often written inefficiently because they are
-  intended only for used in theorems and, before the tau system was
+  intended only for use in theorems and, before the tau system was
   added, they may have never been applied to constants.  The most
   common constants tau predicates are applied to are [47m0[0m, [47mT[0m, and [47mNIL[0m,
   although different models may stress other constants.  To
@@ -25554,8 +25554,8 @@ Badges versus Warrants
   sense, all the functions reachable from it.  And finally, to be
   able to prove theorems about the application of such function
   names, the link between the symbols and the functions and the
-  analyzed properties of the functions must available to the prover
-  in the form of axioms.  Particularly vexing is the so-called
+  analyzed properties of the functions must be available to the
+  prover in the form of axioms.  Particularly vexing is the so-called
   ``[47mlocal[0m problem'' which raises the possibility of proving a theorem
   about the application of a name in the context of a local
   definition of the corresponding function and then exporting that
@@ -26648,7 +26648,7 @@ Restrictions
     General Form:
     (define-pc-macro cmd args doc-string dcl ... dcl body)
 
-  where [47mcmd[0m is the name of the pc-macro than you want to define, [47margs[0m
+  where [47mcmd[0m is the name of the pc-macro that you want to define, [47margs[0m
   is its list of formal parameters.  [47mArgs[0m may include lambda-list
   keywords [47m&optional[0m and [47m&rest[0m; see [macro-args], but note that here,
   [47margs[0m may not include [47m&key[0m or [47m&whole[0m.
@@ -30464,7 +30464,7 @@ Subtopics
   (DEFUN-SK)
   "A simple example using [47m[defun-sk][0m
 
-  For a more through, systematic beginner's introduction to
+  For a more thorough, systematic beginner's introduction to
   quantification in ACL2, see [quantifier-tutorial].
 
   The following example illustrates how to do proofs about functions
@@ -31282,14 +31282,14 @@ Section 3: How the challenges are addressed
     the requirements of IEEE Standard for Binary Floating-Point
     Arithmetic.
 
-  ACL2 checks at build time that that this feature is present.
-  However, that IEEE standard specifies results of operations with
-  respect to a [3mrounding mode[0m.  Probably most or all Common Lisp
-  implementations use [3mround to nearest even[0m as their rounding mode,
-  but this is not guaranteed.  We work around this problem to some
-  extent by introducing a constrained rounding function, [47mdf-round[0m,
-  and using it to define the rational function primitives: addition
-  ([47mdf+[0m), subtraction ([47mdf-[0m), multiplication ([47mdf*[0m), and division ([47mdf/[0m).
+  ACL2 checks at build time that this feature is present.  However,
+  that IEEE standard specifies results of operations with respect to
+  a [3mrounding mode[0m.  Probably most or all Common Lisp implementations
+  use [3mround to nearest even[0m as their rounding mode, but this is not
+  guaranteed.  We work around this problem to some extent by
+  introducing a constrained rounding function, [47mdf-round[0m, and using it
+  to define the rational function primitives: addition ([47mdf+[0m),
+  subtraction ([47mdf-[0m), multiplication ([47mdf*[0m), and division ([47mdf/[0m).
   Transcendental functions, such as the sine function, are not as
   straightforward to define in terms of rounding.  Although the sine
   function, for example, might be defined by rounding a sufficiently
@@ -31368,7 +31368,7 @@ Section 3: How the challenges are addressed
 
   Since rounding (to nearest even, in particular) is not tied down by
   the Common Lisp language, different host Lisp implementations may
-  give different results.  This leads us the following point of
+  give different results.  This leads us to the following point of
   emphasis.
 
     When a collection of books is certified (see [certify-book]), the
@@ -31860,8 +31860,8 @@ Section 7: Remarks on performance
 
   [4mInlining of df primitives[0m
 
-  Suppose we start ACL2 and the submit the following forms, which
-  defines [47mg1[0m in raw Lisp and provides its assembly code.
+  Suppose we start ACL2 and then submit the following forms, which
+  define [47mg1[0m in raw Lisp and provide its assembly code.
 
     (defun g1 (x y) (declare (type double-float x y)) (df< x y))
     (disassemble 'g1)
@@ -32915,7 +32915,7 @@ Subtopics
       supposedly decreases (under [47m[l<][0m) on each iteration of the
       [47mdo-fn[0m and is checked after each iteration,
 
-    * [47malist[0m --- an alist the binds the variable symbols used in the body
+    * [47malist[0m --- an alist that binds the variable symbols used in the body
       and [47mfinally[0m clause (if any) to their values,
 
     * [47mdo-fn[0m --- a [47mlambda[0m object that computes the results of one iteration,
@@ -41756,7 +41756,7 @@ Example 2
     ; association of an array with the name 'demo.  Then the subsequent call of
     ; compress1 associates the object (@ a) with that name.  (Technical point:
     ; compress1 always associates the indicated name with the value that it
-    ; returns.  in this case, what compress1 returns is (@ a), because (@ a) is
+    ; returns.  In this case, what compress1 returns is (@ a), because (@ a) is
     ; already, logically speaking, a compressed array1p (starts with a :header
     ; and the natural number keys are ordered).
     ACL2 !>(flush-compress 'demo)
