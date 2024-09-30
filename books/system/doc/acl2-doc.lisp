@@ -3138,7 +3138,7 @@
   :short "Summary of @(see acl2-doc) commands"
   :long "<p>See @(see acl2-doc) for information about the custom Emacs browser
   for viewing ACL2 @(see documentation).  In the present topic we list the
-  commands with extremely abbreviation documentation: only a single line for
+  commands with extremely abbreviated documentation: only a single line for
   each.  For even briefer summaries, you can use the standard Emacs command,
   @('Control-h m').</p>
 
@@ -3242,7 +3242,7 @@
 (defxdoc acl2-sedan
   :parents (acl2-tutorial)
   :short "ACL2 Sedan interface"
-  :long "<p>Many successful ACL2 users run in an shell under Emacs; see @(see
+  :long "<p>Many successful ACL2 users run in a shell under Emacs; see @(see
  emacs).  However, those not familiar with Emacs may prefer to start with an
  Eclipse-based interface initially developed by Peter Dillinger and Pete
  Manolios called the ACL2 Sedan or ``ACL2s''.</p>
@@ -3599,7 +3599,7 @@
  or, if @('flg') is supplied and evaluates to other than @('nil'), at the end
  of the list, so that they are tried last &mdash; rather than <b>replacing</b>
  the default hints with the indicated hints.  Each new hint is thus considered
- after each existing hints when both are applied to the same goal.  Also See
+ after each existing hint when both are applied to the same goal.  Also See
  @(see set-default-hints), see @(see remove-default-hints), and see @(see
  default-hints).</p>
 
@@ -3998,7 +3998,7 @@ and @(tsee include-book)"
  @('add-match-free-override') is not relevant for @(see type-prescription)
  rules.)  The event @('(add-match-free-override :once t)') has that effect.  Or
  at the other extreme, perhaps you want to specify all rules as @(':all') rules
- except for a some specific exceptions.  Then you can execute
+ except for some specific exceptions.  Then you can execute
  @('(add-match-free-override :all t)') followed by, say,
  @('(add-match-free-override :once (:rewrite foo) (:linear bar))').</p>
 
@@ -8044,7 +8044,7 @@ and @(tsee include-book)"
  applied to the indicated arguments and the result is printed.  The function
  <b>app</b> does not print anything and does not change the ``world.''</p>
 
- <p>A third kind of command is one that display information about the current
+ <p>A third kind of command is one that displays information about the current
  logical world or that ``roll back'' to previous versions of the world.  Such
  commands are called ``@(see history)'' <see
  topic='ACL2____A_02Tiny_02Warning_02Sign'><icon src='res/tours/twarning.gif'/></see>
@@ -10421,7 +10421,7 @@ and @(tsee include-book)"
 
  <p>We conclude by discussing a rather insidious book-hash mismatch that can
  occur when including a book using an ACL2 executable that differs from the
- executable that was used when certified the book.  Here is an example.
+ executable that was used when certifying the book.  Here is an example.
  Consider a book, @('\"foo.lisp\"'), containing the event @('(include-book
  \"tools/remove-hyps\" :dir :system)').  Suppose we have ACL2 executables
  @('acl2-cksum') and @('acl2-alist'), in different ACL2 directories.  Also
@@ -13060,7 +13060,7 @@ with any questions about building the community books.</p>")
  make LISP=<my-lisp>
  })
 
- <p>You should find \"Initialization SUCCEEDED.\" near the end the of the log.
+ <p>You should find \"Initialization SUCCEEDED.\" near the end of the log.
  Note: There may be ACL2 warnings, for example: \"ACL2 Warning [Skip-proofs]
  in....\".  These may be safely ignored.</p>
 
@@ -13844,7 +13844,7 @@ with any questions about building the community books.</p>")
  character that specifies a directory as an absolute pathname.  (See @(see
  pathname) for a discussion of file naming conventions.)  When utilities that
  take a filename argument, such as @(tsee include-book), are given a relative
- pathname, it is elaborated it into an absolute pathname, essentially by
+ pathname, it is elaborated into an absolute pathname, essentially by
  appending the connected book directory string to the left and @('\".lisp\"')
  to the right.  (This absolute pathname is actually canonical when elaborating
  book names.  For more details on book names, see @(see book-name) and also see
@@ -18343,8 +18343,8 @@ subtree of X with T, without duplication.</p>
 
  <p>The case (phi_1 &amp; phi_2) follows easily from the inductive hypothesis.
  For the forward direction, apply Proposition 4 and the observation that by
- genericity, if p0 \\in G and p1 \\in G then p0 and p1 they have a common
- extension in G.</p>
+ genericity, if p0 \\in G and p1 \\in G then p0 and p1 have a common extension
+ in G.</p>
 
  <p>Finally, the case (exists x) phi follows trivially from the inductive
  hypothesis. -|</p>
@@ -18749,8 +18749,9 @@ subtree of X with T, without duplication.</p>
  <p>Another aspect we have not discussed is what happens to nested
  encapsulations when each introduces constrained functions.  We say an
  @('encapsulate') event is ``trivial'' if it introduces no constrained
- functions, i.e., if its signatures is @('nil').  Trivial encapsulations are
- just a way to wrap up a collection of events into a single event.</p>
+ functions, i.e., if its list of signatures is @('nil').  Trivial
+ encapsulations are just a way to wrap up a collection of events into a single
+ event.</p>
 
  <p>From the foregoing discussion we see we are interested in exactly how we
  can ``rearrange'' the events in a non-trivial encapsulation &mdash; moving
@@ -20173,7 +20174,7 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
  very slow.  The most typical such predicates in ACL2 applications are those
  that check invariants, e.g., that recognize ``good states'' or ``well-formed
  data.''  These are often written inefficiently because they are intended only
- for used in theorems and, before the tau system was added, they may have never
+ for use in theorems and, before the tau system was added, they may have never
  been applied to constants.  The most common constants tau predicates are
  applied to are @('0'), @('T'), and @('NIL'), although different models may
  stress other constants.  To understand why @('NIL') for example is frequently
@@ -22164,7 +22165,7 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
   determine, in some sense, all the functions reachable from it.  And finally,
   to be able to prove theorems about the application of such function names,
   the link between the symbols and the functions and the analyzed properties of
-  the functions must available to the prover in the form of axioms.
+  the functions must be available to the prover in the form of axioms.
   Particularly vexing is the so-called ``@('local') problem'' which raises the
   possibility of proving a theorem about the application of a name in the
   context of a local definition of the corresponding function and then
@@ -23303,7 +23304,7 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
  (define-pc-macro cmd args doc-string dcl ... dcl body)
  })
 
- <p>where @('cmd') is the name of the pc-macro than you want to define,
+ <p>where @('cmd') is the name of the pc-macro that you want to define,
  @('args') is its list of formal parameters.  @('Args') may include lambda-list
  keywords @('&optional') and @('&rest'); see @(see macro-args), but note that
  here, @('args') may not include @('&key') or @('&whole').</p>
@@ -27036,7 +27037,7 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
 (defxdoc defun-sk-example
   :parents (defun-sk)
   :short "A simple example using @(tsee defun-sk)"
-  :long "<p>For a more through, systematic beginner's introduction to
+  :long "<p>For a more thorough, systematic beginner's introduction to
  quantification in ACL2, see @(see quantifier-tutorial).</p>
 
  <p>The following example illustrates how to do proofs about functions defined
@@ -27873,8 +27874,8 @@ ld) and @(tsee include-book)"
  requirements of IEEE Standard for Binary Floating-Point Arithmetic.
  </blockquote>
 
- <p>ACL2 checks at build time that that this feature is present.  However, that
- IEEE standard specifies results of operations with respect to a <i>rounding
+ <p>ACL2 checks at build time that this feature is present.  However, that IEEE
+ standard specifies results of operations with respect to a <i>rounding
  mode</i>.  Probably most or all Common Lisp implementations use <i>round to
  nearest even</i> as their rounding mode, but this is not guaranteed.  We work
  around this problem to some extent by introducing a constrained rounding
@@ -27958,7 +27959,7 @@ ld) and @(tsee include-book)"
 
  <p>Since rounding (to nearest even, in particular) is not tied down by the
  Common Lisp language, different host Lisp implementations may give different
- results.  This leads us the following point of emphasis.</p>
+ results.  This leads us to the following point of emphasis.</p>
 
  <blockquote>
  When a collection of books is certified (see @(see certify-book)), the same
@@ -28443,8 +28444,8 @@ ld) and @(tsee include-book)"
 
  <p><u>Inlining of df primitives</u></p>
 
- <p>Suppose we start ACL2 and the submit the following forms, which defines
- @('g1') in raw Lisp and provides its assembly code.</p>
+ <p>Suppose we start ACL2 and then submit the following forms, which define
+ @('g1') in raw Lisp and provide its assembly code.</p>
 
  @({
  (defun g1 (x y) (declare (type double-float x y)) (df< x y))
@@ -29404,7 +29405,7 @@ ld) and @(tsee include-book)"
   that supposedly decreases (under @(tsee l<)) on each iteration of the
   @('do-fn') and is checked after each iteration, </li>
 
-  <li>@('alist') &mdash; an alist the binds the variable symbols used in the
+  <li>@('alist') &mdash; an alist that binds the variable symbols used in the
   body and @('finally') clause (if any) to their values,</li>
 
   <li>@('do-fn') &mdash; a @('lambda') object that computes the results of one
@@ -37972,7 +37973,7 @@ current fast alists."
   ; association of an array with the name 'demo.  Then the subsequent call of
   ; compress1 associates the object (@ a) with that name.  (Technical point:
   ; compress1 always associates the indicated name with the value that it
-  ; returns.  in this case, what compress1 returns is (@ a), because (@ a) is
+  ; returns.  In this case, what compress1 returns is (@ a), because (@ a) is
   ; already, logically speaking, a compressed array1p (starts with a :header
   ; and the natural number keys are ordered).
   ACL2 !>(flush-compress 'demo)
@@ -141384,7 +141385,8 @@ work on <tt>(q x)</tt>.</p>
  variable @('OBJ'), not merely a term that ``evaluates to an obj''; thus, such
  functions can only operate on the current object.  So for example, instead of
  @('(FOO (UPDATE-FIELD1 3 ST))') write @('(LET ((ST (UPDATE-FIELD1 3 ST))) (FOO
- ST))').</li>
+ ST))').  And instead of @('(MV X (LET ((ST (UPDATE-FIELD1 3 ST))) (FOO
+ ST)))') write @('(LET ((ST (UPDATE-FIELD1 3 ST))) (MV X ST))').</li>
 
  <li>The accessors and updaters have a formal parameter named @('OBJ'), so by
  the rule just above, those functions can only be applied to the current
