@@ -15665,7 +15665,9 @@ Subtopics
 
       ((*acl2-system-exports* \"[books]/system/acl2-system-exports.lisp\")
        (<< \"[books]/misc/total-order.lisp\")
+       (acl2s::acl2s-installation \"[books]/acl2s/installation.lisp\")
        (add-io-pairs \"[books]/std/util/add-io-pairs.lisp\")
+       (algebra \"[books]/doc/more-topics.lisp\")
        (append-without-guard \"[books]/std/lists/flatten.lisp\")
        (oslib::argv \"[books]/oslib/argv-logic.lisp\")
        (arith-equivs \"[books]/std/basic/arith-equiv-defs.lisp\")
@@ -15676,8 +15678,9 @@ Subtopics
        (assert! \"[books]/std/testing/assert-bang.lisp\")
        (assert!-stobj \"[books]/std/testing/assert-bang-stobj.lisp\")
        (b* \"[books]/std/util/bstar.lisp\")
+       (bit-vectors \"[books]/doc/more-topics.lisp\")
        (bridge \"[books]/centaur/bridge/top.lisp\")
-       (oslib::argv \"[books]/oslib/catpath.lisp\")
+       (oslib::catpath \"[books]/oslib/catpath.lisp\")
        (build::cert.pl \"[books]/build/doc.lisp\")
        (build::cert_param \"[books]/build/doc.lisp\")
        (cgen \"[books]/acl2s/cgen/top.lisp\")
@@ -15752,6 +15755,7 @@ Subtopics
        (remove-hyps \"[books]/tools/remove-hyps.lisp\")
        (rewrite$ \"[books]/tools/rewrite-dollar.lisp\")
        (rewrite-equiv-hint \"[books]/coi/util/rewrite-equiv.lisp\")
+       (rtl \"[books]/rtl/rel11/lib/doc.lisp\")
        (run-script \"[books]/tools/run-script.lisp\")
        (satlink::sat-solver-options \"[books]/centaur/satlink/top.lisp\")
        (satlink \"[books]/centaur/satlink/top.lisp\")
@@ -15781,7 +15785,7 @@ Subtopics
        (with-timeout \"[books]/acl2s/cgen/with-timeout.lisp\")
        (without-subsumption \"[books]/tools/without-subsumption.lisp\")
        (working-with-packages \"[books]/doc/practices.lisp\")
-       (write-list \"[books]/misc/file-io.lisp\")
+       (write-list \"[books]/misc/file-io-doc.lisp\")
        (xdoc \"[books]/xdoc/topics.lisp\"))")
  (BRR
   (BREAK-REWRITE)
@@ -39264,7 +39268,7 @@ Subtopics
   Note that when the indicated file exists, [47mextend-pathname[0m resolves
   symbolic links by using [47m[canonical-pathname][0m.  If you don't want
   symbolic links to be resolved there are simpler alternatives; for
-  example, see oslib::catpath.")
+  example, see [oslib::catpath].")
  (EXTEND-PE-TABLE
   (HISTORY)
   "Replace [events] displayed by [history] commands
@@ -46452,8 +46456,8 @@ Salient Facts about the ACL2 Rewriter
       literal is [47m[iff][0m.
 
     * Each [47m:[0m[47m[rewrite][0m rule in ACL2 effectively concludes with a term of the
-      form [47meqv lhs rhs), where @('eqv[0m is an equivalence relation.
-      Such a rule may be used to replace instances of [47mlhs[0m by the
+      form [47m(eqv lhs rhs)[0m, where [47meqv[0m is an equivalence relation.  Such
+      a rule may be used to replace instances of [47mlhs[0m by the
       corresponding instance of [47mrhs[0m, and maintains the equivalence
       relation [47meqv[0m.  But the rule is only applicable if [47meqv[0m [3mrefines[0m
       the equivalence relation to be maintained by rewrite.  See
@@ -104337,7 +104341,7 @@ New Features
   improve the induction scheme suggested by a recursive function,
   especially one involving [47m[let][0m and [47m[let*][0m bindings containing
   conditional recursive calls.  For that new topic, new related books
-  [47mbooks/demos/ppr1-experiments.lisp[0ma nd
+  [47mbooks/demos/ppr1-experiments.lisp[0m and
   [47mbooks/demos/ppr1-experiments-thm-1-ppr1.lisp[0m, and related edits of
   existing :DOC topics ([advanced-features], [definductor], [defun],
   [induction], [rulers], [verify-termination], and [xargs]): Release
@@ -104942,7 +104946,7 @@ Changes at the System Level
   [47m*initial-global-table*[0m now specifies a value for each so-called
   ``[47m[ld][0m special''.
 
-  The previous ACL2 release (Version_8.5) arranged that when a raw Lisp
+  The previous ACL2 release (Version 8.5) arranged that when a raw Lisp
   error is encountered, any available input is cleared from the input
   channel.  However, this can lead to discarding of valid input or an
   attempt to read values from within a comment; see [community-books]
@@ -114896,7 +114900,7 @@ Linux/Mac/Windows Binaries in ACL2s
   package for Linux and macOS users, and as a Windows Subsystem for
   Linux distro for Windows users.
 
-  See ACL2s::ACL2s-installation for instructions for installing the
+  See [ACL2s::ACL2s-installation] for instructions for installing the
   ACL2 Sedan. Note that these instructions are typically intended for
   students at Northeastern, but hopefully are useful for anyone
   interested in installing ACL2s.
@@ -121327,13 +121331,13 @@ Subtopics
   arithmetic books to choose from depending on what sort of
   operations are involved in your conjectures.  You might explore
   books on elementary <<[arithmetic]>> including some number theory
-  books, or books on the arithmetic of <<bit-vectors>> (which deal
+  books, or books on the arithmetic of <<[bit-vectors]>> (which deal
   with concepts like shifting or bitwise logical operations on
-  number), or floating point books (see <<rtl>>; these are useful for
-  verifying implementations of floating point operations) or a book
-  on the <<[gl]>> utility (which provides a bit-blaster for finite
-  arithmetic), or <<algebra>> books (e.g., properties of rings and
-  fields), to name a few.)
+  number), or floating point books (see <<[rtl]>>; these are useful
+  for verifying implementations of floating point operations) or a
+  book on the <<[gl]>> utility (which provides a bit-blaster for
+  finite arithmetic), or <<[algebra]>> books (e.g., properties of
+  rings and fields), to name a few.)
 
   Next: Inadequacies of Structural Recursion (see
   [R-AND-I-INADEQUACIES-OF-STRUCTURAL-RECURSION]) (or Table of
@@ -160572,7 +160576,7 @@ Concluding Remark
       Windows.
 
     * Use the ACL2 Sedan (ACL2s) Windows installation instructions --- see
-      ACL2s::ACL2s-installation for more details. This will install
+      [ACL2s::ACL2s-installation] for more details. This will install
       ACL2 and the ACL2s system (including a copy of the Eclipse IDE
       with ACL2s support) in a Windows Subsystem for Linux distro.
       This distro is configured to automatically open Eclipse when
