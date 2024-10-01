@@ -60,7 +60,9 @@
 
   '((*ACL2-SYSTEM-EXPORTS* "[books]/system/acl2-system-exports.lisp")
     (<< "[books]/misc/total-order.lisp")
+    (ACL2S::ACL2S-INSTALLATION "[books]/acl2s/installation.lisp")
     (ADD-IO-PAIRS "[books]/std/util/add-io-pairs.lisp")
+    (ALGEBRA "[books]/doc/more-topics.lisp")
     (APPEND-WITHOUT-GUARD "[books]/std/lists/flatten.lisp")
     (OSLIB::ARGV "[books]/oslib/argv-logic.lisp")
     (ARITH-EQUIVS "[books]/std/basic/arith-equiv-defs.lisp")
@@ -71,8 +73,9 @@
     (ASSERT! "[books]/std/testing/assert-bang.lisp")
     (ASSERT!-STOBJ "[books]/std/testing/assert-bang-stobj.lisp")
     (B* "[books]/std/util/bstar.lisp")
+    (BIT-VECTORS "[books]/doc/more-topics.lisp")
     (BRIDGE "[books]/centaur/bridge/top.lisp")
-    (OSLIB::ARGV "[books]/oslib/catpath.lisp")
+    (OSLIB::CATPATH "[books]/oslib/catpath.lisp")
     (BUILD::CERT.PL "[books]/build/doc.lisp")
     (BUILD::CERT_PARAM "[books]/build/doc.lisp")
     (CGEN "[books]/acl2s/cgen/top.lisp")
@@ -146,6 +149,7 @@
     (REMOVE-HYPS "[books]/tools/remove-hyps.lisp")
     (REWRITE$ "[books]/tools/rewrite-dollar.lisp")
     (REWRITE-EQUIV-HINT "[books]/coi/util/rewrite-equiv.lisp")
+    (RTL "[books]/rtl/rel11/lib/doc.lisp")
     (RUN-SCRIPT "[books]/tools/run-script.lisp")
     (SATLINK::SAT-SOLVER-OPTIONS "[books]/centaur/satlink/top.lisp")
     (SATLINK "[books]/centaur/satlink/top.lisp")
@@ -172,7 +176,7 @@
     (WITH-TIMEOUT "[books]/acl2s/cgen/with-timeout.lisp")
     (WITHOUT-SUBSUMPTION "[books]/tools/without-subsumption.lisp")
     (WORKING-WITH-PACKAGES "[books]/doc/practices.lisp")
-    (WRITE-LIST "[books]/misc/file-io.lisp")
+    (WRITE-LIST "[books]/misc/file-io-doc.lisp")
     (XDOC "[books]/xdoc/topics.lisp")))
 
 (defconst *acl2-url*
@@ -42894,8 +42898,8 @@ current fast alists."
   literal is @(tsee iff).</li>
 
   <li>Each @(':')@(tsee rewrite) rule in ACL2 effectively concludes with a term
-  of the form @('eqv lhs rhs), where @('eqv') is an equivalence relation.  Such
-  a rule may be used to replace instances of @('lhs') by the corresponding
+  of the form @('(eqv lhs rhs)'), where @('eqv') is an equivalence relation.
+  Such a rule may be used to replace instances of @('lhs') by the corresponding
   instance of @('rhs'), and maintains the equivalence relation @('eqv').  But
   the rule is only applicable if @('eqv') <i>refines</i> the equivalence
   relation to be maintained by rewrite.  See @(see refinement).</li>
@@ -106941,8 +106945,8 @@ it."
  discusses how appropriately setting ruler-extenders can sometimes improve the
  induction scheme suggested by a recursive function, especially one involving
  @(tsee let) and @(tsee let*) bindings containing conditional recursive calls.
- For that new topic, new related books @('books/demos/ppr1-experiments.lisp')a
- nd @('books/demos/ppr1-experiments-thm-1-ppr1.lisp'), and related edits of
+ For that new topic, new related books @('books/demos/ppr1-experiments.lisp')
+ and @('books/demos/ppr1-experiments-thm-1-ppr1.lisp'), and related edits of
  existing :DOC topics (@(see advanced-features), @(see definductor), @(see
  defun), @(see induction), @(see rulers), @(see verify-termination), and @(see
  xargs)): Release was approved by DARPA with &ldquo;DISTRIBUTION STATEMENT
@@ -107574,8 +107578,8 @@ it."
  constant @('*initial-ld-special-bindings*'); thus, @('*initial-global-table*')
  now specifies a value for each so-called &ldquo;@(tsee ld) special&rdquo;.</p>
 
- <p>The previous ACL2 release (Version_8.5) arranged that when a raw Lisp error
- is encountered, any available input is cleared from the input channel.
+ <p>The previous ACL2 release (Version  8.5) arranged that when a raw Lisp
+ error is encountered, any available input is cleared from the input channel.
  However, this can lead to discarding of valid input or an attempt to read
  values from within a comment; see @(see community-books) files
  @('clear-input-1.lsp') and @('clear-input-2.lsp'), respectively, in directory
