@@ -17956,7 +17956,7 @@ Subtopics
   file, which is automatically deleted unless [state] global variable
   [47m'save-expansion-file[0m has been set, presumably by a system
   developer, to a non-[47mnil[0m value; see [book-compiled-file] for more
-  information about hit issue, including the role of environment
+  information about this issue, including the role of environment
   variable [47mACL2_SAVE_EXPANSION[0m.
 
   After execution of a [47mcertify-book[0m form, the value of
@@ -20912,8 +20912,7 @@ Subtopics
   the processing of the clause starts over with simplification.
 
   As for [47mCTX[0m and [47m[state][0m, they are provided so that you can pass them
-  to the [47m[er][0m macro to print error messages.  We recommend not
-  writing computed hints that otherwise change [47m[state][0m!
+  to the [47m[er][0m macro to print error messages.
 
   The remaining variables, [47mHIST[0m and [47mPSPV[0m are not documented yet.  Only
   users familiar with the internals of ACL2 are likely to need them
