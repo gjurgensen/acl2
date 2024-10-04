@@ -47794,14 +47794,15 @@ current fast alists."
  <blockquote>
 
  <p>@(see defun-mode) &mdash; &ldquo;Does this @(see defun) add an
- axiom (&lsquo;logic mode&rsquo;) or not (`:program mode')?&rdquo;  (See @(see
- defun-mode).)  Only @(see logic) mode functions can have their &ldquo;@(see guard)s
- verified&rdquo; via mechanized proof; see @(see verify-guards).</p>
+ axiom (&lsquo;logic mode&rsquo;) or not (`:program mode')?&rdquo; (See @(see
+ defun-mode).)  Only @(see logic) mode functions can have their &ldquo;@(see
+ guard)s verified&rdquo; via mechanized proof; see @(see verify-guards).</p>
 
- <p>@(tsee set-guard-checking) &mdash; &ldquo;Should runtime @(see guard) violations
- signal an error (@(':all'), and usually with @('t') or @(':nowarn')) or go
- undetected (@('nil'), @(':none'))?  The question relates to the use of Common
- Lisp to evaluate expressions; see @(see set-guard-checking).</p>
+ <p>@(tsee set-guard-checking) &mdash; &ldquo;Should runtime @(see guard)
+ violations signal an error (@(':all'), and usually with @('t') or
+ @(':nowarn')) or go undetected (@('nil'), @(':none'))?  The question relates
+ to the use of Common Lisp to evaluate expressions; see @(see
+ set-guard-checking).</p>
 
  </blockquote>
 
@@ -54923,54 +54924,83 @@ tables in the current Hons Space."
  defwarrant), etc."
  :long "
 
- <p>The paper <a
- href='http://www.cs.utexas.edu/users/kaufmann/papers/apply/index.html'>``Limited
- Second-Order Functionality in a First-Order Setting''</a> by Matt Kaufmann and
- J Strother Moore best explains the basic logical and practical ideas behind
- @('apply$').  We refer to the paper simply as ``the paper.''  Supplemental
- material on the logical foundations of @('apply$') can be found in the @(see
- community-books) directory @('books/projects/apply-model/').  Also see @(tsee
- apply$) for detailed documentation on @('apply$') that complements the
- introduction below, to be read carefully when you're ready to use @('apply$')
- in your own projects.  We suggest that you not follow all the links in
- introductory discussion and instead read it linearly as you might a paper.</p>
+  <h3>Background and Organization</h3>
 
- <p>The unreachable goal of this work is to allow the ACL2 user to pass
- `functions' as objects and to apply them.  That goal is unreachable because
- ACL2 remains a first order system.  However, we can identify a certain
- syntactic class of ordinary ACL2 objects, called the `@(see tame)
- functions' (which are in fact <i>not</i> functions but are merely symbols and
- list expressions) and we can allow names of functions with certain tameness
- properties to be passed around and used as functions.</p>
+  <p>@('Apply$') is the ACL2 version of LISP's @('apply') function.  It takes a
+  ``function'' and a list of argument values, applies the function to the
+  arguments, and returns the result.  For example, @('(apply$ 'expt (list 2
+  8))') returns 256.</p>
 
- <p>``Tameness'' imposes strict rules on how functional arguments are used.
- We'll discuss it further below but tame functions are recognized by the
- @(':logic') mode function @('tamep-functionp') and the paper gives explanatory
- details.</p>
+  <p>A good introduction to the basic ideas and challenges of adding
+  @('apply$') to ACL2 is the paper <a
+  href='http://www.cs.utexas.edu/users/kaufmann/papers/apply/index.html'>``Limited
+  Second-Order Functionality in a First-Order Setting''</a> by Matt Kaufmann
+  and J Strother Moore, <i>Journal of Automated Reasoning</i>, Springer,
+  <b>64</b>, pp 391-422, 2018.  We refer to the paper simply as ``the paper.''
+  Some aspects of the paper are no longer accurate because the implementation
+  of @('apply$') has matured since 2018.  But as a basic introduction, rather
+  than a reference guide or user's manual, the paper is a good place to start.
+  It provides motivations and challenges, succinct and precise definitions of
+  relevant concepts, lots of examples, a model and meta-level proof that the
+  extended theory is consistent, and a discussion of the limitations and of
+  related work.  The model described in the paper is illustrated concretely in
+  the certified books under @('books/projects/apply-model/').  See the
+  @('README') file there.</p>
 
- <p>The fundamental question raised by @('apply$') is ``How can @('apply$')
- know the correspondence between an ordinary ACL2 object, like a symbol or a
- list, and the ACL2 function the user means to apply?''  For example, if the
- user defines the function @('my-append'), how can @('apply$') know that
- @('(apply$ 'MY-APPEND (list a b))') should expand to @('(my-append a b)')?</p>
+  <p>The current documentation topic takes a slightly more informal approach
+  but covers much of the same ground.  In particular, after some preliminary
+  remarks we coach you through a few simple simple exercises involving
+  @('apply$') and related concepts.  During these exercises we draw your
+  attention to some basic lessons to keep in mind.  At the end of this topic we
+  list some simple challenge problems.</p>
 
- <p>The ACL2 primitives can be built in.  The logical definition of @('apply$')
- includes a big case split that recognizes about 800 ACL2 primitives, so that
- for example:</p>
+  <p>This topic links to reference-level documentation for @(tsee apply$) and
+  those other concepts.  But if you are just getting started with @('apply$')
+  we recommend that you work your way through this topic, including doing the
+  examples described below, without following all the links.</p>
 
- @({(apply$ 'car (list a)) = (car a)})
+  <h3>Challenges and Basic Solutions</h3>
 
- <p>and</p>
+  <p>The unreachable goal of this work is to allow the ACL2 user to pass
+  `functions' as objects and to apply them.  That goal is unreachable because
+  ACL2 remains a first order system.  However, we can identify a certain
+  syntactic class of ordinary ACL2 objects, called the `@(see tame)
+  functions' (which are in fact <i>not</i> functions but are merely symbols and
+  list expressions) and we can allow names of functions with certain tameness
+  properties to be passed around and used as functions.</p>
 
- @({(apply$ 'assoc-equal (list a b)) = (assoc-equal a b).})
+  <p>By the way, in this documentation topic we tend to display certain symbols
+  sometimes in uppercase and sometimes in lowercase.  They denote the same
+  symbol.  But we use uppercase when we're using the symbol as a quoted
+  constant to be passed to @('apply$') and we use lowercase when we're using
+  the symbol as a function symbol in a term.</p>
 
- <p>But user-defined functions are problematic because once @('apply$') has been
- defined in the ACL2 sources it cannot be extended to handle new symbols.</p>
+  <p>``Tameness'' imposes strict rules on how functional arguments are used.
+  We'll discuss it further below.</p>
+
+  <p>The fundamental question raised by @('apply$') is ``How can @('apply$')
+  know the correspondence between an ordinary ACL2 object, like a symbol or a
+  list, and the ACL2 function the user means to apply?''  For example, if the
+  user defines the function @('my-append'), how can @('apply$') know that
+  @('(apply$ 'MY-APPEND (list a b))') should expand to @('(my-append a b)')?</p>
+
+  <p>The ACL2 primitives can be built in.  The logical definition of @('apply$')
+  includes a big case split that recognizes about 800 ACL2 primitives, so that
+  for example:</p>
+
+  @({(apply$ 'car (list a)) = (car a)})
+
+  <p>and</p>
+
+  @({(apply$ 'assoc-equal (list a b)) = (assoc-equal a b).})
+
+  <p>But user-defined functions are problematic because once @('apply$') has been
+  defined in the ACL2 sources it cannot be extended to handle new symbols.</p>
 
   <p>Intuitively, if you have defined the @('n')-ary function @('foo') then you
   would expect @('(apply$ 'foo (list a1...an))') to be @('(foo a1...an)').  One
   way to arrange that might be to leave @('apply$') undefined on the symbol
-  @('foo') but to assume, as by an axiom or hypothesis,</p>
+  @('foo') but to assume, as by a new axiom or hypothesis,</p>
 
   @({
   forall a1...an : (apply$ 'foo (list a1...an)) = (foo a1...an).
@@ -54978,11 +55008,11 @@ tables in the current Hons Space."
 
   <p>It will turn out that using new axioms for this purpose is a bad idea.
   Hiding the link between @('apply$') and new symbols in axioms raises a
-  problem with ACL2's notion of @(tsee LOCAL).  We illustrate this problem
-  later in this doc topic.  But for that reason, the suppositions extending
-  @('apply$') will take the form of hypotheses to be added to conjectures in
-  which the behavior of @('apply$') on new symbols is important.  These
-  hypotheses are called ``@(tsee warrant)s.''</p>
+  problem with ACL2's notion of @(tsee LOCAL).  This is called ``the @('LOCAL')
+  problem'' and we illustrate it later in this doc topic.  But for that reason,
+  the suppositions extending @('apply$') will take the form of hypotheses to be
+  added to conjectures in which the behavior of @('apply$') on new symbols is
+  important.  These hypotheses are called ``@(tsee warrant)s.''</p>
 
   <p>Warrant (Merriam-Webster): (noun) a commission or document giving
   authority to do something....</p>
@@ -55049,35 +55079,35 @@ tables in the current Hons Space."
   over a list and collects the results.</p>
 
   @({
-  (defun collect$ (fn lst)
+  (defun my-collect$ (fn lst)
     (if (endp lst)
         nil
         (cons (apply$ fn (list (car lst)))
-              (collect$ fn (cdr lst)))))
+              (my-collect$ fn (cdr lst)))))
   })
 
-  <p>Our definition of tameness considers <tt>(collect$ 'SQ lst)</tt> to be a
-  tame expression, even though @('collect$') calls @('apply$').  The reason we
-  can allow this is that in this particular call of @('collect$') the function
-  to be applied is itself tame.  But if <tt>(collect$ 'SQ lst)</tt> is a tame
-  expression, then <tt>'(LAMBDA (LST) (COLLECT$ 'SQ LST))</tt> is a tame
+  <p>Our definition of tameness considers <tt>(my-collect$ 'SQ lst)</tt> to be a
+  tame expression, even though @('my-collect$') calls @('apply$').  The reason we
+  can allow this is that in this particular call of @('my-collect$') the function
+  to be applied is itself tame.  But if <tt>(my-collect$ 'SQ lst)</tt> is a tame
+  expression, then <tt>'(LAMBDA (LST) (MY-COLLECT$ 'SQ LST))</tt> is a tame
   function and thus</p>
 
-  @({(collect$ '(LAMBDA (LST) (COLLECT$ 'SQ LST)) z)})
+  @({(my-collect$ '(LAMBDA (LST) (MY-COLLECT$ 'SQ LST)) z)})
 
   <p>is a tame expression.  So, for example, at the top-level of ACL2 one
   can do this:</p>
 
   @({
-  ACL2 !>(collect$ '(LAMBDA (LST) (COLLECT$ 'SQ LST))
+  ACL2 !>(my-collect$ '(LAMBDA (LST) (MY-COLLECT$ 'SQ LST))
                    '((1 2 3) (4 5 6) (7 8 9)))
   ((1 4 9) (16 25 36) (49 64 81))
   })
 
-  <p>Of course, this presumes we have defined @('sq') and @('collect$') and have
+  <p>Of course, this presumes we have defined @('sq') and @('my-collect$') and have
   analyzed them to make sure they have the appropriate tameness properties.
-  (Note that @('collect$') is not tame, but the way it uses its ``functional''
-  argument is crucial to the tameness of <tt>(collect$ 'SQ lst)</tt>.)  To use
+  (Note that @('my-collect$') is not tame, but the way it uses its ``functional''
+  argument is crucial to the tameness of <tt>(my-collect$ 'SQ lst)</tt>.)  To use
   @('apply$') to full advantage we need to have analyzed every relevant
   function definition so we know which arguments are treated like functions and
   whether they are used in accordance with our restrictions.  So if you're
@@ -55108,16 +55138,19 @@ tables in the current Hons Space."
   useful lemmas about @('apply$') as it is axiomatized and implemented today.
   It also includes many example theorems.</p>
 
-  <p>To get started, define two ordinary ACL2 functions, one that squares its
-  argument and the other that reverses its argument.</p>
+  <h3>Exercises and Lessons</h3>
+
+  <p>To get started, fire up your ACL2 and define two ordinary ACL2 functions,
+  one that squares its argument and the other that reverses its argument.  We
+  show the ACL2 prompt below in front of each form we expect you to execute.</p>
 
   @({
-  (defun sq (x) (* x x))
+  ACL2 !>(defun sq (x) (* x x))
 
-  (defun rev (x)
-    (if (endp x)
-        nil
-        (append (rev (cdr x)) (list (car x)))))
+  ACL2 !>(defun rev (x)
+           (if (endp x)
+               nil
+               (append (rev (cdr x)) (list (car x)))))
   })
 
   <p><b>Lesson 0:</b> Learn about @('apply$') by reading this tutorial
@@ -55134,7 +55167,7 @@ tables in the current Hons Space."
   @('apply$') but to defining functions that use @('apply$').</p>
 
   @({
-  (include-book \"projects/apply/top\" :dir :system)
+  ACL2 !>(include-book \"projects/apply/top\" :dir :system)
   })
 
   <p><b>Lesson 2:</b> To allow @('apply$') to ``work'' on a function symbol the
@@ -55147,9 +55180,9 @@ tables in the current Hons Space."
   and @('rev') do:</p>
 
   @({
-  (defwarrant sq)
+  ACL2 !>(defwarrant sq)
 
-  (defwarrant rev)
+  ACL2 !>(defwarrant rev)
   })
 
   <p>@(tsee Defwarrant) checks that its argument, <i>fn</i>, is a defined
@@ -55188,7 +55221,7 @@ tables in the current Hons Space."
   <p><b>Lesson 5:</b> You can define functions that take warranted
   ``functions'' as arguments and @('apply$') them.  Here is a function that
   applies its first argument to every element of its second argument and
-  collects the results.  We sometimes call functions like @('collect$')
+  collects the results.  We sometimes call functions like @('my-collect$')
   ``mapping functions'' because they map another function over some range.  We
   would call them ``functionals'' except that suggests ACL2 is higher-order and
   it is not!  So we most often call them @(see scion)s of @('apply$').  In
@@ -55197,11 +55230,11 @@ tables in the current Hons Space."
   power and restrictions.</p>
 
   @({
-  (defun$ collect$ (fn lst)
-    (if (endp lst)
-        nil
-        (cons (apply$ fn (list (car lst)))
-              (collect$ fn (cdr lst)))))
+  ACL2 !>(defun$ my-collect$ (fn lst)
+           (if (endp lst)
+               nil
+               (cons (apply$ fn (list (car lst)))
+                     (my-collect$ fn (cdr lst)))))
   })
 
   <p>In this definition, the first argument has ilk @(':FN') because it is used
@@ -55209,14 +55242,18 @@ tables in the current Hons Space."
   and is untouched otherwise.  The second argument has ilk @('NIL') and we say
   it's ``ordinary.''  It is <i>never</i> used as a function.</p>
 
-  <p>Note: We define @('collect$') with @('defun$') simply to illustrate
-  @('defun$').  Unless we mean to pass @('collect$') to @('apply$') or to some
-  scion in the future, there is no reason to have a warrant for @('collect$').
-  Had we defined @('collect$') with the ordinary @('defun') and realized later
-  that we want to pass @(''COLLECT$') into a slot of ilk @(':FN'), we could get
-  a warrant for @('collect$') by calling @('(defwarrant collect$)').</p>
+  <p>Note: We define @('my-collect$') with @('defun$') simply to illustrate
+  @('defun$').  Unless we mean to pass @('my-collect$') to @('apply$') or to some
+  scion in the future, there is no reason to have a warrant for @('my-collect$').
+  Had we defined @('my-collect$') with the ordinary @('defun') and realized later
+  that we want to pass @(''MY-COLLECT$') into a slot of ilk @(':FN'), we could get
+  a warrant for @('my-collect$') by calling @('(defwarrant my-collect$)').</p>
 
-  <p>Here's another useful scion:</p>
+  <p>Actually, the function @('collect$') is pre-defined in ACL2 and behaves
+  like @('my-collect$').  We chose to introduce @('my-collect$') simply to
+  illustrate that new scions can be introduced and used.  Here's another useful
+  pre-defined scion.  You won't need to define it in your ACL2 session to use
+  it.</p>
 
   @({
   (defun$ always$ (fn lst)
@@ -55229,44 +55266,67 @@ tables in the current Hons Space."
   <p>It checks that every element of @('lst') satisfies its @(':FN') argument
   @('fn').</p>
 
-  <p>By the way, both @('collect$') and @('always$') are pre-defined in ACL2
-  because they are part of the support for the @(tsee loop$) statement.</p>
+  <p>The reason that both @('collect$') and @('always$') are pre-defined is
+  that they are part of the support for the @(tsee loop$) statment.</p>
 
   <p><b>Lesson 6:</b> You can run scions on warranted function symbols:</p>
 
   @({
-  ACL2 !>(collect$ 'SQ '(1 -2 3 -4))
+  ACL2 !>(my-collect$ 'SQ '(1 -2 3 -4))
   (1 4 9 16)
 
-  ACL2 !>(collect$ 'rev '((1 2 3) (4 5 6) (7 8 9)))
+  ACL2 !>(my-collect$ 'rev '((1 2 3) (4 5 6) (7 8 9)))
   ((3 2 1) (6 5 4) (9 8 7))
   })
 
+  <p>You might wonder why you can run @('my-collect$') on @(''SQ') &mdash; which
+  evaluates @('apply$') on @(''SQ') &mdash; without explicitly acknowledging
+  the warrant that links @('(apply$ 'SQ (list a))') to @('(sq a)').  The reason
+  is that evaluation in ACL2's top-level read-eval-print loop assumes all
+  existing warrants are provided.  Warrants only become important when we start
+  dealing with proofs.</p>
+
   <p><b>Lesson 7:</b> You can run scions on tame quoted @('LAMBDA') objects.
-  These are just quoted list expressions that start with the symbol @('LAMBDA')
-  and look like lambda-expressions.  But quoted @('LAMBDA') objects have to
-  have fully translated bodies and meet other restrictions so @('apply$') can
-  interpret them.  You cannot use macros like @('+') or @('cond') and must you
-  quote all constants.  We urge you not to type quoted @('LAMBDA') objects by
-  hand!  Instead, we provide a macro, @(tsee lambda$), that allows you to write
-  in untranslated form as you would a lambda expression in ACL2.</p>
+  These @('LAMBDA') objects can even include calls of scions, provided
+  they are tame.</p>
+
+  @({
+  ACL2 !>(my-collect$
+               (lambda$ (x) (CONS 'SQUARES (MY-COLLECT$ 'SQ x)))
+               '((1 2 3) (4 5 6)))
+  ((SQUARES 1 4 9) (SQUARES 16 25 36))
+  })
+
+  <p>Note that the ``function symbols'' in the ``body'' of a quoted @('LAMBDA')
+  object may reach @('apply$') as the @('LAMBDA') object is applied.</p>
+
+  <p>@('LAMBDA') objects are just quoted list expressions that start with the
+  symbol @('LAMBDA') and look like lambda-expressions.  But quoted @('LAMBDA')
+  objects have to have fully translated bodies and meet other restrictions so
+  @('apply$') can interpret them.  You cannot use macros like @('+') or
+  @('cond') and must you quote all constants.  We urge you not to try to type
+  quoted @('LAMBDA') objects by hand!  Instead, we provide a macro, @(tsee
+  lambda$), that allows you to write lambda expressions in untranslated
+  form.</p>
 
   <p><b>Lesson 8:</b> There are three very similar looking but very different
   notions used in this documentation: lambda expressions, @('LAMBDA') objects,
   and @('lambda$') expressions.  Read carefully!  See @(tsee lambda) for some
-  definitions and disambiguation help.</p>
+  definitions and disambiguation help.  The @('LAMBDA') objects reaching
+  @('apply$') must be fully translated (and tame) to be handled correctly.  The
+  special macro @('lambda$') will translate for you.</p>
 
   @({
-  ; Don't type this:
-  ACL2 !>(collect$ '(LAMBDA (X)
-                            (IF (< X '0) (BINARY-* '10 X) (SQ X)))
-                   '(1 -2 3 -4))
+  ; Don't type quoted LAMBDA objects like this!
+  ACL2 !>(my-collect$ '(LAMBDA (x)
+                         (IF (< x '0) (BINARY-* '10 x) (SQ x)))
+                      '(1 -2 3 -4))
   (1 -20 9 -40)
 
   ; Type this instead!
-  ACL2 !>(collect$ (lambda$ (X)
-                            (if (< x 0) (* 10 x) (sq x)))
-                   '(1 -2 3 -4))
+  ACL2 !>(my-collect$ (lambda$ (x)
+                         (if (< x 0) (* 10 x) (sq x)))
+                      '(1 -2 3 -4))
   (1 -20 9 -40)
   })
 
@@ -55285,44 +55345,61 @@ tables in the current Hons Space."
   <p><b>Lesson 10:</b> You can prove and use theorems about scions.</p>
 
   @({
-  (defthm collect$-append
-    (equal (collect$ fn (append a b))
-           (append (collect$ fn a)
-                   (collect$ fn b))))
+  ACL2 !>(defthm my-collect$-append
+           (equal (my-collect$ fn (append a b))
+                  (append (my-collect$ fn a)
+                          (my-collect$ fn b))))
 
-  (thm (equal (collect$ (lambda$ (x) (sq (sq x)))
-                        (append c d))
-              (append (collect$ (lambda$ (x) (sq (sq x))) c)
-                      (collect$ (lambda$ (x) (sq (sq x))) d))))
+  ACL2 !>(thm (equal (my-collect$ (lambda$ (x) (* x x))
+                                  (append c d))
+                     (append (my-collect$ (lambda$ (x) (* x x)) c)
+                             (my-collect$ (lambda$ (x) (* x x)) d))))
   })
 
-  <p>Notice that the lemma @('collect$-append') talks about an arbitrary
+  <p>Notice that the lemma @('my-collect$-append') talks about an arbitrary
   @('fn').  The definition of @('apply$') is completely irrelevant to this
-  theorem!  Once @('collect$-append') has been proved can be instantiated with
-  anything for @('fn').  This is demonstrated when the @('thm') above is
-  proved: the proof is just to rewrite with @('collect$-append').</p>
+  theorem!  Once @('my-collect$-append') has been proved can be instantiated
+  with anything for @('fn').  This is demonstrated when the @('thm') above is
+  proved: the proof is just to rewrite with @('my-collect$-append').  Notice
+  that the only function being @('apply$')'d in the @('thm') above is the
+  primitive multiplication function, which is built into apply$.</p>
 
   <p><b>Lesson 11:</b> But when your theorems depend on the behavior of
   @('apply$') on particular user-defined functions, you will need to provide
   hypotheses stipulating the behavior of @('apply$') on those values.  Those
-  hypotheses are the warrants for the (non-primitive) function symbols
-  involved.  Here is an example: If @('lst') is a list of integers and we
-  square every element by mapping over it with @('sq') then the result is a
-  list of naturals &mdash; but this theorem depends on the fact that @('(apply$
-  'SQ (list x))') is @('(sq x)'), which is what the warrant for @('sq') tells
-  us.  Thus, the warrant for @('sq') is required as a hypothesis!</p>
+  hypotheses are the <i>warrants</i> for the (non-primitive) function symbols
+  involved.  Here is an example: Recall the function @('sq') defined and
+  warranted above.  We might wish to prove that if @('lst') is a list of
+  integers then @('(my-collect$ 'SQ lst)') is a list of natural numbers.  We
+  can use @('always$') to express the notions of ``list of integers'' and
+  ``list of naturals.''  We could try to state the conjecture this way:</p>
 
   @({
-  (defthm all-natp-collect$-sq
-    (implies (and (warrant sq)
-                  (always$ 'INTEGERP lst))
-             (always$ 'NATP (collect$ 'SQ lst))))
+  ACL2 !>(thm (implies (always$ 'INTEGERP lst)
+                       (always$ 'NATP (my-collect$ 'SQ lst)))).
   })
 
-  <p>Note that this theorem uses the scion @('always$') to express the ideas of
-  ``list of integers'' and ``list of naturals.''  Note also that we don't need
-  to provide warrants for @('integerp') or @('natp') because they are ACL2
-  primitives and thus built into the behavior of @('apply$').</p>
+  <p>But the attempt to prove that formula will fail because it depends on the
+  fact that the @('sq') of an integer is a natural <i>and on the assumption
+  that</i> @('(apply$ 'SQ (list x))') <i>is</i> @('(sq x)').  That assumption
+  is what the <i>warrant</i> for @('sq') tells us.  Thus, the warrant for
+  @('sq') is required as a hypothesis!  The following theorem can be
+  proved.</p>
+
+  @({
+  ACL2 !>(defthm all-natp-collect$-sq
+           (implies (and (warrant sq)
+                         (always$ 'INTEGERP lst))
+                    (always$ 'NATP (collect$ 'SQ lst))))
+  })
+
+  <p>The macro form @('(warrant f1 ... fk)') expands to the conjunction of some
+  special predicates that specify what @('apply$') does on each of the quoted
+  symbols @(''F1'), ..., @(''FK')</p>
+
+  <p>Note that we don't need to provide warrants for @('integerp') or @('natp')
+  because they are ACL2 primitives and thus built into the behavior of
+  @('apply$').</p>
 
   <p><b>Lesson 12:</b> Warrants solve the ``@('LOCAL') problem.''  Imagine the
   trouble we'd be in if the theorem above did not require a warrant on @('sq').
@@ -55346,13 +55423,13 @@ tables in the current Hons Space."
   appealing to the unwarranted theorem exported from the encapsulate.</p>
 
   <p>If we could prove the unwarranted theorem we could export it because it
-  does not mention or depend on the function @('sq'), it just mentions the
-  constant <tt>'SQ</tt>.  Fortunately, we cannot actually prove the unwarranted
-  version of the theorem because there is no <i>a priori</i> connection between
-  @('(apply$ 'SQ (list x))') and @('(sq x)').  And if we add the warrant for
-  @('sq') to the @('defthm') in the encapsulate we can prove the theorem but we
-  cannot export it because the warrant ancestrally depends on locally defined
-  function @('sq').</p>
+  does not mention or depend on the locally defined function @('sq'), it just
+  mentions the constant symbol <tt>'SQ</tt>.  Fortunately, we cannot actually
+  prove the unwarranted version of the theorem because there is no <i>a
+  priori</i> connection between @('(apply$ 'SQ (list x))') and @('(sq x)').
+  And if we add the warrant for @('sq') to the @('defthm') in the encapsulate
+  we can prove the theorem but then we cannot export it because the warrant
+  ancestrally depends on locally defined function @('sq').</p>
 
   <p><b>Lesson 13:</b> While we may have given the impression that we've
   provided a convenient fragment of second-order functionality in ACL2 its
@@ -55387,12 +55464,12 @@ tables in the current Hons Space."
   flexibility: @('foldr').</p>
 
   @({
-  (defun$ foldr (lst fn init)
-    (if (endp lst)
-        init
-        (apply$ fn
-                (list (car lst)
-                      (foldr (cdr lst) fn init)))))
+  ACL2 !>(defun$ foldr (lst fn init)
+           (if (endp lst)
+               init
+               (apply$ fn
+                       (list (car lst)
+                             (foldr (cdr lst) fn init)))))
   })
 
   <p>Note that @('foldr') maps over the list in its first argument, applying
@@ -55400,13 +55477,13 @@ tables in the current Hons Space."
   result of recursively calling itself on the rest of the list.  It returns its
   third argument when the list is empty.</p>
 
-  <p>When its functional argument is @('cons') @('foldr') is just the
+  <p>When its functional argument is @('CONS') @('foldr') is just the
   concatenation of its other two arguments:</p>
 
   @({
-  (defthm foldr-cons
-    (equal (foldr x 'cons y)
-           (append x y)))
+  ACL2 !>(defthm foldr-cons
+           (equal (foldr x 'CONS y)
+                  (append x y)))
   })
 
   <p>We do not need a warrant for @('cons') because it is built into
@@ -55419,20 +55496,137 @@ tables in the current Hons Space."
   reverse its first argument:</p>
 
   @({
-  (defthm foldr-can-be-rev
-    (implies (warrant foldr)
-             (equal (foldr x
-                           (lambda$ (x y)
-                              (foldr y 'cons (cons x nil)))
-                           nil)
-                    (rev x))))
+  ACL2 !>(defthm foldr-can-be-rev
+           (implies (warrant foldr)
+                    (equal (foldr x
+                                  (lambda$ (x y)
+                                     (FOLDR y 'CONS (CONS x nil)))
+                                  nil)
+                           (rev x))))
   })
 
-  <p>Note that the @('lambda$') expression calls @('foldr').  Because of this,
+  <p>Note that the @('lambda$') expression calls @('FOLDR').  Because of this,
   we must provide the warrant for @('foldr') since that inner @('foldr') will
-  be applied by the outer @('foldr').  This illustrates an important point:
-  scions can apply other scions, including themselves, as long as the
-  applications are tame.</p>")
+  be applied by the outer @('foldr').  This illustrates an important point made
+  in Lesson 7 above: scions can apply other scions, including themselves, as
+  long as the applications are tame.</p>
+
+  <h3>Some Practice Problems</h3>
+
+  <p>There is no better way to learn than to practice.  So here are a few
+  challenge problems.  The answers can be found in
+  @('books/projects/apply/answers-to-doc-intro-to-apply.lisp').</p>
+
+  <p><b>Problem 1</b>: Assume @('fn') is a binary relation.  Define
+  @('(insert$ e lst fn)') to insert @('e') into the list @('lst') in front of
+  the first element, @('d'), in @('lst') such that @('(fn e d)') is true.</p>
+
+  <p><b>Problem 2</b>: Define @('(sort$ lst fn)') to be an insertion sort
+  algorithm for the binary relation @('fn'), e.g., to successively insert each
+  element into the recursively sorted remaining elements.  (Note: There is no
+  assurance that @('sort$') will actually produce a list ordered by @('fn')
+  because we don't know that @('fn') is an ordering relation.)</p>
+
+  <p><b>Problem 3</b>: Study the four examples below, which illustrate perhaps
+  surprising properties of our ``insertion sort'' function.  (If your definitions
+  don't have these properties you should back up and redefine your functions as
+  we vaguely described above!)</p>
+
+  @({
+  (defthm examples-of-sort$
+    (and (equal (sort$ '(1 3 -7 0 23) '<)
+                '(-7 0 1 3 23))
+         (equal (sort$ '(1 3 -7 0 23)
+                       (lambda$ (x y) t))
+                '(1 3 -7 0 23))
+         (equal (sort$ '(1 3 -7 0 23)
+                       (lambda$ (x y) nil))
+                '(23 0 -7 3 1))
+         (equal (sort$ '(1 a 2 x b 3 4 y c)
+                       (lambda$ (x y) (symbolp x)))
+                '(a x b y c 4 3 2 1)))
+    :rule-classes nil)
+  })
+
+  <p><b>Problem 4</b>: Prove the following theorem suggested especially by the
+  last example above.  To state this theorem we first introduce the familiar
+  reverse function, @('rev').</p>
+
+  @({
+  (defun rev (x)
+    (if (endp x)
+        nil
+        (append (rev (cdr x))
+                (list (car x)))))
+  })
+
+  <p>and we use the pre-defined function @('(when$ fn lst)') which computes the
+  elements of @('lst') satisfying the unary-function @('fn'), in the order in which they
+  occur, e.g., @('(when$ '(1 a 2 b) 'symbolp)') is @(''(a b)').</p>
+
+  <p>Prove</p>
+
+  @({
+  (defthm sort$-lambda-symbolp
+    (implies (true-listp lst)
+             (equal (sort$ lst (lambda$ (x y) (symbolp x)))
+                    (append (when$ 'symbolp lst)
+                            (rev
+                              (when$
+                                (lambda$ (x y) (not (symbolp x)))
+                                lst))))))
+  })
+
+  <p>Lemmas will be needed.</p>
+
+  <p><b>Problem 5</b>: Define @('(orderedp$ lst fn)') to check whether @('fn')
+  holds between each adjacent pair of elements in @('lst').  Test your function
+  with</p>
+
+  @({
+  (defthm examples-of-orderedp$
+    (and (orderedp$ '(1 3 5 7) '<)
+         (not (orderedp '(1 3 3 5 7) '<)))
+    :rule-classes nil)
+  })
+
+  <p><b>Problem 6</b>: You might hope that @('(orderedp$ (sort$ lst fn) fn)')
+  is a theorem.  But it is not as is easily shown by the example
+  @('(orderedp$ (sort$ '(3 1 5 3 7) '<) '<)').  If you try to prove the
+  conjecture and inspect the output you'll see that the proof fails because we
+  do not know that @('(or (fn x y) (fn y x))') is true.  That is, we don't know
+  that @('fn') is <i>Strongly Connected</i>.  How could we, since the
+  conjecture is claimed for all @('fn')?</p>
+
+  <p>Unfortunately, it is awkward to state that @('fn') is a strongly connected
+  relation in ACL2's first-order quantifier-free language.  This is a good
+  example of the limitations of ACL2's support for second-order functions!</p>
+
+  <p>But we can prove versions of the conjecture for concrete strongly connected
+  @('fn')s.  The relation named @('before-dayp'), below, is strongly connected, as
+  demonstrated by the events following its definition.</p>
+
+  <p>Carry out these events.</p>
+
+  @({
+  (defun beforep (x y lst)
+    (if (and (member x lst)
+             (member y lst))
+        (member y (member x lst))
+        t))
+
+  (defun before-dayp (x y)
+    (beforep x y '(mon tue wed thu fri sat sun)))
+
+  (defthm before-dayp-strongly-connected
+    (implies (not (before-dayp x y))
+             (before-dayp y x)))
+
+  (in-theory (disable before-dayp))
+  })
+
+  <p>Now, prove the version of @('(orderedp$ (sort$ lst fn) fn)') for the
+ instance in which @('fn') is @(''before-dayp').</p>")
 
 (defxdoc introduction-to-hints
   :parents (introduction-to-the-theorem-prover)
