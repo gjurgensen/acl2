@@ -108267,7 +108267,7 @@ More Elaborate Models of the JVM: From M1 to M6
       constituting about 500 pages of data.  The model included 21
       out of 41 native APIs that appeared in Sun's CLDC API library.
       The M6 description itself is about 160 pages of ACL2.  See
-      [bib::liu06].  [31;1mWarning:[0m M6 is not yet in the regression!
+      [bib::liu06].
 
 
 Quick Index to Related Topics
@@ -169197,11 +169197,9 @@ Subtopics
   [31;1mRelevance:[0m most complete ACL2 model of the JVM
 
 ---------
-  [3mNote: The source files for this effort have not been part of the ACL2
-  regression and cannot currently be recertified because of changes
-  to ACL2 since 2006.  When that oversight is addressed, they will be
-  posted.  In the meantime, this document speaks of the model in the
-  past tense![0m
+  The source files for this effort have been updated in October, 2024
+  (because of changes to ACL2 since 2006) and now reside in the
+  [community-books], in directory [47mbooks/models/jvm/m6/[0m.
 
   This dissertation, available at the link above, describes the ``M6''
   model of the JVM and some important proofs about it.  It was the
@@ -169219,11 +169217,11 @@ Subtopics
 
     * synchronization via monitors.
 
-  The M6 state included an ``external class table'' where classes
+  The M6 state includes an ``external class table'' where classes
   reside until they are loaded.  The entire Sun CLDC API library (672
-  methods in 87 classes) was translated into the external
-  representation and was available for loading, constituting about
-  500 pages of data.  The model included 21 out of 41 native APIs
+  methods in 87 classes) are translated into the external
+  representation and are available for loading, constituting about
+  500 pages of data.  The model includes 21 out of 41 native APIs
   that appeared in Sun's CLDC API library.  The M6 description itself
   is about 160 pages of ACL2.
 
@@ -169239,7 +169237,7 @@ Subtopics
   [3mNote from J Moore, dissertation supervisor: The [47m[skip-proofs][0m[3m tag on
   a ``theorem'' means the conjecture is assumed rather than proved.
   So having even one [47mskip-proofs[0m[3m makes it impossible to fully trust
-  the results.  However, the skipped conjectures in this work were
+  the results.  However, the skipped conjectures in this work are
   relatively low-level results very similar to other theorems already
   proved.  Liu and I agreed that these conjectures were very probably
   provable and we were more interested in the higher-level
