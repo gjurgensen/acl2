@@ -14898,7 +14898,7 @@ with any questions about building the community books.</p>")
  filename.  Remark: Users may ignore that file, which is automatically deleted
  unless @(see state) global variable @(''save-expansion-file') has been set,
  presumably by a system developer, to a non-@('nil') value; see @(see
- book-compiled-file) for more information about hit issue, including the role
+ book-compiled-file) for more information about this issue, including the role
  of environment variable @('ACL2_SAVE_EXPANSION').</p>
 
  <p>After execution of a @('certify-book') form, the value of @(tsee
@@ -17636,8 +17636,7 @@ with any questions about building the community books.</p>")
  provided, the processing of the clause starts over with simplification.</p>
 
  <p>As for @('CTX') and @(tsee STATE), they are provided so that you can pass
- them to the @(tsee er) macro to print error messages.  We recommend not
- writing computed hints that otherwise change @(tsee STATE)!</p>
+ them to the @(tsee er) macro to print error messages.</p>
 
  <p>The remaining variables, @('HIST') and @('PSPV') are not documented yet.
  Only users familiar with the internals of ACL2 are likely to need them or
