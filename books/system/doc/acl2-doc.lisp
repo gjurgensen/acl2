@@ -14898,7 +14898,7 @@ with any questions about building the community books.</p>")
  filename.  Remark: Users may ignore that file, which is automatically deleted
  unless @(see state) global variable @(''save-expansion-file') has been set,
  presumably by a system developer, to a non-@('nil') value; see @(see
- book-compiled-file) for more information about hit issue, including the role
+ book-compiled-file) for more information about this issue, including the role
  of environment variable @('ACL2_SAVE_EXPANSION').</p>
 
  <p>After execution of a @('certify-book') form, the value of @(tsee
@@ -17636,8 +17636,7 @@ with any questions about building the community books.</p>")
  provided, the processing of the clause starts over with simplification.</p>
 
  <p>As for @('CTX') and @(tsee STATE), they are provided so that you can pass
- them to the @(tsee er) macro to print error messages.  We recommend not
- writing computed hints that otherwise change @(tsee STATE)!</p>
+ them to the @(tsee er) macro to print error messages.</p>
 
  <p>The remaining variables, @('HIST') and @('PSPV') are not documented yet.
  Only users familiar with the internals of ACL2 are likely to need them or
@@ -108773,12 +108772,6 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
 ; TO DO:
 
-; M6 is mentioned but that directory is not yet part of the regression suite.
-; Add it and remove the Warning in :DOC
-; operational-semantics-1__simple-example. See also bib::liu06 which will need
-; a little rewriting; delete the italicized note at the top and correct the
-; tense from past to present!
-
 ; :DOC operational-semantics-1__simple-example notes that the comments in
 ; books/models/jvm/m1/defsys.lisp are out of date.  Fix those comments and
 ; remove the Warning.
@@ -110534,8 +110527,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   the external representation and is available for loading, constituting about
   500 pages of data.  The model included 21 out of 41 native APIs that appeared
   in Sun's CLDC API library.  The M6 description itself is about 160 pages of
-  ACL2.  See @(see bib::liu06).  <b>Warning:</b> M6 is not yet in the
-  regression!</li>
+  ACL2.  See @(see bib::liu06).</li>
 
   </ul>
 
@@ -169965,10 +169957,9 @@ expand function call at the current subterm, without simplifying"
 
   :long "<br></br>&mdash;&mdash;&mdash;<br></br>
 
-  <p><i>Note: The source files for this effort have not been part of the ACL2
-  regression and cannot currently be recertified because of changes to ACL2
-  since 2006.  When that oversight is addressed, they will be posted.  In the
-  meantime, this document speaks of the model in the past tense!</i></p>
+  <p>The source files for this effort have been updated in October,
+  2024 (because of changes to ACL2 since 2006) and now reside in the @(see
+  community-books), in directory @('books/models/jvm/m6/').</p>
 
   <p>This dissertation, available at the link above, describes the
   &ldquo;M6&rdquo; model of the JVM and some important proofs about it.  It was
@@ -169984,11 +169975,11 @@ expand function call at the current subterm, without simplifying"
   <li>synchronization via monitors.</li>
   </ul>
 
-  <p>The M6 state included an &ldquo;external class table&rdquo; where classes
+  <p>The M6 state includes an &ldquo;external class table&rdquo; where classes
   reside until they are loaded.  The entire Sun CLDC API library (672 methods
-  in 87 classes) was translated into the external representation and was
+  in 87 classes) are translated into the external representation and are
   available for loading, constituting about 500 pages of data.  The model
-  included 21 out of 41 native APIs that appeared in Sun's CLDC API library.
+  includes 21 out of 41 native APIs that appeared in Sun's CLDC API library.
   The M6 description itself is about 160 pages of ACL2.</p>
 
   <p>It was created with support from Sun Microsystems.</p>
@@ -170003,7 +169994,7 @@ expand function call at the current subterm, without simplifying"
   <p><i>Note from J Moore, dissertation supervisor: The @(tsee skip-proofs) tag
   on a &ldquo;theorem&rdquo; means the conjecture is assumed rather than
   proved.  So having even one @('skip-proofs') makes it impossible to fully
-  trust the results.  However, the skipped conjectures in this work were
+  trust the results.  However, the skipped conjectures in this work are
   relatively low-level results very similar to other theorems already proved.
   Liu and I agreed that these conjectures were very probably provable and we
   were more interested in the higher-level conclusions drawn from those
