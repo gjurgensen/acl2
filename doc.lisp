@@ -104240,7 +104240,7 @@ Changes to Existing Features
 
   The fifth formal of [47m[do$][0m now represents the values returned rather
   than a default value.  This change supports a bug fix; see the item
-  below regarding ``About a bug in DO$ in ACL2 Version_8.5''.
+  below regarding ``About a bug in DO$ in ACL2 Version 8.5''.
 
   The sixth and seventh arguments of [47m[do$][0m have been combined into a
   record that also contains a list of the names of all the [47m[stobj][0ms
@@ -104331,6 +104331,9 @@ Changes to Existing Features
   keyword argument [47m:NON-EXECUTABLE T[0m and to use the [47m:CONGRUENT-TO[0m
   keyword argument.
 
+  [47mLambda[0m objects in positions of [ilk] [47m:FN[0m are now subjected to a size
+  limitation.  See [47m[explain-giant-lambda-object][0m.
+
 
 New Features
 
@@ -104416,9 +104419,6 @@ New Features
   The Common Lisp utility, [47m[macrolet][0m, is now supported in ACL2.
   Thanks to Alessandro Coglio for discussion leading us to make this
   addition.  See [macrolet].
-
-  [47mLambda[0m objects in positions of [ilk] [47m:FN[0m are now subjected to a size
-  limitation.  See [47m[explain-giant-lambda-object][0m.
 
   The utilities [47m[with-output][0m and [47m[with-output!][0m have been enhanced in
   the following two ways; see [with-output] for details.
@@ -104683,8 +104683,8 @@ Bug Fixes
 
   Fixed a soundness bug based on rules of class [47m:[0m[47m[meta][0m or
   [47m:[0m[47m[clause-processor][0m that would be exported from an [47m[encapsulate][0m
-  event with a non-[47mnil[0m [signature] list.  A proof of [47mnil[0m in
-  Version_8.5 may be found in the [community-books] file,
+  event with a non-[47mnil[0m [signature] list.  A proof of [47mnil[0m in Version
+  8.5 may be found in the [community-books] file,
   [47mbooks/system/tests/transparent-functions-input.lsp[0m; search for this
   paragraph there.
 
@@ -104893,10 +104893,10 @@ Bug Fixes
   now behave as described in the documentation for [brr-commands].
 
   When a certified book is included, the logical [world] will no longer
-  be marked as having seen a [47m[skip-proofs][0m call, even when the value
-  of [47m[ld][0m special [47m[ld-skip-proofsp][0m is non-[47mnil[0m at that time.  Thus,
-  that situation no longer disqualifies such a world from supplying
-  the [portcullis] commands to a book to be certified without keyword
+  be marked as having seen a [47m[skip-proofs][0m call due to [47m[ld][0m special
+  [47m[ld-skip-proofsp][0m having a non-[47mnil[0m value at that time.  Thus, that
+  situation no longer disqualifies such a world from supplying the
+  [portcullis] commands to a book to be certified without keyword
   argument [47m:skip-proofs-okp t[0m of [47m[certify-book][0m.  Thanks to Sol
   Swords for pointing out this bug.
 
@@ -105013,7 +105013,7 @@ Bug Fixes
   violated when a loop terminates prematurely because the measure
   fails to decrease.  The bug, which has been fixed, is explained in
   detail in a comment in ACL2 source file [47mapply.lisp[0m, entitled
-  ``About a bug in DO$ in ACL2 Version_8.5''.
+  ``About a bug in DO$ in ACL2 Version 8.5''.
 
   Fixed a bug in [47m[fmt][0m and related functions, where a right square
   bracket immediately following a [47m~&[0m or [47m~v[0m directive failed to be
@@ -105178,7 +105178,7 @@ EMACS Support
 
   The initialization file for recent Emacs versions,
   [47mbooks/emacs/emacs-acl2.el[0m, now correctly loads related files ---
-  notable [47macl2-doc.el[0m --- from that same directory, rather than from
+  notably [47macl2-doc.el[0m --- from that same directory, rather than from
   the [47memacs/[0m directory that is directly under the top level of the
   ACL2 distribution.
 
