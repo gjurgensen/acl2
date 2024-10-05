@@ -17956,7 +17956,7 @@ Subtopics
   file, which is automatically deleted unless [state] global variable
   [47m'save-expansion-file[0m has been set, presumably by a system
   developer, to a non-[47mnil[0m value; see [book-compiled-file] for more
-  information about hit issue, including the role of environment
+  information about this issue, including the role of environment
   variable [47mACL2_SAVE_EXPANSION[0m.
 
   After execution of a [47mcertify-book[0m form, the value of
@@ -20912,8 +20912,7 @@ Subtopics
   the processing of the clause starts over with simplification.
 
   As for [47mCTX[0m and [47m[state][0m, they are provided so that you can pass them
-  to the [47m[er][0m macro to print error messages.  We recommend not
-  writing computed hints that otherwise change [47m[state][0m!
+  to the [47m[er][0m macro to print error messages.
 
   The remaining variables, [47mHIST[0m and [47mPSPV[0m are not documented yet.  Only
   users familiar with the internals of ACL2 are likely to need them
@@ -58544,19 +58543,47 @@ Subtopics
   (APPLY$)
   "Background knowledge on how to use [47m[apply$][0m, [47m[defwarrant][0m, etc.
 
-  The paper {``Limited Second-Order Functionality in a First-Order
-  Setting'' |
+
+Background and Organization
+
+  [47mApply$[0m is the ACL2 version of LISP's [47mapply[0m function.  It takes a
+  ``function'' and a list of argument values, applies the function to
+  the arguments, and returns the result.  For example, [47m(apply$ 'expt
+  (list 2 8))[0m returns 256.
+
+  A good introduction to the basic ideas and challenges of adding
+  [47mapply$[0m to ACL2 is the paper {``Limited Second-Order Functionality
+  in a First-Order Setting'' |
   http://www.cs.utexas.edu/users/kaufmann/papers/apply/index.html} by
-  Matt Kaufmann and J Strother Moore best explains the basic logical
-  and practical ideas behind [47mapply$[0m.  We refer to the paper simply as
-  ``the paper.'' Supplemental material on the logical foundations of
-  [47mapply$[0m can be found in the [community-books] directory
-  [47mbooks/projects/apply-model/[0m.  Also see [47m[apply$][0m for detailed
-  documentation on [47mapply$[0m that complements the introduction below, to
-  be read carefully when you're ready to use [47mapply$[0m in your own
-  projects.  We suggest that you not follow all the links in
-  introductory discussion and instead read it linearly as you might a
-  paper.
+  Matt Kaufmann and J Strother Moore, [3mJournal of Automated Reasoning[0m,
+  Springer, [31;1m64[0m, pp 391-422, 2018.  We refer to the paper simply as
+  ``the paper.'' Some aspects of the paper are no longer accurate
+  because the implementation of [47mapply$[0m has matured since 2018.  But
+  as a basic introduction, rather than a reference guide or user's
+  manual, the paper is a good place to start.  It provides
+  motivations and challenges, succinct and precise definitions of
+  relevant concepts, lots of examples, a model and meta-level proof
+  that the extended theory is consistent, and a discussion of the
+  limitations and of related work.  The model described in the paper
+  is illustrated concretely in the certified books under
+  [47mbooks/projects/apply-model/[0m.  See the [47mREADME[0m file there.
+
+  The current documentation topic takes a slightly more informal
+  approach but covers much of the same ground.  In particular, after
+  some preliminary remarks we coach you through a few simple simple
+  exercises involving [47mapply$[0m and related concepts.  During these
+  exercises we draw your attention to some basic lessons to keep in
+  mind.  At the end of this topic we list some simple challenge
+  problems.
+
+  This topic links to reference-level documentation for [47m[apply$][0m and
+  those other concepts.  But if you are just getting started with
+  [47mapply$[0m we recommend that you work your way through this topic,
+  including doing the examples described below, without following all
+  the links.
+
+
+Challenges and Basic Solutions
 
   The unreachable goal of this work is to allow the ACL2 user to pass
   `functions' as objects and to apply them.  That goal is unreachable
@@ -58567,10 +58594,15 @@ Subtopics
   functions with certain tameness properties to be passed around and
   used as functions.
 
+  By the way, in this documentation topic we tend to display certain
+  symbols sometimes in uppercase and sometimes in lowercase.  They
+  denote the same symbol.  But we use uppercase when we're using the
+  symbol as a quoted constant to be passed to [47mapply$[0m and we use
+  lowercase when we're using the symbol as a function symbol in a
+  term.
+
   ``Tameness'' imposes strict rules on how functional arguments are
-  used.  We'll discuss it further below but tame functions are
-  recognized by the [47m:logic[0m mode function [47mtamep-functionp[0m and the
-  paper gives explanatory details.
+  used.  We'll discuss it further below.
 
   The fundamental question raised by [47mapply$[0m is ``How can [47mapply$[0m know
   the correspondence between an ordinary ACL2 object, like a symbol
@@ -58596,17 +58628,18 @@ Subtopics
   Intuitively, if you have defined the [47mn[0m-ary function [47mfoo[0m then you
   would expect [47m(apply$ 'foo (list a1...an))[0m to be [47m(foo a1...an)[0m.  One
   way to arrange that might be to leave [47mapply$[0m undefined on the
-  symbol [47mfoo[0m but to assume, as by an axiom or hypothesis,
+  symbol [47mfoo[0m but to assume, as by a new axiom or hypothesis,
 
     forall a1...an : (apply$ 'foo (list a1...an)) = (foo a1...an).
 
   It will turn out that using new axioms for this purpose is a bad
   idea.  Hiding the link between [47mapply$[0m and new symbols in axioms
-  raises a problem with ACL2's notion of [47m[local][0m.  We illustrate this
-  problem later in this doc topic.  But for that reason, the
-  suppositions extending [47mapply$[0m will take the form of hypotheses to
-  be added to conjectures in which the behavior of [47mapply$[0m on new
-  symbols is important.  These hypotheses are called ``[47m[warrant][0ms.''
+  raises a problem with ACL2's notion of [47m[local][0m.  This is called
+  ``the [47mLOCAL[0m problem'' and we illustrate it later in this doc topic.
+  But for that reason, the suppositions extending [47mapply$[0m will take
+  the form of hypotheses to be added to conjectures in which the
+  behavior of [47mapply$[0m on new symbols is important.  These hypotheses
+  are called ``[47m[warrant][0ms.''
 
   Warrant (Merriam-Webster): (noun) a commission or document giving
   authority to do something....
@@ -58666,34 +58699,34 @@ Subtopics
   For example, consider the following function, which maps a given
   function over a list and collects the results.
 
-    (defun collect$ (fn lst)
+    (defun my-collect$ (fn lst)
       (if (endp lst)
           nil
           (cons (apply$ fn (list (car lst)))
-                (collect$ fn (cdr lst)))))
+                (my-collect$ fn (cdr lst)))))
 
-  Our definition of tameness considers [47m(collect$ 'SQ lst)[0m to be a tame
-  expression, even though [47mcollect$[0m calls [47mapply$[0m.  The reason we can
-  allow this is that in this particular call of [47mcollect$[0m the function
-  to be applied is itself tame.  But if [47m(collect$ 'SQ lst)[0m is a tame
-  expression, then [47m'(LAMBDA (LST) (COLLECT$ 'SQ LST))[0m is a tame
-  function and thus
+  Our definition of tameness considers [47m(my-collect$ 'SQ lst)[0m to be a
+  tame expression, even though [47mmy-collect$[0m calls [47mapply$[0m.  The reason
+  we can allow this is that in this particular call of [47mmy-collect$[0m
+  the function to be applied is itself tame.  But if [47m(my-collect$ 'SQ
+  lst)[0m is a tame expression, then [47m'(LAMBDA (LST) (MY-COLLECT$ 'SQ
+  LST))[0m is a tame function and thus
 
-    (collect$ '(LAMBDA (LST) (COLLECT$ 'SQ LST)) z)
+    (my-collect$ '(LAMBDA (LST) (MY-COLLECT$ 'SQ LST)) z)
 
   is a tame expression.  So, for example, at the top-level of ACL2 one
   can do this:
 
-    ACL2 !>(collect$ '(LAMBDA (LST) (COLLECT$ 'SQ LST))
+    ACL2 !>(my-collect$ '(LAMBDA (LST) (MY-COLLECT$ 'SQ LST))
                      '((1 2 3) (4 5 6) (7 8 9)))
     ((1 4 9) (16 25 36) (49 64 81))
 
-  Of course, this presumes we have defined [47msq[0m and [47mcollect$[0m and have
+  Of course, this presumes we have defined [47msq[0m and [47mmy-collect$[0m and have
   analyzed them to make sure they have the appropriate tameness
-  properties.  (Note that [47mcollect$[0m is not tame, but the way it uses
-  its ``functional'' argument is crucial to the tameness of [47m(collect$
-  'SQ lst)[0m.)  To use [47mapply$[0m to full advantage we need to have
-  analyzed every relevant function definition so we know which
+  properties.  (Note that [47mmy-collect$[0m is not tame, but the way it
+  uses its ``functional'' argument is crucial to the tameness of
+  [47m(my-collect$ 'SQ lst)[0m.)  To use [47mapply$[0m to full advantage we need to
+  have analyzed every relevant function definition so we know which
   arguments are treated like functions and whether they are used in
   accordance with our restrictions.  So if you're defining a function
   you intend to [47mapply$[0m it is convenient to define it with the new
@@ -58725,15 +58758,20 @@ Subtopics
   axiomatized and implemented today.  It also includes many example
   theorems.
 
-  To get started, define two ordinary ACL2 functions, one that squares
-  its argument and the other that reverses its argument.
 
-    (defun sq (x) (* x x))
+Exercises and Lessons
 
-    (defun rev (x)
-      (if (endp x)
-          nil
-          (append (rev (cdr x)) (list (car x)))))
+  To get started, fire up your ACL2 and define two ordinary ACL2
+  functions, one that squares its argument and the other that
+  reverses its argument.  We show the ACL2 prompt below in front of
+  each form we expect you to execute.
+
+    ACL2 !>(defun sq (x) (* x x))
+
+    ACL2 !>(defun rev (x)
+             (if (endp x)
+                 nil
+                 (append (rev (cdr x)) (list (car x)))))
 
   [31;1mLesson 0:[0m Learn about [47mapply$[0m by reading this tutorial introduction.
   But this tutorial mentions many undefined concepts: tameness,
@@ -58748,7 +58786,7 @@ Subtopics
   lemmas.  These lemmas are important not just to proving theorems
   about [47mapply$[0m but to defining functions that use [47mapply$[0m.
 
-    (include-book \"projects/apply/top\" :dir :system)
+    ACL2 !>(include-book \"projects/apply/top\" :dir :system)
 
   [31;1mLesson 2:[0m To allow [47mapply$[0m to ``work'' on a function symbol the symbol
   must be ``warranted.'' Actually, of course, you can pass anything
@@ -58759,9 +58797,9 @@ Subtopics
   evaluation if its first argument is not at least badged.)  To issue
   warrants (and badges) for [47msq[0m and [47mrev[0m do:
 
-    (defwarrant sq)
+    ACL2 !>(defwarrant sq)
 
-    (defwarrant rev)
+    ACL2 !>(defwarrant rev)
 
   [47m[Defwarrant][0m checks that its argument, [3mfn[0m, is a defined function
   symbol that satisfies certain restrictions on how it uses its
@@ -58800,33 +58838,38 @@ Subtopics
   [31;1mLesson 5:[0m You can define functions that take warranted ``functions''
   as arguments and [47mapply$[0m them.  Here is a function that applies its
   first argument to every element of its second argument and collects
-  the results.  We sometimes call functions like [47mcollect$[0m ``mapping
-  functions'' because they map another function over some range.  We
-  would call them ``functionals'' except that suggests ACL2 is
-  higher-order and it is not!  So we most often call them [scion]s of
-  [47mapply$[0m.  In ordinary English usage, a ``scion'' is a descendent of
-  an important family or individual; our scions are ``descendents''
-  of [47mapply$[0m and inherit its power and restrictions.
+  the results.  We sometimes call functions like [47mmy-collect$[0m
+  ``mapping functions'' because they map another function over some
+  range.  We would call them ``functionals'' except that suggests
+  ACL2 is higher-order and it is not!  So we most often call them
+  [scion]s of [47mapply$[0m.  In ordinary English usage, a ``scion'' is a
+  descendent of an important family or individual; our scions are
+  ``descendents'' of [47mapply$[0m and inherit its power and restrictions.
 
-    (defun$ collect$ (fn lst)
-      (if (endp lst)
-          nil
-          (cons (apply$ fn (list (car lst)))
-                (collect$ fn (cdr lst)))))
+    ACL2 !>(defun$ my-collect$ (fn lst)
+             (if (endp lst)
+                 nil
+                 (cons (apply$ fn (list (car lst)))
+                       (my-collect$ fn (cdr lst)))))
 
   In this definition, the first argument has ilk [47m:FN[0m because it is used
   exclusively as a ``function:'' it reaches the first argument of
   [47mapply$[0m and is untouched otherwise.  The second argument has ilk [47mNIL[0m
   and we say it's ``ordinary.'' It is [3mnever[0m used as a function.
 
-  Note: We define [47mcollect$[0m with [47mdefun$[0m simply to illustrate [47mdefun$[0m.
-  Unless we mean to pass [47mcollect$[0m to [47mapply$[0m or to some scion in the
-  future, there is no reason to have a warrant for [47mcollect$[0m.  Had we
-  defined [47mcollect$[0m with the ordinary [47mdefun[0m and realized later that we
-  want to pass [47m'COLLECT$[0m into a slot of ilk [47m:FN[0m, we could get a
-  warrant for [47mcollect$[0m by calling [47m(defwarrant collect$)[0m.
+  Note: We define [47mmy-collect$[0m with [47mdefun$[0m simply to illustrate [47mdefun$[0m.
+  Unless we mean to pass [47mmy-collect$[0m to [47mapply$[0m or to some scion in
+  the future, there is no reason to have a warrant for [47mmy-collect$[0m.
+  Had we defined [47mmy-collect$[0m with the ordinary [47mdefun[0m and realized
+  later that we want to pass [47m'MY-COLLECT$[0m into a slot of ilk [47m:FN[0m, we
+  could get a warrant for [47mmy-collect$[0m by calling [47m(defwarrant
+  my-collect$)[0m.
 
-  Here's another useful scion:
+  Actually, the function [47mcollect$[0m is pre-defined in ACL2 and behaves
+  like [47mmy-collect$[0m.  We chose to introduce [47mmy-collect$[0m simply to
+  illustrate that new scions can be introduced and used.  Here's
+  another useful pre-defined scion.  You won't need to define it in
+  your ACL2 session to use it.
 
     (defun$ always$ (fn lst)
       (if (endp lst)
@@ -58836,42 +58879,62 @@ Subtopics
 
   It checks that every element of [47mlst[0m satisfies its [47m:FN[0m argument [47mfn[0m.
 
-  By the way, both [47mcollect$[0m and [47malways$[0m are pre-defined in ACL2 because
-  they are part of the support for the [47m[loop$][0m statement.
+  The reason that both [47mcollect$[0m and [47malways$[0m are pre-defined is that
+  they are part of the support for the [47m[loop$][0m statment.
 
   [31;1mLesson 6:[0m You can run scions on warranted function symbols:
 
-    ACL2 !>(collect$ 'SQ '(1 -2 3 -4))
+    ACL2 !>(my-collect$ 'SQ '(1 -2 3 -4))
     (1 4 9 16)
 
-    ACL2 !>(collect$ 'rev '((1 2 3) (4 5 6) (7 8 9)))
+    ACL2 !>(my-collect$ 'rev '((1 2 3) (4 5 6) (7 8 9)))
     ((3 2 1) (6 5 4) (9 8 7))
 
+  You might wonder why you can run [47mmy-collect$[0m on [47m'SQ[0m --- which
+  evaluates [47mapply$[0m on [47m'SQ[0m --- without explicitly acknowledging the
+  warrant that links [47m(apply$ 'SQ (list a))[0m to [47m(sq a)[0m.  The reason is
+  that evaluation in ACL2's top-level read-eval-print loop assumes
+  all existing warrants are provided.  Warrants only become important
+  when we start dealing with proofs.
+
   [31;1mLesson 7:[0m You can run scions on tame quoted [47mLAMBDA[0m objects.  These
-  are just quoted list expressions that start with the symbol [47mLAMBDA[0m
-  and look like lambda-expressions.  But quoted [47mLAMBDA[0m objects have
-  to have fully translated bodies and meet other restrictions so
-  [47mapply$[0m can interpret them.  You cannot use macros like [47m+[0m or [47mcond[0m
-  and must you quote all constants.  We urge you not to type quoted
-  [47mLAMBDA[0m objects by hand!  Instead, we provide a macro, [47m[lambda$][0m,
-  that allows you to write in untranslated form as you would a lambda
-  expression in ACL2.
+  [47mLAMBDA[0m objects can even include calls of scions, provided they are
+  tame.
+
+    ACL2 !>(my-collect$
+                 (lambda$ (x) (CONS 'SQUARES (MY-COLLECT$ 'SQ x)))
+                 '((1 2 3) (4 5 6)))
+    ((SQUARES 1 4 9) (SQUARES 16 25 36))
+
+  Note that the ``function symbols'' in the ``body'' of a quoted [47mLAMBDA[0m
+  object may reach [47mapply$[0m as the [47mLAMBDA[0m object is applied.
+
+  [47mLAMBDA[0m objects are just quoted list expressions that start with the
+  symbol [47mLAMBDA[0m and look like lambda-expressions.  But quoted [47mLAMBDA[0m
+  objects have to have fully translated bodies and meet other
+  restrictions so [47mapply$[0m can interpret them.  You cannot use macros
+  like [47m+[0m or [47mcond[0m and must you quote all constants.  We urge you not
+  to try to type quoted [47mLAMBDA[0m objects by hand!  Instead, we provide
+  a macro, [47m[lambda$][0m, that allows you to write lambda expressions in
+  untranslated form.
 
   [31;1mLesson 8:[0m There are three very similar looking but very different
   notions used in this documentation: lambda expressions, [47mLAMBDA[0m
   objects, and [47mlambda$[0m expressions.  Read carefully!  See [47m[lambda][0m
-  for some definitions and disambiguation help.
+  for some definitions and disambiguation help.  The [47mLAMBDA[0m objects
+  reaching [47mapply$[0m must be fully translated (and tame) to be handled
+  correctly.  The special macro [47mlambda$[0m will translate for you.
 
-    ; Don't type this:
-    ACL2 !>(collect$ '(LAMBDA (X)
-                              (IF (< X '0) (BINARY-* '10 X) (SQ X)))
-                     '(1 -2 3 -4))
+    ; Don't type quoted LAMBDA objects like this!
+    ACL2 !>(my-collect$ '(LAMBDA (x)
+                           (IF (< x '0) (BINARY-* '10 x) (SQ x)))
+                        '(1 -2 3 -4))
     (1 -20 9 -40)
 
     ; Type this instead!
-    ACL2 !>(collect$ (lambda$ (X)
-                              (if (< x 0) (* 10 x) (sq x)))
-                     '(1 -2 3 -4))
+    ACL2 !>(my-collect$ (lambda$ (x)
+                           (if (< x 0) (* 10 x) (sq x)))
+                        '(1 -2 3 -4))
     (1 -20 9 -40)
 
   [31;1mLesson 9:[0m Almost all ACL2 primitives are known to [47mapply$[0m.  For a
@@ -58886,42 +58949,56 @@ Subtopics
 
   [31;1mLesson 10:[0m You can prove and use theorems about scions.
 
-    (defthm collect$-append
-      (equal (collect$ fn (append a b))
-             (append (collect$ fn a)
-                     (collect$ fn b))))
+    ACL2 !>(defthm my-collect$-append
+             (equal (my-collect$ fn (append a b))
+                    (append (my-collect$ fn a)
+                            (my-collect$ fn b))))
 
-    (thm (equal (collect$ (lambda$ (x) (sq (sq x)))
-                          (append c d))
-                (append (collect$ (lambda$ (x) (sq (sq x))) c)
-                        (collect$ (lambda$ (x) (sq (sq x))) d))))
+    ACL2 !>(thm (equal (my-collect$ (lambda$ (x) (* x x))
+                                    (append c d))
+                       (append (my-collect$ (lambda$ (x) (* x x)) c)
+                               (my-collect$ (lambda$ (x) (* x x)) d))))
 
-  Notice that the lemma [47mcollect$-append[0m talks about an arbitrary [47mfn[0m.
+  Notice that the lemma [47mmy-collect$-append[0m talks about an arbitrary [47mfn[0m.
   The definition of [47mapply$[0m is completely irrelevant to this theorem!
-  Once [47mcollect$-append[0m has been proved can be instantiated with
+  Once [47mmy-collect$-append[0m has been proved can be instantiated with
   anything for [47mfn[0m.  This is demonstrated when the [47mthm[0m above is
-  proved: the proof is just to rewrite with [47mcollect$-append[0m.
+  proved: the proof is just to rewrite with [47mmy-collect$-append[0m.
+  Notice that the only function being [47mapply$[0m'd in the [47mthm[0m above is
+  the primitive multiplication function, which is built into apply$.
 
   [31;1mLesson 11:[0m But when your theorems depend on the behavior of [47mapply$[0m on
   particular user-defined functions, you will need to provide
   hypotheses stipulating the behavior of [47mapply$[0m on those values.
-  Those hypotheses are the warrants for the (non-primitive) function
-  symbols involved.  Here is an example: If [47mlst[0m is a list of integers
-  and we square every element by mapping over it with [47msq[0m then the
-  result is a list of naturals --- but this theorem depends on the
-  fact that [47m(apply$ 'SQ (list x))[0m is [47m(sq x)[0m, which is what the
-  warrant for [47msq[0m tells us.  Thus, the warrant for [47msq[0m is required as a
-  hypothesis!
+  Those hypotheses are the [3mwarrants[0m for the (non-primitive) function
+  symbols involved.  Here is an example: Recall the function [47msq[0m
+  defined and warranted above.  We might wish to prove that if [47mlst[0m is
+  a list of integers then [47m(my-collect$ 'SQ lst)[0m is a list of natural
+  numbers.  We can use [47malways$[0m to express the notions of ``list of
+  integers'' and ``list of naturals.'' We could try to state the
+  conjecture this way:
 
-    (defthm all-natp-collect$-sq
-      (implies (and (warrant sq)
-                    (always$ 'INTEGERP lst))
-               (always$ 'NATP (collect$ 'SQ lst))))
+    ACL2 !>(thm (implies (always$ 'INTEGERP lst)
+                         (always$ 'NATP (my-collect$ 'SQ lst)))).
 
-  Note that this theorem uses the scion [47malways$[0m to express the ideas of
-  ``list of integers'' and ``list of naturals.'' Note also that we
-  don't need to provide warrants for [47mintegerp[0m or [47mnatp[0m because they
-  are ACL2 primitives and thus built into the behavior of [47mapply$[0m.
+  But the attempt to prove that formula will fail because it depends on
+  the fact that the [47msq[0m of an integer is a natural [3mand on the
+  assumption that[0m [47m(apply$ 'SQ (list x))[0m [3mis[0m [47m(sq x)[0m.  That assumption
+  is what the [3mwarrant[0m for [47msq[0m tells us.  Thus, the warrant for [47msq[0m is
+  required as a hypothesis!  The following theorem can be proved.
+
+    ACL2 !>(defthm all-natp-collect$-sq
+             (implies (and (warrant sq)
+                           (always$ 'INTEGERP lst))
+                      (always$ 'NATP (collect$ 'SQ lst))))
+
+  The macro form [47m(warrant f1 ... fk)[0m expands to the conjunction of some
+  special predicates that specify what [47mapply$[0m does on each of the
+  quoted symbols [47m'F1[0m, ..., [47m'FK[0m
+
+  Note that we don't need to provide warrants for [47mintegerp[0m or [47mnatp[0m
+  because they are ACL2 primitives and thus built into the behavior
+  of [47mapply$[0m.
 
   [31;1mLesson 12:[0m Warrants solve the ``[47mLOCAL[0m problem.'' Imagine the trouble
   we'd be in if the theorem above did not require a warrant on [47msq[0m.
@@ -58943,13 +59020,13 @@ Subtopics
   the unwarranted theorem exported from the encapsulate.
 
   If we could prove the unwarranted theorem we could export it because
-  it does not mention or depend on the function [47msq[0m, it just mentions
-  the constant [47m'SQ[0m.  Fortunately, we cannot actually prove the
-  unwarranted version of the theorem because there is no [3ma priori[0m
-  connection between [47m(apply$ 'SQ (list x))[0m and [47m(sq x)[0m.  And if we add
-  the warrant for [47msq[0m to the [47mdefthm[0m in the encapsulate we can prove
-  the theorem but we cannot export it because the warrant ancestrally
-  depends on locally defined function [47msq[0m.
+  it does not mention or depend on the locally defined function [47msq[0m,
+  it just mentions the constant symbol [47m'SQ[0m.  Fortunately, we cannot
+  actually prove the unwarranted version of the theorem because there
+  is no [3ma priori[0m connection between [47m(apply$ 'SQ (list x))[0m and [47m(sq x)[0m.
+  And if we add the warrant for [47msq[0m to the [47mdefthm[0m in the encapsulate
+  we can prove the theorem but then we cannot export it because the
+  warrant ancestrally depends on locally defined function [47msq[0m.
 
   [31;1mLesson 13:[0m While we may have given the impression that we've provided
   a convenient fragment of second-order functionality in ACL2 its
@@ -58979,24 +59056,24 @@ Subtopics
   most useful scions and proving a couple of theorems illustrating
   its flexibility: [47mfoldr[0m.
 
-    (defun$ foldr (lst fn init)
-      (if (endp lst)
-          init
-          (apply$ fn
-                  (list (car lst)
-                        (foldr (cdr lst) fn init)))))
+    ACL2 !>(defun$ foldr (lst fn init)
+             (if (endp lst)
+                 init
+                 (apply$ fn
+                         (list (car lst)
+                               (foldr (cdr lst) fn init)))))
 
   Note that [47mfoldr[0m maps over the list in its first argument, applying
   its second argument to two things: successive elements of the list
   and the result of recursively calling itself on the rest of the
   list.  It returns its third argument when the list is empty.
 
-  When its functional argument is [47mcons[0m [47mfoldr[0m is just the concatenation
+  When its functional argument is [47mCONS[0m [47mfoldr[0m is just the concatenation
   of its other two arguments:
 
-    (defthm foldr-cons
-      (equal (foldr x 'cons y)
-             (append x y)))
+    ACL2 !>(defthm foldr-cons
+             (equal (foldr x 'CONS y)
+                    (append x y)))
 
   We do not need a warrant for [47mcons[0m because it is built into [47mapply$[0m.
   In fact, the built-ins don't have warrants but if you unnecessarily
@@ -59006,19 +59083,129 @@ Subtopics
   By supplying a certain [47mlambda[0m expression we can use [47mfoldr[0m to reverse
   its first argument:
 
-    (defthm foldr-can-be-rev
-      (implies (warrant foldr)
-               (equal (foldr x
-                             (lambda$ (x y)
-                                (foldr y 'cons (cons x nil)))
-                             nil)
-                      (rev x))))
+    ACL2 !>(defthm foldr-can-be-rev
+             (implies (warrant foldr)
+                      (equal (foldr x
+                                    (lambda$ (x y)
+                                       (FOLDR y 'CONS (CONS x nil)))
+                                    nil)
+                             (rev x))))
 
-  Note that the [47mlambda$[0m expression calls [47mfoldr[0m.  Because of this, we
+  Note that the [47mlambda$[0m expression calls [47mFOLDR[0m.  Because of this, we
   must provide the warrant for [47mfoldr[0m since that inner [47mfoldr[0m will be
-  applied by the outer [47mfoldr[0m.  This illustrates an important point:
-  scions can apply other scions, including themselves, as long as the
-  applications are tame.")
+  applied by the outer [47mfoldr[0m.  This illustrates an important point
+  made in Lesson 7 above: scions can apply other scions, including
+  themselves, as long as the applications are tame.
+
+
+Some Practice Problems
+
+  There is no better way to learn than to practice.  So here are a few
+  challenge problems.  The answers can be found in
+  [47mbooks/projects/apply/answers-to-doc-intro-to-apply.lisp[0m.
+
+  [31;1mProblem 1[0m: Assume [47mfn[0m is a binary relation.  Define [47m(insert$ e lst fn)[0m
+  to insert [47me[0m into the list [47mlst[0m in front of the first element, [47md[0m, in
+  [47mlst[0m such that [47m(fn e d)[0m is true.
+
+  [31;1mProblem 2[0m: Define [47m(sort$ lst fn)[0m to be an insertion sort algorithm
+  for the binary relation [47mfn[0m, e.g., to successively insert each
+  element into the recursively sorted remaining elements.  (Note:
+  There is no assurance that [47msort$[0m will actually produce a list
+  ordered by [47mfn[0m because we don't know that [47mfn[0m is an ordering
+  relation.)
+
+  [31;1mProblem 3[0m: Study the four examples below, which illustrate perhaps
+  surprising properties of our ``insertion sort'' function.  (If your
+  definitions don't have these properties you should back up and
+  redefine your functions as we vaguely described above!)
+
+    (defthm examples-of-sort$
+      (and (equal (sort$ '(1 3 -7 0 23) '<)
+                  '(-7 0 1 3 23))
+           (equal (sort$ '(1 3 -7 0 23)
+                         (lambda$ (x y) t))
+                  '(1 3 -7 0 23))
+           (equal (sort$ '(1 3 -7 0 23)
+                         (lambda$ (x y) nil))
+                  '(23 0 -7 3 1))
+           (equal (sort$ '(1 a 2 x b 3 4 y c)
+                         (lambda$ (x y) (symbolp x)))
+                  '(a x b y c 4 3 2 1)))
+      :rule-classes nil)
+
+  [31;1mProblem 4[0m: Prove the following theorem suggested especially by the
+  last example above.  To state this theorem we first introduce the
+  familiar reverse function, [47mrev[0m.
+
+    (defun rev (x)
+      (if (endp x)
+          nil
+          (append (rev (cdr x))
+                  (list (car x)))))
+
+  and we use the pre-defined function [47m(when$ fn lst)[0m which computes the
+  elements of [47mlst[0m satisfying the unary-function [47mfn[0m, in the order in
+  which they occur, e.g., [47m(when$ '(1 a 2 b) 'symbolp)[0m is [47m'(a b)[0m.
+
+  Prove
+
+    (defthm sort$-lambda-symbolp
+      (implies (true-listp lst)
+               (equal (sort$ lst (lambda$ (x y) (symbolp x)))
+                      (append (when$ 'symbolp lst)
+                              (rev
+                                (when$
+                                  (lambda$ (x y) (not (symbolp x)))
+                                  lst))))))
+
+  Lemmas will be needed.
+
+  [31;1mProblem 5[0m: Define [47m(orderedp$ lst fn)[0m to check whether [47mfn[0m holds
+  between each adjacent pair of elements in [47mlst[0m.  Test your function
+  with
+
+    (defthm examples-of-orderedp$
+      (and (orderedp$ '(1 3 5 7) '<)
+           (not (orderedp '(1 3 3 5 7) '<)))
+      :rule-classes nil)
+
+  [31;1mProblem 6[0m: You might hope that [47m(orderedp$ (sort$ lst fn) fn)[0m is a
+  theorem.  But it is not as is easily shown by the example
+  [47m(orderedp$ (sort$ '(3 1 5 3 7) '<) '<)[0m.  If you try to prove the
+  conjecture and inspect the output you'll see that the proof fails
+  because we do not know that [47m(or (fn x y) (fn y x))[0m is true.  That
+  is, we don't know that [47mfn[0m is [3mStrongly Connected[0m.  How could we,
+  since the conjecture is claimed for all [47mfn[0m?
+
+  Unfortunately, it is awkward to state that [47mfn[0m is a strongly connected
+  relation in ACL2's first-order quantifier-free language.  This is a
+  good example of the limitations of ACL2's support for second-order
+  functions!
+
+  But we can prove versions of the conjecture for concrete strongly
+  connected [47mfn[0ms.  The relation named [47mbefore-dayp[0m, below, is strongly
+  connected, as demonstrated by the events following its definition.
+
+  Carry out these events.
+
+    (defun beforep (x y lst)
+      (if (and (member x lst)
+               (member y lst))
+          (member y (member x lst))
+          t))
+
+    (defun before-dayp (x y)
+      (beforep x y '(mon tue wed thu fri sat sun)))
+
+    (defthm before-dayp-strongly-connected
+      (implies (not (before-dayp x y))
+               (before-dayp y x)))
+
+    (in-theory (disable before-dayp))
+
+  Now, prove the version of [47m(orderedp$ (sort$ lst fn) fn)[0m for the
+  instance in which [47mfn[0m is [47m'before-dayp[0m.")
  (INTRODUCTION-TO-HINTS
   (INTRODUCTION-TO-THE-THEOREM-PROVER)
   "How to provide hints to the theorem prover
