@@ -105766,14 +105766,15 @@ it."
 
 (defxdoc note-8-6
 
-; Total number of release note items: 171, as follows -- not including the
-; conversion of fmt, (er soft ...), one-way-unify, and genvar, and related
-; utilities to guard-verified :logic mode.
+; Total number of release note items: 211, as categorized below.  When an item
+; has n bullets, it contributes n to the count.  Note that these numbers are
+; based on the sections labeled with <h3>..</h3> in the string below; in
+; particular, Lisp comments below do not contribute to these numbers.
 
-;   88 ; Changes to Existing Features
+;   92 ; Changes to Existing Features
 ;   39 ; New Features
 ;   12 ; Heuristic and Efficiency Improvements
-;   41 ; Bug Fixes
+;   40 ; Bug Fixes
 ;   19 ; Changes at the System Level
 ;    8 ; EMACS Support
 ;    1 ; Experimental Versions
@@ -106033,7 +106034,8 @@ it."
 ; e.g.: "Abort to ACL2 top-level."
 
 ; Fixed an error in the interaction of loop$ with untouchables and
-; temp-touchables.  For example, the following caused an error in Version_8.5.
+; temp-touchables.  For example, the following caused an error in Version
+; 8.5.
 ;
 ;   (include-book "projects/apply/top" :dir :system)
 ;   (defttag t)
@@ -106286,6 +106288,9 @@ it."
 ; load-theory-into-enabled-structure-1, from useless-runes-ens.  The latter two
 ; functions were fixed to avoid the error.  This error was found during a run
 ; with ACL2 built using safety 3.
+
+; When state global script-mode has a non-nil value, "Hons-Note" messages are
+; suppressed.
 
   :parents (release-notes)
   :short "ACL2 Version  8.6 (xxx, 20xx) Notes"
@@ -106857,7 +106862,7 @@ it."
 
  <p>The fifth formal of @(tsee do$) now represents the values returned rather
  than a default value.  This change supports a bug fix; see the item below
- regarding &ldquo;About a bug in DO$ in ACL2 Version_8.5&rdquo;.</p>
+ regarding &ldquo;About a bug in DO$ in ACL2 Version  8.5&rdquo;.</p>
 
  <p>The sixth and seventh arguments of @(tsee do$) have been combined into a
  record that also contains a list of the names of all the @(tsee stobj)s in the
@@ -106951,6 +106956,9 @@ it."
  keyword argument @(':NON-EXECUTABLE T') and to use the @(':CONGRUENT-TO')
  keyword argument.</p>
 
+ <p>@('Lambda') objects in positions of @(see ilk) @(':FN') are now subjected
+ to a size limitation.  See @(tsee explain-giant-lambda-object).</p>
+
  <h3>New Features</h3>
 
  <p>ACL2 now supports floating-point operations.  See @(see df).  Regarding
@@ -107027,9 +107035,6 @@ it."
  <p>The Common Lisp utility, @(tsee macrolet), is now supported in ACL2.
  Thanks to Alessandro Coglio for discussion leading us to make this addition.
  See @(see macrolet).</p>
-
- <p>@('Lambda') objects in positions of @(see ilk) @(':FN') are now subjected
- to a size limitation.  See @(tsee explain-giant-lambda-object).</p>
 
  <p>The utilities @(tsee with-output) and @(tsee with-output!) have been
  enhanced in the following two ways; see @(see with-output) for details.</p>
@@ -107290,7 +107295,7 @@ it."
  <p>Fixed a soundness bug based on rules of class @(':')@(tsee meta) or
  @(':')@(tsee clause-processor) that would be exported from an @(tsee
  encapsulate) event with a non-@('nil') @(see signature) list.  A proof of
- @('nil') in Version_8.5 may be found in the @(see community-books) file,
+ @('nil') in Version  8.5 may be found in the @(see community-books) file,
  @('books/system/tests/transparent-functions-input.lsp'); search for
  this paragraph there.</p>
 
@@ -107528,10 +107533,10 @@ it."
  brr-commands).</p>
 
  <p>When a certified book is included, the logical @(see world) will no longer
- be marked as having seen a @(tsee skip-proofs) call, even when the value of
- @(tsee LD) special @(tsee ld-skip-proofsp) is non-@('nil') at that time.
- Thus, that situation no longer disqualifies such a world from supplying the
- @(see portcullis) commands to a book to be certified without keyword argument
+ be marked as having seen a @(tsee skip-proofs) call due to @(tsee LD) special
+ @(tsee ld-skip-proofsp) having a non-@('nil') value at that time.  Thus, that
+ situation no longer disqualifies such a world from supplying the @(see
+ portcullis) commands to a book to be certified without keyword argument
  @(':skip-proofs-okp t') of @(tsee certify-book).  Thanks to Sol Swords for
  pointing out this bug.</p>
 
@@ -107650,7 +107655,7 @@ it."
  a loop terminates prematurely because the measure fails to decrease.  The bug,
  which has been fixed, is explained in detail in a comment in ACL2 source file
  @('apply.lisp'), entitled &ldquo;About a bug in DO$ in ACL2
- Version_8.5&rdquo;.</p>
+ Version  8.5&rdquo;.</p>
 
  <p>Fixed a bug in @(tsee fmt) and related functions, where a right square
  bracket immediately following a @('~&') or @('~v') directive failed to be
@@ -107811,7 +107816,7 @@ it."
 
  <p>The initialization file for recent Emacs versions,
  @('books/emacs/emacs-acl2.el'), now correctly loads related files &mdash;
- notable @('acl2-doc.el') &mdash; from that same directory, rather than from
+ notably @('acl2-doc.el') &mdash; from that same directory, rather than from
  the @('emacs/') directory that is directly under the top level of the ACL2
  distribution.</p>
 
