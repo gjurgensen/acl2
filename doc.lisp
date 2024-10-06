@@ -58808,9 +58808,14 @@ Exercises and Lessons
   produces a ``badge'' for [3mfn[0m that describes which formals are
   treated as ``functions.'' Henceforth, we'll say such formals have
   ``[ilk]'' [47m:FN[0m.  In addition to computing a badge, non-erroneous
-  calls of [47mdefwarrant[0m produce a [47m[warrant][0m for [3mfn[0m that specifies the
-  [47m[badge][0m and the conditions under which [47mapply$[0m ``works'' on the
-  function symbol [3mfn[0m.
+  calls of [47mdefwarrant[0m introduce a ``[47m[warrant][0m function'' for [3mfn[0m.  The
+  warrant function for [3mfn[0m is a 0-ary function named
+  [47mapply$-warrant-[0m[3mfn[0m.  A call of the warrant function, i.e., the term
+  [47m(apply$-warrant-[0m[3mfn[0m[47m)[0m is called the ``warrant'' for [3mfn[0m and if the
+  warrant for [3mfn[0m is included among the hypotheses of a conjecture
+  then [47m(apply$ '[0m[3mfn[0m[47m (list a1 ... an))[0m can expand to [47m([0m[3mfn[0m[47m a1 ... an)[0m,
+  provided the [47mai[0m meet the tameness requirements required by [3mfn[0m's
+  badge.
 
   [31;1mLesson 3:[0m We'll say more about tameness, badges, and warrants later.
   You already know that warrants can only be issued for [47m:logic[0m mode
@@ -58990,13 +58995,29 @@ Exercises and Lessons
                            (always$ 'INTEGERP lst))
                       (always$ 'NATP (collect$ 'SQ lst))))
 
-  The macro form [47m(warrant f1 ... fk)[0m expands to the conjunction of some
-  special predicates that specify what [47mapply$[0m does on each of the
-  quoted symbols [47m'F1[0m, ..., [47m'FK[0m
-
   Note that we don't need to provide warrants for [47mintegerp[0m or [47mnatp[0m
   because they are ACL2 primitives and thus built into the behavior
-  of [47mapply$[0m.
+  of [47mapply$[0m.  But we must provide the warrant for [47msq[0m because we know
+  the proof depends on [47m(apply$ 'sq (list x1 ...))[0m simplifying to [47m(sq
+  x1)[0m.
+
+  The macro form [47m(warrant f1 ... fk)[0m expands to the conjunction of the
+  warrants for the [47mfi[0ms.  That is
+
+    (warrant f1 ... fk)
+    =
+    (and (apply$-warrant-f1)
+         ...
+         (apply$-warrant-fk)).
+
+  If you attempt a proof and it fails, and you see among the
+  checkpoints terms of the form [47m(apply$ 'fn (list a1 ... an))[0m, then
+  you probably forgot to call [47mdefwarrant[0m on [47mfn[0m and [47mapply$[0m doesn't
+  know what to do with that symbol!  If, on the other hand, you see a
+  [forcing-round] checkpoint that is attempting to prove a warrant,
+  like [47m(apply$-warrant-fn)[0m, then you probably forgot to add the
+  warrant for [47mfn[0m to the hypotheses of the conjecture you're trying to
+  prove.
 
   [31;1mLesson 12:[0m Warrants solve the ``[47mLOCAL[0m problem.'' Imagine the trouble
   we'd be in if the theorem above did not require a warrant on [47msq[0m.

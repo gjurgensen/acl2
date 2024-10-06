@@ -55190,9 +55190,15 @@ tables in the current Hons Space."
   @('defwarrant') does not cause an error it produces a ``badge'' for <i>fn</i>
   that describes which formals are treated as ``functions.''  Henceforth, we'll
   say such formals have ``@(see ilk)'' @(':FN').  In addition to computing a
-  badge, non-erroneous calls of @('defwarrant') produce a @(tsee warrant) for
-  <i>fn</i> that specifies the @(tsee badge) and the conditions under which
-  @('apply$') ``works'' on the function symbol <i>fn</i>.</p>
+  badge, non-erroneous calls of @('defwarrant') introduce a &ldquo;@(tsee
+  warrant) function&rdquo; for <i>fn</i>.  The warrant function for <i>fn</i>
+  is a 0-ary function named @('apply$-warrant-')<i>fn</i>.  A call of the
+  warrant function, i.e., the term @('(apply$-warrant-')<i>fn</i>@(')') is
+  called the &ldquo;warrant&rdquo; for <i>fn</i> and if the warrant for
+  <i>fn</i> is included among the hypotheses of a conjecture then @('(apply$
+  '')<i>fn</i>@(' (list a1 ... an))') can expand to @('(')<i>fn</i>@(' a1
+  ... an)'), provided the @('ai') meet the tameness requirements required by
+  <i>fn</i>'s badge.</p>
 
   <p><b>Lesson 3:</b> We'll say more about tameness, badges, and warrants
   later.  You already know that warrants can only be issued for @(':logic')
@@ -55240,11 +55246,12 @@ tables in the current Hons Space."
   it's ``ordinary.''  It is <i>never</i> used as a function.</p>
 
   <p>Note: We define @('my-collect$') with @('defun$') simply to illustrate
-  @('defun$').  Unless we mean to pass @('my-collect$') to @('apply$') or to some
-  scion in the future, there is no reason to have a warrant for @('my-collect$').
-  Had we defined @('my-collect$') with the ordinary @('defun') and realized later
-  that we want to pass @(''MY-COLLECT$') into a slot of ilk @(':FN'), we could get
-  a warrant for @('my-collect$') by calling @('(defwarrant my-collect$)').</p>
+  @('defun$').  Unless we mean to pass @('my-collect$') to @('apply$') or to
+  some scion in the future, there is no reason to have a warrant for
+  @('my-collect$').  Had we defined @('my-collect$') with the ordinary
+  @('defun') and realized later that we want to pass @(''MY-COLLECT$') into a
+  slot of ilk @(':FN'), we could get a warrant for @('my-collect$') by calling
+  @('(defwarrant my-collect$)').</p>
 
   <p>Actually, the function @('collect$') is pre-defined in ACL2 and behaves
   like @('my-collect$').  We chose to introduce @('my-collect$') simply to
@@ -55390,13 +55397,29 @@ tables in the current Hons Space."
                     (always$ 'NATP (collect$ 'SQ lst))))
   })
 
-  <p>The macro form @('(warrant f1 ... fk)') expands to the conjunction of some
-  special predicates that specify what @('apply$') does on each of the quoted
-  symbols @(''F1'), ..., @(''FK')</p>
-
   <p>Note that we don't need to provide warrants for @('integerp') or @('natp')
   because they are ACL2 primitives and thus built into the behavior of
-  @('apply$').</p>
+  @('apply$').  But we must provide the warrant for @('sq') because we know the
+  proof depends on @('(apply$ 'sq (list x1 ...))') simplifying to @('(sq
+  x1)').</p>
+
+  <p>The macro form @('(warrant f1 ... fk)') expands to the conjunction of the
+  warrants for the @('fi')s.  That is</p>
+  @({
+  (warrant f1 ... fk)
+  =
+  (and (apply$-warrant-f1)
+       ...
+       (apply$-warrant-fk)).
+  })
+
+  <p>If you attempt a proof and it fails, and you see among the checkpoints
+  terms of the form @('(apply$ 'fn (list a1 ... an))'), then you probably
+  forgot to call @('defwarrant') on @('fn') and @('apply$') doesn't know what
+  to do with that symbol!  If, on the other hand, you see a @(see
+  forcing-round) checkpoint that is attempting to prove a warrant, like
+  @('(apply$-warrant-fn)'), then you probably forgot to add the warrant for
+  @('fn') to the hypotheses of the conjecture you're trying to prove.</p>
 
   <p><b>Lesson 12:</b> Warrants solve the ``@('LOCAL') problem.''  Imagine the
   trouble we'd be in if the theorem above did not require a warrant on @('sq').
@@ -55525,9 +55548,9 @@ tables in the current Hons Space."
   because we don't know that @('fn') is an ordering relation.)</p>
 
   <p><b>Problem 3</b>: Study the four examples below, which illustrate perhaps
-  surprising properties of our ``insertion sort'' function.  (If your definitions
-  don't have these properties you should back up and redefine your functions as
-  we vaguely described above!)</p>
+  surprising properties of our ``insertion sort'' function.  (If your
+  definitions don't have these properties you should back up and redefine your
+  functions as we vaguely described above!)</p>
 
   @({
   (defthm examples-of-sort$
@@ -55558,8 +55581,8 @@ tables in the current Hons Space."
   })
 
   <p>and we use the pre-defined function @('(when$ fn lst)') which computes the
-  elements of @('lst') satisfying the unary-function @('fn'), in the order in which they
-  occur, e.g., @('(when$ '(1 a 2 b) 'symbolp)') is @(''(a b)').</p>
+  elements of @('lst') satisfying the unary-function @('fn'), in the order in
+  which they occur, e.g., @('(when$ '(1 a 2 b) 'symbolp)') is @(''(a b)').</p>
 
   <p>Prove</p>
 
@@ -55599,9 +55622,9 @@ tables in the current Hons Space."
   relation in ACL2's first-order quantifier-free language.  This is a good
   example of the limitations of ACL2's support for second-order functions!</p>
 
-  <p>But we can prove versions of the conjecture for concrete strongly connected
-  @('fn')s.  The relation named @('before-dayp'), below, is strongly connected, as
-  demonstrated by the events following its definition.</p>
+  <p>But we can prove versions of the conjecture for concrete strongly
+  connected @('fn')s.  The relation named @('before-dayp'), below, is strongly
+  connected, as demonstrated by the events following its definition.</p>
 
   <p>Carry out these events.</p>
 
@@ -55623,7 +55646,7 @@ tables in the current Hons Space."
   })
 
   <p>Now, prove the version of @('(orderedp$ (sort$ lst fn) fn)') for the
- instance in which @('fn') is @(''before-dayp').</p>")
+  instance in which @('fn') is @(''before-dayp').</p>")
 
 (defxdoc introduction-to-hints
   :parents (introduction-to-the-theorem-prover)
