@@ -52655,7 +52655,7 @@ Subtopics
     (e/d nil
          ((:executable-counterpart rewrite-lambda-modep)))
 
-  which is a theory equal to then current theory except that the
+  which is a theory equal to the current theory except that the
   executable-counterpart rune of [47mrewrite-lambda-modep[0m is disabled.
   This expansion is suitable for use in an [47m[in-theory][0m event or
   [47m:in-theory[0m hint (see [47m:[0m[47m[hints][0m).
@@ -57014,7 +57014,7 @@ Comparing Several Optimizations
       any terms but insists that the controllers, [47mx[0m and [47mlst[0m,
       respectively, be those particular variable names.
 
-  In addition, we sometime avail ourselves of special-purpose lemmas.
+  In addition, we sometimes avail ourselves of special-purpose lemmas.
 
     * [47mNIL lem[0m --- rewrites [47m(ppr1-lst nil ...)[0m to [47mnil[0m.
 
@@ -57169,11 +57169,12 @@ Subtopics
 
   An [47m\"Infected\"[0m warning indicates that an event introducing a function
   symbol inside [47mencapsulate[0m event affects the constraint exported for
-  the function introduced in the [signature] of that [47mencapsulate[0m.
-  That function is typically introduced with [47m[defun][0m, but it could be
-  introduced in a signatures of a subsidiary [47mencapsulate[0m event or in
-  a [47m[defchoose][0m event.  Below we'll discuss the case of [47mdefun[0m, but
-  the others are completely analogous for an [47m\"Infected\"[0m warning.
+  the function introduced in the [signature] list of that
+  [47mencapsulate[0m.  That function is typically introduced with [47m[defun][0m,
+  but it could be introduced in a signature list of a subsidiary
+  [47mencapsulate[0m event or in a [47m[defchoose][0m event.  Below we'll discuss
+  the case of [47mdefun[0m, but the others are completely analogous for an
+  [47m\"Infected\"[0m warning.
 
   Let's compare the following three examples.
 
@@ -58439,7 +58440,7 @@ Subtopics
   it means you are in [47m:[0m[47m[program][0m ({ICON} (see [A_Tiny_Warning_Sign]))
   mode rather than [47m:[0m[47m[logic][0m ({ICON} (see [A_Tiny_Warning_Sign]))
   mode.  In [47m:program[0m mode, [47mdefun[0m just defines Common Lisp programs
-  that you can evaluation but it adds no axioms and you cannot use
+  that you can evaluate, but it adds no axioms and you cannot use
   such defined functions in theorems or invoke [47mdefthm[0m.  [47m:Program[0m mode
   is often used to prototype a model.
 
@@ -58739,8 +58740,8 @@ Challenges and Basic Solutions
   and a warrant, if possible.  Also relevant is the [47m[defbadge][0m
   command which issues a badge for a function (if possible) but does
   not issue a warrant.  Its primary purpose is to allow [47m:[0m[47mprogram[0m mode
-  functions to analyzed and badged so they can be safely executed by
-  [47mapply$[0m at the top-level ACL2 loop.  But the present discussion
+  functions to be analyzed and badged so they can be safely executed
+  by [47mapply$[0m at the top-level ACL2 loop.  But the present discussion
   focuses primarily on the logical machinery, which requires
   warrants.
 
@@ -59969,7 +59970,7 @@ More help
   hypothesis containing a free [3mv[0m to guide its guess for [3mv[0m.  To
   ``guess'' a value for [3mv[0m, ACL2 uses that hypothesis as a pattern and
   tries to match it against the assumptions in the checkpoint formula
-  being proved.  This means that key hypothesis must be in normal
+  being proved.  This means that key hypotheses must be in normal
   form, to match the rewritten assumptions of the goal.  It also
   means that you should reorder the hypotheses to put the most
   unusual hypothesis containing a free [3mv[0m first in the list of
@@ -63374,7 +63375,7 @@ About Lambda$ Expressions
   objects.
 
   The body of a [47mlambda$[0m expression must return a single value that is
-  neither a [stobj] nor a [df].  the following example illustrates
+  neither a [stobj] nor a [df].  The following example illustrates
   this point.
 
     (defun$ f1 (x)
@@ -64386,7 +64387,7 @@ Subtopics
 
         * [47m(ld-history-entry-stobjs-out/value entry)[0m
           When [47m(ld-history-entry-error-flg entry)[0m is [47mnil[0m, this is a cons whose
-          [47mcar[0m is is the [stobjs-out] --- a list whose length is the
+          [47mcar[0m is the [stobjs-out] --- a list whose length is the
           number of values returned, with [47mnil[0m in each position except
           when occupied by a symbol indicating a returned [stobj] for
           that position --- and whose [47mcdr[0m is the returned value in
@@ -64465,12 +64466,12 @@ Subtopics
   there is a Special Case: when [47mn[0m is 1 then a 2-element list of
   entries [47m(e1 e2)[0m is created where [47me2[0m has fields that are all [47mnil[0m;
   then when the new entry [47me[0m is pushed onto the ld-history, [47me2[0m is
-  dropped so that that the new ld-history is [47m(e e1)[0m.  This
-  special-case trick is also used in multiple-entry mode when [47mn[0m is [47m-k[0m
-  where [47mk[0m is one less than the length of the current ld-history,
-  since that is treated the same as [47m(adjust-ld-history 1 state)[0m; and
-  this trick is also used when [47m(adjust-ld-history t state)[0m switches
-  from single-entry mode to multiple-entry mode.  End of Remark.
+  dropped so that the new ld-history is [47m(e e1)[0m.  This special-case
+  trick is also used in multiple-entry mode when [47mn[0m is [47m-k[0m where [47mk[0m is
+  one less than the length of the current ld-history, since that is
+  treated the same as [47m(adjust-ld-history 1 state)[0m; and this trick is
+  also used when [47m(adjust-ld-history t state)[0m switches from
+  single-entry mode to multiple-entry mode.  End of Remark.
 
   Finally we discuss the user-data field of a ld-history entry, which
   (as noted above) has default [47mnil[0m.  It is accessed using
@@ -64727,9 +64728,9 @@ Subtopics
   at which time [47m[ld][0m terminates normally.
 
   The [47m:all[0m filter is, of course, the normal one.  [47m:Query[0m is useful if
-  you want to replay selected the [command]s in some file.  The new
-  name filter is used if you wish to replay all the [command]s in a
-  file up through the introduction of the given one.")
+  you want to replay selected [command]s in some file.  The new name
+  filter is used if you wish to replay all the [command]s in a file
+  up through the introduction of the given one.")
  (LD-PRE-EVAL-PRINT
   (LD)
   "Determines whether [47m[ld][0m prints the forms to be [47meval[0m'd
@@ -67333,7 +67334,7 @@ Subtopics
                        (true-listp z))
                   (equal (rev (rev z)) z))).
 
-  Thus, if we're trying to prove [3mformula1'[0m it is permitted to try to to
+  Thus, if we're trying to prove [3mformula1'[0m it is permitted to try to
   prove [3mformula2'[0m instead, because they return the same truthvalue.
 
   This sketch of propositional reasoning in ACL2 is a little suspect
@@ -67875,8 +67876,8 @@ Subtopics
                  (+ 1 (len (cdr (cdr a)))))))
     = ...
 
-  The ACL2 implementation of rewriting uses certain heuristics and the
-  you can guide the system in its choices.  We'll discuss this later.
+  The ACL2 implementation of rewriting uses certain heuristics and you
+  can guide the system in its choices.  We'll discuss this later.
 
   Now use your browser's [31;1mBack Button[0m to return to the example proof in
   [logic-knowledge-taken-for-granted].")
@@ -68248,7 +68249,7 @@ Subtopics
       to start if you're using ACL2 [47mloop$[0ms for the first time.
 
     * The Table of Contents of the Loop$ Primer (see [lp-section-0]) lists
-      some sensible entry points to primer.  You'll see sections
+      some sensible entry points to the primer.  You'll see sections
       devoted to examples, sample proofs, exercises, etc.  Keep the
       primer in mind as an additional resource.  For example, you
       might visit [47mLoop$[0m Primer Section 6 ([lp-section-6]) for some
@@ -68492,7 +68493,7 @@ Types and guards in [47mloop$[0m expressions
   about the value of [47mx[0m here.  (Actually, because the target range is
   just a constant below, ACL2 could deduce information about each
   value [47mx[0m takes on, but it doesn't.)  The second example can be guard
-  verified and has the advantage of being standard Common Lisp so
+  verified and has the advantage of being standard Common Lisp, so
   compilers might optimize the handing of [47m(+ 1 x)[0m.  The third example
   can also be guard verified but since the [47m:GUARD[0m directive used here
   is ignored by Common Lisp it does not inform the compiler, so this
@@ -69866,7 +69867,7 @@ Subtopics
   to reproduce our answers.  It's up to you to decide if you know
   this stuff.  As you use [47mloop$[0m, ACL2 will print warnings and error
   messages about functions not having badges or warrants or
-  expression not being tame.  We don't want your reaction to be
+  expressions not being tame.  We don't want your reaction to be
   ``Ack! What's that all about?'' We want it to be at least ``Oh yes,
   I remember now.'' We recommend that after you've read and answered
   the questions, you read our answers even if you're pretty confident
