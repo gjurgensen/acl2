@@ -49294,7 +49294,7 @@ current fast alists."
        ((:executable-counterpart rewrite-lambda-modep)))
   })
 
-  <p>which is a theory equal to then current theory except that the
+  <p>which is a theory equal to the current theory except that the
   executable-counterpart rune of @('rewrite-lambda-modep') is disabled.  This
   expansion is suitable for use in an @(tsee in-theory) event or
   @(':in-theory') hint (see @(':')@(tsee hints)).</p>
@@ -53382,7 +53382,7 @@ tables in the current Hons Space."
 
       </ul>
 
-  <p>In addition, we sometime avail ourselves of special-purpose lemmas.</p>
+  <p>In addition, we sometimes avail ourselves of special-purpose lemmas.</p>
 
   <ul>
   <li>@('NIL lem')  &mdash; rewrites @('(ppr1-lst nil ...)') to @('nil').</li>
@@ -53529,9 +53529,9 @@ tables in the current Hons Space."
 
  <p>An @('\"Infected\"') warning indicates that an event introducing a function
  symbol inside @('encapsulate') event affects the constraint exported for the
- function introduced in the @(see signature) of that @('encapsulate').  That
- function is typically introduced with @(tsee defun), but it could be
- introduced in a signatures of a subsidiary @('encapsulate') event or in a
+ function introduced in the @(see signature) list of that @('encapsulate').
+ That function is typically introduced with @(tsee defun), but it could be
+ introduced in a signature list of a subsidiary @('encapsulate') event or in a
  @(tsee defchoose) event.  Below we'll discuss the case of @('defun'), but the
  others are completely analogous for an @('\"Infected\"') warning.</p>
 
@@ -54799,7 +54799,7 @@ tables in the current Hons Space."
  mode rather than @(':')@(tsee logic) (<see
  topic='ACL2____A_02Tiny_02Warning_02Sign'><icon src='res/tours/twarning.gif'/></see>)
  mode.  In @(':program') mode, @('defun') just defines Common Lisp programs
- that you can evaluation but it adds no axioms and you cannot use such defined
+ that you can evaluate, but it adds no axioms and you cannot use such defined
  functions in theorems or invoke @('defthm').  @(':Program') mode is often used
  to prototype a model.</p>
 
@@ -55121,7 +55121,7 @@ tables in the current Hons Space."
   produces a badge and a warrant, if possible.  Also relevant is the @(tsee
   defbadge) command which issues a badge for a function (if possible) but does
   not issue a warrant.  Its primary purpose is to allow @(':')@('program') mode
-  functions to analyzed and badged so they can be safely executed by
+  functions to be analyzed and badged so they can be safely executed by
   @('apply$') at the top-level ACL2 loop.  But the present discussion focuses
   primarily on the logical machinery, which requires warrants.</p>
 
@@ -56393,7 +56393,7 @@ tables in the current Hons Space."
  contains <i>v</i>?  ACL2 uses the first hypothesis containing a free <i>v</i>
  to guide its guess for <i>v</i>.  To ``guess'' a value for <i>v</i>, ACL2 uses
  that hypothesis as a pattern and tries to match it against the assumptions in
- the checkpoint formula being proved.  This means that key hypothesis must be
+ the checkpoint formula being proved.  This means that key hypotheses must be
  in normal form, to match the rewritten assumptions of the goal.  It also means
  that you should reorder the hypotheses to put the most unusual hypothesis
  containing a free <i>v</i> first in the list of conjuncts.  For example, if
@@ -59437,7 +59437,7 @@ tables in the current Hons Space."
   objects.</p>
 
   <p>The body of a @('lambda$') expression must return a single value that is
-  neither a @(see stobj) nor a @(see df).  the following example illustrates
+  neither a @(see stobj) nor a @(see df).  The following example illustrates
   this point.</p>
 
   @({
@@ -60378,8 +60378,8 @@ tables in the current Hons Space."
  <li>@('(ld-history-entry-stobjs-out/value entry)')<br/>
 
  When @('(ld-history-entry-error-flg entry)') is @('nil'), this is a cons whose
- @('car') is is the @(see stobjs-out) &mdash; a list whose length is the number
- of values returned, with @('nil') in each position except when occupied by a
+ @('car') is the @(see stobjs-out) &mdash; a list whose length is the number of
+ values returned, with @('nil') in each position except when occupied by a
  symbol indicating a returned @(see stobj) for that position &mdash; and whose
  @('cdr') is the returned value in the single-value case, but is the list of
  returned values in the @(see multiple-value) case.</li>
@@ -60465,7 +60465,7 @@ tables in the current Hons Space."
  because there is a Special Case: when @('n') is 1 then a 2-element list of
  entries @('(e1 e2)') is created where @('e2') has fields that are all
  @('nil'); then when the new entry @('e') is pushed onto the ld-history,
- @('e2') is dropped so that that the new ld-history is @('(e e1)').  This
+ @('e2') is dropped so that the new ld-history is @('(e e1)').  This
  special-case trick is also used in multiple-entry mode when @('n') is @('-k')
  where @('k') is one less than the length of the current ld-history, since that
  is treated the same as @('(adjust-ld-history 1 state)'); and this trick is
@@ -60739,7 +60739,7 @@ tables in the current Hons Space."
  terminates normally.</p>
 
  <p>The @(':all') filter is, of course, the normal one.  @(':Query') is useful
- if you want to replay selected the @(see command)s in some file.  The new name
+ if you want to replay selected @(see command)s in some file.  The new name
  filter is used if you wish to replay all the @(see command)s in a file up
  through the introduction of the given one.</p>")
 
@@ -63107,8 +63107,7 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
  </code>
 
  <p>Thus, if we're trying to prove <i>formula1'</i> it is permitted to try to
- to prove <i>formula2'</i> instead, because they return the same
- truthvalue.</p>
+ prove <i>formula2'</i> instead, because they return the same truthvalue.</p>
 
  <p>This sketch of propositional reasoning in ACL2 is a little suspect because
  we didn't address the possibility that the substitution might replace the
@@ -63719,7 +63718,7 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
   = ...
  })
 
- <p>The ACL2 implementation of rewriting uses certain heuristics and the you can
+ <p>The ACL2 implementation of rewriting uses certain heuristics and you can
  guide the system in its choices.  We'll discuss this later.</p>
 
  <p>Now use your browser's <b>Back Button</b> to return to the example proof in
@@ -64047,7 +64046,7 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
  to start if you're using ACL2 @('loop$')s for the first time.</li>
 
  <li>The Table of Contents of the Loop$ Primer (see @(see lp-section-0)) lists
- some sensible entry points to primer.  You'll see sections devoted to
+ some sensible entry points to the primer.  You'll see sections devoted to
  examples, sample proofs, exercises, etc.  Keep the primer in mind as an
  additional resource.  For example, you might visit @('Loop$') Primer Section
  6 (@(see lp-section-6)) for some exercises on writing @('loop$')s and, when
@@ -64308,19 +64307,19 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
  be guard verified, as would be necessary if it appeared in a @(tsee defun)
  that was to be guard verified.  The problem is that @('(+ 1 x)') requires
  @('x') to be numeric and, in general, we don't know anything about the value
- of @('x') here.  (Actually, because the target range is just a constant
- below, ACL2 could deduce information about each value @('x') takes on, but it
+ of @('x') here.  (Actually, because the target range is just a constant below,
+ ACL2 could deduce information about each value @('x') takes on, but it
  doesn't.)  The second example can be guard verified and has the advantage of
- being standard Common Lisp so compilers might optimize the handing of @('(+ 1
+ being standard Common Lisp, so compilers might optimize the handing of @('(+ 1
  x)').  The third example can also be guard verified but since the @(':GUARD')
- directive used here is ignored by Common Lisp it does not inform the
- compiler, so this example might execute more slowly than the previous one.
- The last example shows the syntax and use of the ACL2-specific addition to
- @('loop$'): the @(':GUARD') directive protecting, in this case, the
- @('loop$') body.  @(':GUARD') is useful when you wish to add more guard
- information than can be expressed with the Common Lisp @('OF-TYPE')
- directive.  The @('OF-TYPE') and @(':GUARD') directives are conjoined to form
- the actual guard protecting the @('loop$') body.</p>
+ directive used here is ignored by Common Lisp it does not inform the compiler,
+ so this example might execute more slowly than the previous one.  The last
+ example shows the syntax and use of the ACL2-specific addition to @('loop$'):
+ the @(':GUARD') directive protecting, in this case, the @('loop$') body.
+ @(':GUARD') is useful when you wish to add more guard information than can be
+ expressed with the Common Lisp @('OF-TYPE') directive.  The @('OF-TYPE') and
+ @(':GUARD') directives are conjoined to form the actual guard protecting the
+ @('loop$') body.</p>
 
  @({
  ACL2 !>(loop$ for x in '(1 2 3) collect (+ 1 x))
@@ -67820,7 +67819,7 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
   little lectures on the subject than just answers.  So don't expect to
   reproduce our answers.  It's up to you to decide if you know this stuff.  As
   you use @('loop$'), ACL2 will print warnings and error messages about
-  functions not having badges or warrants or expression not being tame.  We
+  functions not having badges or warrants or expressions not being tame.  We
   don't want your reaction to be &ldquo;Ack! What's that all about?&rdquo; We
   want it to be at least &ldquo;Oh yes, I remember now.&rdquo; We recommend
   that after you've read and answered the questions, you read our answers even
