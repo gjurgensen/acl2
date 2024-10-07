@@ -1820,7 +1820,7 @@ Subtopics
   The function [31;1mapp[0m does not print anything and does not change the
   ``world.''
 
-  A third kind of command is one that display information about the
+  A third kind of command is one that displays information about the
   current logical world or that ``roll back'' to previous versions of
   the world.  Such commands are called ``[history]'' {ICON} (see
   [A_Tiny_Warning_Sign]) commands.
@@ -2572,9 +2572,10 @@ Subtopics
       CCF-1153558, EIA-0303609, CNS-0429591, ISS-0417413,
       CCF-0945316, and CNS-0910913.
 
-    * Any opinions, findings and conclusions or recomendations expressed in
-      this material are those of the authors and do not necessarily
-      reflect the views of the National Science Foundation.
+    * Any opinions, findings and conclusions or recommendations expressed
+      in this material are those of the authors and do not
+      necessarily reflect the views of the National Science
+      Foundation.
 
   We are especially grateful to Warren A. Hunt, Jr. for his unrivaled
   efforts in securing support for the entire ACL2 research group at
@@ -5073,12 +5074,12 @@ Silent loading of ACL2 customization files
        case of <NAME>, instead go to the source code definition of NAME for the
        current manual (as for `/', but without a minibuffer query).  The new
        buffer's name reflects that topic name, but it stays the same even if the
-       topic is subequently changed there.
+       topic is subsequently changed there.
 
     g             acl2-doc-go
        Go to the specified topic; performs completion.  The new buffer's name
        reflects that topic name, but it stays the same even if the topic is
-       subequently changed there.
+       subsequently changed there.
 
     G             acl2-doc-go-new-buffer
        Go to the specified topic in a new buffer; performs completion.
@@ -5465,7 +5466,7 @@ Silent loading of ACL2 customization files
 
   See [ACL2-doc] for information about the custom Emacs browser for
   viewing ACL2 [documentation].  In the present topic we list the
-  commands with extremely abbreviation documentation: only a single
+  commands with extremely abbreviated documentation: only a single
   line for each.  For even briefer summaries, you can use the
   standard Emacs command, [47mControl-h m[0m.
 
@@ -5569,7 +5570,7 @@ Silent loading of ACL2 customization files
   (ACL2-TUTORIAL)
   "ACL2 Sedan interface
 
-  Many successful ACL2 users run in an shell under Emacs; see [emacs].
+  Many successful ACL2 users run in a shell under Emacs; see [emacs].
   However, those not familiar with Emacs may prefer to start with an
   Eclipse-based interface initially developed by Peter Dillinger and
   Pete Manolios called the ACL2 Sedan or ``ACL2s''.
@@ -6149,7 +6150,7 @@ Subtopics
   first --- or, if [47mflg[0m is supplied and evaluates to other than [47mnil[0m,
   at the end of the list, so that they are tried last --- rather than
   [31;1mreplacing[0m the default hints with the indicated hints.  Each new
-  hint is thus considered after each existing hints when both are
+  hint is thus considered after each existing hint when both are
   applied to the same goal.  Also See [set-default-hints], see
   [remove-default-hints], and see [default-hints].
 
@@ -6289,7 +6290,7 @@ Subtopics
     Example Forms:
 
     ; For (include-book \"foo\" :dir :smith), prepend to \"foo\" the absolute
-    ; directory pathmame \"/u/smith/\":
+    ; directory pathname \"/u/smith/\":
     (add-include-book-dir :smith \"/u/smith/\")
 
     ; For (include-book \"bar\" :dir :util), prepend to \"bar\" the absolute
@@ -6347,11 +6348,10 @@ Subtopics
   discussion there of ``Books Directory'').
 
   This macro generates a [47m[table][0m event that updates the
-  [47m[ACL2-defaults-table][0m and thus is automcatically [local] to the
-  book or [47m[encapsulate][0m event in which it occurs (and, it is thus
-  illegal to call [47madd-include-book-dir[0m in an explicitly [47m[local][0m
-  context).  See [47m[add-include-book-dir!][0m for a corresponding
-  non-[47m[local][0m event.
+  [47m[ACL2-defaults-table][0m and thus is automatically [local] to the book
+  or [47m[encapsulate][0m event in which it occurs (and, it is thus illegal
+  to call [47madd-include-book-dir[0m in an explicitly [47m[local][0m context).
+  See [47m[add-include-book-dir!][0m for a corresponding non-[47m[local][0m event.
 
   As with [47m[add-include-book-dir!][0m, direct table updates are disallowed;
   you must use [47madd-include-book-dir[0m to add to the [47macl2-defaults-table[0m
@@ -6522,7 +6522,7 @@ Subtopics
   as necessary.  (But note: [47madd-match-free-override[0m is not relevant
   for [type-prescription] rules.)  The event [47m(add-match-free-override
   :once t)[0m has that effect.  Or at the other extreme, perhaps you
-  want to specify all rules as [47m:all[0m rules except for a some specific
+  want to specify all rules as [47m:all[0m rules except for some specific
   exceptions.  Then you can execute [47m(add-match-free-override :all t)[0m
   followed by, say, [47m(add-match-free-override :once (:rewrite foo)
   (:linear bar))[0m.
@@ -6795,8 +6795,8 @@ On proving termination for definitions:
 
     * See [induction-coarse-v-fine-grained] for a discussion of how a
       well-chosen setting for [ruler-extenders] can improve an
-      induction scheme, especiall for a function containing [47m[let][0m and
-      [47m[let*][0m bindings that contain conditional recursive calls.
+      induction scheme, especially for a function containing [47m[let][0m
+      and [47m[let*][0m bindings that contain conditional recursive calls.
 
     * See [set-well-founded-relation] to set the default well-founded
       relation for termination analysis.
@@ -8224,7 +8224,7 @@ Glossary
       function returns), and the [ilk] of each argument position
       telling [47mapply$[0m how each argument is treated.  The ilks are [47m:FN[0m,
       [47m:EXPR[0m and [47mNIL[0m.  The association between a non-primitive
-      function symbol and its badge is manged by [47m[warrant][0ms.  In
+      function symbol and its badge is managed by [47m[warrant][0ms.  In
       proofs, [47mapply$[0m must have a warrant for every non-primitive
       function symbol to be applied.  Those warrants are provided as
       hypotheses to the theorem being proved.  Symbols without badges
@@ -8310,7 +8310,7 @@ Glossary
       objects,'' and ``tame expressions.'' The last are expressions
       that are evaluable by an interpreter named [47m[ev$][0m that is
       mutually-recursive with [47mapply$[0m.  [47mApply$[0m cannot handle all
-      defineable functions: ACL2 is first order and if [47mapply$[0m were
+      definable functions: ACL2 is first order and if [47mapply$[0m were
       able to ``handle'' certain functions the logic would be
       inconsistent.
 
@@ -8908,8 +8908,8 @@ Theorems Involving [47mApply$[0m
   that function symbol in the hypotheses of your conjecture!  That
   is, if you forget to supply a warrant but your conjecture is
   otherwise provable, ACL2's checkpoints will often remind you.  (It
-  is possible, in the absence of an explict warrant hypothesis, for a
-  proof to fail before the prover detects that only the warrant is
+  is possible, in the absence of an explicit warrant hypothesis, for
+  a proof to fail before the prover detects that only the warrant is
   missing.)
 
   [31;1mLesson 4:[0m If a proof involving [47mapply$[0m or a scion fails here are some
@@ -9007,7 +9007,7 @@ Guards and Guard Verification
     (thm (implies (warrant squ) (equal (apply$ 'SQU (list x)) (* x x))))
 
   Do we need need to require [47m(natp x)[0m?  We would if the logical
-  definition of [47mapply$[0m checked the guard of [47mfn[0m before interpretting
+  definition of [47mapply$[0m checked the guard of [47mfn[0m before interpreting
   it.  But it does not check.  It just behaves as specified above.
   So, regardless of whether the guard is satisfied or not, [47m(apply$
   'squ (list x))[0m naively expands (under the warrant) to [47m(squ x)[0m, from
@@ -9026,7 +9026,7 @@ Guards and Guard Verification
   caused the usual guard violation, given the default configuration
   of [47m[set-guard-checking][0m.
 
-  A similar guard violation error is signalled if a guarded [47mLAMBDA[0m
+  A similar guard violation error is signaled if a guarded [47mLAMBDA[0m
   object is [47mapply$[0med to something violating its guard.
 
   But now consider
@@ -9144,7 +9144,7 @@ Guards and Guard Verification
   that's not quite what the guarantee is.  Such a function will never
   cause a hard Lisp error, other than possibly resource errors like
   running out of memory or stack space.  Neither of the errors above
-  were signalled by Common Lisp.  They were ``soft'' ACL2 errors.  In
+  were signaled by Common Lisp.  They were ``soft'' ACL2 errors.  In
   particular, when [47mapply$[0m calls [47msqu[0m above, even when running in raw
   Lisp, it actually calls the executable counterpart of [47msqu[0m, which
   checks guards at runtime and executes properly under the ACL2
@@ -9234,9 +9234,9 @@ Top-Level Evaluation of Apply$
   code for the guard on [47margs[0m.
 
   If the guard check of [47margs[0m succeeds, a compiled version of [47mfn[0m is
-  applied to [47margs[0m.  If the check fails, a guard violation is
-  signalled or else the application of [47mfn[0m to [47margs[0m is interpreted
-  under the definitional axioms of [47mapply$[0m and [47mev$[0m, depending on how
+  applied to [47margs[0m.  If the check fails, a guard violation is signaled
+  or else the application of [47mfn[0m to [47margs[0m is interpreted under the
+  definitional axioms of [47mapply$[0m and [47mev$[0m, depending on how
   [47m[set-guard-checking][0m has been configured.
 
   Finally, if [47mfn[0m is not guard verified, the application of [47mfn[0m to [47margs[0m
@@ -9622,8 +9622,8 @@ Subtopics
 
   Note that if simplification produces a subgoal, that subgoal is
   re-simplified.  This process continues until the subgoal cannot be
-  simplified further.  Only then is the next proof technique is
-  tried.  Such subgoals are said to be [3mstable under simplification[0m.
+  simplified further.  Only then is the next proof technique tried.
+  Such subgoals are said to be [3mstable under simplification[0m.
 
   While this is happening, the prover prints an English narrative
   describing the process.  Basically, after each goal is printed, the
@@ -10641,7 +10641,7 @@ Subtopics
 
   [47mAssert-event[0m is a macro whose expansion directly produces a call of
   the primitive event, [47mvalue-triple[0m, where: if a call of [47massert-event[0m
-  speifies [47m:msg msg[0m, then the corresponding call of [47mvalue-triple[0m
+  specifies [47m:msg msg[0m, then the corresponding call of [47mvalue-triple[0m
   specifies [47m:check (or msg t)[0m.  But unlike [47mvalue-triple[0m, [47massert-event[0m
   can specify an event to evaluate when the assertion has non-[47mnil[0m
   value, using the [47m:event[0m keyword.  (You can get a sense of the
@@ -10870,7 +10870,7 @@ Subtopics
   where [47mgen[0m and [47mimpl[0m are symbols, [47mgen[0m is not currently the [name] of
   any [event] (function, macro, constant, stobj, etc.), and [47mimpl[0m is
   an abstract stobj.  A subsequent attempt to introduce [47mgen[0m as an
-  attachabnle stobj will require [47mgen[0m and [47mimpl[0m to have [3mcorresponding
+  attachable stobj will require [47mgen[0m and [47mimpl[0m to have [3mcorresponding
   logical skeletons[0m as described below.  In that case, the foundation
   of [47mgen[0m, as well as execution of the primitives of [47mgen[0m, will
   effectively be provided by [47mimpl[0m; details are below.
@@ -13373,7 +13373,7 @@ Subtopics
 
   We conclude by discussing a rather insidious book-hash mismatch that
   can occur when including a book using an ACL2 executable that
-  differs from the executable that was used when certified the book.
+  differs from the executable that was used when certifying the book.
   Here is an example.  Consider a book, [47m\"foo.lisp\"[0m, containing the
   event [47m(include-book \"tools/remove-hyps\" :dir :system)[0m.  Suppose we
   have ACL2 executables [47macl2-cksum[0m and [47macl2-alist[0m, in different ACL2
@@ -15665,7 +15665,9 @@ Subtopics
 
       ((*acl2-system-exports* \"[books]/system/acl2-system-exports.lisp\")
        (<< \"[books]/misc/total-order.lisp\")
+       (acl2s::acl2s-installation \"[books]/acl2s/installation.lisp\")
        (add-io-pairs \"[books]/std/util/add-io-pairs.lisp\")
+       (algebra \"[books]/doc/more-topics.lisp\")
        (append-without-guard \"[books]/std/lists/flatten.lisp\")
        (oslib::argv \"[books]/oslib/argv-logic.lisp\")
        (arith-equivs \"[books]/std/basic/arith-equiv-defs.lisp\")
@@ -15676,8 +15678,9 @@ Subtopics
        (assert! \"[books]/std/testing/assert-bang.lisp\")
        (assert!-stobj \"[books]/std/testing/assert-bang-stobj.lisp\")
        (b* \"[books]/std/util/bstar.lisp\")
+       (bit-vectors \"[books]/doc/more-topics.lisp\")
        (bridge \"[books]/centaur/bridge/top.lisp\")
-       (oslib::argv \"[books]/oslib/catpath.lisp\")
+       (oslib::catpath \"[books]/oslib/catpath.lisp\")
        (build::cert.pl \"[books]/build/doc.lisp\")
        (build::cert_param \"[books]/build/doc.lisp\")
        (cgen \"[books]/acl2s/cgen/top.lisp\")
@@ -15752,6 +15755,7 @@ Subtopics
        (remove-hyps \"[books]/tools/remove-hyps.lisp\")
        (rewrite$ \"[books]/tools/rewrite-dollar.lisp\")
        (rewrite-equiv-hint \"[books]/coi/util/rewrite-equiv.lisp\")
+       (rtl \"[books]/rtl/rel11/lib/doc.lisp\")
        (run-script \"[books]/tools/run-script.lisp\")
        (satlink::sat-solver-options \"[books]/centaur/satlink/top.lisp\")
        (satlink \"[books]/centaur/satlink/top.lisp\")
@@ -15781,7 +15785,7 @@ Subtopics
        (with-timeout \"[books]/acl2s/cgen/with-timeout.lisp\")
        (without-subsumption \"[books]/tools/without-subsumption.lisp\")
        (working-with-packages \"[books]/doc/practices.lisp\")
-       (write-list \"[books]/misc/file-io.lisp\")
+       (write-list \"[books]/misc/file-io-doc.lisp\")
        (xdoc \"[books]/xdoc/topics.lisp\"))")
  (BRR
   (BREAK-REWRITE)
@@ -16244,8 +16248,8 @@ Subtopics
 
     make LISP=<my-lisp>
 
-  You should find \"Initialization SUCCEEDED.\" near the end the of the
-  log.  Note: There may be ACL2 warnings, for example: \"ACL2 Warning
+  You should find \"Initialization SUCCEEDED.\" near the end of the log.
+  Note: There may be ACL2 warnings, for example: \"ACL2 Warning
   [Skip-proofs] in....\".  These may be safely ignored.
 
   Note that you will want to certify [books] in order to take full
@@ -16944,10 +16948,10 @@ Subtopics
   character that specifies a directory as an absolute pathname.  (See
   [pathname] for a discussion of file naming conventions.)  When
   utilities that take a filename argument, such as [47m[include-book][0m,
-  are given a relative pathname, it is elaborated it into an absolute
+  are given a relative pathname, it is elaborated into an absolute
   pathname, essentially by appending the connected book directory
   string to the left and [47m\".lisp\"[0m to the right.  (This absolute
-  pathname is actuallly canonical when elaborating book names.  For
+  pathname is actually canonical when elaborating book names.  For
   more details on book names, see [book-name] and also see
   [full-book-name].)  Furthermore, [47m[include-book][0m and [47m[ld][0m
   temporarily set the connected book directory to the directory
@@ -17833,14 +17837,10 @@ Subtopics
   compiled file with a temporary file name, and then moves that
   temporary file to the final compiled file name obtained by adding a
   suitable extension to the book's filename.  Thus, a compiled file
-  will appear atomically in its intended location.)  Finally, suppose
-  that [47mcompile-flg[0m is not supplied (or is [47m:default[0m).  If environment
-  variable [47mACL2_COMPILE_FLG[0m is defined and not the empty string, then
-  its value should be [47mT[0m, [47mNIL[0m, or [47mALL[0m after converting to upper case,
-  in which case [47mcompile-flg[0m is considered to have value [47mt[0m, [47mnil[0m, or
-  [47m:all[0m (respectively).  Otherwise [47mcompile-flg[0m defaults to [47mt[0m.  Note
-  that the value [47m:all[0m is equivalent to [47mt[0m except for during the
-  Convert procedure of provisional certification; see
+  will appear atomically in its intended location.)  Finally, if
+  [47mcompile-flg[0m is not supplied (or is [47m:default[0m) then it is treated as
+  [47mt[0m.  Note that the value [47m:all[0m is equivalent to [47mt[0m except for during
+  the Convert procedure of provisional certification; see
   [provisional-certification].
 
   Two keyword arguments, [47m:defaxioms-okp[0m and [47m:skip-proofs-okp[0m, determine
@@ -17956,7 +17956,7 @@ Subtopics
   file, which is automatically deleted unless [state] global variable
   [47m'save-expansion-file[0m has been set, presumably by a system
   developer, to a non-[47mnil[0m value; see [book-compiled-file] for more
-  information about hit issue, including the role of environment
+  information about this issue, including the role of environment
   variable [47mACL2_SAVE_EXPANSION[0m.
 
   After execution of a [47mcertify-book[0m form, the value of
@@ -19919,7 +19919,7 @@ Subtopics
   See [git-quick-start] for information about how to download the
   ``bleeding edge'' ACL2 system and community books.
 
-  The communinty books are also available with ACL2 releases.  See the
+  The community books are also available with ACL2 releases.  See the
   ``Installing'' link from the {ACL2 home page |
   http://www.cs.utexas.edu/users/moore/acl2/}.
 
@@ -20064,12 +20064,12 @@ Subtopics
   where [47mx[0m and [47my[0m are two (almost) arbitrary objects but which must both
   be [47mcons[0m trees for the comparison to be non-trivial.  The output
   (described below) might be confusing if either object contains
-  keywords of the form [47m:<|s...|>[0m, where the elipsis is the decimal
+  keywords of the form [47m:<|s...|>[0m, where the ellipsis is the decimal
   representation of a natural number.  For example, the output would
   be confusing if [47mx[0m or [47my[0m contained [47m:|<s1>|[0m because [47mcompare-objects[0m
   inserts tokens like that to mark differences.
 
-  [47mCompare-objects[0m walks through both ojects to detect where
+  [47mCompare-objects[0m walks through both objects to detect where
   corresponding substructures first differ.  It replaces differences
   by the keyword symbols [47m:|<s1>|[0m, [47m:|<s2>|[0m, [47m:|<s3>|[0m, ..., which we
   call ``placeholders.'' It then assembles a ``legend'' that displays
@@ -20912,8 +20912,7 @@ Subtopics
   the processing of the clause starts over with simplification.
 
   As for [47mCTX[0m and [47m[state][0m, they are provided so that you can pass them
-  to the [47m[er][0m macro to print error messages.  We recommend not
-  writing computed hints that otherwise change [47m[state][0m!
+  to the [47m[er][0m macro to print error messages.
 
   The remaining variables, [47mHIST[0m and [47mPSPV[0m are not documented yet.  Only
   users familiar with the internals of ACL2 are likely to need them
@@ -21670,7 +21669,7 @@ Subtopics
   The case (phi_1 & phi_2) follows easily from the inductive
   hypothesis.  For the forward direction, apply Proposition 4 and the
   observation that by genericity, if p0 \\in G and p1 \\in G then p0
-  and p1 they have a common extension in G.
+  and p1 have a common extension in G.
 
   Finally, the case (exists x) phi follows trivially from the inductive
   hypothesis. -|
@@ -22180,9 +22179,9 @@ Subtopics
   Another aspect we have not discussed is what happens to nested
   encapsulations when each introduces constrained functions.  We say
   an [47mencapsulate[0m event is ``trivial'' if it introduces no constrained
-  functions, i.e., if its signatures is [47mnil[0m.  Trivial encapsulations
-  are just a way to wrap up a collection of events into a single
-  event.
+  functions, i.e., if its list of signatures is [47mnil[0m.  Trivial
+  encapsulations are just a way to wrap up a collection of events
+  into a single event.
 
   From the foregoing discussion we see we are interested in exactly how
   we can ``rearrange'' the events in a non-trivial encapsulation ---
@@ -23170,7 +23169,6 @@ Subtopics
     NIL
     ACL2 !>
 
-    @({
     General Forms:
 
     (cw-print-base-radix print-base fmt-string arg1 arg2 ... argn)
@@ -23509,7 +23507,7 @@ Subtopics
   typical such predicates in ACL2 applications are those that check
   invariants, e.g., that recognize ``good states'' or ``well-formed
   data.'' These are often written inefficiently because they are
-  intended only for used in theorems and, before the tau system was
+  intended only for use in theorems and, before the tau system was
   added, they may have never been applied to constants.  The most
   common constants tau predicates are applied to are [47m0[0m, [47mT[0m, and [47mNIL[0m,
   although different models may stress other constants.  To
@@ -25559,8 +25557,8 @@ Badges versus Warrants
   sense, all the functions reachable from it.  And finally, to be
   able to prove theorems about the application of such function
   names, the link between the symbols and the functions and the
-  analyzed properties of the functions must available to the prover
-  in the form of axioms.  Particularly vexing is the so-called
+  analyzed properties of the functions must be available to the
+  prover in the form of axioms.  Particularly vexing is the so-called
   ``[47mlocal[0m problem'' which raises the possibility of proving a theorem
   about the application of a name in the context of a local
   definition of the corresponding function and then exporting that
@@ -25755,8 +25753,8 @@ The ``Reachability'' Test
   http://www.cs.utexas.edu/users/kaufmann/papers/apply/index.html} by
   Matt Kaufmann and J Strother Moore and offer a fully fleshed out
   metalevel proof that [47mapply$[0m and all [47m:logic[0m-mode scions can be
-  modelled in the comment titled [47mEssay on Admitting a Model for
-  Apply$ and the Functions that Use It[0m in the ACL2 source file
+  modeled in the comment titled [47mEssay on Admitting a Model for Apply$
+  and the Functions that Use It[0m in the ACL2 source file
   [47mapply-raw.lisp[0m.
 
   But badges are more concerned with syntax (and, for [47m:program[0m mode
@@ -25802,7 +25800,7 @@ How Ilks Are Assigned
   consistency of the proof theory created if and when [47mfn[0m is
   warranted.
 
-  The key to the inductive correctness of the algorithm implicity
+  The key to the inductive correctness of the algorithm implicitly
   described below is the fact that when the ACL2 logic is being
   booted up the only function symbol with a slot of ilk [47m:FN[0m is [47mapply$[0m
   and the only function with a slot of ilk [47m:EXPR[0m is [47mev$[0m.  In both
@@ -26520,7 +26518,7 @@ Subtopics
   with [47m[apply$][0m, [47m[loop$][0m, or [47m[loop$-recursion][0m.  [47m(Definductor fn)[0m
   attempts to create an induction scheme appropriate for the
   previously defined [47mloop$[0m-recursive function [47mfn[0m and prove an
-  [47m:[0m[47m[induction][0m rule so that certains calls of [47mfn[0m suggest that
+  [47m:[0m[47m[induction][0m rule so that certain calls of [47mfn[0m suggest that
   induction.
 
   [31;1mWarning:[0m [47mDefinductor[0m currently handles a very small class of
@@ -26590,7 +26588,7 @@ Restrictions
   class of [47mloop$[0m-recursive functions that can be successfully
   handled.  We have not yet even looked at inductions for [47mON[0m [47mloop$[0ms
   and [47mFROM/TO/BY[0m [47mloop$[0ms, so that might be easy.  Induction for [47mloop$[0ms
-  over arbtrary target expressions may be infeasible!  We just need
+  over arbitrary target expressions may be infeasible!  We just need
   more examples of [47mloop$[0m-recursive functions and successful
   (hand-written) induction hints for them.")
  (DEFINE-PC-HELP
@@ -26653,7 +26651,7 @@ Restrictions
     General Form:
     (define-pc-macro cmd args doc-string dcl ... dcl body)
 
-  where [47mcmd[0m is the name of the pc-macro than you want to define, [47margs[0m
+  where [47mcmd[0m is the name of the pc-macro that you want to define, [47margs[0m
   is its list of formal parameters.  [47mArgs[0m may include lambda-list
   keywords [47m&optional[0m and [47m&rest[0m; see [macro-args], but note that here,
   [47margs[0m may not include [47m&key[0m or [47m&whole[0m.
@@ -27858,10 +27856,7 @@ Subtopics
     ***********************************************
 
     If you didn't cause an explicit interrupt (Control-C),
-    then the root cause may be call of a :program mode
-    function that has the wrong guard specified, or even no
-    guard specified (i.e., an implicit guard of t).
-    See :DOC guards.
+    then it may help to see :DOC raw-lisp-error.
 
     To enable breaks into the debugger (also see :DOC acl2-customization):
     (SET-DEBUGGER-ENABLE T)
@@ -28318,7 +28313,7 @@ Hash-table Types
     * a ``get?'' function that, for a given key, returns two values [47m(mv val
       boundp)[0m, where: if the given key is bound then [47mval[0m is its value
       and [47mboundp[0m is [47mt[0m, else [47mval[0m is as specified by the [47m:initially[0m
-      keyword ([47mnil[0m by defafult) and [47mboundp[0m is [47mnil[0m;
+      keyword ([47mnil[0m by default) and [47mboundp[0m is [47mnil[0m;
 
     * a ``remove'' function for removing a given key;
 
@@ -30469,7 +30464,7 @@ Subtopics
   (DEFUN-SK)
   "A simple example using [47m[defun-sk][0m
 
-  For a more through, systematic beginner's introduction to
+  For a more thorough, systematic beginner's introduction to
   quantification in ACL2, see [quantifier-tutorial].
 
   The following example illustrates how to do proofs about functions
@@ -31245,10 +31240,10 @@ Section 3: How the challenges are addressed
 
   We return now to Problem #2, that the functions [47mEQUAL[0m and [47m=[0m are
   logically the same in ACL2 but not in raw Lisp, as seen by
-  evaluation in raw Lisp, where [47m(equal 1 1.0)[0m evaluates to [47mnil) but
-  @('(= 1 1.0)[0m evaluates to [47mt[0m.  This problem is avoided by our
-  syntactic tracking of df expressions.  The following example shows
-  that [47mequal[0m cannot be called on a df expression.
+  evaluation in raw Lisp, where [47m(equal 1 1.0)[0m evaluates to [47mnil[0m but [47m(=
+  1 1.0)[0m evaluates to [47mt[0m.  This problem is avoided by our syntactic
+  tracking of df expressions.  The following example shows that [47mequal[0m
+  cannot be called on a df expression.
 
     ACL2 !>(equal 1 (to-df 1))
 
@@ -31287,14 +31282,14 @@ Section 3: How the challenges are addressed
     the requirements of IEEE Standard for Binary Floating-Point
     Arithmetic.
 
-  ACL2 checks at build time that that this feature is present.
-  However, that IEEE standard specifies results of operations with
-  respect to a [3mrounding mode[0m.  Probably most or all Common Lisp
-  implementations use [3mround to nearest even[0m as their rounding mode,
-  but this is not guaranteed.  We work around this problem to some
-  extent by introducing a constrained rounding function, [47mdf-round[0m,
-  and using it to define the rational function primitives: addition
-  ([47mdf+[0m), subtraction ([47mdf-[0m), multiplication ([47mdf*[0m), and division ([47mdf/[0m).
+  ACL2 checks at build time that this feature is present.  However,
+  that IEEE standard specifies results of operations with respect to
+  a [3mrounding mode[0m.  Probably most or all Common Lisp implementations
+  use [3mround to nearest even[0m as their rounding mode, but this is not
+  guaranteed.  We work around this problem to some extent by
+  introducing a constrained rounding function, [47mdf-round[0m, and using it
+  to define the rational function primitives: addition ([47mdf+[0m),
+  subtraction ([47mdf-[0m), multiplication ([47mdf*[0m), and division ([47mdf/[0m).
   Transcendental functions, such as the sine function, are not as
   straightforward to define in terms of rounding.  Although the sine
   function, for example, might be defined by rounding a sufficiently
@@ -31373,7 +31368,7 @@ Section 3: How the challenges are addressed
 
   Since rounding (to nearest even, in particular) is not tied down by
   the Common Lisp language, different host Lisp implementations may
-  give different results.  This leads us the following point of
+  give different results.  This leads us to the following point of
   emphasis.
 
     When a collection of books is certified (see [certify-book]), the
@@ -31865,8 +31860,8 @@ Section 7: Remarks on performance
 
   [4mInlining of df primitives[0m
 
-  Suppose we start ACL2 and the submit the following forms, which
-  defines [47mg1[0m in raw Lisp and provides its assembly code.
+  Suppose we start ACL2 and then submit the following forms, which
+  define [47mg1[0m in raw Lisp and provide its assembly code.
 
     (defun g1 (x y) (declare (type double-float x y)) (df< x y))
     (disassemble 'g1)
@@ -32920,7 +32915,7 @@ Subtopics
       supposedly decreases (under [47m[l<][0m) on each iteration of the
       [47mdo-fn[0m and is checked after each iteration,
 
-    * [47malist[0m --- an alist the binds the variable symbols used in the body
+    * [47malist[0m --- an alist that binds the variable symbols used in the body
       and [47mfinally[0m clause (if any) to their values,
 
     * [47mdo-fn[0m --- a [47mlambda[0m object that computes the results of one iteration,
@@ -33077,7 +33072,7 @@ INFORMAL INTRODUCTION
     (120)
     ACL2 !>
 
-  See [lp-section-14] of the [47mLoop$[0m Primer for some exerices in writing
+  See [lp-section-14] of the [47mLoop$[0m Primer for some exercises in writing
   and executing [47mDO[0m [47mLoop$[0ms (with answers in a Community Book).  But
   remember to come back here when you get to the end of that section.
 
@@ -38195,7 +38190,7 @@ Subtopics
     #.|*BaR*|
     ACL2 !>
 
-  The examples above illulstrate how the [47mevisc-table[0m is used when
+  The examples above illustrate how the [47mevisc-table[0m is used when
   printing evaluation results.  More generally, that [table] is used
   when [47m[fmt][0m (or a related function such as [47m[fms][0m) prints an object
   using [47m~x[0m [47m~X[0m, [47m~y[0m, [47m~Y[0m, [47m~f[0m, or [47m~F[0m.")
@@ -38851,7 +38846,7 @@ Subtopics
 
   However, if the number of conses in the [47mlambda[0m object is greater than
   or equal to [47m(lambda-object-count-max-val)[0m, we cause an error.  If
-  this error has been signalled in your session we recommend that you
+  this error has been signaled in your session we recommend that you
   evaluate [47m(explain-giant-lambda-object)[0m, which will tell you more
   about the excessively large [47mlambda[0m object.  The current value of
   [47m(lambda-object-count-max-val)[0m is 200,000.  For reference, the
@@ -39269,7 +39264,7 @@ Subtopics
   Note that when the indicated file exists, [47mextend-pathname[0m resolves
   symbolic links by using [47m[canonical-pathname][0m.  If you don't want
   symbolic links to be resolved there are simpler alternatives; for
-  example, see oslib::catpath.")
+  example, see [oslib::catpath].")
  (EXTEND-PE-TABLE
   (HISTORY)
   "Replace [events] displayed by [history] commands
@@ -41761,7 +41756,7 @@ Example 2
     ; association of an array with the name 'demo.  Then the subsequent call of
     ; compress1 associates the object (@ a) with that name.  (Technical point:
     ; compress1 always associates the indicated name with the value that it
-    ; returns.  in this case, what compress1 returns is (@ a), because (@ a) is
+    ; returns.  In this case, what compress1 returns is (@ a), because (@ a) is
     ; already, logically speaking, a compressed array1p (starts with a :header
     ; and the natural number keys are ordered).
     ACL2 !>(flush-compress 'demo)
@@ -46457,8 +46452,8 @@ Salient Facts about the ACL2 Rewriter
       literal is [47m[iff][0m.
 
     * Each [47m:[0m[47m[rewrite][0m rule in ACL2 effectively concludes with a term of the
-      form [47m(@('eqv lhs rhs)[0m, where [47meqv[0m is an equivalence relation.
-      Such a rule may be used to replace instances of [47mlhs[0m by the
+      form [47m(eqv lhs rhs)[0m, where [47meqv[0m is an equivalence relation.  Such
+      a rule may be used to replace instances of [47mlhs[0m by the
       corresponding instance of [47mrhs[0m, and maintains the equivalence
       relation [47meqv[0m.  But the rule is only applicable if [47meqv[0m [3mrefines[0m
       the equivalence relation to be maintained by rewrite.  See
@@ -46599,7 +46594,7 @@ Subterms
   x))[0m maintaining [47m(PAIRWISE-IFF PERM)[0m.  If the user had proved the
   following two rewrite rules
 
-    (defthm perm-isort                ; isort perserves perm
+    (defthm perm-isort                ; isort preserves perm
       (perm (isort X) X))
 
     (defthm pairwise-iff-norml        ; norml preserves pairwise-iff
@@ -46898,7 +46893,7 @@ Abstract
   computer systems, together with a tool to help you prove properties
   of those models. ``ACL2'' denotes ``A Computational Logic for
   Applicative Common Lisp''.  The ACL2 programming language is a
-  subet of [3mside-effect free[0m Common Lisp.  Mathematically speaking,
+  subset of [3mside-effect free[0m Common Lisp.  Mathematically speaking,
   all ACL2 programs are functions.  When two calls of a function
   supply the same objects as inputs the calls return the same
   results.  If all you want to do is define ACL2 functions and run
@@ -46935,7 +46930,7 @@ Getting Started
   prompts you for your next input.
 
   You could use ACL2 with no other interface.  But most users prefer an
-  enviroment in which they can prepare a command by editing the text
+  environment in which they can prepare a command by editing the text
   before submitting it.  We use an Emacs shell buffer for that.
   Other users use ACL2s (see [ACL2-SEDAN]), which is an Eclipse
   plug-in.  This guide doesn't discuss the interface further and we
@@ -47253,7 +47248,7 @@ Lists
   or might be written in Cartesian coordinate notation as <[47m1[0m,[47m2[0m>.  But
   in ACL2 it is written as the object [47m(1 . 2)[0m.  This is a single cons
   object in ACL2, with two integer objects as constituents.  The
-  left-hand constitutent is called the [3mcar[0m of the pair.  The
+  left-hand constituent is called the [3mcar[0m of the pair.  The
   right-hand constituent is called the [3mcdr[0m.
 
   The tree we might draw as
@@ -47796,7 +47791,7 @@ Saving Intermediate Results
   computes [47mx[0m^8.
 
   Here is an example of a common use of [47mlet[0m.  Suppose you wish to find
-  the length of the longest branchs in a binary tree.  The function
+  the length of the longest branches in a binary tree.  The function
   [47mdepth[0m does that.  It is an example of the ``visit every node in a
   binary tree'' scheme.
 
@@ -49234,7 +49229,7 @@ Subtopics
   Well-formedness implies tameness, so any [47mLAMBDA[0m object that passes
   this translate-time test will have the ``expected behavior'' under
   [47mapply$[0m.  If a quoted ill-formed ``LAMBDA-like'' object is passed
-  into a [47m:FN[0m slot, an error is signalled.
+  into a [47m:FN[0m slot, an error is signaled.
 
   This is logically unnecessary because, like all ACL2 functions,
   [47mapply$[0m can be called on any objects.  Indeed, ill-formed
@@ -49243,7 +49238,7 @@ Subtopics
 
   But ground [47mapply$[0m terms can be evaluated more quickly on well-formed
   [47mLAMBDA[0m objects than on ill-formed ones.  See for example the
-  dicussion of performance in [47m[print-cl-cache][0m.  So this retriction
+  discussion of performance in [47m[print-cl-cache][0m.  So this restriction
   is really motivated by a desire to encourage the exclusive use of
   well-formed [47mLAMBDA[0m objects.
 
@@ -50054,7 +50049,7 @@ Subtopics
   "Avoiding certain warnings when evaluating ACL2 expressions
 
   ACL2 sometimes omits the checking of [guard]s on recursive calls of
-  functions.  This omission is signaled by a warningt like the one
+  functions.  This omission is signaled by a warning like the one
   shown below.
 
     ACL2 !>(factorial 3)
@@ -52657,12 +52652,12 @@ Subtopics
     (e/d nil
          ((:executable-counterpart rewrite-lambda-modep)))
 
-  which is a theory equal to then current theory except that the
+  which is a theory equal to the current theory except that the
   executable-counterpart rune of [47mrewrite-lambda-modep[0m is disabled.
   This expansion is suitable for use in an [47m[in-theory][0m event or
   [47m:in-theory[0m hint (see [47m:[0m[47m[hints][0m).
 
-  This rune is initally enabled, so eligible [47mlambda[0m object bodies are
+  This rune is initially enabled, so eligible [47mlambda[0m object bodies are
   either rewritten or syntactically cleaned by default (depending on
   the status of [47m(:definition rewrite-lambda-modep)[0m) until and unless
   some event (e.g., an [47m[in-theory][0m or [47m[include-book][0m) or a superior
@@ -56740,7 +56735,7 @@ Coarse versus Fine Induction Case Analysis
                                         y)))))
                   (p (fn x y)))).
 
-  [31;1mNote[0m: Here and throughought this documentation topic we freely
+  [31;1mNote[0m: Here and throughout this documentation topic we freely
   rearrange the formulas we display to make it easier to compare
   different induction schemes.  For example, when the prover attempts
   to prove [47m(p (fn x y))[0m it lists the conjuncts above in the opposite
@@ -56829,7 +56824,7 @@ Coarse versus Fine Induction Case Analysis
   The induction generated is shown below.  We have slightly simplified
   the induction by replacing [47m(if [0m[3ma b c[0m[47m)[0m by [3mb[0m when [3ma[0m is among the
   hypotheses in the case analysis, and by replacing [47m(if [0m[3ma b c[0m[47m)[0m by [3mc[0m
-  when [47m(not [0m[3ma[0m[47m)[0m is among the hyotheses.  This simplification is
+  when [47m(not [0m[3ma[0m[47m)[0m is among the hypotheses.  This simplification is
   actually not done by induction analysis but by the first
   simplification.
 
@@ -57016,7 +57011,7 @@ Comparing Several Optimizations
       any terms but insists that the controllers, [47mx[0m and [47mlst[0m,
       respectively, be those particular variable names.
 
-  In addition, we sometime avail ourselves of special-purpose lemmas.
+  In addition, we sometimes avail ourselves of special-purpose lemmas.
 
     * [47mNIL lem[0m --- rewrites [47m(ppr1-lst nil ...)[0m to [47mnil[0m.
 
@@ -57074,7 +57069,7 @@ Comparing Several Optimizations
   pretty good!
 
   Ignoring scenario 7 --- where the additional improvement came from a
-  completely different source, namely, avoidng the expansion of [47mMAX[0m
+  completely different source, namely, avoiding the expansion of [47mMAX[0m
   expressions --- the difference between the easiest thing to do
   (scenario 3) and the fastest method that focused on manually
   controlling [47mppr1[0m and [47mppr1-lst[0m (scenario 5) was less than 4 seconds.
@@ -57171,11 +57166,12 @@ Subtopics
 
   An [47m\"Infected\"[0m warning indicates that an event introducing a function
   symbol inside [47mencapsulate[0m event affects the constraint exported for
-  the function introduced in the [signature] of that [47mencapsulate[0m.
-  That function is typically introduced with [47m[defun][0m, but it could be
-  introduced in a signatures of a subsidiary [47mencapsulate[0m event or in
-  a [47m[defchoose][0m event.  Below we'll discuss the case of [47mdefun[0m, but
-  the others are completely analogous for an [47m\"Infected\"[0m warning.
+  the function introduced in the [signature] list of that
+  [47mencapsulate[0m.  That function is typically introduced with [47m[defun][0m,
+  but it could be introduced in a signature list of a subsidiary
+  [47mencapsulate[0m event or in a [47m[defchoose][0m event.  Below we'll discuss
+  the case of [47mdefun[0m, but the others are completely analogous for an
+  [47m\"Infected\"[0m warning.
 
   Let's compare the following three examples.
 
@@ -58441,7 +58437,7 @@ Subtopics
   it means you are in [47m:[0m[47m[program][0m ({ICON} (see [A_Tiny_Warning_Sign]))
   mode rather than [47m:[0m[47m[logic][0m ({ICON} (see [A_Tiny_Warning_Sign]))
   mode.  In [47m:program[0m mode, [47mdefun[0m just defines Common Lisp programs
-  that you can evaluation but it adds no axioms and you cannot use
+  that you can evaluate, but it adds no axioms and you cannot use
   such defined functions in theorems or invoke [47mdefthm[0m.  [47m:Program[0m mode
   is often used to prototype a model.
 
@@ -58545,19 +58541,47 @@ Subtopics
   (APPLY$)
   "Background knowledge on how to use [47m[apply$][0m, [47m[defwarrant][0m, etc.
 
-  The paper {``Limited Second-Order Functionality in a First-Order
-  Setting'' |
+
+Background and Organization
+
+  [47mApply$[0m is the ACL2 version of LISP's [47mapply[0m function.  It takes a
+  ``function'' and a list of argument values, applies the function to
+  the arguments, and returns the result.  For example, [47m(apply$ 'expt
+  (list 2 8))[0m returns 256.
+
+  A good introduction to the basic ideas and challenges of adding
+  [47mapply$[0m to ACL2 is the paper {``Limited Second-Order Functionality
+  in a First-Order Setting'' |
   http://www.cs.utexas.edu/users/kaufmann/papers/apply/index.html} by
-  Matt Kaufmann and J Strother Moore best explains the basic logical
-  and practical ideas behind [47mapply$[0m.  We refer to the paper simply as
-  ``the paper.'' Supplemental material on the logical foundations of
-  [47mapply$[0m can be found in the [community-books] directory
-  [47mbooks/projects/apply-model/[0m.  Also see [47m[apply$][0m for detailed
-  documentation on [47mapply$[0m that complements the introduction below, to
-  be read carefully when you're ready to use [47mapply$[0m in your own
-  projects.  We suggest that you not follow all the links in
-  introductory discussion and instead read it linearly as you might a
-  paper.
+  Matt Kaufmann and J Strother Moore, [3mJournal of Automated Reasoning[0m,
+  Springer, [31;1m64[0m, pp 391-422, 2018.  We refer to the paper simply as
+  ``the paper.'' Some aspects of the paper are no longer accurate
+  because the implementation of [47mapply$[0m has matured since 2018.  But
+  as a basic introduction, rather than a reference guide or user's
+  manual, the paper is a good place to start.  It provides
+  motivations and challenges, succinct and precise definitions of
+  relevant concepts, lots of examples, a model and meta-level proof
+  that the extended theory is consistent, and a discussion of the
+  limitations and of related work.  The model described in the paper
+  is illustrated concretely in the certified books under
+  [47mbooks/projects/apply-model/[0m.  See the [47mREADME[0m file there.
+
+  The current documentation topic takes a slightly more informal
+  approach but covers much of the same ground.  In particular, after
+  some preliminary remarks we coach you through a few simple simple
+  exercises involving [47mapply$[0m and related concepts.  During these
+  exercises we draw your attention to some basic lessons to keep in
+  mind.  At the end of this topic we list some simple challenge
+  problems.
+
+  This topic links to reference-level documentation for [47m[apply$][0m and
+  those other concepts.  But if you are just getting started with
+  [47mapply$[0m we recommend that you work your way through this topic,
+  including doing the examples described below, without following all
+  the links.
+
+
+Challenges and Basic Solutions
 
   The unreachable goal of this work is to allow the ACL2 user to pass
   `functions' as objects and to apply them.  That goal is unreachable
@@ -58568,10 +58592,15 @@ Subtopics
   functions with certain tameness properties to be passed around and
   used as functions.
 
+  By the way, in this documentation topic we tend to display certain
+  symbols sometimes in uppercase and sometimes in lowercase.  They
+  denote the same symbol.  But we use uppercase when we're using the
+  symbol as a quoted constant to be passed to [47mapply$[0m and we use
+  lowercase when we're using the symbol as a function symbol in a
+  term.
+
   ``Tameness'' imposes strict rules on how functional arguments are
-  used.  We'll discuss it further below but tame functions are
-  recognized by the [47m:logic[0m mode function [47mtamep-functionp[0m and the
-  paper gives explanatory details.
+  used.  We'll discuss it further below.
 
   The fundamental question raised by [47mapply$[0m is ``How can [47mapply$[0m know
   the correspondence between an ordinary ACL2 object, like a symbol
@@ -58597,17 +58626,18 @@ Subtopics
   Intuitively, if you have defined the [47mn[0m-ary function [47mfoo[0m then you
   would expect [47m(apply$ 'foo (list a1...an))[0m to be [47m(foo a1...an)[0m.  One
   way to arrange that might be to leave [47mapply$[0m undefined on the
-  symbol [47mfoo[0m but to assume, as by an axiom or hypothesis,
+  symbol [47mfoo[0m but to assume, as by a new axiom or hypothesis,
 
     forall a1...an : (apply$ 'foo (list a1...an)) = (foo a1...an).
 
   It will turn out that using new axioms for this purpose is a bad
   idea.  Hiding the link between [47mapply$[0m and new symbols in axioms
-  raises a problem with ACL2's notion of [47m[local][0m.  We illustrate this
-  problem later in this doc topic.  But for that reason, the
-  suppositions extending [47mapply$[0m will take the form of hypotheses to
-  be added to conjectures in which the behavior of [47mapply$[0m on new
-  symbols is important.  These hypotheses are called ``[47m[warrant][0ms.''
+  raises a problem with ACL2's notion of [47m[local][0m.  This is called
+  ``the [47mLOCAL[0m problem'' and we illustrate it later in this doc topic.
+  But for that reason, the suppositions extending [47mapply$[0m will take
+  the form of hypotheses to be added to conjectures in which the
+  behavior of [47mapply$[0m on new symbols is important.  These hypotheses
+  are called ``[47m[warrant][0ms.''
 
   Warrant (Merriam-Webster): (noun) a commission or document giving
   authority to do something....
@@ -58667,34 +58697,34 @@ Subtopics
   For example, consider the following function, which maps a given
   function over a list and collects the results.
 
-    (defun collect$ (fn lst)
+    (defun my-collect$ (fn lst)
       (if (endp lst)
           nil
           (cons (apply$ fn (list (car lst)))
-                (collect$ fn (cdr lst)))))
+                (my-collect$ fn (cdr lst)))))
 
-  Our definition of tameness considers [47m(collect$ 'SQ lst)[0m to be a tame
-  expression, even though [47mcollect$[0m calls [47mapply$[0m.  The reason we can
-  allow this is that in this particular call of [47mcollect$[0m the function
-  to be applied is itself tame.  But if [47m(collect$ 'SQ lst)[0m is a tame
-  expression, then [47m'(LAMBDA (LST) (COLLECT$ 'SQ LST))[0m is a tame
-  function and thus
+  Our definition of tameness considers [47m(my-collect$ 'SQ lst)[0m to be a
+  tame expression, even though [47mmy-collect$[0m calls [47mapply$[0m.  The reason
+  we can allow this is that in this particular call of [47mmy-collect$[0m
+  the function to be applied is itself tame.  But if [47m(my-collect$ 'SQ
+  lst)[0m is a tame expression, then [47m'(LAMBDA (LST) (MY-COLLECT$ 'SQ
+  LST))[0m is a tame function and thus
 
-    (collect$ '(LAMBDA (LST) (COLLECT$ 'SQ LST)) z)
+    (my-collect$ '(LAMBDA (LST) (MY-COLLECT$ 'SQ LST)) z)
 
   is a tame expression.  So, for example, at the top-level of ACL2 one
   can do this:
 
-    ACL2 !>(collect$ '(LAMBDA (LST) (COLLECT$ 'SQ LST))
+    ACL2 !>(my-collect$ '(LAMBDA (LST) (MY-COLLECT$ 'SQ LST))
                      '((1 2 3) (4 5 6) (7 8 9)))
     ((1 4 9) (16 25 36) (49 64 81))
 
-  Of course, this presumes we have defined [47msq[0m and [47mcollect$[0m and have
+  Of course, this presumes we have defined [47msq[0m and [47mmy-collect$[0m and have
   analyzed them to make sure they have the appropriate tameness
-  properties.  (Note that [47mcollect$[0m is not tame, but the way it uses
-  its ``functional'' argument is crucial to the tameness of [47m(collect$
-  'SQ lst)[0m.)  To use [47mapply$[0m to full advantage we need to have
-  analyzed every relevant function definition so we know which
+  properties.  (Note that [47mmy-collect$[0m is not tame, but the way it
+  uses its ``functional'' argument is crucial to the tameness of
+  [47m(my-collect$ 'SQ lst)[0m.)  To use [47mapply$[0m to full advantage we need to
+  have analyzed every relevant function definition so we know which
   arguments are treated like functions and whether they are used in
   accordance with our restrictions.  So if you're defining a function
   you intend to [47mapply$[0m it is convenient to define it with the new
@@ -58707,8 +58737,8 @@ Subtopics
   and a warrant, if possible.  Also relevant is the [47m[defbadge][0m
   command which issues a badge for a function (if possible) but does
   not issue a warrant.  Its primary purpose is to allow [47m:[0m[47mprogram[0m mode
-  functions to analyzed and badged so they can be safely executed by
-  [47mapply$[0m at the top-level ACL2 loop.  But the present discussion
+  functions to be analyzed and badged so they can be safely executed
+  by [47mapply$[0m at the top-level ACL2 loop.  But the present discussion
   focuses primarily on the logical machinery, which requires
   warrants.
 
@@ -58726,15 +58756,20 @@ Subtopics
   axiomatized and implemented today.  It also includes many example
   theorems.
 
-  To get started, define two ordinary ACL2 functions, one that squares
-  its argument and the other that reverses its argument.
 
-    (defun sq (x) (* x x))
+Exercises and Lessons
 
-    (defun rev (x)
-      (if (endp x)
-          nil
-          (append (rev (cdr x)) (list (car x)))))
+  To get started, fire up your ACL2 and define two ordinary ACL2
+  functions, one that squares its argument and the other that
+  reverses its argument.  We show the ACL2 prompt below in front of
+  each form we expect you to execute.
+
+    ACL2 !>(defun sq (x) (* x x))
+
+    ACL2 !>(defun rev (x)
+             (if (endp x)
+                 nil
+                 (append (rev (cdr x)) (list (car x)))))
 
   [31;1mLesson 0:[0m Learn about [47mapply$[0m by reading this tutorial introduction.
   But this tutorial mentions many undefined concepts: tameness,
@@ -58749,7 +58784,7 @@ Subtopics
   lemmas.  These lemmas are important not just to proving theorems
   about [47mapply$[0m but to defining functions that use [47mapply$[0m.
 
-    (include-book \"projects/apply/top\" :dir :system)
+    ACL2 !>(include-book \"projects/apply/top\" :dir :system)
 
   [31;1mLesson 2:[0m To allow [47mapply$[0m to ``work'' on a function symbol the symbol
   must be ``warranted.'' Actually, of course, you can pass anything
@@ -58760,9 +58795,9 @@ Subtopics
   evaluation if its first argument is not at least badged.)  To issue
   warrants (and badges) for [47msq[0m and [47mrev[0m do:
 
-    (defwarrant sq)
+    ACL2 !>(defwarrant sq)
 
-    (defwarrant rev)
+    ACL2 !>(defwarrant rev)
 
   [47m[Defwarrant][0m checks that its argument, [3mfn[0m, is a defined function
   symbol that satisfies certain restrictions on how it uses its
@@ -58773,9 +58808,14 @@ Subtopics
   produces a ``badge'' for [3mfn[0m that describes which formals are
   treated as ``functions.'' Henceforth, we'll say such formals have
   ``[ilk]'' [47m:FN[0m.  In addition to computing a badge, non-erroneous
-  calls of [47mdefwarrant[0m produce a [47m[warrant][0m for [3mfn[0m that specifies the
-  [47m[badge][0m and the conditions under which [47mapply$[0m ``works'' on the
-  function symbol [3mfn[0m.
+  calls of [47mdefwarrant[0m introduce a ``[47m[warrant][0m function'' for [3mfn[0m.  The
+  warrant function for [3mfn[0m is a 0-ary function named
+  [47mapply$-warrant-[0m[3mfn[0m.  A call of the warrant function, i.e., the term
+  [47m(apply$-warrant-[0m[3mfn[0m[47m)[0m is called the ``warrant'' for [3mfn[0m and if the
+  warrant for [3mfn[0m is included among the hypotheses of a conjecture
+  then [47m(apply$ '[0m[3mfn[0m[47m (list a1 ... an))[0m can expand to [47m([0m[3mfn[0m[47m a1 ... an)[0m,
+  provided the [47mai[0m meet the tameness requirements required by [3mfn[0m's
+  badge.
 
   [31;1mLesson 3:[0m We'll say more about tameness, badges, and warrants later.
   You already know that warrants can only be issued for [47m:logic[0m mode
@@ -58801,33 +58841,38 @@ Subtopics
   [31;1mLesson 5:[0m You can define functions that take warranted ``functions''
   as arguments and [47mapply$[0m them.  Here is a function that applies its
   first argument to every element of its second argument and collects
-  the results.  We sometimes call functions like [47mcollect$[0m ``mapping
-  functions'' because they map another function over some range.  We
-  would call them ``functionals'' except that suggests ACL2 is
-  higher-order and it is not!  So we most often call them [scion]s of
-  [47mapply$[0m.  In ordinary English usage, a ``scion'' is a descendent of
-  an important family or individual; our scions are ``descendents''
-  of [47mapply$[0m and inherit its power and restrictions.
+  the results.  We sometimes call functions like [47mmy-collect$[0m
+  ``mapping functions'' because they map another function over some
+  range.  We would call them ``functionals'' except that suggests
+  ACL2 is higher-order and it is not!  So we most often call them
+  [scion]s of [47mapply$[0m.  In ordinary English usage, a ``scion'' is a
+  descendent of an important family or individual; our scions are
+  ``descendents'' of [47mapply$[0m and inherit its power and restrictions.
 
-    (defun$ collect$ (fn lst)
-      (if (endp lst)
-          nil
-          (cons (apply$ fn (list (car lst)))
-                (collect$ fn (cdr lst)))))
+    ACL2 !>(defun$ my-collect$ (fn lst)
+             (if (endp lst)
+                 nil
+                 (cons (apply$ fn (list (car lst)))
+                       (my-collect$ fn (cdr lst)))))
 
   In this definition, the first argument has ilk [47m:FN[0m because it is used
   exclusively as a ``function:'' it reaches the first argument of
   [47mapply$[0m and is untouched otherwise.  The second argument has ilk [47mNIL[0m
   and we say it's ``ordinary.'' It is [3mnever[0m used as a function.
 
-  Note: We define [47mcollect$[0m with [47mdefun$[0m simply to illustrate [47mdefun$[0m.
-  Unless we mean to pass [47mcollect$[0m to [47mapply$[0m or to some scion in the
-  future, there is no reason to have a warrant for [47mcollect$[0m.  Had we
-  defined [47mcollect$[0m with the ordinary [47mdefun[0m and realized later that we
-  want to pass [47m'COLLECT$[0m into a slot of ilk [47m:FN[0m, we could get a
-  warrant for [47mcollect$[0m by calling [47m(defwarrant collect$)[0m.
+  Note: We define [47mmy-collect$[0m with [47mdefun$[0m simply to illustrate [47mdefun$[0m.
+  Unless we mean to pass [47mmy-collect$[0m to [47mapply$[0m or to some scion in
+  the future, there is no reason to have a warrant for [47mmy-collect$[0m.
+  Had we defined [47mmy-collect$[0m with the ordinary [47mdefun[0m and realized
+  later that we want to pass [47m'MY-COLLECT$[0m into a slot of ilk [47m:FN[0m, we
+  could get a warrant for [47mmy-collect$[0m by calling [47m(defwarrant
+  my-collect$)[0m.
 
-  Here's another useful scion:
+  Actually, the function [47mcollect$[0m is pre-defined in ACL2 and behaves
+  like [47mmy-collect$[0m.  We chose to introduce [47mmy-collect$[0m simply to
+  illustrate that new scions can be introduced and used.  Here's
+  another useful pre-defined scion.  You won't need to define it in
+  your ACL2 session to use it.
 
     (defun$ always$ (fn lst)
       (if (endp lst)
@@ -58837,42 +58882,62 @@ Subtopics
 
   It checks that every element of [47mlst[0m satisfies its [47m:FN[0m argument [47mfn[0m.
 
-  By the way, both [47mcollect$[0m and [47malways$[0m are pre-defined in ACL2 because
+  The reason that both [47mcollect$[0m and [47malways$[0m are pre-defined is that
   they are part of the support for the [47m[loop$][0m statment.
 
   [31;1mLesson 6:[0m You can run scions on warranted function symbols:
 
-    ACL2 !>(collect$ 'SQ '(1 -2 3 -4))
+    ACL2 !>(my-collect$ 'SQ '(1 -2 3 -4))
     (1 4 9 16)
 
-    ACL2 !>(collect$ 'rev '((1 2 3) (4 5 6) (7 8 9)))
+    ACL2 !>(my-collect$ 'rev '((1 2 3) (4 5 6) (7 8 9)))
     ((3 2 1) (6 5 4) (9 8 7))
 
+  You might wonder why you can run [47mmy-collect$[0m on [47m'SQ[0m --- which
+  evaluates [47mapply$[0m on [47m'SQ[0m --- without explicitly acknowledging the
+  warrant that links [47m(apply$ 'SQ (list a))[0m to [47m(sq a)[0m.  The reason is
+  that evaluation in ACL2's top-level read-eval-print loop assumes
+  all existing warrants are provided.  Warrants only become important
+  when we start dealing with proofs.
+
   [31;1mLesson 7:[0m You can run scions on tame quoted [47mLAMBDA[0m objects.  These
-  are just quoted list expressions that start with the symbol [47mLAMBDA[0m
-  and look like lambda-expressions.  But quoted [47mLAMBDA[0m objects have
-  to have fully translated bodies and meet other restrictions so
-  [47mapply$[0m can interpret them.  You cannot use macros like [47m+[0m or [47mcond[0m
-  and must you quote all constants.  We urge you not to type quoted
-  [47mLAMBDA[0m objects by hand!  Instead, we provide a macro, [47m[lambda$][0m,
-  that allows you to write in untranslated form as you would a lambda
-  expression in ACL2.
+  [47mLAMBDA[0m objects can even include calls of scions, provided they are
+  tame.
+
+    ACL2 !>(my-collect$
+                 (lambda$ (x) (CONS 'SQUARES (MY-COLLECT$ 'SQ x)))
+                 '((1 2 3) (4 5 6)))
+    ((SQUARES 1 4 9) (SQUARES 16 25 36))
+
+  Note that the ``function symbols'' in the ``body'' of a quoted [47mLAMBDA[0m
+  object may reach [47mapply$[0m as the [47mLAMBDA[0m object is applied.
+
+  [47mLAMBDA[0m objects are just quoted list expressions that start with the
+  symbol [47mLAMBDA[0m and look like lambda-expressions.  But quoted [47mLAMBDA[0m
+  objects have to have fully translated bodies and meet other
+  restrictions so [47mapply$[0m can interpret them.  You cannot use macros
+  like [47m+[0m or [47mcond[0m and must you quote all constants.  We urge you not
+  to try to type quoted [47mLAMBDA[0m objects by hand!  Instead, we provide
+  a macro, [47m[lambda$][0m, that allows you to write lambda expressions in
+  untranslated form.
 
   [31;1mLesson 8:[0m There are three very similar looking but very different
   notions used in this documentation: lambda expressions, [47mLAMBDA[0m
   objects, and [47mlambda$[0m expressions.  Read carefully!  See [47m[lambda][0m
-  for some definitions and disambiguation help.
+  for some definitions and disambiguation help.  The [47mLAMBDA[0m objects
+  reaching [47mapply$[0m must be fully translated (and tame) to be handled
+  correctly.  The special macro [47mlambda$[0m will translate for you.
 
-    ; Don't type this:
-    ACL2 !>(collect$ '(LAMBDA (X)
-                              (IF (< X '0) (BINARY-* '10 X) (SQ X)))
-                     '(1 -2 3 -4))
+    ; Don't type quoted LAMBDA objects like this!
+    ACL2 !>(my-collect$ '(LAMBDA (x)
+                           (IF (< x '0) (BINARY-* '10 x) (SQ x)))
+                        '(1 -2 3 -4))
     (1 -20 9 -40)
 
     ; Type this instead!
-    ACL2 !>(collect$ (lambda$ (X)
-                              (if (< x 0) (* 10 x) (sq x)))
-                     '(1 -2 3 -4))
+    ACL2 !>(my-collect$ (lambda$ (x)
+                           (if (< x 0) (* 10 x) (sq x)))
+                        '(1 -2 3 -4))
     (1 -20 9 -40)
 
   [31;1mLesson 9:[0m Almost all ACL2 primitives are known to [47mapply$[0m.  For a
@@ -58887,42 +58952,72 @@ Subtopics
 
   [31;1mLesson 10:[0m You can prove and use theorems about scions.
 
-    (defthm collect$-append
-      (equal (collect$ fn (append a b))
-             (append (collect$ fn a)
-                     (collect$ fn b))))
+    ACL2 !>(defthm my-collect$-append
+             (equal (my-collect$ fn (append a b))
+                    (append (my-collect$ fn a)
+                            (my-collect$ fn b))))
 
-    (thm (equal (collect$ (lambda$ (x) (sq (sq x)))
-                          (append c d))
-                (append (collect$ (lambda$ (x) (sq (sq x))) c)
-                        (collect$ (lambda$ (x) (sq (sq x))) d))))
+    ACL2 !>(thm (equal (my-collect$ (lambda$ (x) (* x x))
+                                    (append c d))
+                       (append (my-collect$ (lambda$ (x) (* x x)) c)
+                               (my-collect$ (lambda$ (x) (* x x)) d))))
 
-  Notice that the lemma [47mcollect$-append[0m talks about an arbitrary [47mfn[0m.
+  Notice that the lemma [47mmy-collect$-append[0m talks about an arbitrary [47mfn[0m.
   The definition of [47mapply$[0m is completely irrelevant to this theorem!
-  Once [47mcollect$-append[0m has been proved can be instantiated with
+  Once [47mmy-collect$-append[0m has been proved can be instantiated with
   anything for [47mfn[0m.  This is demonstrated when the [47mthm[0m above is
-  proved: the proof is just to rewrite with [47mcollect$-append[0m.
+  proved: the proof is just to rewrite with [47mmy-collect$-append[0m.
+  Notice that the only function being [47mapply$[0m'd in the [47mthm[0m above is
+  the primitive multiplication function, which is built into apply$.
 
   [31;1mLesson 11:[0m But when your theorems depend on the behavior of [47mapply$[0m on
   particular user-defined functions, you will need to provide
   hypotheses stipulating the behavior of [47mapply$[0m on those values.
-  Those hypotheses are the warrants for the (non-primitive) function
-  symbols involved.  Here is an example: If [47mlst[0m is a list of integers
-  and we square every element by mapping over it with [47msq[0m then the
-  result is a list of naturals --- but this theorem depends on the
-  fact that [47m(apply$ 'SQ (list x))[0m is [47m(sq x)[0m, which is what the
-  warrant for [47msq[0m tells us.  Thus, the warrant for [47msq[0m is required as a
-  hypothesis!
+  Those hypotheses are the [3mwarrants[0m for the (non-primitive) function
+  symbols involved.  Here is an example: Recall the function [47msq[0m
+  defined and warranted above.  We might wish to prove that if [47mlst[0m is
+  a list of integers then [47m(my-collect$ 'SQ lst)[0m is a list of natural
+  numbers.  We can use [47malways$[0m to express the notions of ``list of
+  integers'' and ``list of naturals.'' We could try to state the
+  conjecture this way:
 
-    (defthm all-natp-collect$-sq
-      (implies (and (warrant sq)
-                    (always$ 'INTEGERP lst))
-               (always$ 'NATP (collect$ 'SQ lst))))
+    ACL2 !>(thm (implies (always$ 'INTEGERP lst)
+                         (always$ 'NATP (my-collect$ 'SQ lst)))).
 
-  Note that this theorem uses the scion [47malways$[0m to express the ideas of
-  ``list of integers'' and ``list of naturals.'' Note also that we
-  don't need to provide warrants for [47mintegerp[0m or [47mnatp[0m because they
-  are ACL2 primitives and thus built into the behavior of [47mapply$[0m.
+  But the attempt to prove that formula will fail because it depends on
+  the fact that the [47msq[0m of an integer is a natural [3mand on the
+  assumption that[0m [47m(apply$ 'SQ (list x))[0m [3mis[0m [47m(sq x)[0m.  That assumption
+  is what the [3mwarrant[0m for [47msq[0m tells us.  Thus, the warrant for [47msq[0m is
+  required as a hypothesis!  The following theorem can be proved.
+
+    ACL2 !>(defthm all-natp-collect$-sq
+             (implies (and (warrant sq)
+                           (always$ 'INTEGERP lst))
+                      (always$ 'NATP (collect$ 'SQ lst))))
+
+  Note that we don't need to provide warrants for [47mintegerp[0m or [47mnatp[0m
+  because they are ACL2 primitives and thus built into the behavior
+  of [47mapply$[0m.  But we must provide the warrant for [47msq[0m because we know
+  the proof depends on [47m(apply$ 'sq (list x1 ...))[0m simplifying to [47m(sq
+  x1)[0m.
+
+  The macro form [47m(warrant f1 ... fk)[0m expands to the conjunction of the
+  warrants for the [47mfi[0ms.  That is
+
+    (warrant f1 ... fk)
+    =
+    (and (apply$-warrant-f1)
+         ...
+         (apply$-warrant-fk)).
+
+  If you attempt a proof and it fails, and you see among the
+  checkpoints terms of the form [47m(apply$ 'fn (list a1 ... an))[0m, then
+  you probably forgot to call [47mdefwarrant[0m on [47mfn[0m and [47mapply$[0m doesn't
+  know what to do with that symbol!  If, on the other hand, you see a
+  [forcing-round] checkpoint that is attempting to prove a warrant,
+  like [47m(apply$-warrant-fn)[0m, then you probably forgot to add the
+  warrant for [47mfn[0m to the hypotheses of the conjecture you're trying to
+  prove.
 
   [31;1mLesson 12:[0m Warrants solve the ``[47mLOCAL[0m problem.'' Imagine the trouble
   we'd be in if the theorem above did not require a warrant on [47msq[0m.
@@ -58944,13 +59039,13 @@ Subtopics
   the unwarranted theorem exported from the encapsulate.
 
   If we could prove the unwarranted theorem we could export it because
-  it does not mention or depend on the function [47msq[0m, it just mentions
-  the constant [47m'SQ[0m.  Fortunately, we cannot actually prove the
-  unwarranted version of the theorem because there is no [3ma priori[0m
-  connection between [47m(apply$ 'SQ (list x))[0m and [47m(sq x)[0m.  And if we add
-  the warrant for [47msq[0m to the [47mdefthm[0m in the encapsulate we can prove
-  the theorem but we cannot export it because the warrant ancestrally
-  depends on locally defined function [47msq[0m.
+  it does not mention or depend on the locally defined function [47msq[0m,
+  it just mentions the constant symbol [47m'SQ[0m.  Fortunately, we cannot
+  actually prove the unwarranted version of the theorem because there
+  is no [3ma priori[0m connection between [47m(apply$ 'SQ (list x))[0m and [47m(sq x)[0m.
+  And if we add the warrant for [47msq[0m to the [47mdefthm[0m in the encapsulate
+  we can prove the theorem but then we cannot export it because the
+  warrant ancestrally depends on locally defined function [47msq[0m.
 
   [31;1mLesson 13:[0m While we may have given the impression that we've provided
   a convenient fragment of second-order functionality in ACL2 its
@@ -58980,24 +59075,24 @@ Subtopics
   most useful scions and proving a couple of theorems illustrating
   its flexibility: [47mfoldr[0m.
 
-    (defun$ foldr (lst fn init)
-      (if (endp lst)
-          init
-          (apply$ fn
-                  (list (car lst)
-                        (foldr (cdr lst) fn init)))))
+    ACL2 !>(defun$ foldr (lst fn init)
+             (if (endp lst)
+                 init
+                 (apply$ fn
+                         (list (car lst)
+                               (foldr (cdr lst) fn init)))))
 
   Note that [47mfoldr[0m maps over the list in its first argument, applying
   its second argument to two things: successive elements of the list
   and the result of recursively calling itself on the rest of the
   list.  It returns its third argument when the list is empty.
 
-  When its functional argument is [47mcons[0m [47mfoldr[0m is just the concatenation
+  When its functional argument is [47mCONS[0m [47mfoldr[0m is just the concatenation
   of its other two arguments:
 
-    (defthm foldr-cons
-      (equal (foldr x 'cons y)
-             (append x y)))
+    ACL2 !>(defthm foldr-cons
+             (equal (foldr x 'CONS y)
+                    (append x y)))
 
   We do not need a warrant for [47mcons[0m because it is built into [47mapply$[0m.
   In fact, the built-ins don't have warrants but if you unnecessarily
@@ -59007,19 +59102,129 @@ Subtopics
   By supplying a certain [47mlambda[0m expression we can use [47mfoldr[0m to reverse
   its first argument:
 
-    (defthm foldr-can-be-rev
-      (implies (warrant foldr)
-               (equal (foldr x
-                             (lambda$ (x y)
-                                (foldr y 'cons (cons x nil)))
-                             nil)
-                      (rev x))))
+    ACL2 !>(defthm foldr-can-be-rev
+             (implies (warrant foldr)
+                      (equal (foldr x
+                                    (lambda$ (x y)
+                                       (FOLDR y 'CONS (CONS x nil)))
+                                    nil)
+                             (rev x))))
 
-  Note that the [47mlambda$[0m expression calls [47mfoldr[0m.  Because of this, we
+  Note that the [47mlambda$[0m expression calls [47mFOLDR[0m.  Because of this, we
   must provide the warrant for [47mfoldr[0m since that inner [47mfoldr[0m will be
-  applied by the outer [47mfoldr[0m.  This illustrates an important point:
-  scions can apply other scions, including themselves, as long as the
-  applications are tame.")
+  applied by the outer [47mfoldr[0m.  This illustrates an important point
+  made in Lesson 7 above: scions can apply other scions, including
+  themselves, as long as the applications are tame.
+
+
+Some Practice Problems
+
+  There is no better way to learn than to practice.  So here are a few
+  challenge problems.  The answers can be found in
+  [47mbooks/projects/apply/answers-to-doc-intro-to-apply.lisp[0m.
+
+  [31;1mProblem 1[0m: Assume [47mfn[0m is a binary relation.  Define [47m(insert$ e lst fn)[0m
+  to insert [47me[0m into the list [47mlst[0m in front of the first element, [47md[0m, in
+  [47mlst[0m such that [47m(fn e d)[0m is true.
+
+  [31;1mProblem 2[0m: Define [47m(sort$ lst fn)[0m to be an insertion sort algorithm
+  for the binary relation [47mfn[0m, e.g., to successively insert each
+  element into the recursively sorted remaining elements.  (Note:
+  There is no assurance that [47msort$[0m will actually produce a list
+  ordered by [47mfn[0m because we don't know that [47mfn[0m is an ordering
+  relation.)
+
+  [31;1mProblem 3[0m: Study the four examples below, which illustrate perhaps
+  surprising properties of our ``insertion sort'' function.  (If your
+  definitions don't have these properties you should back up and
+  redefine your functions as we vaguely described above!)
+
+    (defthm examples-of-sort$
+      (and (equal (sort$ '(1 3 -7 0 23) '<)
+                  '(-7 0 1 3 23))
+           (equal (sort$ '(1 3 -7 0 23)
+                         (lambda$ (x y) t))
+                  '(1 3 -7 0 23))
+           (equal (sort$ '(1 3 -7 0 23)
+                         (lambda$ (x y) nil))
+                  '(23 0 -7 3 1))
+           (equal (sort$ '(1 a 2 x b 3 4 y c)
+                         (lambda$ (x y) (symbolp x)))
+                  '(a x b y c 4 3 2 1)))
+      :rule-classes nil)
+
+  [31;1mProblem 4[0m: Prove the following theorem suggested especially by the
+  last example above.  To state this theorem we first introduce the
+  familiar reverse function, [47mrev[0m.
+
+    (defun rev (x)
+      (if (endp x)
+          nil
+          (append (rev (cdr x))
+                  (list (car x)))))
+
+  and we use the pre-defined function [47m(when$ fn lst)[0m which computes the
+  elements of [47mlst[0m satisfying the unary-function [47mfn[0m, in the order in
+  which they occur, e.g., [47m(when$ '(1 a 2 b) 'symbolp)[0m is [47m'(a b)[0m.
+
+  Prove
+
+    (defthm sort$-lambda-symbolp
+      (implies (true-listp lst)
+               (equal (sort$ lst (lambda$ (x y) (symbolp x)))
+                      (append (when$ 'symbolp lst)
+                              (rev
+                                (when$
+                                  (lambda$ (x y) (not (symbolp x)))
+                                  lst))))))
+
+  Lemmas will be needed.
+
+  [31;1mProblem 5[0m: Define [47m(orderedp$ lst fn)[0m to check whether [47mfn[0m holds
+  between each adjacent pair of elements in [47mlst[0m.  Test your function
+  with
+
+    (defthm examples-of-orderedp$
+      (and (orderedp$ '(1 3 5 7) '<)
+           (not (orderedp '(1 3 3 5 7) '<)))
+      :rule-classes nil)
+
+  [31;1mProblem 6[0m: You might hope that [47m(orderedp$ (sort$ lst fn) fn)[0m is a
+  theorem.  But it is not as is easily shown by the example
+  [47m(orderedp$ (sort$ '(3 1 5 3 7) '<) '<)[0m.  If you try to prove the
+  conjecture and inspect the output you'll see that the proof fails
+  because we do not know that [47m(or (fn x y) (fn y x))[0m is true.  That
+  is, we don't know that [47mfn[0m is [3mStrongly Connected[0m.  How could we,
+  since the conjecture is claimed for all [47mfn[0m?
+
+  Unfortunately, it is awkward to state that [47mfn[0m is a strongly connected
+  relation in ACL2's first-order quantifier-free language.  This is a
+  good example of the limitations of ACL2's support for second-order
+  functions!
+
+  But we can prove versions of the conjecture for concrete strongly
+  connected [47mfn[0ms.  The relation named [47mbefore-dayp[0m, below, is strongly
+  connected, as demonstrated by the events following its definition.
+
+  Carry out these events.
+
+    (defun beforep (x y lst)
+      (if (and (member x lst)
+               (member y lst))
+          (member y (member x lst))
+          t))
+
+    (defun before-dayp (x y)
+      (beforep x y '(mon tue wed thu fri sat sun)))
+
+    (defthm before-dayp-strongly-connected
+      (implies (not (before-dayp x y))
+               (before-dayp y x)))
+
+    (in-theory (disable before-dayp))
+
+  Now, prove the version of [47m(orderedp$ (sort$ lst fn) fn)[0m for the
+  instance in which [47mfn[0m is [47m'before-dayp[0m.")
  (INTRODUCTION-TO-HINTS
   (INTRODUCTION-TO-THE-THEOREM-PROVER)
   "How to provide hints to the theorem prover
@@ -59783,7 +59988,7 @@ More help
   hypothesis containing a free [3mv[0m to guide its guess for [3mv[0m.  To
   ``guess'' a value for [3mv[0m, ACL2 uses that hypothesis as a pattern and
   tries to match it against the assumptions in the checkpoint formula
-  being proved.  This means that key hypothesis must be in normal
+  being proved.  This means that key hypotheses must be in normal
   form, to match the rewritten assumptions of the goal.  It also
   means that you should reorder the hypotheses to put the most
   unusual hypothesis containing a free [3mv[0m first in the list of
@@ -63008,7 +63213,7 @@ Subtopics
   These three phrases are very similar but mean very different things.
   You should read carefully when you see us talk about lambda things!
   Unfortunately, we're not always as precise as we might be so you
-  might have to disambiguous our usage by context.  If you see places
+  might have to disambiguate our usage by context.  If you see places
   in the documentation where you think we've messed up, please bring
   them to our attention!
 
@@ -63188,7 +63393,7 @@ About Lambda$ Expressions
   objects.
 
   The body of a [47mlambda$[0m expression must return a single value that is
-  neither a [stobj] nor a [df].  the following example illustrates
+  neither a [stobj] nor a [df].  The following example illustrates
   this point.
 
     (defun$ f1 (x)
@@ -63345,7 +63550,7 @@ About Guard Verification of Lambda Objects
   and if the guard holds of the actuals to which the object is
   applied (which we call [3mguard checking[0m), a compiled version of the
   object is run.  Otherwise, depending on how [47m[set-guard-checking][0m
-  has been configured, either an error is signalled or the object is
+  has been configured, either an error is signaled or the object is
   interpreted under the axioms defining [47mapply$[0m and [47mev$[0m.  [47mApply$[0m
   caches its investigations into guard verification (but not guard
   checking) and compilation.  We discuss the cache in
@@ -64200,7 +64405,7 @@ Subtopics
 
         * [47m(ld-history-entry-stobjs-out/value entry)[0m
           When [47m(ld-history-entry-error-flg entry)[0m is [47mnil[0m, this is a cons whose
-          [47mcar[0m is is the [stobjs-out] --- a list whose length is the
+          [47mcar[0m is the [stobjs-out] --- a list whose length is the
           number of values returned, with [47mnil[0m in each position except
           when occupied by a symbol indicating a returned [stobj] for
           that position --- and whose [47mcdr[0m is the returned value in
@@ -64279,12 +64484,12 @@ Subtopics
   there is a Special Case: when [47mn[0m is 1 then a 2-element list of
   entries [47m(e1 e2)[0m is created where [47me2[0m has fields that are all [47mnil[0m;
   then when the new entry [47me[0m is pushed onto the ld-history, [47me2[0m is
-  dropped so that that the new ld-history is [47m(e e1)[0m.  This
-  special-case trick is also used in multiple-entry mode when [47mn[0m is [47m-k[0m
-  where [47mk[0m is one less than the length of the current ld-history,
-  since that is treated the same as [47m(adjust-ld-history 1 state)[0m; and
-  this trick is also used when [47m(adjust-ld-history t state)[0m switches
-  from single-entry mode to multiple-entry mode.  End of Remark.
+  dropped so that the new ld-history is [47m(e e1)[0m.  This special-case
+  trick is also used in multiple-entry mode when [47mn[0m is [47m-k[0m where [47mk[0m is
+  one less than the length of the current ld-history, since that is
+  treated the same as [47m(adjust-ld-history 1 state)[0m; and this trick is
+  also used when [47m(adjust-ld-history t state)[0m switches from
+  single-entry mode to multiple-entry mode.  End of Remark.
 
   Finally we discuss the user-data field of a ld-history entry, which
   (as noted above) has default [47mnil[0m.  It is accessed using
@@ -64328,7 +64533,7 @@ Subtopics
 
   Notice that we used [47m[len][0m, not [47m[length][0m, since the [47m:[0m[47m[guard][0m specified
   for our function needs to be [47mt[0m.  Alternative definitions, which
-  however are less efficienct, are as follows.
+  however are less efficient, are as follows.
 
     (defun my-world-length (input error-flg stobjs-out/value state)
       (declare (xargs :guard t :stobjs state)
@@ -64509,7 +64714,7 @@ Subtopics
   [47m[ld][0m prints nothing.  This is the way certain commands (e.g.,
   [47m:[0m[47m[pc][0m) appear to return no value.
 
-  By printing nothing when an error has been signalled, [47m[ld][0m makes it
+  By printing nothing when an error has been signaled, [47m[ld][0m makes it
   appear that the error (whose message has already appeared in
   [state]) has ``thrown'' the computation back to load without
   returning a value.  By printing just [47mval[0m otherwise, we suppress the
@@ -64541,9 +64746,9 @@ Subtopics
   at which time [47m[ld][0m terminates normally.
 
   The [47m:all[0m filter is, of course, the normal one.  [47m:Query[0m is useful if
-  you want to replay selected the [command]s in some file.  The new
-  name filter is used if you wish to replay all the [command]s in a
-  file up through the introduction of the given one.")
+  you want to replay selected [command]s in some file.  The new name
+  filter is used if you wish to replay all the [command]s in a file
+  up through the introduction of the given one.")
  (LD-PRE-EVAL-PRINT
   (LD)
   "Determines whether [47m[ld][0m prints the forms to be [47meval[0m'd
@@ -67147,7 +67352,7 @@ Subtopics
                        (true-listp z))
                   (equal (rev (rev z)) z))).
 
-  Thus, if we're trying to prove [3mformula1'[0m it is permitted to try to to
+  Thus, if we're trying to prove [3mformula1'[0m it is permitted to try to
   prove [3mformula2'[0m instead, because they return the same truthvalue.
 
   This sketch of propositional reasoning in ACL2 is a little suspect
@@ -67689,8 +67894,8 @@ Subtopics
                  (+ 1 (len (cdr (cdr a)))))))
     = ...
 
-  The ACL2 implementation of rewriting uses certain heuristics and the
-  you can guide the system in its choices.  We'll discuss this later.
+  The ACL2 implementation of rewriting uses certain heuristics and you
+  can guide the system in its choices.  We'll discuss this later.
 
   Now use your browser's [31;1mBack Button[0m to return to the example proof in
   [logic-knowledge-taken-for-granted].")
@@ -68037,7 +68242,7 @@ Subtopics
 
   [47mLoop$[0m was introduced into ACL2 in Version 8.2 (May, 2019), over 20
   years after ACL2 was first released.  So there are many experienced
-  ACL2 users have never used [47mloop$[0m.  The [47mLoop$[0m Primer, see
+  ACL2 users who have never used [47mloop$[0m.  The [47mLoop$[0m Primer, see
   [loop$-primer], is textbook-style introduction, meant to be read
   linearly and may be a good starting place for you.  The primer
   follows a ``monkey-see monkey-do'' approach, showing lots of
@@ -68062,7 +68267,7 @@ Subtopics
       to start if you're using ACL2 [47mloop$[0ms for the first time.
 
     * The Table of Contents of the Loop$ Primer (see [lp-section-0]) lists
-      some sensible entry points to primer.  You'll see sections
+      some sensible entry points to the primer.  You'll see sections
       devoted to examples, sample proofs, exercises, etc.  Keep the
       primer in mind as an additional resource.  For example, you
       might visit [47mLoop$[0m Primer Section 6 ([lp-section-6]) for some
@@ -68306,7 +68511,7 @@ Types and guards in [47mloop$[0m expressions
   about the value of [47mx[0m here.  (Actually, because the target range is
   just a constant below, ACL2 could deduce information about each
   value [47mx[0m takes on, but it doesn't.)  The second example can be guard
-  verified and has the advantage of being standard Common Lisp so
+  verified and has the advantage of being standard Common Lisp, so
   compilers might optimize the handing of [47m(+ 1 x)[0m.  The third example
   can also be guard verified but since the [47m:GUARD[0m directive used here
   is ignored by Common Lisp it does not inform the compiler, so this
@@ -68694,7 +68899,7 @@ Measure Conjectures
   [47mloop$[0m bodies.  (We also generate conjectures for the recursive
   calls the other [47mloop$[0m-expression components, e.g., the [47mWHEN[0m clause,
   exactly analogously, but we speak of the [47mloop$[0m body only below.  We
-  also focus on simple [47mloop$[0ms here but the conjectures decribed
+  also focus on simple [47mloop$[0ms here but the conjectures described
   generalize to fancy [47mloop$[0ms.)  Given a recursive call inside the
   body of a [47mloop$[0m with iteration variable [3mv[0m, we first generate a new
   variable symbol, [3mv'[0m.  Certain terms, e.g., tests and arguments to
@@ -69429,7 +69634,7 @@ Subtopics
   Answer: The symbol [47mABC[0m is the name of a Lisp program that takes one
   argument and returns one result.  It can be run, but nothing can be
   proved about it because there are no axioms defining it.  When [47mabc[0m
-  is called on [47mx[0m it copys the [47mcdr[0m-chain of [47mx[0m, adding the question
+  is called on [47mx[0m it copies the [47mcdr[0m-chain of [47mx[0m, adding the question
   mark symbol to each new element.
 
 ------------------------------
@@ -69680,7 +69885,7 @@ Subtopics
   to reproduce our answers.  It's up to you to decide if you know
   this stuff.  As you use [47mloop$[0m, ACL2 will print warnings and error
   messages about functions not having badges or warrants or
-  expression not being tame.  We don't want your reaction to be
+  expressions not being tame.  We don't want your reaction to be
   ``Ack! What's that all about?'' We want it to be at least ``Oh yes,
   I remember now.'' We recommend that after you've read and answered
   the questions, you read our answers even if you're pretty confident
@@ -69928,8 +70133,8 @@ Subtopics
   of [47msq[0m, e.g., [47m(apply$ 'sq (list e))[0m, to [47m(sq e)[0m.
 
   Finally, note that name of the rule is [47mapply$-sq[0m, both the [47mbadge[0m and
-  [47mapply$[0m reductions are conditionall on the warrant hypothesis for
-  [47msq[0m, and that the warrant hypothesis is [47m[force][0md.
+  [47mapply$[0m reductions are conditional on the warrant hypothesis for [47msq[0m,
+  and that the warrant hypothesis is [47m[force][0md.
 
 ------------------------------
   4: Can [47mghi[0m be warranted?  If so, what command do you type?
@@ -70035,7 +70240,7 @@ Subtopics
   function or is it an ordinary object?  It's used both ways.
   [47m(Defwarrant xyz)[0m fails.
 
-  In order for [47mapply$[0m to be able to handle a function symbol certains
+  In order for [47mapply$[0m to be able to handle a function symbol certain
   restrictions must hold.  These restrictions guarantee that there is
   a model that makes all warrants true.  Here's a way to think about
   it.  Imagine that [47mapply$[0m is defined as a big case analysis that
@@ -71799,7 +72004,7 @@ LP16: Proving Theorems about [47mDO[0m [47mLoop$[0ms
   the proof of our [47mmain[0m[31;1m theorem, its body must match that shown
   above![0m
 
-  Now we define the recursive function is that is supposed to be
+  Now we define the recursive function that is supposed to be
   operationally equivalent to the [47mloop$[0m.  This will suggest the
   induction.
 
@@ -72742,7 +72947,7 @@ LP7: Using [47mLoop$[0ms and Guards in [47mDefun[0ms
   that so that ACL2 can prove the guard on [47m(car tail)[0m in the [47mthereis[0m
   clause.  (We could change ACL2 to infer this type for [47mtail[0m in this
   special case, but more generally we would prefer to have an
-  effective heuristic for transfering arbitrary properties of [47mlst[0m to
+  effective heuristic for transferring arbitrary properties of [47mlst[0m to
   relevant properties of [47mtail[0m.)
 
   The guard obligations for [47mmember-equal-loop$[0m are obscure because we
@@ -73301,8 +73506,8 @@ LP9: Semantics of [47mFOR[0m [47mLoop$[0ms
           (mac (cdr x))
         x))
 
-  Although this is obviously contrived example, this flexibility can be
-  useful to macro writers; see for example the definition of ACL2
+  Although this is obviously a contrived example, this flexibility can
+  be useful to macro writers; see for example the definition of ACL2
   system macro [47m[defun-inline][0m.
 
   The [47m[table][0m [47m[macro-aliases-table][0m is an alist that associates macro
@@ -74713,8 +74918,8 @@ Introduction
   This is generated for the case that [47m:check-expansion[0m is [47mt[0m, as
   explained above.  Evaluation is handled as described in that above
   case, except here we check that the expansion result is the given
-  [47mexp[0m.  (Actually, the user is also allowed supply such a form.)  The
-  original [47mmake-event[0m expression does not undergo any expansion
+  [47mexp[0m.  (Actually, the user is also allowed to supply such a form.)
+  The original [47mmake-event[0m expression does not undergo any expansion
   (intuitively, it expands to itself).
 
   Now let us take a brief look at how we expand [47m[progn][0m and
@@ -75025,7 +75230,7 @@ The [47m:save-event-data[0m keyword argument
   follows: add the formal, [47my[0m, and modify the body so that [47my[0m is consed
   onto the old body.  Of course, this is a trivial example that could
   be done without [47mmake-event[0m; but we solve it in a way that shows how
-  to solve any such problem.  For simplificity, let's not worry about
+  to solve any such problem.  For simplicity, let's not worry about
   the case that [47my[0m is already a formal of the existing [47mdefun[0m.  Here
   are the main steps.
 
@@ -75041,8 +75246,8 @@ The [47m:save-event-data[0m keyword argument
 
     (er-progn
 
-    ; Each of the two forms below returns an error triple (see @(see
-    ; error-triple)), so we can evaluate both by using er-progn, which
+    ; Each of the two forms below returns an error triple (see :DOC
+    ; error-triple), so we can evaluate both by using er-progn, which
     ; returns the last (second) error triple.
 
      (defun foo (x) (cons x x)) ; (a)
@@ -75055,7 +75260,7 @@ The [47m:save-event-data[0m keyword argument
   whose value component, [47mval[0m, is the desired [47mdefun[0m form.  However,
   that leaves us in a world that includes the first [47mdefun[0m form.  For
   a solution to the original challenge (for our specific case), that
-  must not be the case, and moveover the second [47mdefun[0m form should be
+  must not be the case, and moreover the second [47mdefun[0m form should be
   included in the current world.  Fortunately, [47m[make-event][0m is
   perfectly suited to do both of these things.  Consider the
   following form, which simply wraps [47mmake-event[0m around the code
@@ -76331,7 +76536,7 @@ Subtopics
                                         ;   guards of condition-fn
              :recursive    t/nil        ; optional (default t)
              :stats        t/nil        ; optional (default t (unless :invoke))
-             :total        ; see :DOC memoize-partial
+             :total        ;            ; see :DOC memoize-partial
              :verbose      t/nil        ; optional (default nil)
              )
 
@@ -76439,8 +76644,7 @@ Subtopics
   the use of an attachment, since ACL2 does not know whether or not
   an attachment was actually used in that case.
 
-  We conclude with by documenting keyword parameters not discussed
-  above.
+  We conclude by documenting keyword parameters not discussed above.
 
   Keyword parameter [47m:invoke[0m is [47mnil[0m by default, but its value can be a
   symbol, [47mg[0m.  Examples may be found in [community-books] file
@@ -76465,7 +76669,7 @@ Subtopics
   then there is no further proof obligation.  Otherwise, there must
   be a theorem in the current ACL2 [world] of the form [47m(implies
   guard-fn guard-g)[0m.  See [verify-guard-implication] for a utility
-  that makes it wasy for you to prove such a theorem.  Finally,
+  that makes it easy for you to prove such a theorem.  Finally,
   contrary to the usual defaults, the values of keyword [47m:recursive[0m,
   [47m:condition[0m and [47m:stats[0m default to [47mnil[0m.  Indeed, it is an error to
   specify a non-nil value for [47m:recursive[0m.  The alternate defaults of
@@ -78570,7 +78774,7 @@ Subtopics
   conceivably change as memory is allocated, compacted, garbage
   collected, etc., since according to the CLTL standard, one is not
   supposed to apply [47mCAR[0m to any symbol other than [47mNIL[0m but no error
-  need be signalled.  It is likely that a CLTL implementation of [47mCAR[0m
+  need be signaled.  It is likely that a CLTL implementation of [47mCAR[0m
   just accesses memory where the [47mCAR[0m component of a cons is supposed
   to be!
 
@@ -78990,10 +79194,10 @@ Criteria for Breaks
   failed match is a near miss. There are three built-in near miss
   criteria, [47m:depth[0m, [47m:abstraction[0m, and [47m:lambda[0m.  We expect any given
   monitored command will probably specify only one of these three
-  criteria, depending on the pattern in the rule and your judgement
-  of what might be going wrong, but there is nothing preventing you
-  from specifying multiple criteria.  If any one of them is satisfied
-  by a failed match a break will occur.
+  criteria, depending on the pattern in the rule and your judgment of
+  what might be going wrong, but there is nothing preventing you from
+  specifying multiple criteria.  If any one of them is satisfied by a
+  failed match a break will occur.
 
     * [47m:depth n[0m causes a break if the pattern of the rune fails to match the
       target but the pattern does match down to depth [47mn[0m.  For
@@ -80766,7 +80970,7 @@ SECTION: Precise documentation for [47mstobj-let[0m
   replacement.  Warning: The use of [47m:[0m[47m[trans1][0m will not show this
   addition of a check.  But you can see it after admitting the
   definition of [47mFN[0m (perhaps using [47m[skip-proofs][0m if you are having
-  difficult admitting the definition) as follows.
+  difficulty admitting the definition), as follows.
 
     (untranslate (body 'FN nil (w state)) nil (w state))
 
@@ -81450,8 +81654,8 @@ Subtopics
   use of non-linear arithmetic.
 
   This multiplication of polynomials is the motivation for an
-  arithmetic-theory distinct from than the normal one.  Because this
-  may be done so often, and because the individual factors have
+  arithmetic-theory distinct from the normal one.  Because this may
+  be done so often, and because the individual factors have
   presumably already been rewritten, it is important that this be
   done in an efficient way.  The use of a small, specialized, theory
   helps avoid the repeated application of rewrite rules to already
@@ -81633,7 +81837,7 @@ Subtopics
   The new features are extensively documented.  The relevant topics
   are:
 
-  It is especially important to read all of of the [documentation] for
+  It is especially important to read all of the [documentation] for
   [books] before trying to use books.  However, the new [47m:more[0m keyword
   command is so handy for reading long [documentation] strings that
   we recommend you start with [47m:[0m[47m[doc][0m more if reading at the terminal.
@@ -82383,7 +82587,7 @@ Subtopics
 
   Unlike previous releases, we have not proved all the theorems in
   [47maxioms.lisp[0m; instead we have simply assumed them.  We have deferred
-  such proofs because we anticipate a fairly major changed in Version
+  such proofs because we anticipate a fairly major change in Version
   1.8 in how we deal with [guard]s.
 
   We used to (accidentally) prohibit the ``redefinition'' of a [table]
@@ -83748,10 +83952,11 @@ Subtopics
   Before Version 2.6, there has been the following problem with
   [47m[defstub][0m and [47m[encapsulate][0m in the case that the current package is
   not the ACL2 package.  If a [signature] was specified using the
-  symbol [47m=>[0m, then that symbol had have been imported into the current
-  package from the ACL2 package when the current package was defined.
-  There are no longer any package restrictions on the use of [47m=>[0m.
-  Thanks to John Cowles for bringing this problem to our attention.
+  symbol [47m=>[0m, then that symbol had to have been imported into the
+  current package from the ACL2 package when the current package was
+  defined.  There are no longer any package restrictions on the use
+  of [47m=>[0m.  Thanks to John Cowles for bringing this problem to our
+  attention.
 
   Bugs in [47m[defun-sk][0m have been fixed.  [47mDefun-sk[0m forms introducing
   functions of no arguments were failing to be admitted, for example:
@@ -84095,7 +84300,7 @@ Subtopics
   In particular, please see [note-2-7-new-functionality] for discussion
   of a number of new features that you may find useful.
 
-  Acknowledgements and elaboration, as well as other changes, can be
+  Acknowledgments and elaboration, as well as other changes, can be
   found in the subtopics listed below.
 
   Bug fixes (see [note-2-7-bug-fixes])
@@ -84365,7 +84570,7 @@ Subtopics
 
   Previously, the evaluation of [47m[defstobj][0m and [47m[mutual-recursion][0m forms
   could cause ``undefined'' warnings when the form was compiled.
-  This has been fixed.  Thanks to Eric Smith for bring a
+  This has been fixed.  Thanks to Eric Smith for bringing a
   [47mmutual-recursion[0m example to our attention.
 
   A bug has been fixed in the syntactic check for valid [47m:[0m[47m[loop-stopper][0m
@@ -84480,9 +84685,9 @@ Subtopics
   directory, not in [47msub/[0m.
 
   For users of [47mrun-acl2[0m [perhaps there are none!]: A fix has been
-  provided by a Debian user via Camm Maguire so that acl2-mode anyone
-  using that?] will work in Xemacs, which apparently uses variable
-  [47mlisp-mode-shared-map[0m rather than [47mshared-lisp-mode-map[0m.
+  provided by a Debian user via Camm Maguire so that acl2-mode will
+  work in Xemacs, which apparently uses variable [47mlisp-mode-shared-map[0m
+  rather than [47mshared-lisp-mode-map[0m.
 
   ACL2 has, for a long time (always?), had a mechanism for avoiding
   re-proving [constraint]s generated by [47m:functional-instance[0m
@@ -84558,7 +84763,7 @@ Subtopics
   bound, ACL2 looks in the current context for an instance of that
   hypothesis.  If it finds one, then it binds the unbound variables
   and continues to the next hypothesis.  What is new is that ACL2 can
-  now looks for multiple instances of that hypothesis.  Consider the
+  now look for multiple instances of that hypothesis.  Consider the
   following example; an explanation is below.
 
     (encapsulate (((op * *) => *))
@@ -84655,7 +84860,7 @@ Subtopics
   the ACL2 rewriter to expand all lambda applications ([47m[let][0m
   expressions).  See [hints].
 
-  A new function [47m[zpf][0m has been added as fast test against 0 for
+  A new function [47m[zpf][0m has been added as a fast test against 0 for
   nonnegative fixnums.
 
   A new macro [47m[gc$][0m allows the user to call the garbage collector of
@@ -85073,7 +85278,7 @@ Subtopics
   In particular, please see [note-2-8-new-functionality] for discussion
   of a number of new features that you may find useful.
 
-  Acknowledgements and elaboration, as well as other changes, can be
+  Acknowledgments and elaboration, as well as other changes, can be
   found in the subtopics listed below.
 
   Some of the bug fixes (see [note-2-8-bug-fixes])
@@ -85271,7 +85476,7 @@ Subtopics
   ACL2 [arrays], in which functions [47m[compress1][0m and [47m[compress2][0m were
   returning the input alist rather than compressing it appropriately.
   Here is a proof of [47mnil[0m that no longer succeeds, based on a bug
-  report from Warren Hunt, who we thank for bringing this problem to
+  report from Warren Hunt, whom we thank for bringing this problem to
   our attention.
 
     (defthm bad
@@ -85587,7 +85792,7 @@ Subtopics
   in order for such a form to be handled without error.  Thanks to
   Hanbing Liu for bringing this problem to our attention.
 
-  Fixed a [proof-builder] bug that could cause probably cause strange
+  Fixed a [proof-builder] bug that could probably cause a strange
   error, ``Attempt to access the plist field''.  Thanks to Bill Young
   for bringing this problem to our attention.
 
@@ -87315,7 +87520,7 @@ Subtopics
   solve the problem perfectly.  We just tried to make it work nicely
   on well-formed keyword/value parameter lists.
 
-  For example, here is a form printed by the each prettyprinter.
+  For example, here is a form printed by each prettyprinter.
 
     Old:
     (MEMBER
@@ -87393,7 +87598,7 @@ Subtopics
 
   Fixed a bug in translation to internal form that caused [47m[defun-sk][0m
   and [47m[defchoose][0m to have difficulties handling ignored variables in
-  [47m[let][0m forms.  Thanks to Sandip Ray to bringing this issue to our
+  [47m[let][0m forms.  Thanks to Sandip Ray for bringing this issue to our
   attention with a helpful example.
 
   The form [47m(push :acl2-mv-as-values *features*)[0m has been added in
@@ -88161,7 +88366,7 @@ Subtopics
   Thanks to Ray Richards and others for asking for such a utility,
   and to Sandip Ray for useful discussions.
 
-  We have changed the automatic declaration of of function types (still
+  We have changed the automatic declaration of function types (still
   done in GCL and OpenMCL only, for now).  Our motivation was to
   avoid the assumption that Common Lisp functions return one value
   when ACL2 says that they do; thanks to Bob Boyer for bringing this
@@ -88642,7 +88847,7 @@ Subtopics
   Added book [47mbooks/defexec/reflexive/reflexive.lisp[0m to illustrate
   reflexive functions.
 
-  ACL2 now generate scripts that invoke the saved image with [47mexec[0m.
+  ACL2 now generates scripts that invoke the saved image with [47mexec[0m.
   (Previously this was only done for GCL and CLISP.)  The benefit of
   this change can be to avoid the lingering of ACL2 processes after
   enclosing processes have exited.  Thanks to Peter Dillinger for
@@ -88677,7 +88882,7 @@ Subtopics
   to Warren Hunt, with contributions from Robert Krug, for providing
   this book,
 
-  Modified macro [break-on-error] to print of an error message before
+  Modified macro [break-on-error] to print an error message before
   entering a break, and to cause a hard error if the underlying Lisp
   cannot handle it (formerly, a raw Lisp break would occur).  Thanks
   to Bob Boyer for bringing these issues to our attention.
@@ -89742,8 +89947,7 @@ Subtopics
 
   The event constructor [47m[progn!][0m now returns the value that is returned
   by evaluation of its final form if no error occurs, except that it
-  still returns [47mnil[0m if the that final evaluation leaves ACL2 in
-  raw-mode.
+  still returns [47mnil[0m if that final evaluation leaves ACL2 in raw-mode.
 
   [47m:[0m[47m[Pso][0m and [47m:[0m[47m[psog][0m have been improved so that they show the key
   checkpoint summary at the end of a failed proof.  (For a discussion
@@ -89804,7 +90008,7 @@ Subtopics
   assistance for debugging guard violations.
 
   Improved the guard violation error message to show the positions of
-  the formals, following to a suggestion of Peter Dillinger.
+  the formals, following a suggestion of Peter Dillinger.
 
   Added new [47m[guard-debug][0m capability to assist in debugging failed
   attempts at [guard] verification.  See [guard-debug].  Thanks to
@@ -90047,7 +90251,7 @@ Subtopics
   event.  Specifically, if you executed [47m(add-binop mac fn)[0m with [47mfn[0m
   having arity other than 2, a [proof-builder] command such as 3 or
   [47m(dv 3)[0m at a call of [47mmac[0m could have the wrong effect.  We also fixed
-  a bug in diving with [47mDV[0m into certain [47mAND[0m and [47mOR[0m calls.  Thanks for
+  a bug in diving with [47mDV[0m into certain [47mAND[0m and [47mOR[0m calls.  Thanks to
   Mark Reitblatt for bringing these problems to our attention with
   helpful examples.
 
@@ -90444,7 +90648,7 @@ Subtopics
   dropped since it is redundant.  NOTE by the way that if [47m:guard[0m and
   [47m:stobjs[0m are specified in the same [47m[xargs][0m form, then for purposes
   of collecting up the effective guard as described above, [47m:stobjs[0m
-  will be treated as through it comes before the [47m:guard[0m.
+  will be treated as though it comes before the [47m:guard[0m.
 
   Modified [47m[close-output-channel][0m to try to do a better job flushing
   buffers.  Thanks to Bob Boyer for helpful correspondence.
@@ -91398,7 +91602,7 @@ Subtopics
   presents a problem, the makefile provides a way to build with
   compilation disabled; see [compilation].  Users of raw mode (see
   [set-raw-mode]) will be happy to know that [47m[include-book][0m now works
-  if there an up-to-date compiled file for the book, since
+  if there is an up-to-date compiled file for the book, since
   [47m[portcullis][0m commands are now incorporated into that compiled file.
   The mechanism for saving expansion files has changed, and the
   [47m:save-expansion[0m argument of [47m[certify-book][0m has been eliminated; see
@@ -91562,7 +91766,7 @@ Subtopics
   formerly was sufficient).  You can still define such a function in
   [47m:program[0m mode, provided it is followed by a [47m:logic[0m mode definition
   (where of course both definitions are [local], since we are
-  discussing functions is introduced in the [signature]).  Thanks to
+  discussing functions introduced in the [signature]).  Thanks to
   Carl Eastlund for bringing this issue to our attention.  (Note: An
   analogous modification has been made for [47m:[0m[47m[bdd][0m [hints] as well.)
 
@@ -92302,10 +92506,10 @@ Subtopics
   [31;1mBUG FIXES[0m
 
   We fixed a soundness bug that could occur when a function that
-  returns multiple values that is called in its own guard.  Thanks to
-  Sol Swords for reporting this bug and sending a small
-  self-contained example, which is included in a comment in the
-  function [47mchk-acceptable-defuns1[0m in ACL2 source file [47mdefuns.lisp[0m.
+  returns multiple values is called in its own guard.  Thanks to Sol
+  Swords for reporting this bug and sending a small self-contained
+  example, which is included in a comment in the function
+  [47mchk-acceptable-defuns1[0m in ACL2 source file [47mdefuns.lisp[0m.
 
   It was possible to cause an error when giving theory hints during
   redefinition of functions.  This has been fixed.  Thanks to Ian
@@ -93244,7 +93448,7 @@ Subtopics
   situations both the [47m:logic[0m and [47m:exec[0m forms will be evaluated, with
   an error if the results are not equal.  Formerly, only the [47m:logic[0m
   form was evaluated, which was a soundness bug that could be
-  exploited to prove [47mnil[0m.  For a such a proof and a bit of further
+  exploited to prove [47mnil[0m.  For such a proof and a bit of further
   explanation, see the example at the top of the comments for
   [47m(deflabel note-4-3 ..)[0m in ACL2 source file [47mld.lisp[0m.
 
@@ -93517,7 +93721,7 @@ Subtopics
       [47m[Memoize][0m is now illegal by default for [47m:[0m[47m[logic][0m mode functions that
       have not had their guards verified.  See [memoize] (keyword
       [47m:ideal-okp[0m) and see [ACL2-defaults-table] (key
-      [47m:memoize-ideal-okp[0m) for and explanation of this restriction and
+      [47m:memoize-ideal-okp[0m) for an explanation of this restriction and
       how to avoid it.
 
       [History] commands such as [47m:[0m[47m[pe][0m and [47m:[0m[47m[pbt][0m now display ``[47mM[0m'' or
@@ -94164,10 +94368,10 @@ Subtopics
   raw Lisp code; now, one finds [47m(and fixnum (integer 0 *))[0m where
   formerly the type was restricted to [47m(integer 0 268435455)[0m.
 
-  Fixed a bug in that was ignoring the use of
-  [47m:computed-hint-replacement[0m in certain cases involving a combination
-  of computed hints and custom keyword hints.  Thanks to Robert Krug
-  for reporting this bug and sending a very helpful example.
+  Fixed a bug, ignoring the use of [47m:computed-hint-replacement[0m in
+  certain cases involving a combination of computed hints and custom
+  keyword hints.  Thanks to Robert Krug for reporting this bug and
+  sending a very helpful example.
 
   Fixed a bug in the output from [47m[defattach][0m, which was failing to list
   previous [events] in the message about ``bypassing constraints that
@@ -97073,7 +97277,7 @@ Hons-enabled and Experimental Versions
 
     * The output from [47m[memsum][0m on the line ``Time of all outermost calls''
       no longer includes a percentage, which had been at best
-      misleading and at worse nonsensical.  Suppose for example that
+      misleading and at worst nonsensical.  Suppose for example that
       [47mf[0m calls [47mg[0m, which does all the work.  Then [47mmemsum[0m had reported
       50% of the ``Time of all outermost calls'' for each of [47mf[0m and [47mg[0m,
       even though 100% of the time was spent under each.
@@ -98185,7 +98389,7 @@ Heuristic and Efficiency Improvements
   additional 29% reduction (also on Mac OS) for the second item.
 
     * Various optimizations have been made for [theory] manipulation,
-      including some to make processing for efficient for [47m[defund][0m
+      including some to make processing more efficient for [47m[defund][0m
       and [47m[defthmd][0m.  Thanks to Sol Swords for bringing this issue to
       our attention in GitHub Issue #401 and for reporting bugs in
       our initial implementations.
@@ -98218,7 +98422,7 @@ Heuristic and Efficiency Improvements
 
   [47m[Defevaluator][0m is faster, especially so when many functions are to be
   interpreted by the new evaluator.  The new version is a refactored
-  version of community book [47mbooks/tools/defevaulator-fast.lisp[0m used
+  version of community book [47mbooks/tools/defevaluator-fast.lisp[0m used
   with the permission of its original authors Sol Swords and Jared
   Davis.  Thanks!
 
@@ -99074,7 +99278,7 @@ Heuristic and Efficiency Improvements
   The generation of raw Lisp definitions of [stobj] creator functions
   have been made potentially more efficient for stobjs with many
   fields.  Thanks to Sol Swords and Jared Davis for reporting this
-  issue and suggesting a fix, we we adopted (in source function
+  issue and suggesting a fix, which we adopted (in source function
   [47mdefstobj-raw-init[0m) with some small changes.
 
   We now avoid certain inefficiencies with [47m[mbe][0m.  The definition of [47mf8[0m
@@ -101262,7 +101466,7 @@ Changes at the System Level
   Goel, David Rager, Eric Smith, and Sol Swords, all helpful) for
   working through this issue.
 
-  A message is now printed at when loading file [47m~/acl2-init.lsp[0m at
+  A message is now printed when loading file [47m~/acl2-init.lsp[0m at
   startup.
 
 
@@ -101313,9 +101517,9 @@ Changes to Existing Features
   Reasoning'', for discussion of the remaining restrictions.  Thanks
   to Sol Swords for requesting this improvement and for many helpful
   discussions.  Moreover, he found a bug in a proof in the above
-  Essay, which has been been fixed; he made a key observation that
-  led to completion of that fix.  Also thanks to Rob Sumners for
-  helpful discussions.
+  Essay, which has been fixed; he made a key observation that led to
+  completion of that fix.  Also thanks to Rob Sumners for helpful
+  discussions.
 
   The [accumulated-persistence] utility no longer overcounts
   accumulated frames due to nested (recursive) rule applications.
@@ -102378,7 +102582,7 @@ Heuristic and Efficiency Improvements
   calls on a single variable when building a context (a so-called
   [type-alist]).  (By a ``strong compound-recognizer call'' we mean a
   unary function that recognizes a union of primitive ACL2 types and
-  has, either explicitly or implicity, a corresponding
+  has, either explicitly or implicitly, a corresponding
   [compound-recognizer] rule; examples include [47m[stringp][0m, [47m[integerp][0m,
   and [47m[true-listp][0m.)  In particular, this change can strengthen the
   result of [forward-chaining].  Thanks to Eric Smith, who raised
@@ -102497,7 +102701,7 @@ Bug Fixes
   We made the following fixes to the [47m[accumulated-persistence][0m utility.
 
     * Applications of [type-prescription] rules that were erroneously
-      labeled as ``useless'' are now appropriatedly labeled as
+      labeled as ``useless'' are now appropriately labeled as
       ``useful''.
 
     * The documentation for [47m[accumulated-persistence][0m now correctly states
@@ -102606,7 +102810,7 @@ Bug Fixes
     * A space past the [47m[fmt-soft-right-margin][0m now results in a linebreak
       even in the case of tilde-space (`[47m~ [0m').
 
-    * As before, for puctuation after a tilde-x (`[47m~x[0m') directive, ACL2
+    * As before, for punctuation after a tilde-x (`[47m~x[0m') directive, ACL2
       avoids printing in column 0 after a linebreak.  This desirable
       behavior now extends to the case that `[47m~x[0m' is inside a
       tilde-atsign (`[47m~@[0m') directive.  For example, after
@@ -102799,7 +103003,7 @@ Changes at the System Level
   as a soft link on the Unix PATH rather than as a regular file.
   Thanks to Mertcan Temel for feedback leading to this change.
 
-  A script [47mbin/acl2[0m has been added below the main ACL2 direcctory.  It
+  A script [47mbin/acl2[0m has been added below the main ACL2 directory.  It
   may be used in place of [47msaved_acl2[0m, invoked from any directory.  If
   the [47mbin[0m subdirectory is on one's Unix [47mPATH[0m then of course [47macl2[0m will
   invoke this script (unless a different [47macl2[0m is in a directory that
@@ -103794,7 +103998,7 @@ Changes to Existing Features
       [47m(mv nil _ state)[0m; instead, ACL2 would quit the top-level call
       of [47mld[0m, leaving us in raw Lisp.  But in raw Lisp, the [47m#![0m reader
       macro (see [sharp-bang-reader]) is undefined; hence an error
-      would be signalled.  After the fix, the return value of [47m(mv nil
+      would be signaled.  After the fix, the return value of [47m(mv nil
       (:STOP-LD 2) state)[0m is treated as an error, so because
       [47mld-error-action[0m is [47m(:EXIT N)[0m, ACL2 immediately exits with
       status [47mN[0m.
@@ -104054,7 +104258,7 @@ Changes to Existing Features
 
   The fifth formal of [47m[do$][0m now represents the values returned rather
   than a default value.  This change supports a bug fix; see the item
-  below regarding ``About a bug in DO$ in ACL2 Version_8.5''.
+  below regarding ``About a bug in DO$ in ACL2 Version 8.5''.
 
   The sixth and seventh arguments of [47m[do$][0m have been combined into a
   record that also contains a list of the names of all the [47m[stobj][0ms
@@ -104145,6 +104349,9 @@ Changes to Existing Features
   keyword argument [47m:NON-EXECUTABLE T[0m and to use the [47m:CONGRUENT-TO[0m
   keyword argument.
 
+  [47mLambda[0m objects in positions of [ilk] [47m:FN[0m are now subjected to a size
+  limitation.  See [47m[explain-giant-lambda-object][0m.
+
 
 New Features
 
@@ -104230,9 +104437,6 @@ New Features
   The Common Lisp utility, [47m[macrolet][0m, is now supported in ACL2.
   Thanks to Alessandro Coglio for discussion leading us to make this
   addition.  See [macrolet].
-
-  [47mLambda[0m objects in positions of [ilk] [47m:FN[0m are now subjected to a size
-  limitation.  See [47m[explain-giant-lambda-object][0m.
 
   The utilities [47m[with-output][0m and [47m[with-output!][0m have been enhanced in
   the following two ways; see [with-output] for details.
@@ -104342,7 +104546,7 @@ New Features
   improve the induction scheme suggested by a recursive function,
   especially one involving [47m[let][0m and [47m[let*][0m bindings containing
   conditional recursive calls.  For that new topic, new related books
-  [47mbooks/demos/ppr1-experiments.lisp[0ma nd
+  [47mbooks/demos/ppr1-experiments.lisp[0m and
   [47mbooks/demos/ppr1-experiments-thm-1-ppr1.lisp[0m, and related edits of
   existing :DOC topics ([advanced-features], [definductor], [defun],
   [induction], [rulers], [verify-termination], and [xargs]): Release
@@ -104497,8 +104701,8 @@ Bug Fixes
 
   Fixed a soundness bug based on rules of class [47m:[0m[47m[meta][0m or
   [47m:[0m[47m[clause-processor][0m that would be exported from an [47m[encapsulate][0m
-  event with a non-[47mnil[0m [signature] list.  A proof of [47mnil[0m in
-  Version_8.5 may be found in the [community-books] file,
+  event with a non-[47mnil[0m [signature] list.  A proof of [47mnil[0m in Version
+  8.5 may be found in the [community-books] file,
   [47mbooks/system/tests/transparent-functions-input.lsp[0m; search for this
   paragraph there.
 
@@ -104610,7 +104814,7 @@ Bug Fixes
   summary printed at the end should exclude rules used only before
   the start of that induction proof.  That was formerly the case for
   [47mdefthm[0m but not [47mthm[0m, but now it is the case for both.  You can see
-  the change for the following call, whose Rules summmary formerly
+  the change for the following call, whose Rules summary formerly
   included [47m(:ELIM CAR-CDR-ELIM)[0m but no longer does so.
 
     (thm
@@ -104693,24 +104897,24 @@ Bug Fixes
       :use bar))[0m where formerly it was not.  The discussion of this
       situation in documentation topic [hints] has been improved.
 
-    * It was incorrectly documentated in topic [hints], in the discussion
-      of [47m:do-not[0m hints, that it is illegal to associate a goal name
-      with the empty list of [hints], as in [47m(\"Goal\")[0m.  This behavior
-      was actually allowed; an empty such hint was simply ignored.
-      This continues to be allowed (for backward compatibility) but
-      the documentation has been updated; also, these empty hints are
-      now ignored for purposes of the warnings mentioned above
-      (formerly they were considered when looking for repetition of
-      goal names).
+    * It was incorrectly documented in topic [hints], in the discussion of
+      [47m:do-not[0m hints, that it is illegal to associate a goal name with
+      the empty list of [hints], as in [47m(\"Goal\")[0m.  This behavior was
+      actually allowed; an empty such hint was simply ignored.  This
+      continues to be allowed (for backward compatibility) but the
+      documentation has been updated; also, these empty hints are now
+      ignored for purposes of the warnings mentioned above (formerly
+      they were considered when looking for repetition of goal
+      names).
 
   A bug in the [brr] commands [47m:eval$[0m, [47m:go$[0m, and [47m:ok$[0m was fixed so they
   now behave as described in the documentation for [brr-commands].
 
   When a certified book is included, the logical [world] will no longer
-  be marked as having seen a [47m[skip-proofs][0m call, even when the value
-  of [47m[ld][0m special [47m[ld-skip-proofsp][0m is non-[47mnil[0m at that time.  Thus,
-  that situation no longer disqualifies such a world from supplying
-  the [portcullis] commands to a book to be certified without keyword
+  be marked as having seen a [47m[skip-proofs][0m call due to [47m[ld][0m special
+  [47m[ld-skip-proofsp][0m having a non-[47mnil[0m value at that time.  Thus, that
+  situation no longer disqualifies such a world from supplying the
+  [portcullis] commands to a book to be certified without keyword
   argument [47m:skip-proofs-okp t[0m of [47m[certify-book][0m.  Thanks to Sol
   Swords for pointing out this bug.
 
@@ -104827,7 +105031,7 @@ Bug Fixes
   violated when a loop terminates prematurely because the measure
   fails to decrease.  The bug, which has been fixed, is explained in
   detail in a comment in ACL2 source file [47mapply.lisp[0m, entitled
-  ``About a bug in DO$ in ACL2 Version_8.5''.
+  ``About a bug in DO$ in ACL2 Version 8.5''.
 
   Fixed a bug in [47m[fmt][0m and related functions, where a right square
   bracket immediately following a [47m~&[0m or [47m~v[0m directive failed to be
@@ -104947,7 +105151,7 @@ Changes at the System Level
   [47m*initial-global-table*[0m now specifies a value for each so-called
   ``[47m[ld][0m special''.
 
-  The previous ACL2 release (Version_8.5) arranged that when a raw Lisp
+  The previous ACL2 release (Version 8.5) arranged that when a raw Lisp
   error is encountered, any available input is cleared from the input
   channel.  However, this can lead to discarding of valid input or an
   attempt to read values from within a comment; see [community-books]
@@ -104992,7 +105196,7 @@ EMACS Support
 
   The initialization file for recent Emacs versions,
   [47mbooks/emacs/emacs-acl2.el[0m, now correctly loads related files ---
-  notable [47macl2-doc.el[0m --- from that same directory, rather than from
+  notably [47macl2-doc.el[0m --- from that same directory, rather than from
   the [47memacs/[0m directory that is directly under the top level of the
   ACL2 distribution.
 
@@ -106611,7 +106815,7 @@ Generic Description of the Methodology
   How Machines Are Modeled
 
   In the approach ACL2 users most often take to model state machines
-  the first step is to represents the relevant parts of the machine's
+  the first step is to represent the relevant parts of the machine's
   state as an ACL2 object.  Then the user defines a single-step (or
   ``small step'') function to compute the next state from the current
   one (and possibly some inputs).  Finally, the user defines a
@@ -106711,7 +106915,7 @@ Generic Description of the Methodology
   the machine from the given initial state to the given final
   state.'' It is also sometimes possible to prove that no such clock
   exists.  There are tools that can, for simple programs, generate
-  appropriate clock terms.  Of course, the problem is undecideable.
+  appropriate clock terms.  Of course, the problem is undecidable.
 
   Proofs of such theorems are most often done by induction, appealing
   to similar lemmas about the effects of loops and subroutine calls.
@@ -107180,7 +107384,7 @@ Programming M1
   position (i.e., the corresponding pc) of the instruction and
   pseudocode for the nearby snippet of code.  In this program we will
   have just two local variables, called ``[47mn[0m'' and ``[47mans[0m'' in the
-  pseudocode, in positions 0 and 1 respectiely of the [47mlocals[0m.  We'll
+  pseudocode, in positions 0 and 1 respectively of the [47mlocals[0m.  We'll
   compute [47m(fact n)[0m and leave the result in [47mans[0m and on top of the
   stack.
 
@@ -107387,10 +107591,10 @@ Programming M1
   s))[0m were automatically expanded when we have no information about
   [47ms[0m: the inner [47mstep[0m would introduce a 9-way case split and the outer
   one would turn that into an 81-way case split considering all of
-  the possiblities for the first two instructions.  We want to expand
-  [47mstep[0m only when we know something definite about the instruction
-  that is to be executed.  So we prove this logically trivial
-  theorem.
+  the possibilities for the first two instructions.  We want to
+  expand [47mstep[0m only when we know something definite about the
+  instruction that is to be executed.  So we prove this logically
+  trivial theorem.
 
     (defthm step-opener
       (implies (consp (next-inst s))
@@ -107553,7 +107757,7 @@ Programming M1
   the machine to take.  It is not as hard as you might think to
   create functions that compute this --- provided you can prove that
   the clock function terminates, which is of course generally
-  undecideable but frequently trivial.  And, proofs via clock
+  undecidable but frequently trivial.  And, proofs via clock
   functions are not only equivalent to proofs by inductive assertions
   but that has been proved with ACL2 and tools are provided to
   convert back and forth between the two proof styles (see
@@ -107784,7 +107988,7 @@ of Correctness
   is a natural number with 2,568 decimal digits, so we won't show it
   here, but you can try it on your own.  [47m(Clk 1000)[0m is 11,005, so
   during this particular computation, ACL2 was executing 550,250 M1
-  instructures per second.  Our model would run faster if we used a
+  instructions per second.  Our model would run faster if we used a
   single-threaded object (see [47mstobj[0m) to hold the state and faster
   still if we verified the guards of [47mm1[0m.  We point to discussions and
   examples of these ideas at the end of this topic.
@@ -108208,7 +108412,7 @@ More Elaborate Models of the JVM: From M1 to M6
       using the constructor style of creating new states (e.g., with
       [47m(list pc locals stack program)[0m) it uses a single-threaded
       object (see [stobj]).  This slightly changes the forms of
-      corretness theorems and lemmas.  Second, the definition of [47mm1[0m
+      correctness theorems and lemmas.  Second, the definition of [47mm1[0m
       on the [47mbooks/models/jvm/guard-verified-m1/[0m directory has been
       guard verified.  This involves attaching a guard to every
       ``[47mexecute[0m'' function and lifting that up to the level of the [47mm1[0m
@@ -108268,7 +108472,7 @@ More Elaborate Models of the JVM: From M1 to M6
       constituting about 500 pages of data.  The model included 21
       out of 41 native APIs that appeared in Sun's CLDC API library.
       The M6 description itself is about 160 pages of ACL2.  See
-      [bib::liu06].  [31;1mWarning:[0m M6 is not yet in the regression!
+      [bib::liu06].
 
 
 Quick Index to Related Topics
@@ -108644,15 +108848,14 @@ Subtopics
       International Conference on Computer Design[0m, IEEE Computer
       Society, pp. 31-36, October, 1997.
       [31;1mRelevance:[0m first public announcement of the CAP DSP formalization
-      (this short article was superceded by [bib::bh99])
+      (this short article was superseded by [bib::bh99])
 
   [Bib::bh99]
       B. Brock and W. A. Hunt, Jr., ``{Formal Analysis of the Motorola CAP
       DSP'' |
-      https://link.springer.com/chapter/10.1007/978-1-4471-0523-7_
-      5#citeas}, in M. Hinchey and J. Bowen, editors,
-      [3mIndustrial-Strength Formal Methods[0m, Springer-Verlag, pp.
-      81-115, 1999.
+      https://link.springer.com/chapter/10.1007/978-1-4471-0523-7_5#citeas},
+      in M. Hinchey and J. Bowen, editors, [3mIndustrial-Strength Formal
+      Methods[0m, Springer-Verlag, pp. 81-115, 1999.
       [31;1mRelevance:[0m first industrial application of operational semantics with
       ACL2 and the first complete formal specification of a
       commercially designed microprocessor
@@ -108921,7 +109124,7 @@ Subtopics
       J S. Moore, ``{ Computing Verified Machine Address Bounds during
       Symbolic Exploration of Code |
       https://www.cs.utexas.edu/~moore/publications/ainni.pdf},'' in
-      J. Bowen, H. Langmaack and E.-R. Olderog, edsitors, [3mProvably
+      J. Bowen, H. Langmaack and E.-R. Olderog, editors, [3mProvably
       Correct Systems[0m, Springer, pp. 151-172, 2017.
       [31;1mRelevance:[0m an ACL2 tool for determining whether two symbolic machine
       addresses may be equal
@@ -114901,7 +115104,7 @@ Linux/Mac/Windows Binaries in ACL2s
   package for Linux and macOS users, and as a Windows Subsystem for
   Linux distro for Windows users.
 
-  See ACL2s::ACL2s-installation for instructions for installing the
+  See [ACL2s::ACL2s-installation] for instructions for installing the
   ACL2 Sedan. Note that these instructions are typically intended for
   students at Northeastern, but hopefully are useful for anyone
   interested in installing ACL2s.
@@ -115731,8 +115934,8 @@ Remarks
     (print-object$+ x       ; an ACL2 object
                     channel ; an open object output channel
                     &key
-                    header ; nil or a comment string (see below)
-                    serialize-character ; as in @(see with-serialize-character)
+                    header  ; nil or a comment string (see below)
+                    serialize-character       ; as in with-serialize-character
                     print-base print-case ... ; print-control variables
                     )
 
@@ -115959,7 +116162,7 @@ Remarks
   each event.  By default, each event is printed before it is
   evaluated and a suitable value is printed after successful
   completion.  (Technical note: successful completion produces a
-  mutiple-value return that is an [error-triple] [47m(mv nil val state)[0m;
+  multiple-value return that is an [error-triple] [47m(mv nil val state)[0m;
   then the value [47mval[0m is printed.)  Printing of both the event and its
   value can both be inhibited by including the symbol, [47mEVENT[0m, in your
   call of [47mset-inhibit-output-lst[0m.
@@ -116211,7 +116414,7 @@ Subtopics
     (defun p-o (x)
       (declare (xargs :guard t))
       (er hard? 'p-o
-          \"Attempted logical evaluatin of ~x0.\"
+          \"Attempted logical evaluation of ~x0.\"
           (list 'p-0 x)))
 
     :q ; exit the ACL2 read-eval-print loop
@@ -116238,7 +116441,7 @@ Subtopics
       (atom x)
       #+acl2-loop-only
       (er hard? 'p-o
-          \"Attempted logical evaluatin of ~x0.\"
+          \"Attempted logical evaluation of ~x0.\"
           (list 'p-0 x)))
 
   The [47macl2-loop-only[0m annotations arrange that when ACL2 is built, one
@@ -117768,7 +117971,7 @@ Additional details
 
       [31;1mPrefixes.[0m Suppose [47m:K1[0m and [47m:K2[0m are keywords bound in the
       [47mproject-dir-alist[0m to [47m\"<dir1>\"[0m and [47m\"<dir2>\"[0m, respectively, where
-      [47m\"<dir1>\"[0m is a prefix of [47m\"<dir2>\"[0m (hence is stricly shorter,
+      [47m\"<dir1>\"[0m is a prefix of [47m\"<dir2>\"[0m (hence is strictly shorter,
       since duplicates are disallowed, as noted above).  Then it may
       be simplest to maintain that property --- that the value of [47m:K1[0m
       is a prefix of the value of [47m:K2[0m --- when creating a new
@@ -121332,13 +121535,13 @@ Subtopics
   arithmetic books to choose from depending on what sort of
   operations are involved in your conjectures.  You might explore
   books on elementary <<[arithmetic]>> including some number theory
-  books, or books on the arithmetic of <<bit-vectors>> (which deal
+  books, or books on the arithmetic of <<[bit-vectors]>> (which deal
   with concepts like shifting or bitwise logical operations on
-  number), or floating point books (see <<rtl>>; these are useful for
-  verifying implementations of floating point operations) or a book
-  on the <<[gl]>> utility (which provides a bit-blaster for finite
-  arithmetic), or <<algebra>> books (e.g., properties of rings and
-  fields), to name a few.)
+  number), or floating point books (see <<[rtl]>>; these are useful
+  for verifying implementations of floating point operations) or a
+  book on the <<[gl]>> utility (which provides a bit-blaster for
+  finite arithmetic), or <<[algebra]>> books (e.g., properties of
+  rings and fields), to name a few.)
 
   Next: Inadequacies of Structural Recursion (see
   [R-AND-I-INADEQUACIES-OF-STRUCTURAL-RECURSION]) (or Table of
@@ -121396,7 +121599,7 @@ Annotated Bibliography
       capacity of the prover and were too slow to run as simulators
       for the modeled systems.  For example, when the ACL2 project
       was getting started, a student of Boyer was formalizing the
-      Motorola 68020 micrprocessor with the goal of verifying the
+      Motorola 68020 microprocessor with the goal of verifying the
       Berkeley C String Library.  (That Nqthm project was completed
       successfully in 1993 and the files are available at the url
       above.)
@@ -121501,7 +121704,7 @@ Annotated Bibliography
       ACL2 in [2] above includes a formalization of the ordinals up
       to \\epsilon_0 (``epsilon naught'') represented in ACL2 with
       conses and natural numbers based on a version of Cantor Normal
-      Form.  That representation was superceded in 2004 by the
+      Form.  That representation was superseded in 2004 by the
       representation described in this paper, which implements a
       slightly different version of the normal form that is
       exponentially more efficient.  The paper also describes
@@ -121656,7 +121859,7 @@ Subtopics
 
   We assume you are familiar with the rules of inference for
   propositional calculus and for equality.  For example, we take for
-  granted that you can recognize simple proposititional tautologies,
+  granted that you can recognize simple propositional tautologies,
   reason by cases, and substitute equals for equals.
 
   For example, we show a theorem below that you should be able to
@@ -123946,7 +124149,7 @@ Subtopics
   [31;1mProblem 56.
   [0m Define [47m(ordered x)[0m so that it returns [47mt[0m or [47mnil[0m according to whether
   each pair of adjacent elements of [47mx[0m are in the relation [47m<<=[0m.  For
-  example, [47m(ordered '(1 3 3 7 12))[0m would evauluate to [47mt[0m and [47m(ordered
+  example, [47m(ordered '(1 3 3 7 12))[0m would evaluate to [47mt[0m and [47m(ordered
   '(1 3 7 3 12))[0m would evaluate to [47mnil[0m.
 
   [31;1mProblem 57.
@@ -124604,7 +124807,7 @@ Recursion and Induction Table of Contents
 
   If the rule in question is enabled and its [47mequiv[0m refines the outer
   equivalence, the rewriter tries to match [47mlhs[0m with the target.  By
-  ``match'' we mean it tries to find a substition for the variables
+  ``match'' we mean it tries to find a substitution for the variables
   in [47mlhs[0m that make the instantiated [47mlhs[0m identical to the target.  We
   discuss matching further below.  Second, having found a suitable
   substitution, tries to ``relieve'' the hypotheses, as discussed
@@ -124698,7 +124901,7 @@ Recursion and Induction Table of Contents
       just the rewriter) to bear on the hypothesis.  See [47m[force][0m and
       [47m[case-split][0m.  It is also possible to include hypotheses that
       are logically always true but which cause the attempt to apply
-      the rule to fail if a certain user-specified compuation so
+      the rule to fail if a certain user-specified computation so
       indicates.  This can be used to restrict the application of a
       rule to certain syntactic situations.  See [47msyntaxp[0m.
 
@@ -124807,10 +125010,7 @@ Recursion and Induction Table of Contents
 
     The message above might explain the error.  If not, and
     if you didn't cause an explicit interrupt (Control-C),
-    then the root cause may be call of a :program mode
-    function that has the wrong guard specified, or even no
-    guard specified (i.e., an implicit guard of t).
-    See :DOC guards.
+    then it may help to see :DOC raw-lisp-error.
 
     To enable breaks into the debugger (also see :DOC acl2-customization):
     (SET-DEBUGGER-ENABLE T)
@@ -126643,7 +126843,7 @@ How to Fix a Refinement Failure
 
 How Geneqvs Are Displayed
 
-  As illustrated in the discusson of [geneqv], a generated equivalence
+  As illustrated in the discussion of [geneqv], a generated equivalence
   is essentially a set of equivalence relations.  ACL2 prints geneqvs
   in three different ways depending on the utility doing the
   printing.
@@ -126685,7 +126885,7 @@ How Geneqvs Are Displayed
 Some Generic Examples
 
   In the following discussion we introduce some functions that will
-  allow us to explore refinement failures.  The experiements reported
+  allow us to explore refinement failures.  The experiments reported
   below are carried out in the community book
   [47mbooks/demos/refinement-failure-test-book.lisp[0m whose input/output
   log may be found in [47mbooks/demos/refinement-failure-test-log.txt[0m.
@@ -126905,7 +127105,7 @@ Some Generic Examples
     1 ACL2 >
 
   In frame 4 we are to maintain [47mFEQ[0m on a call of [47mG[0m.  In frame 5 we are
-  rewritting the second argument of [47mG[0m and used [47mG2EQ2-IMPLIES-FEQ-G-2[0m
+  rewriting the second argument of [47mG[0m and used [47mG2EQ2-IMPLIES-FEQ-G-2[0m
   to derive the new geneqv containing [47mG2EQ2[0m.  We could get [47mG2EQ1[0m into
   that new geneqv is only we had a congruence rule that says [47mFEQ[0m is
   maintained on [47mG[0m when rewriting the second argument of [47mG[0m maintaining
@@ -127509,7 +127709,7 @@ Subtopics
   (EVENTS STOBJ)
   "Remove a global [stobj] with a given name
 
-  See [47m[add-global-stobj][0m for relevant background and terminlogy
+  See [47m[add-global-stobj][0m for relevant background and terminology
   together with an explanation of [47mremove-global-stobj[0m.  Here we give
   only a brief summary.
 
@@ -128265,10 +128465,7 @@ Subtopics
      ***********************************************
 
      If you didn't cause an explicit interrupt (Control-C),
-     then the root cause may be call of a :program mode
-     function that has the wrong guard specified, or even no
-     guard specified (i.e., an implicit guard of t).
-     See :DOC guards.
+     then it may help to see :DOC raw-lisp-error.
 
      To enable breaks into the debugger (also see :DOC acl2-customization):
      (SET-DEBUGGER-ENABLE T)
@@ -128488,10 +128685,7 @@ Subtopics
     ***********************************************
 
     If you didn't cause an explicit interrupt (Control-C),
-    then the root cause may be call of a :program mode
-    function that has the wrong guard specified, or even no
-    guard specified (i.e., an implicit guard of t).
-    See :DOC guards.
+    then it may help to see :DOC raw-lisp-error.
 
     To enable breaks into the debugger (also see :DOC acl2-customization):
     (SET-DEBUGGER-ENABLE T)
@@ -128614,7 +128808,7 @@ Subtopics
   returned [47m[state][0m is the same as the world of the input state even
   if the evaluation of [47mform[0m modifies the world of the input state.
 
-  To see [47mrevert-world[0m in action, consider the following defintion.
+  To see [47mrevert-world[0m in action, consider the following definition.
 
     (defun test-revert-world (state)
      (declare (xargs :mode :program :stobjs state))
@@ -129307,12 +129501,12 @@ A Possible Confusion
           (:definition rewrite-lambda-modep))
          nil)
 
-  which is a theory equal to then current theory except that the
+  which is a theory equal to the current theory except that the
   executable-counterpart rune and the definition rune of
   [47mrewrite-lambda-modep[0m are enabled.  This expansion is suitable for
   use in an [47m[in-theory][0m event or [47m:in-theory[0m hint (see [47m:[0m[47m[hints][0m).
 
-  Both these two runes are initally enabled, so eligible [47mlambda[0m object
+  Both these two runes are initially enabled, so eligible [47mlambda[0m object
   bodies are rewritten by default until and unless some event (e.g.,
   an [47m[in-theory][0m or [47m[include-book][0m) or a superior local subgoal hint
   changes the status of those runes.
@@ -129531,7 +129725,7 @@ A Possible Confusion
 
   However, form [47m[2][0m rules, of the general form [47m(implies hyps (equiv (fn
   var) var))[0m, allow the normalizer to be applied to every quoted
-  constant occuring in a suitable [47mequiv[0m context.  The normalizer can
+  constant occurring in a suitable [47mequiv[0m context.  The normalizer can
   then do a root-and-branch exploration of the constant to compute
   its replacement.
 
@@ -129705,11 +129899,11 @@ Subtopics
   Then, if other rewrite rules about [47mcollect$[0m don't rewrite that, the
   the definition of [47mcollect$[0m will be tentatively tried.  By that we
   mean the body of the definition of [47mcollect$[0m is rewritten (in an
-  enviroment binding locals to actuals) and then the rewriter decides
-  heuristically whether to use the original call (with its rewritten
-  arguments) or the rewritten body.  We do not discuss those
-  heuristics here because they're the same for [47mloop$[0m scions as for
-  all other recursive functions in ACL2.
+  environment binding locals to actuals) and then the rewriter
+  decides heuristically whether to use the original call (with its
+  rewritten arguments) or the rewritten body.  We do not discuss
+  those heuristics here because they're the same for [47mloop$[0m scions as
+  for all other recursive functions in ACL2.
 
   The logical definition of [47mcollect$[0m is
 
@@ -129771,7 +129965,7 @@ Subtopics
     * all non-primitive function symbols in [47mx[0m have been warranted (whether
       the warrants are assumed or not), and
 
-    * [47ma[0m is a [47mcons[0m term representng an alist on variables,
+    * [47ma[0m is a [47mcons[0m term representing an alist on variables,
 
   then the following three actions are taken,
 
@@ -129832,7 +130026,7 @@ Subtopics
   special feature described above, and by having your own version of
   [47mev$-opener[0m enabled you push the [47mev$[0m through the quoted term with
   rewrite rules.  This can sometimes help narrow down which of the
-  conditiions above is unsatisfied, especially if you modify your
+  conditions above is unsatisfied, especially if you modify your
   version of the rule so that the [47mtamep[0m and [47msuitably-tamep-listp[0m
   hypotheses are [47m[force][0md.")
  (REWRITING-VERSUS-CLEANING-UP-LAMBDA-OBJECTS
@@ -130073,7 +130267,7 @@ Subtopics
       and then [47m:use[0m an instance of it in the [47m:hints[0m for some
       conjecture that involves the very same [47mlambda[0m objects.
 
-  We now illstrate some typical problems that arise when proving
+  We now illustrate some typical problems that arise when proving
   theorems about [47mloop$[0ms.  These examples are documented in the book
   [47mbooks/projects/apply/rewriting-versus-cleaning-examples[0m.
 
@@ -130913,10 +131107,11 @@ Subtopics
 
     * If the conclusion is an inequality or negated inequality, consider
       making a [linear] rule, but generally only if you can identify
-      a reasonable maximal term, which very roughly is a syntactially
-      largest term that binds all the variables.  For example, the
-      formula [47m(< (f x y) (g y z))[0m might not make a good linear rule.
-      For a more careful discussion of maximal terms, see [linear].
+      a reasonable maximal term, which very roughly is a
+      syntactically largest term that binds all the variables.  For
+      example, the formula [47m(< (f x y) (g y z))[0m might not make a good
+      linear rule.  For a more careful discussion of maximal terms,
+      see [linear].
 
     * If the formula is a term in normal form (not simplifiable by your
       rewrite rules) that tends to be an explicit hypothesis in some
@@ -132404,14 +132599,14 @@ Further information
    9. The final part of the screen output will suggest to run the tests,
       via:
 
-          cd ./tests &amp;&amp; sh ./run-tests.sh
+          cd ./tests && sh ./run-tests.sh
 
       They will take a while, but should eventually succeed.
 
   10. The final part of the screen output will also suggest to build the
       documentation, via
 
-          cd ./doc/manual &amp;&amp; make
+          cd ./doc/manual && make
 
       --- this may fail, but that does not seem to matter.
 
@@ -132877,9 +133072,9 @@ Subtopics
 
   The rest of the session will then avoid the error message above
   because it avoids the abstract stobj invariance checking discussed
-  belowq.  BUT WITHOUT THIS CHECKING, YOUR SESSION COULD BE
-  CORRUPTED!  The discussion below assumes that you are not using the
-  special argument [47m:ignore[0m for [47mset-absstobj-debug[0m.
+  below.  BUT WITHOUT THIS CHECKING, YOUR SESSION COULD BE CORRUPTED!
+  The discussion below assumes that you are not using the special
+  argument [47m:ignore[0m for [47mset-absstobj-debug[0m.
 
   The use of [47m(set-absstobj-debug t)[0m will make the error message above
   more informative, for example as follows, at the cost of slower
@@ -133581,10 +133776,7 @@ Subtopics
     ***********************************************
 
     If you didn't cause an explicit interrupt (Control-C),
-    then the root cause may be call of a :program mode
-    function that has the wrong guard specified, or even no
-    guard specified (i.e., an implicit guard of t).
-    See :DOC guards.
+    then it may help to see :DOC raw-lisp-error.
 
     To enable breaks into the debugger (also see :DOC acl2-customization):
     (SET-DEBUGGER-ENABLE T)
@@ -135489,10 +135681,7 @@ Example
 
     The message above might explain the error.  If not, and
     if you didn't cause an explicit interrupt (Control-C),
-    then the root cause may be call of a :program mode
-    function that has the wrong guard specified, or even no
-    guard specified (i.e., an implicit guard of t).
-    See :DOC guards.
+    then it may help to see :DOC raw-lisp-error.
 
     To enable breaks into the debugger (also see :DOC acl2-customization):
     (SET-DEBUGGER-ENABLE T)
@@ -135541,10 +135730,7 @@ Example
 
     The message above might explain the error.  If not, and
     if you didn't cause an explicit interrupt (Control-C),
-    then the root cause may be call of a :program mode
-    function that has the wrong guard specified, or even no
-    guard specified (i.e., an implicit guard of t).
-    See :DOC guards.
+    then it may help to see :DOC raw-lisp-error.
 
     To enable breaks into the debugger (also see :DOC acl2-customization):
     (SET-DEBUGGER-ENABLE T)
@@ -137010,7 +137196,7 @@ Subtopics
       (declare (xargs :guard t)
                (ignore val))
       (and (symbolp key)        ; for guard of function-symbolp
-           (plist-worldp world) ; for guared of function-symbolp
+           (plist-worldp world) ; for guard of function-symbolp
            (function-symbolp key world)))
 
   Finally, here are two examples from the ACL2 source code.  They
@@ -138026,7 +138212,7 @@ Extended Example
   familiar with so-called [3mdf[0m values in ACL2.  See [df].
 
   See also [sharp-f-reader], which reads input starting with [47m#f[0m.  As
-  with [47m#d[0m, one reads floatikng-point notation and returns the
+  with [47m#d[0m, one reads floating-point notation and returns the
   corresponding rational number.  However, while [47m#d[0m reads the next
   token as a Lisp floating-point number, [47m#f[0m is specific to ACL2 and
   follows precise documented rules that, unlike [47m#d[0m, allow use of
@@ -140734,7 +140920,7 @@ The Secret [47mSetq[0m Problem
   However, the attempt to prove the main theorem above will fail!  The
   lemma doesn't fire because the [47mloop$[0m target still doesn't match.
   (Note: we could forget about the lemma firing automatically.
-  Instead, we could give a [47m:hint[0m that disables the lamma and [47m:use[0ms
+  Instead, we could give a [47m:hint[0m that disables the lemma and [47m:use[0ms
   the instance of it with [47mj[0m replaced by [47m0[0m.  That succeeds.  But it is
   valuable for us to explore why it didn't work as a rewrite rule.)
 
@@ -140898,7 +141084,7 @@ The Hidden Hypothesis Problem
   Another issue you may occasionally confront when dealing with
   inductions suggested by [47mdo[0m [47mloop$[0ms is indicated when the prover
   fails to prove the measure conjecture even though you ``know'' it
-  is proveable.  To explain, we have to explain a little about how
+  is provable.  To explain, we have to explain a little about how
   induction suggested by [47mdo[0m [47mloop$[0ms are done.
 
   From every [47mdo[0m [47mloop$[0m we can derive a proposed recursive function
@@ -141195,7 +141381,9 @@ Other Relevant :DOC Topics
       ``evaluates to an obj''; thus, such functions can only operate
       on the current object.  So for example, instead of [47m(FOO
       (UPDATE-FIELD1 3 ST))[0m write [47m(LET ((ST (UPDATE-FIELD1 3 ST)))
-      (FOO ST))[0m.
+      (FOO ST))[0m.  And instead of [47m(MV X (LET ((ST (UPDATE-FIELD1 3
+      ST))) (FOO ST)))[0m write [47m(LET ((ST (UPDATE-FIELD1 3 ST))) (MV X
+      ST))[0m.
 
     * The accessors and updaters have a formal parameter named [47mOBJ[0m, so by
       the rule just above, those functions can only be applied to the
@@ -142386,7 +142574,7 @@ Subtopics
                         (read-st2-in-tbl stobj-table)))))
 
   Note that all keys in a stobj-table are names of stobjs.  Consider
-  what heppens when we evaluate the events in the book above,
+  what happens when we evaluate the events in the book above,
   including the local events, and then undo the [47m[defstobj][0m event
   admitting [47mst1[0m.  It is clear that undoing has removed the symbol [47mst1[0m
   as a key in the stobj-table.
@@ -143269,9 +143457,9 @@ Subtopics
   At the conclusion of an [event] form, ACL2 prints (by default)
   information summarizing the event.  The entire summary may be
   avoided --- see [set-inhibit-output-lst] --- or if you prefer, you
-  may inhibit just specified component of the summary --- see
+  may inhibit just specified components of the summary --- see
   [set-inhibited-summary-types].  The components are listed in the
-  constant [47m*summary-types*[0m and most are available programatically:
+  constant [47m*summary-types*[0m and most are available programmatically:
   see [get-event-data].  Some are omitted, however, if they would
   otherwise be empty.  Here is a brief summary of the components,
   listed alphabetically.  Most are printed with an initial field
@@ -143359,7 +143547,7 @@ Subtopics
   Those examples illustrate that [47mswap-stobjs[0m has the expected effect
   even when stobjs are involved that are bound by [47m[with-local-stobj][0m
   or [47m[stobj-let][0m.  It also explains subtle interaction with
-  [47m[trans-eval][0m.  For another examplle, see
+  [47m[trans-eval][0m.  For another example, see
   [47mbooks/demos/swap-stobj-fields.lisp[0m")
  (SYMBOL-ALISTP
   (ALISTS ACL2-BUILT-INS)
@@ -143614,7 +143802,7 @@ Subtopics
   definition rune is disabled.  This expansion is suitable for use in
   an [47m[in-theory][0m event or [47m:in-theory[0m hint (see [47m:[0m[47m[hints][0m).
 
-  Both these two runes are initally enabled, so eligible [47mlambda[0m object
+  Both these two runes are initially enabled, so eligible [47mlambda[0m object
   bodies are rewritten by default until and unless some event (e.g.,
   an [47m[in-theory][0m or [47m[include-book][0m) or a superior local subgoal hint
   changes the status of those runes.
@@ -144133,7 +144321,7 @@ Subtopics
 
   Another approach is suggested by {a passage in the CCL manual |
   https://ccl.clozure.com/manual/chapter9.2.html}: call the shell
-  program.  For example, here is a how one might list the [47m.lisp[0m files
+  program.  For example, here is how one might list the [47m.lisp[0m files
   in a directory.
 
     (sys-call \"sh\" '(\"-c\" \"ls *.lisp\"))
@@ -144236,7 +144424,7 @@ Subtopics
   "Make a system call to the host OS, returning a status
 
   See [sys-call+] for a closely related utility.  There are only the
-  following two differences between between [47msys-call*[0m and [47msys-call+[0m.
+  following two differences between [47msys-call*[0m and [47msys-call+[0m.
 
     * Both return an [error-triple] [47m(mv erp val state)[0m, but for [47msys-call*[0m,
       [47mval[0m is always [47mnil[0m after printing as a side effect like
@@ -144637,7 +144825,7 @@ Subtopics
   You may also wish to see [system-attachments] for how to make a few
   changes to the behavior of ACL2.
 
-  Here is another option for finding a buit-in system utility: As ACL2
+  Here is another option for finding a built-in system utility: As ACL2
   developers sometimes do, use [47mmeta-.[0m or [47mmeta-x tags-apropos[0m in Emacs
   to find utilities with given substrings in their names.  For
   example, if in Emacs you submit the command [47mmeta-x tags-apropos[0m and
@@ -145101,8 +145289,8 @@ List of a few built-in system utilities
       stobjs-out of [47mfn[0m, which is the list described below whose
       length [47mL[0m is the number of return values of [47mfn[0m --- that is, [47mL[0m is
       1 unless [47mfn[0m returns multiple values.  First suppose that [47mL[0m is
-      1; say the stobjs-out list is [47m(s)[0m.  If [47mfn[0m returs a stobj then [47ms[0m
-      is that stobj; if [47mfn[0m returns a [df] then [47ms[0m is [47m:df[0m; and
+      1; say the stobjs-out list is [47m(s)[0m.  If [47mfn[0m returns a stobj then
+      [47ms[0m is that stobj; if [47mfn[0m returns a [df] then [47ms[0m is [47m:df[0m; and
       otherwise [47ms[0m is [47mnil[0m.  Otherwise, [47mL[0m is greater than 1.  Then for
       each [47mi[0m less than [47mL[0m, if the [47mi[0mth return value is a stobj, then
       that is the [47mi[0mth element of the stobjs-out; otherwise the [47mi[0mth
@@ -145299,7 +145487,7 @@ Subtopics
   When the operations above suggest that the table or its [47m:guard[0m are
   modified, what is actually meant is that the current [state] is
   redefined so that in it, the affected table name has the
-  appropriate properties.  in such cases, the [47mtable[0m form is an event
+  appropriate properties.  In such cases, the [47mtable[0m form is an event
   (see [events]).  In the [47m:put[0m case, if the key is already in the
   table and associated with the proposed value, then the [47mtable[0m event
   is redundant (see [redundant-events]).
@@ -146492,7 +146680,7 @@ Logical Definitions
   The [47mpi[0m and [47mq[0m may be any tau predicates or their negations, [47mfn[0m must be
   a function symbol of arity [47mn[0m, the [47mxi[0m must be distinct variable
   symbols and [47mdep-hyp[0m may be any term, provided it is not of the [47m(pi
-  xi)[0m shape and the only the variables in it are the [47mxi[0m.
+  xi)[0m shape and the only variables in it are the [47mxi[0m.
 
   The Signature form actually allows multiple tau predicates to be
   applied to each variable, e.g., x1 might be required to be both an
@@ -146800,7 +146988,7 @@ Subtopics
       translated.  The suffix ``a'' in [47m:tca[0m stands for ``annotated.''
 
   The terms returned by the three flavors of [47mtc[0m are all provably
-  equivalent to eachother and to the original [3mform[0m provided the
+  equivalent to each other and to the original [3mform[0m provided the
   necessary warrants are assumed.
 
   For example, if [47msq[0m is a user-defined function of arity 1 and
@@ -147684,7 +147872,7 @@ Subtopics
   Such a substitution is made provided the old and new function symbols
   each have the same number of formal parameters.  In general a
   [47m:termination-theorem[0m may be used for admitting either a
-  singly-recursive function or a nest of mutually-recursion
+  singly-recursive function or a nest of mutually-recursive
   functions; the general criterion is that the number of formals must
   match for corresponding functions.
 
@@ -148095,7 +148283,7 @@ Subtopics
 
   Like [47m[true-list-fix][0m, [47mthe-true-list[0m logically returns its argument
   unchanged if that argument satisfies [47m[true-listp][0m and otherwise
-  returns a corrsponding ``fixed'' true list.  Unlike [47mtrue-list-fix[0m,
+  returns a corresponding ``fixed'' true list.  Unlike [47mtrue-list-fix[0m,
   the [guard] for [47m(the-true-list x)[0m is [47m(true-listp x)[0m, and
   [47m(the-true-list x)[0m evaluates immediately to [47mx[0m in raw Lisp (see
   [guards-and-evaluation] for relevant discussion).
@@ -148414,9 +148602,9 @@ Subtopics
 
   Note that even though the [definition] of [47m[mv-nth][0m had been
   [disable]d, nevertheless its definition rule was used in proving
-  this theorem.  It is as though [47m[mv-nth][0m had not been been disabled
-  after all!  The warning is intended to indicate that expansion of
-  [47mmv-nth[0m calls may be made by the theorem prover even when [47mmv-nth[0m is
+  this theorem.  It is as though [47m[mv-nth][0m had not been disabled after
+  all!  The warning is intended to indicate that expansion of [47mmv-nth[0m
+  calls may be made by the theorem prover even when [47mmv-nth[0m is
   disabled.  Indeed, the prover has special-purpose code for
   simplifying certain [47mmv-nth[0m calls.
 
@@ -150170,7 +150358,7 @@ Subtopics
     (in-theory (disable (tau-system)))
 
   But if you want to leave the tau-system enabled, you could
-  investigate the possibility is that the tau-system is causing an
+  investigate the possibility that the tau-system is causing an
   expensive [47m:[0m[47m[logic][0m-mode function to be executed.  You can diagnose
   that problem by observing the rewriter --- see [dmr] --- or by
   interrupting the system and getting a backtrace (see
@@ -152205,7 +152393,7 @@ Subtopics
   In the former case, it translates the [47mlambda$[0m and prints the
   result.  In the latter case it puts the [47mLAMBDA[0m in a [47mQUOTE[0m and
   translates it as though it occurred in a [47m:FN[0m slot.  Unless an error
-  is signalled it prints the same [47mLAMBDA[0m object as the result.
+  is signaled it prints the same [47mLAMBDA[0m object as the result.
 
   This utility exists because you cannot write, say,
 
@@ -154337,9 +154525,9 @@ Subtopics
   since any proposition, [47mp[0m, can be phrased as the type-like question
   ``does [47mp[0m produce an object of type [47mnil[0m?'' However, as you might
   expect, the type system is not very good at establishing hypotheses
-  that are not type-like, unless are represented rather explicitly in
-  the context in which the question is posed.  Consider the following
-  example from the [type-prescription] documentation.
+  that are not type-like, unless they are represented rather
+  explicitly in the context in which the question is posed.  Consider
+  the following example from the [type-prescription] documentation.
 
     (defthm characterp-nth-type-prescription   ; (Nth n lst) is of type character
       (implies                                 ; provided the hypotheses can be
@@ -155298,7 +155486,7 @@ Subtopics
   check this about [47mrune[0m.  We simply check that [47mrune[0m is currently
   monitored and remove it.  If [47mrune[0m corresponds to no entry on the
   list of monitored runes we cause an error since it may indicate a
-  mispelling.")
+  misspelling.")
  (UNQUOTE
   'ACL2-BUILT-INS
   "Obtain the object being quoted
@@ -156303,7 +156491,7 @@ Subtopics
   therefore, neither will its callers.  Nevertheless, even without
   proving [47mnil[0m one might reasonably be frustrated by this sort of
   violation of applicative semantics.  The warning is, at least, an
-  acknowledgement of this situation.
+  acknowledgment of this situation.
 
   We next discuss how to write tools that avoid producing such
   warnings, and the advisability (or not) of doing so.
@@ -157124,7 +157312,7 @@ Subtopics
   replacements is on [47mclause[0m.  This may seem to violate the rule that
   a function definition cannot use variables other than the formals.
   But the occurrences of [47mclause[0m below are not variables but constants
-  in an object that will eventually be treated as hint term.
+  in an object that will eventually be treated as a hint term.
 
     :ubt wrapper-challenge
 
@@ -157272,7 +157460,7 @@ Subtopics
        (if temp
            (if (zp max)
                (cw \"~%~%HINT PROBLEM:  The maximum repetition count of ~
-                    your STAGE hint been reached without eliminating ~
+                    your STAGE hint has been reached without eliminating ~
                     all of the calls of ~x0.  You could supply a larger ~
                     count with the optional second argument to STAGE ~
                     (which defaults to 100).  But think about what is ~
@@ -157331,8 +157519,8 @@ Subtopics
     (thm (equal (run s 7) xxx)
          :hints ((stage run 5)))
 
-  to stage it only 5 times.  In the latter example, the system with
-  print a ``error message'' after the fifth expansion.
+  to stage it only 5 times.  In the latter example, the system will
+  print an ``error message'' after the fifth expansion.
 
   Note that if we executed
 
@@ -158329,7 +158517,7 @@ Remarks
   for [47mname[0m and all must be proved for [47m(verify-guards name)[0m to be
   successful.  If the guards of some [47mLAMBDA[0m object requires hints to
   prove, the hints may be supplied to [47mverify-guards[0m as you would for
-  any other failing guard obligation in [47mname[0m.  When successfull, the
+  any other failing guard obligation in [47mname[0m.  When successful, the
   [47mLAMBDA[0m objects thus verified are added, behind the scenes, to the
   compiled lambda cache (see [47m[print-cl-cache][0m) to speed up [47mapply$[0m in
   the evaluation theory.
@@ -159300,7 +159488,7 @@ Determining the Necessary Warrants
   [3mRule 3.[0m You may need warrants for any symbols used in [47m:FN[0m slots in
   the definitions of any function appearing in the formula.
 
-  And then of course there is usual reason you need forgotten
+  And then of course there is the usual reason you need forgotten
   hypotheses: some lemma critical to your proof has that hypothesis.
 
   For example, one could imagine proving
@@ -159428,7 +159616,7 @@ A Convenient Macro for Conjoining Warrants
 
   The [47m(warrant fn1 fn2 ... fnk)[0m macro [47m[force][0ms the warrants because (a)
   we assume the only use of the macro is to add warrant hypotheses to
-  conjectures and (b) by forcing warrants agressively the prover
+  conjectures and (b) by forcing warrants aggressively the prover
   ``almost completes'' more proofs and enters a forcing round that
   highlights the need to assume those warrants.  When a rewrite rule,
   for example, is conditioned on a warrant that is not forced (as
@@ -159589,7 +159777,7 @@ Why Warrants Don't Render Theorems Vacuous
 
   because [47mlambda$[0m can only be called in slots of ilk [47m:FN[0m.  Furthermore,
   there's no point!  [47mLambda$[0m terms always translate to well-formed
-  [47mLAMBDA[0m objects unless an explanatory error is signalled by
+  [47mLAMBDA[0m objects unless an explanatory error is signaled by
   translation.
 
   If you want to [3msee[0m the translation of a [47mlambda$[0m term, e.g., to copy
@@ -159702,12 +159890,12 @@ The Differences Between Well-Formed and Merely Tame Lambda Objects
   not necessarily distinct.  The declaration, if present, is
   completely irrelevant and the body merely has to be a tame
   expression -- not necessarily closed with respect to the formals or
-  respecting of the any [47mIGNORE[0m or [47mIGNORABLE[0m declarations.  The
-  meaning assigned to such an object when applied to some arguments
-  is just the result delivered by [47mev$[0m under an alist formed by
-  pairing the formals -- including non-variables and any duplicates
-  -- with the actuals.  If a free variable is encountered, [47mev$[0m gives
-  it the value [47mNIL[0m courtesy of [47massoc[0m.
+  respecting [47mIGNORE[0m or [47mIGNORABLE[0m declarations.  The meaning assigned
+  to such an object when applied to some arguments is just the result
+  delivered by [47mev$[0m under an alist formed by pairing the formals --
+  including non-variables and any duplicates -- with the actuals.  If
+  a free variable is encountered, [47mev$[0m gives it the value [47mNIL[0m courtesy
+  of [47massoc[0m.
 
   This behavior is implemented by compiled Common Lisp only when
   well-formedness, guard verification, and guard checking approve of
@@ -160045,9 +160233,9 @@ The Differences Between Well-Formed and Merely Tame Lambda Objects
   Property 1 tells us that every measure can be mapped into an ACL2
   ordinal.  (See [o-p].)  This mapping is performed by [47mfn[0m.  Property
   2 tells us that if the measure [47mx[0m is smaller than the measure [47my[0m
-  according to [47mrel[0m then the image of [47mx[0m under [47mfn[0m is a smaller than
-  that of [47my[0m, according to the well-founded relation [47m[o<][0m.  (See
-  [o<].)  Thus, the general form of a [47m:well-founded-relation[0m formula
+  according to [47mrel[0m, then the image of [47mx[0m under [47mfn[0m is smaller than that
+  of [47my[0m, according to the well-founded relation [47m[o<][0m.  (See [o<].)
+  Thus, the general form of a [47m:well-founded-relation[0m formula
   establishes that there exists a [47mrel[0m-order preserving embedding
   (namely via [47mfn[0m) of the [47mmp[0m-measures into the ordinals.  We can thus
   conclude that [47mrel[0m is well-founded on [47mmp[0m-measures.
@@ -160289,10 +160477,7 @@ Keyword Arguments
 
     The message above might explain the error.  If not, and
     if you didn't cause an explicit interrupt (Control-C),
-    then the root cause may be call of a :program mode
-    function that has the wrong guard specified, or even no
-    guard specified (i.e., an implicit guard of t).
-    See :DOC raw-lisp-error and see :DOC guards.
+    then it may help to see :DOC raw-lisp-error.
 
     To enable breaks into the debugger (also see :DOC acl2-customization):
     (SET-DEBUGGER-ENABLE T)
@@ -160574,7 +160759,7 @@ Concluding Remark
       Windows.
 
     * Use the ACL2 Sedan (ACL2s) Windows installation instructions --- see
-      ACL2s::ACL2s-installation for more details. This will install
+      [ACL2s::ACL2s-installation] for more details. This will install
       ACL2 and the ACL2s system (including a copy of the Eclipse IDE
       with ACL2s support) in a Windows Subsystem for Linux distro.
       This distro is configured to automatically open Eclipse when
@@ -162633,7 +162818,7 @@ On-off specs
 
   Note that these two notions of ``associated valid symbols'' --- the
   [3moutput types[0m controlled by keywords [47m:on[0m and [47m:off[0m, and the [3msummary
-  types[0m contolled by keywords [47m:summary-on[0m and [47m:summary-off[0m ---
+  types[0m controlled by keywords [47m:summary-on[0m and [47m:summary-off[0m ---
   operate independently in the following sense.  The keywords [47m:on[0m and
   [47m:off[0m control output types from the list [47m*valid-output-names*[0m
   displayed above, one of whose members is [47mSUMMARY[0m.  The keywords
@@ -162823,7 +163008,7 @@ Concluding remarks
   But then when we include this book, we see `[47mNOISE[0m' (but not
   `[47mQUIET[0m').  To see why, we first note that both events are evaluated
   in raw Lisp when including the book (as discussed briefly in the
-  documentaion topic, [book-compiled-file]).  The first calls
+  documentation topic, [book-compiled-file]).  The first calls
   [47mwith-output[0m, which (as noted above) disappears during
   macroexpansion.  The second calls [47mwith-output![0m, which has the
   desired effect of suppressing output.")
@@ -163597,9 +163782,9 @@ Subtopics
   wormhole-status)) is moved to the persistent-whs so that it can be
   restored when this wormhole is entered again.  (Note: The
   break-rewrite wormhole, [47mbrr[0m, is handled differently.  When it is
-  exited back to the top-level, the persistent-whs is set to the what
-  it was when ACL2 was last at the top-level.)  The rest of the
-  wormhole state is lost upon exit.
+  exited back to the top-level, the persistent-whs is set to what it
+  was when ACL2 was last at the top-level.)  The rest of the wormhole
+  state is lost upon exit.
 
   This allows a sequence of entries and exits to a wormhole to maintain
   some history in the status and this information can be manipulated
@@ -164160,7 +164345,7 @@ Subtopics
   call is macroexpanded inline to the evaluation of the body in a
   suitable environment.  Thus, it can be a very fast way to access
   and change the persistent-whs, but the results remain hidden.  To
-  interact the wormhole's state you must use [47m[wormhole][0m.
+  interact with the wormhole's state you must use [47m[wormhole][0m.
 
   Functions that are probably useful in the body of the [47m[lambda][0m or the
   guard of a function using [47mwormhole-eval[0m include the following:
@@ -164345,7 +164530,7 @@ Subtopics
       the [47m[state][0m-less exploration of their models.  But we confess
       that to make wormholes as useful to other tool developers as
       they are to the ACL2 developers we will need to add some
-      protection features (similiar to those in the item above) to
+      protection features (similar to those in the item above) to
       user-defined wormholes.  Ideas we have toyed with but not
       implemented include pairing a wormhole's name with various
       attributes such as a flag to prevent its use except through
@@ -164446,7 +164631,7 @@ Subtopics
       [47m*wormhole-status-alist*[0m as being stored in a distant memory
       location and the ephemeral-whs stored in [47m(@ wormhole-status)[0m as
       a nearby, easily accessible cache when you're in the wormhole.
-      [47mWormhole-eval[0m reads and writes the persisten-whs and does not
+      [47mWormhole-eval[0m reads and writes the persistent-whs and does not
       update the cache.  The Wormhole Coherence Convention is to keep
       persistent-whs and the ephemeral-whs equal.  Of course, the
       convention is meant to hold except in the region of code
@@ -164639,7 +164824,7 @@ Subtopics
   upon entry.  But notice the value of the data field!  It doesn't
   list [47mD[0m!  That happened because when we exited the wormhole, the
   ephemeral-whs was written back to the persistent-whs, and the
-  emphemeral-whs of the incoherent status did not contain [47mD[0m.
+  ephemeral-whs of the incoherent status did not contain [47mD[0m.
 
   There are ways ensure that your wormholes remain coherent and they
   all involve using the function
@@ -164656,7 +164841,7 @@ Subtopics
 
   But note that we must now provide [47mstate[0m as an argument to all calls
   of [47msave[0m and [47msave[0m must return [47mstate[0m because [47m[read-ACL2-oracle][0m was
-  used to reach out to the [47mperistent-whs[0m to refresh the
+  used to reach out to the [47mpersistent-whs[0m to refresh the
   ephemeral-whs.  This means we can only call this version of [47msave[0m in
   environments in which we have [47mstate[0m and can return [47mstate[0m.
 
@@ -165305,7 +165490,7 @@ Subtopics
   and top-level hypotheses.  By default, this equivalence is
   equality; however the keyword argument [47m:equiv[0m can specify a known
   equivalence relation.  In cases other than equality, substitution
-  only takes place where justified by the equivlance maintained at
+  only takes place where justified by the equivalence maintained at
   the current subterm.
 
   For the keyword arguments, [47m:equiv[0m defaults to [47mequal[0m if not supplied
@@ -166325,14 +166510,14 @@ Subtopics
     (forwardchain hypothesis-number hints)
     (forwardchain hypothesis-number hints quiet-flg)
 
-  This command replaces the hypothesis corresponding to given index,
-  which should be of the form [47m(IMPLIES hyp concl)[0m, with its
-  consequent [47mconcl[0m.  In fact, the given hypothesis is dropped, and
-  the replacement hypothesis will appear as the final hypothesis
-  after this command is executed.
+  This command replaces the hypothesis corresponding to the given
+  index.  That hypothesis --- call it [47mH[0m --- must be of the form
+  [47m(IMPLIES hyp concl)[0m.  The effect of this command is to replace [47mH[0m by
+  [47mconcl[0m, which becomes the final hypothesis.
 
-  The prover must be able to prove the indicated hypothesis from the
-  other hypotheses, or else the command will fail.  The [47m:hints[0m
+  The prover must be able to prove [47mconcl[0m from the hypotheses other than
+  [47mH[0m (more precisely, to prove [47mconcl[0m after removing the hypothesis at
+  the given index), or else the command will fail.  The [47m:hints[0m
   argument is used in this prover call, and should have the usual
   syntax of hints to the prover.
 
@@ -166803,7 +166988,7 @@ Subtopics
   "(macro) display the linear arithmetic database based on the current
   context
 
-  This is a relatively advanced command.  For discusion of a related
+  This is a relatively advanced command.  For discussion of a related
   but more elementary command, including remarks about the utility of
   such a command, see [ACL2-pc::type-alist].  See [linear-arithmetic]
   for a description of the ACL2 linear arithmetic decision procedure
@@ -167787,8 +167972,8 @@ Subtopics
   Simplify, but with all function definitions disabled (see
   [function-theory] in the top-level ACL2 loop), except for a few
   basic functions (the ones in [47m(theory 'minimal-theory)[0m).  The
-  [47mbackchain-limit[0m has a default of 0, but if is supplied and not [47mnil[0m,
-  then it should be a nonnegative integer; see [ACL2-pc::s].
+  [47mbackchain-limit[0m has a default of 0, but if it is supplied and not
+  [47mnil[0m, then it should be a nonnegative integer; see [ACL2-pc::s].
 
   WARNING: This command completely ignores [47min-theory[0m commands that are
   executed inside the interactive [proof-builder].")
@@ -168258,7 +168443,7 @@ Subtopics
   proof that a simple real time control program keeps a vehicle on a
   straightline course in a variable crosswind.  To formalize the
   specification we define a mathematical function which models the
-  interaction of the program and its environent.  We then state and
+  interaction of the program and its environment.  We then state and
   prove two theorems about this function: the simulated vehicle never
   gets farther than three units away from the intended course and
   homes to the course if the wind remains steady for at least four
@@ -168303,7 +168488,7 @@ Subtopics
   International Conference on Computer Design[0m, IEEE Computer Society,
   pp. 31-36, October, 1997.
   [31;1mRelevance:[0m first public announcement of the CAP DSP formalization
-  (this short article was superceded by [bib::bh99])
+  (this short article was superseded by [bib::bh99])
 
 ---------
   Abstract
@@ -168332,9 +168517,9 @@ Subtopics
   (OPERATIONAL-SEMANTICS-3__ANNOTATED-BIBLIOGRAPHY)
   "B. Brock and W. A. Hunt, Jr., ``{Formal Analysis of the Motorola CAP
   DSP'' |
-  https://link.springer.com/chapter/10.1007/978-1-4471-0523-7_
-  5#citeas}, in M. Hinchey and J. Bowen, editors, [3mIndustrial-Strength
-  Formal Methods[0m, Springer-Verlag, pp. 81-115, 1999.
+  https://link.springer.com/chapter/10.1007/978-1-4471-0523-7_5#citeas},
+  in M. Hinchey and J. Bowen, editors, [3mIndustrial-Strength Formal
+  Methods[0m, Springer-Verlag, pp. 81-115, 1999.
   [31;1mRelevance:[0m first industrial application of operational semantics with
   ACL2 and the first complete formal specification of a commercially
   designed microprocessor
@@ -168367,7 +168552,7 @@ Subtopics
   that the specification developed is the largest of its kind, as
   this is the only formal specification of which we are aware for a
   complete commercial design. We believe that the use of mathematical
-  logic for modelling and reasoning about hardware designs such as we
+  logic for modeling and reasoning about hardware designs such as we
   have demonstrated here can provide assurance of circuit design
   correctness well beyond what is available from current CAD
   techniques.
@@ -168443,7 +168628,7 @@ Subtopics
   In 1991, Hunt and Bishop Brock designed a formal hardware description
   language (HDL) and used it to describe the FM9001 microprocessor
   which they then verified to implement its ISA; see [bib::hb92].
-  The FM9001 was fabricated.  In 1991, Moore retargetted the
+  The FM9001 was fabricated.  In 1991, Moore retargeted the
   code-generators in the 1989 assembler/linker/loader and re-verified
   that part of the stack, making it possible to port the rest of the
   verified stack to a fabricated, running machine; see
@@ -168544,7 +168729,7 @@ Subtopics
   algorithm uses an unlimited number of systolic comparator modules
   to sort a stream of data.  In addition to proving that the
   algorithm produces an ordered permutation of its input, we prove
-  two theorems that are imporant to verifying the microcode
+  two theorems that are important to verifying the microcode
   implementation.  These theorems describe how positive and negative
   ``infinities'' can be streamed into the array of comparators to
   achieve certain effects.  Interesting generalizations are necessary
@@ -168769,7 +168954,7 @@ Subtopics
   science or computer engineering will ever have the opportunity to
   build a computer system. On the other hand, most students will be
   required to use and program computers on a near daily basis.
-  [3mComputer Systems: A Programmers Perspective[0m introduces the
+  [3mComputer Systems: A Programmer's Perspective[0m introduces the
   important and enduring concepts that underlie computer systems by
   showing how these ideas affect the correctness, performance, and
   utility of application programs. The text's hands-on approach
@@ -169035,7 +169220,7 @@ Subtopics
   But aside from its importance to the Verified Stack, this paper
   describes three foundational achievements in formal methods:
 
-    * the first formal definition of a hardward description language (HDL),
+    * the first formal definition of a hardware description language (HDL),
 
     * the first complete proof of a microprocessor design -- including its
       embedded test logic -- with respect to its high-level ISA
@@ -169195,11 +169380,9 @@ Subtopics
   [31;1mRelevance:[0m most complete ACL2 model of the JVM
 
 ---------
-  [3mNote: The source files for this effort have not been part of the ACL2
-  regression and cannot currently be recertified because of changes
-  to ACL2 since 2006.  When that oversight is addressed, they will be
-  posted.  In the meantime, this document speaks of the model in the
-  past tense![0m
+  The source files for this effort have been updated in October, 2024
+  (because of changes to ACL2 since 2006) and now reside in the
+  [community-books], in directory [47mbooks/models/jvm/m6/[0m.
 
   This dissertation, available at the link above, describes the ``M6''
   model of the JVM and some important proofs about it.  It was the
@@ -169217,11 +169400,11 @@ Subtopics
 
     * synchronization via monitors.
 
-  The M6 state included an ``external class table'' where classes
+  The M6 state includes an ``external class table'' where classes
   reside until they are loaded.  The entire Sun CLDC API library (672
-  methods in 87 classes) was translated into the external
-  representation and was available for loading, constituting about
-  500 pages of data.  The model included 21 out of 41 native APIs
+  methods in 87 classes) are translated into the external
+  representation and are available for loading, constituting about
+  500 pages of data.  The model includes 21 out of 41 native APIs
   that appeared in Sun's CLDC API library.  The M6 description itself
   is about 160 pages of ACL2.
 
@@ -169237,7 +169420,7 @@ Subtopics
   [3mNote from J Moore, dissertation supervisor: The [47m[skip-proofs][0m[3m tag on
   a ``theorem'' means the conjecture is assumed rather than proved.
   So having even one [47mskip-proofs[0m[3m makes it impossible to fully trust
-  the results.  However, the skipped conjectures in this work were
+  the results.  However, the skipped conjectures in this work are
   relatively low-level results very similar to other theorems already
   proved.  Liu and I agreed that these conjectures were very probably
   provable and we were more interested in the higher-level
@@ -169506,7 +169689,7 @@ Subtopics
   terms representing such states. Because the metafunctions for each
   state component updater are solely responsible for creating state
   expressions (i.e., ``writing'') and the metafunctions for each
-  state component accessor are solely re- sponsible for extracting
+  state component accessor are solely responsible for extracting
   values (i.e., ``reading'') from such state expressions, they can
   maintain their own normal form, use HIDE to prevent other parts of
   ACL2 from inspecting them, and use honsing to uniquely represent
@@ -169535,7 +169718,7 @@ Subtopics
   "J S. Moore, ``{ Computing Verified Machine Address Bounds during
   Symbolic Exploration of Code |
   https://www.cs.utexas.edu/~moore/publications/ainni.pdf},'' in J.
-  Bowen, H. Langmaack and E.-R. Olderog, edsitors, [3mProvably Correct
+  Bowen, H. Langmaack and E.-R. Olderog, editors, [3mProvably Correct
   Systems[0m, Springer, pp. 151-172, 2017.
   [31;1mRelevance:[0m an ACL2 tool for determining whether two symbolic machine
   addresses may be equal
