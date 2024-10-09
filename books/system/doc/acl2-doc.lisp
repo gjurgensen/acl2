@@ -106310,6 +106310,15 @@ it."
 ; When state global script-mode has a non-nil value, "Hons-Note" messages are
 ; suppressed.
 
+; Modified the definitions of *initial-global-table-1* and *slashable-chars* to
+; respect the GCL value of call-arguments-limit.  See the comments in those
+; defconst forms.  Thanks to Camm Maguire for pointing out this issue.
+
+; Fixed a bug in macros safe-incf/safe-incf-aux/safe-incf-aux-error.  This bug
+; is unlikely to show up, since it probably involves counting past
+; most-positive-fixnum, but at least we may now avoid some compilation issues
+; in GCL.  Thanks to Camm Maguire for pointing out this bug.
+
   :parents (release-notes)
   :short "ACL2 Version  8.6 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
