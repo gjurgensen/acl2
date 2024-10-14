@@ -3,8 +3,8 @@
 ; The contents of this file are derived from ACL2 Community Book
 ; books/system/doc/acl2-doc.lisp.
 
-; ACL2 Version 8.5 -- A Computational Logic for Applicative Common Lisp
-; Copyright (C) 2023, Regents of the University of Texas
+; ACL2 Version 8.6 -- A Computational Logic for Applicative Common Lisp
+; Copyright (C) 2024, Regents of the University of Texas
 
 ; This version of ACL2 is a descendent of ACL2 Version 1.9, Copyright
 ; (C) 1997 Computational Logic, Inc.  See the documentation topic NOTE-2-0.
@@ -1623,7 +1623,7 @@ Subtopics
   (START-HERE)
   "General information About ACL2
 
-  This is ACL2 Version 8.5, [copyright] (C) 2024, Regents of the
+  This is ACL2 Version 8.6, [copyright] (C) 2024, Regents of the
   University of Texas, authored by Matt Kaufmann and J Strother
   Moore.
 
@@ -1711,7 +1711,7 @@ Subtopics
   the web contains links to demos, publications, mailing lists,
   installation instructions, and more --- and, especially, to the
   extensive {online documentation |
-  https://www.cs.utexas.edu/users/moore/acl2/v8-5/acl2-doc.html#User's-Manual}
+  https://www.cs.utexas.edu/users/moore/acl2/v8-6/acl2-doc.html#User's-Manual}
   for ACL2 and its libraries, known as ``books''.
 
   For example, to use the online documentation to find out about
@@ -2735,7 +2735,7 @@ Subtopics
   This is the ACL2 documentation.  For the ACL2+Books Manual, which
   that includes both the ACL2 documentation and the ACL2
   [community-books], see the {ACL2+Books Manual |
-  http://www.cs.utexas.edu/users/moore/acl2/v8-5/combined-manual/index.html}.
+  http://www.cs.utexas.edu/users/moore/acl2/v8-6/combined-manual/index.html}.
 
 
 Subtopics
@@ -4963,7 +4963,7 @@ Silent loading of ACL2 customization files
 
   As discussed elsewhere (see [documentation]), the web-based
   {ACL2+Books Manual |
-  http://www.cs.utexas.edu/users/moore/acl2/v8-5/combined-manual/index.html}
+  http://www.cs.utexas.edu/users/moore/acl2/v8-6/combined-manual/index.html}
   provides a way to browse the combined documentation for the ACL2
   system and community books.  Such documentation can also be read at
   the terminal using the [47m:[0m[47m[doc][0m command, though documentation for
@@ -13738,7 +13738,7 @@ Prerequisites
 
   We assume that you have already downloaded and installed ACL2 as per
   the {ACL2 installation instructions |
-  http://www.cs.utexas.edu/users/moore/acl2/v8-5/HTML/installation/installation.html}
+  http://www.cs.utexas.edu/users/moore/acl2/v8-6/HTML/installation/installation.html}
   on the ACL2 home page.
 
   We assume you know the path to your ACL2 executable.  Typically this
@@ -14006,7 +14006,7 @@ Subtopics
 
   For more information about installing ACL2, see the {ACL2
   installation instructions |
-  http://www.cs.utexas.edu/users/moore/acl2/v8-5/HTML/installation/installation.html}.
+  http://www.cs.utexas.edu/users/moore/acl2/v8-6/HTML/installation/installation.html}.
   For information about so-called ``classic ACL2 `make'-based
   certification'', which provides support for certifying directories
   of books but may disappear in a future ACL2 release, see
@@ -15638,7 +15638,7 @@ Subtopics
   contains [documentation] only about the ACL2 [3msystem[0m, and does not
   include documentation from the [community-books].  Please point
   your browser at the {ACL2+Books Manual |
-  http://www.cs.utexas.edu/users/moore/acl2/v8-5/combined-manual/index.html}
+  http://www.cs.utexas.edu/users/moore/acl2/v8-6/combined-manual/index.html}
   (or if browsing in [ACL2-Doc], switch to that manual with meta-0 I)
   to access the desired topic.
 
@@ -22564,7 +22564,7 @@ Subtopics
   [documentation-copyright], which notes that there are many
   documentation authors.
 
-  ACL2 Version 8.5 --- A Computational Logic for Applicative Common
+  ACL2 Version 8.6 --- A Computational Logic for Applicative Common
   Lisp
 
   Copyright (C) 2024, Regents of the University of Texas
@@ -34093,7 +34093,7 @@ Subtopics
   users will probably access the ACL2 documentation in other ways;
   see [documentation].  In particular, consider using the {ACL2+Books
   Manual |
-  http://www.cs.utexas.edu/users/moore/acl2/v8-5/combined-manual/index.html},
+  http://www.cs.utexas.edu/users/moore/acl2/v8-6/combined-manual/index.html},
   for topics documented in the ACL2 community [books] or in the ACL2
   system (where the latter are rearranged).
 
@@ -34154,7 +34154,7 @@ Available Documentation
     * [31;1mThe online version (recommended).[0m If you expect to have an internet
       connection while using the documentation, you may prefer to use
       the online version of the {ACL2+Books Manual |
-      http://www.cs.utexas.edu/users/moore/acl2/v8-5/combined-manual/index.html}.
+      http://www.cs.utexas.edu/users/moore/acl2/v8-6/combined-manual/index.html}.
 
     * [31;1mA local version.[0m If you sometimes work without an internet
       connection, you can {download | download/} a local copy of any
@@ -41403,7 +41403,7 @@ Example 2
   not included in the current ACL2 session?
 
   The [xdoc] {ACL2+Books Manual |
-  http://www.cs.utexas.edu/users/moore/acl2/v8-5/combined-manual/index.html}
+  http://www.cs.utexas.edu/users/moore/acl2/v8-6/combined-manual/index.html}
   includes documentation for both the ACL2 system and the
   [community-books].  For more information on this manual and how to
   view it, see [documentation].")
@@ -103711,7 +103711,7 @@ Experimental Versions
   set up to avoid using useless-runes with ACL2(p).")
  (NOTE-8-6
   (RELEASE-NOTES)
-  "ACL2 Version 8.6 (xxx, 20xx) Notes
+  "ACL2 Version 8.6 (October, 2024) Notes
 
   NOTE!  New users can ignore these release notes, because the
   [documentation] has been updated to reflect all changes that are
@@ -105236,6 +105236,45 @@ Experimental Versions
   proof failure is now the same in ACL2(p) as in ACL2, unless
   [waterfall-parallelism] is enabled (in which case ``no
   checkpoints'' is followed by `` from gag-mode'' as before).")
+ (NOTE-8-7
+  (RELEASE-NOTES)
+  "ACL2 Version 8.7 (xxx, 20xx) Notes
+
+  NOTE!  New users can ignore these release notes, because the
+  [documentation] has been updated to reflect all changes that are
+  recorded here.
+
+  Below we roughly organize the changes to ACL2 since Version 8.6 into
+  the following categories of changes: existing features, new
+  features, heuristic and efficiency improvements, bug fixes, changes
+  at the system level, Emacs support, and experimental versions.
+  Each change is described in just one category, though of course
+  many changes could be placed in more than one category.
+
+  Note that only ACL2 system changes are listed below.  See also
+  note-8-7-books for a summary of changes made to the ACL2 Community
+  Books since ACL2 8.6, including the build system.
+
+
+Changes to Existing Features
+
+
+New Features
+
+
+Heuristic and Efficiency Improvements
+
+
+Bug Fixes
+
+
+Changes at the System Level
+
+
+EMACS Support
+
+
+Experimental Versions")
  (NOTE1 (POINTERS) "See [note-1-1].")
  (NOTE2 (POINTERS) "See [note-1-2].")
  (NOTE3 (POINTERS) "See [note-1-3].")
@@ -115092,7 +115131,7 @@ Subtopics
   other shortcuts available.
 
   [31;1mWARNING[0m: Some of these packages might be for old versions of ACL2.  We
-  recommend that you use the latest version of ACL2 (Version 8.5).
+  recommend that you use the latest version of ACL2 (Version 8.6).
 
 
 Linux/Mac/Windows Binaries in ACL2s
@@ -127422,7 +127461,10 @@ Subtopics
       ACL2 Version 8.5 (July, 2022) Notes
 
   [Note-8-6]
-      ACL2 Version 8.6 (xxx, 20xx) Notes")
+      ACL2 Version 8.6 (October, 2024) Notes
+
+  [Note-8-7]
+      ACL2 Version 8.7 (xxx, 20xx) Notes")
  (REM
   (NUMBERS ACL2-BUILT-INS)
   "Remainder using [47m[truncate][0m
@@ -140072,7 +140114,7 @@ Subtopics
       mailing lists, connection with GitHub, and so on.
 
     * [31;1mOverviews at a high level[0m may be found in {The Tours |
-      https://www.cs.utexas.edu/users/moore/acl2/v8-5/combined-manual/index.html?topic=ACL2____The_02Tours}.
+      https://www.cs.utexas.edu/users/moore/acl2/v8-6/combined-manual/index.html?topic=ACL2____The_02Tours}.
       The paper [3m{Industrial Proofs with ACL2 |
       https://www.cs.utexas.edu/users/moore/publications/how-to-prove-thms/intro-to-acl2.pdf}[0m
       was written in the 1990s but is still useful for providing a
@@ -140264,10 +140306,10 @@ Subtopics
   like this:
 
     ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    + ACL2 Version 8.5+ (a development snapshot based on ACL2 Version 8.5) +
-    +   built January 6, 2023  16:13:03.                                   +
-    +   (Git commit hash: e9790bdb14922c9a88e423781b5d8bdf080fb05d)        +
-    + Copyright (C) 2023, Regents of the University of Texas.              +
+    + ACL2 Version 8.6+ (a development snapshot based on ACL2 Version 8.6) +
+    +   built November 6, 2024  16:13:03.                                  +
+    +   (Git commit hash: e9790bdb14922c9a88aa23781b5d8bdf080fb05d)        +
+    + Copyright (C) 2024, Regents of the University of Texas.              +
     + ACL2 comes with ABSOLUTELY NO WARRANTY.  This is free software and   +
     + you are welcome to redistribute it under certain conditions.  For    +
     + details, see the LICENSE file distributed with ACL2.                 +
@@ -140280,10 +140322,10 @@ Subtopics
   executable.\"[0m.
 
     ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    + ACL2 Version 8.5+ (a development snapshot based on ACL2 Version 8.5) +
-    +   built January 6, 2023  16:13:03.                                   +
-    +   (Git commit hash: e9790bdb14922c9a88e423781b5d8bdf080fb05d)        +
-    + Copyright (C) 2023, Regents of the University of Texas.              +
+    + ACL2 Version 8.6+ (a development snapshot based on ACL2 Version 8.6) +
+    +   built November 6, 2024  16:13:03.                                  +
+    +   (Git commit hash: e9790bdb14922c9a88aa23781b5d8bdf080fb05d)        +
+    + Copyright (C) 2024, Regents of the University of Texas.              +
     + ACL2 comes with ABSOLUTELY NO WARRANTY.  This is free software and   +
     + you are welcome to redistribute it under certain conditions.  For    +
     + details, see the LICENSE file distributed with ACL2.                 +
