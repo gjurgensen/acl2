@@ -105236,6 +105236,45 @@ Experimental Versions
   proof failure is now the same in ACL2(p) as in ACL2, unless
   [waterfall-parallelism] is enabled (in which case ``no
   checkpoints'' is followed by `` from gag-mode'' as before).")
+ (NOTE-8-7
+  (RELEASE-NOTES)
+  "ACL2 Version 8.7 (xxx, 20xx) Notes
+
+  NOTE!  New users can ignore these release notes, because the
+  [documentation] has been updated to reflect all changes that are
+  recorded here.
+
+  Below we roughly organize the changes to ACL2 since Version 8.6 into
+  the following categories of changes: existing features, new
+  features, heuristic and efficiency improvements, bug fixes, changes
+  at the system level, Emacs support, and experimental versions.
+  Each change is described in just one category, though of course
+  many changes could be placed in more than one category.
+
+  Note that only ACL2 system changes are listed below.  See also
+  note-8-7-books for a summary of changes made to the ACL2 Community
+  Books since ACL2 8.6, including the build system.
+
+
+Changes to Existing Features
+
+
+New Features
+
+
+Heuristic and Efficiency Improvements
+
+
+Bug Fixes
+
+
+Changes at the System Level
+
+
+EMACS Support
+
+
+Experimental Versions")
  (NOTE1 (POINTERS) "See [note-1-1].")
  (NOTE2 (POINTERS) "See [note-1-2].")
  (NOTE3 (POINTERS) "See [note-1-3].")
@@ -127422,7 +127461,10 @@ Subtopics
       ACL2 Version 8.5 (July, 2022) Notes
 
   [Note-8-6]
-      ACL2 Version 8.6 (October, 2024) Notes")
+      ACL2 Version 8.6 (October, 2024) Notes
+
+  [Note-8-7]
+      ACL2 Version 8.7 (xxx, 20xx) Notes")
  (REM
   (NUMBERS ACL2-BUILT-INS)
   "Remainder using [47m[truncate][0m
