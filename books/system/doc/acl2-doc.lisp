@@ -2,7 +2,7 @@
 ;
 ; acl2-doc.lisp - Documentation for the ACL2 Theorem Prover
 ;
-; ACL2 Version 8.5 -- A Computational Logic for Applicative Common Lisp
+; ACL2 Version 8.6 -- A Computational Logic for Applicative Common Lisp
 ; Copyright (C) 2024, Regents of the University of Texas
 ;
 ; This documentation was derived from the ACL2 system in October 2013, which
@@ -188,7 +188,7 @@
 ; who are looking at an older version of ACL2 will see the corresponding
 ; ACL2+Books Manual at this link.
 
-  "http://www.cs.utexas.edu/users/moore/acl2/v8-5/")
+  "http://www.cs.utexas.edu/users/moore/acl2/v8-6/")
 
 (defconst *installation-url*
 
@@ -7933,7 +7933,7 @@ and @(tsee include-book)"
  <p>The <a href='http://www.cs.utexas.edu/users/moore/acl2/'>ACL2 Home Page</a>
  on the web contains links to demos, publications, mailing lists, installation
  instructions, and more &mdash; and, especially, to the extensive <a
- href=\"https://www.cs.utexas.edu/users/moore/acl2/v8-5/acl2-doc.html#User's-Manual\">online
+ href=\"https://www.cs.utexas.edu/users/moore/acl2/v8-6/acl2-doc.html#User's-Manual\">online
  documentation</a> for ACL2 and its libraries, known as ``books''.</p>
 
  <p>For example, to use the online documentation to find out about @(see
@@ -106320,7 +106320,7 @@ it."
 ; in GCL.  Thanks to Camm Maguire for pointing out this bug.
 
   :parents (release-notes)
-  :short "ACL2 Version  8.6 (xxx, 20xx) Notes"
+  :short "ACL2 Version  8.6 (October, 2024) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
  documentation) has been updated to reflect all changes that are recorded
  here.</p>
@@ -114913,7 +114913,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p><font color='red'><b>WARNING</b></font>: Some of these packages might
  be for old versions of ACL2.  We recommend that you use the latest
- version of ACL2 (Version 8.5).</p>
+ version of ACL2 (Version 8.6).</p>
 
  <h3>Linux/Mac/Windows Binaries in ACL2s</h3>
 
@@ -140269,7 +140269,7 @@ work on <tt>(q x)</tt>.</p>
 
  <li><color rgb='#0090f0'><b>Overviews at a high level</b></color> may be found
    in <a
-   href='https://www.cs.utexas.edu/users/moore/acl2/v8-5/combined-manual/index.html?topic=ACL2____The_02Tours'>The
+   href='https://www.cs.utexas.edu/users/moore/acl2/v8-6/combined-manual/index.html?topic=ACL2____The_02Tours'>The
    Tours</a>.  The paper <i><a
    href='https://www.cs.utexas.edu/users/moore/publications/how-to-prove-thms/intro-to-acl2.pdf'>Industrial
    Proofs with ACL2</a></i> was written in the 1990s but is still useful for
@@ -140483,10 +140483,10 @@ work on <tt>(q x)</tt>.</p>
 
  @({
  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- + ACL2 Version 8.5+ (a development snapshot based on ACL2 Version 8.5) +
- +   built January 6, 2023  16:13:03.                                   +
- +   (Git commit hash: e9790bdb14922c9a88e423781b5d8bdf080fb05d)        +
- + Copyright (C) 2023, Regents of the University of Texas.              +
+ + ACL2 Version 8.6+ (a development snapshot based on ACL2 Version 8.6) +
+ +   built November 6, 2024  16:13:03.                                  +
+ +   (Git commit hash: e9790bdb14922c9a88aa23781b5d8bdf080fb05d)        +
+ + Copyright (C) 2024, Regents of the University of Texas.              +
  + ACL2 comes with ABSOLUTELY NO WARRANTY.  This is free software and   +
  + you are welcome to redistribute it under certain conditions.  For    +
  + details, see the LICENSE file distributed with ACL2.                 +
@@ -140502,10 +140502,10 @@ work on <tt>(q x)</tt>.</p>
 
  @({
  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- + ACL2 Version 8.5+ (a development snapshot based on ACL2 Version 8.5) +
- +   built January 6, 2023  16:13:03.                                   +
- +   (Git commit hash: e9790bdb14922c9a88e423781b5d8bdf080fb05d)        +
- + Copyright (C) 2023, Regents of the University of Texas.              +
+ + ACL2 Version 8.6+ (a development snapshot based on ACL2 Version 8.6) +
+ +   built November 6, 2024  16:13:03.                                  +
+ +   (Git commit hash: e9790bdb14922c9a88aa23781b5d8bdf080fb05d)        +
+ + Copyright (C) 2024, Regents of the University of Texas.              +
  + ACL2 comes with ABSOLUTELY NO WARRANTY.  This is free software and   +
  + you are welcome to redistribute it under certain conditions.  For    +
  + details, see the LICENSE file distributed with ACL2.                 +
