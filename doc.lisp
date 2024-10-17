@@ -1623,7 +1623,7 @@ Subtopics
   (START-HERE)
   "General information About ACL2
 
-  This is ACL2 Version 8.5, [copyright] (C) 2024, Regents of the
+  This is ACL2 Version 8.6, [copyright] (C) 2024, Regents of the
   University of Texas, authored by Matt Kaufmann and J Strother
   Moore.
 
@@ -22564,7 +22564,7 @@ Subtopics
   [documentation-copyright], which notes that there are many
   documentation authors.
 
-  ACL2 Version 8.5 --- A Computational Logic for Applicative Common
+  ACL2 Version 8.6 --- A Computational Logic for Applicative Common
   Lisp
 
   Copyright (C) 2024, Regents of the University of Texas
@@ -131830,6 +131830,7 @@ Subtopics
   and are always [enable]d.  Here is the list of fake runes.
 
       ((:fake-rune-for-linear nil)
+       (:fake-rune-for-linear-equalities nil)
        (:fake-rune-for-type-set nil)
        (:fake-rune-for-cert-data nil))
 
