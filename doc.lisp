@@ -105264,6 +105264,13 @@ New Features
 
 Heuristic and Efficiency Improvements
 
+  Applications that use functions with floating-point inputs or outputs
+  (see [df]) may generate less memory usage, at least in SBCL
+  releases strictly after SBCL Version 2.9 and SBCL github versions
+  after mid-October, 2024.  Thanks to Stas Boukarev for enhancing
+  SBCL to support this improvement (made by adding suitable
+  proclaiming in ACL2).
+
 
 Bug Fixes
 
