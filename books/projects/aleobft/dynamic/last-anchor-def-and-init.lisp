@@ -21,21 +21,21 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defxdoc+ anchors-of-validators-def-and-init
+(defxdoc+ last-anchor-def-and-init
   :parents (correctness)
-  :short "Anchors committed by validators:
+  :short "Last anchor committed by a validator:
           definition and initial result."
   :long
   (xdoc::topstring
    (xdoc::p
-    "We introduce operations, and theorems about them,
-     about the anchors committed by validators.")
+    "We introduce an operation, and theorems about it,
+     to obtain the last anchor committed by a validator.")
    (xdoc::p
-    "We prove theorems expressing the initial result of these operations.")
+    "We prove theorems expressing the initial result of this operation.")
    (xdoc::p
     "Elsewhere, we prove how the events change the result.
      We separate that because it needs theorems
-     that depend on the definition of the operations."))
+     that depend on the definition of the operation."))
   :order-subtopics t
   :default-parent t)
 
@@ -112,66 +112,6 @@
                                (all-addresses systate))
                   nil))
   :enable (last-anchor
-           system-initp
-           system-validators-initp-necc
-           validator-init))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(define committed-anchors ((vstate validator-statep) (all-vals address-setp))
-  :guard (and (evenp (validator-state->last vstate))
-              (or (equal (validator-state->last vstate) 0)
-                  (last-anchor vstate all-vals)))
-  :returns (anchors certificate-listp)
-  :short "Sequence of anchors committed by a validator."
-  :long
-  (xdoc::topstring
-   (xdoc::p
-    "If the last committed round is 0 (i.e. there is no last committed round),
-     no anchors have been committed, and we return @('nil').
-     Otherwise, we obtain the last committed anchor,
-     and we use @(tsee collect-all-anchors) starting from that one.
-     Thus, this function gives us the list of all anchors committed so far,
-     in reverse chronological order
-     (i.e. the latest one is the @(tsee car) of the list)."))
-  (b* (((validator-state vstate) vstate)
-       ((when (equal vstate.last 0)) nil)
-       (last-anchor (last-anchor vstate all-vals)))
-    (collect-all-anchors last-anchor vstate.dag vstate.blockchain all-vals))
-  :guard-hints
-  (("Goal" :in-theory (enable last-anchor-in-dag
-                              active-committee-at-round-when-last-anchor
-                              certificate->round-of-last-anchor)))
-
-  ///
-
-  (defruled committed-anchors-when-last-is-0
-    (implies (equal (validator-state->last vstate) 0)
-             (equal (committed-anchors vstate vals)
-                    nil)))
-
-  (defrule consp-of-committed-anchors-when-last-not-0
-    (implies (not (equal (validator-state->last vstate) 0))
-             (consp (committed-anchors vstate vals)))
-    :rule-classes :type-prescription)
-
-  (defruled car-of-committed-anchors
-    (implies (and (not (equal (validator-state->last vstate) 0))
-                  (last-anchor vstate vals))
-             (equal (car (committed-anchors vstate vals))
-                    (last-anchor vstate vals)))
-    :enable car-of-collect-all-anchors))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defruled committed-anchors-when-init
-  :short "Initially, a validator has no committed anchors."
-  (implies (and (system-initp systate)
-                (set::in val (correct-addresses systate)))
-           (equal (committed-anchors (get-validator-state val systate)
-                                     (all-addresses systate))
-                  nil))
-  :enable (committed-anchors
            system-initp
            system-validators-initp-necc
            validator-init))
