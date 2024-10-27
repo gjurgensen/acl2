@@ -12446,9 +12446,9 @@ with any questions about building the community books.</p>")
  and @(':failure-reason').  In addition, by using @(tsee brr@) you can obtain
  this information in the form of ACL2 data objects.  This allows the
  development of more sophisticated ``break conditions'' that test the context
- of of the pending break and that return a list of commands to execute if a
- break occurs; see @(see monitor) for examples.  In this connection we point
- out the macro form @('(ok-if term)').  See @(see ok-if).  This command exits
+ of the pending break and that return a list of commands to execute if a break
+ occurs; see @(see monitor) for examples.  In this connection we point out the
+ macro form @('(ok-if term)').  See @(see ok-if).  This command exits
  break-rewrite if @('term') evaluates to non-@('nil') and otherwise does not
  exit.  Thus it is possible to define macros that provide other kinds of exits
  from break-rewrite.  The only way to exit break-rewrite after @(':eval') is
@@ -45115,26 +45115,6 @@ current fast alists."
   documentation.</p>
 
  @(def get-real-time)")
-
-(defxdoc get-wormhole-status
-  :parents (wormhole)
-  :short "Make a wormhole's status visible outside the wormhole"
-  :long "@({
-  General Form:
-  (get-wormhole-status name state)
-  })
-
- <p>Warning: This function is deprecated and will likely be eliminated after
- ACL2 Version  8.6.</p>
-
- <p>This function has been renamed to be @(tsee get-persistent-whs), i.e.,
- &ldquo;persistent wormhole status&rdquo;.  While the old name is still
- defined, we recommend that you use the new name because it clarifies which
- status object is being fetched: the persistent one (i.e., the one that must be
- logically read from the ACL2 oracle and which survives the exit from a
- wormhole to the next entrance to that wormhole) and not the ephemeral one
- sometimes found in @('(@ wormhole-status)').  If these concepts are new to you
- we recommend you read about @(tsee wormhole-status).</p>")
 
 (defxdoc getenv$
   :parents (programming-with-state acl2-built-ins)
@@ -107902,6 +107882,11 @@ it."
 ; error upon including an uncertified book, which now points to :DOC
 ; uncertified-books, which has been significantly expanded and made more clear.
 ; (The changes are my own, not necessarily exactly as everyone would prefer.)
+
+; Fixed typo in the brr-result, :rewritten-rhs-avoided (was missing one "t").
+
+; Removed deprecated utilities warning$-cw (which was replaced by warning$-cw0)
+; and get-wormhole-status (which was replaced by get-persistent-whs).
 
   :parents (release-notes)
   :short "ACL2 Version  8.7 (xxx, 20xx) Notes"
