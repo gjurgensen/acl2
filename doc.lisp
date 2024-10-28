@@ -15440,8 +15440,8 @@ Subtopics
   [47m:poly-list[0m, and [47m:failure-reason[0m.  In addition, by using [47m[brr@][0m you
   can obtain this information in the form of ACL2 data objects.  This
   allows the development of more sophisticated ``break conditions''
-  that test the context of of the pending break and that return a
-  list of commands to execute if a break occurs; see [monitor] for
+  that test the context of the pending break and that return a list
+  of commands to execute if a break occurs; see [monitor] for
   examples.  In this connection we point out the macro form [47m(ok-if
   term)[0m.  See [ok-if].  This command exits break-rewrite if [47mterm[0m
   evaluates to non-[47mnil[0m and otherwise does not exit.  Thus it is
@@ -48506,25 +48506,6 @@ Conclusion
                           "See [with-serialize-character].")
  (GET-SKIPPED-PROOFS-P (POINTERS)
                        "See [system-utilities].")
- (GET-WORMHOLE-STATUS
-  (WORMHOLE)
-  "Make a wormhole's status visible outside the wormhole
-
-    General Form:
-    (get-wormhole-status name state)
-
-  Warning: This function is deprecated and will likely be eliminated
-  after ACL2 Version 8.6.
-
-  This function has been renamed to be [47m[get-persistent-whs][0m, i.e.,
-  ``persistent wormhole status''.  While the old name is still
-  defined, we recommend that you use the new name because it
-  clarifies which status object is being fetched: the persistent one
-  (i.e., the one that must be logically read from the ACL2 oracle and
-  which survives the exit from a wormhole to the next entrance to
-  that wormhole) and not the ephemeral one sometimes found in [47m(@
-  wormhole-status)[0m.  If these concepts are new to you we recommend
-  you read about [47m[wormhole-status][0m.")
  (GETENV$
   (PROGRAMMING-WITH-STATE ACL2-BUILT-INS)
   "Read an environment variable
@@ -164272,9 +164253,6 @@ Subtopics
 Subtopics
 
   [Get-persistent-whs]
-      Make a wormhole's status visible outside the wormhole
-
-  [Get-wormhole-status]
       Make a wormhole's status visible outside the wormhole
 
   [Make-wormhole-status]
