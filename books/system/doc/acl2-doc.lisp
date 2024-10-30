@@ -12446,9 +12446,9 @@ with any questions about building the community books.</p>")
  and @(':failure-reason').  In addition, by using @(tsee brr@) you can obtain
  this information in the form of ACL2 data objects.  This allows the
  development of more sophisticated ``break conditions'' that test the context
- of of the pending break and that return a list of commands to execute if a
- break occurs; see @(see monitor) for examples.  In this connection we point
- out the macro form @('(ok-if term)').  See @(see ok-if).  This command exits
+ of the pending break and that return a list of commands to execute if a break
+ occurs; see @(see monitor) for examples.  In this connection we point out the
+ macro form @('(ok-if term)').  See @(see ok-if).  This command exits
  break-rewrite if @('term') evaluates to non-@('nil') and otherwise does not
  exit.  Thus it is possible to define macros that provide other kinds of exits
  from break-rewrite.  The only way to exit break-rewrite after @(':eval') is
@@ -38169,11 +38169,11 @@ current fast alists."
  <p>The following text contains examples that can be evaluated.  To make this
  process easier, we use a macro, @('fmx').  It takes up to eleven arguments,
  the first of which is a format string, @('str'), and the others of which are
- taken as the values of format variables; for similar utilities that can be
- called in @(':')@(tsee logic) mode functions, see @(see cw) and @(see fmx-cw).
- The variables used are @('#\\0') through @('#\\9').  The macro constructs an
- appropriate alist, @('a'), and then evaluates @('(fmt` str a 0 *standard-co*
- state nil)').</p>
+ taken as the values of format variables; for similar utilities that do not
+ take or return @(see state), see @(see cw) and @(see fmx-cw).  The variables
+ used are @('#\\0') through @('#\\9').  The macro constructs an appropriate
+ alist, @('a'), and then evaluates @('(fmt` str a 0 *standard-co* state
+ nil)').</p>
 
  <p>Thus,</p>
 
@@ -38578,8 +38578,10 @@ current fast alists."
   :long "<p>@('Fmx-cw') is a variant of @('cw'): both take the same arguments
  and have the same behavior on well-formed input, and both return @('nil').
  See @(see cw) for documentation on how to use both utilities.  Unlike @('cw'),
- @('fmx-cw') is well-@(see guard)ed, so it can catch errors in the use of
- tilde-directives.  Here is an example of such a guard violation.</p>
+ which has a @(see guard) of @('t'), @('fmx-cw') has a non-trivial guard that
+ can can catch errors in the use of tilde-directives.  Here is an example of
+ such a guard violation, where the corresponding call of @('cw') would instead
+ cause a hard error.</p>
 
  @({
  ACL2 !>(fmx-cw \"Hello ~s0.\" '(world))
@@ -38596,12 +38598,10 @@ current fast alists."
  })
 
  <p>Thus, call @('fmx-cw') instead of @('cw') in the body of @(':')@(tsee
- logic) mode definition when you want its @(see guard) verification to avoid
- runtime errors from that call.  (While the guard on @('fmx-cw') is likely
- complete in practice, this is not an ironclad guarantee.  Perhaps, some day,
- all formatted printing code will be fully guarded and guard-verified.)  Note
- that if you call @('fmx-cw') in a definition, the guard proof may benefit from
- the lemma, @('fmx-cw-msg-1-opener'), found in @(see community-book)
+ logic) mode definition when you want its @(see guard) verification to help
+ ensure the absence of runtime errors from that call.  Note that if you call
+ @('fmx-cw') in a definition, the guard proof may benefit from the lemma,
+ @('fmx-cw-msg-1-opener'), found in @(see community-book)
  @('books/system/fmx-cw.lisp').</p>
 
  <p>The variant @('fmx!-cw') avoids the insertion of backslash (\) characters
@@ -45115,26 +45115,6 @@ current fast alists."
   documentation.</p>
 
  @(def get-real-time)")
-
-(defxdoc get-wormhole-status
-  :parents (wormhole)
-  :short "Make a wormhole's status visible outside the wormhole"
-  :long "@({
-  General Form:
-  (get-wormhole-status name state)
-  })
-
- <p>Warning: This function is deprecated and will likely be eliminated after
- ACL2 Version  8.6.</p>
-
- <p>This function has been renamed to be @(tsee get-persistent-whs), i.e.,
- &ldquo;persistent wormhole status&rdquo;.  While the old name is still
- defined, we recommend that you use the new name because it clarifies which
- status object is being fetched: the persistent one (i.e., the one that must be
- logically read from the ACL2 oracle and which survives the exit from a
- wormhole to the next entrance to that wormhole) and not the ephemeral one
- sometimes found in @('(@ wormhole-status)').  If these concepts are new to you
- we recommend you read about @(tsee wormhole-status).</p>")
 
 (defxdoc getenv$
   :parents (programming-with-state acl2-built-ins)
@@ -78439,7 +78419,7 @@ it."
  effect of @('commutativity-of-+').</p>
 
  <p>A new class of rule, @(':linear-alias') rules, allows one to implement the
- nqthm package and similar hacks in which a @(see disable)d function is to be
+ Nqthm package and similar hacks in which a @(see disable)d function is to be
  known equivalent to an arithmetic function.</p>
 
  <p>A new class of rule, @(':built-in-clause') rules, allows one to extend the
@@ -80347,10 +80327,10 @@ it."
  <p>We eliminated the rule-class @('linear-alias').  This rule class was seldom
  used and complicated the linear arithmetic decision procedure in ways that
  made it difficult to extend to handle some non-linear special cases.  The only
- use of the rule-class that we know of was in our own @('nqthm') books, which
+ use of the rule-class that we know of was in our own @('Nqthm') books, which
  were an attempt to provide an embedding of the Nqthm logic and theorem prover
  into ACL2.  But that facility was also practically never used, as far as we
- know.  So both @('linear-alias') rules and the @('nqthm') books have been
+ know.  So both @('linear-alias') rules and the @('Nqthm') books have been
  eliminated.</p>
 
  <p>In earlier versions of ACL2, when the @('IF')-form of @('(AND p q)') was
@@ -107890,6 +107870,24 @@ it."
  ")
 
 (defxdoc note-8-7
+
+; Corrected many long-standing typos in comments.  Thanks to Bob Boyer for
+; reporting them.
+
+; Thanks to Eric Smith for pointing out issues pertaining to logic mode and
+; guards in :DOC fmx-cw and :DOC fmt.
+
+; Thanks to Ziga Putrle, Drew Walter, and Eric Smith for discussion on Zulip
+; leading to an extension of the "There is no certificate on file" warning or
+; error upon including an uncertified book, which now points to :DOC
+; uncertified-books, which has been significantly expanded and made more clear.
+; (The changes are my own, not necessarily exactly as everyone would prefer.)
+
+; Fixed typo in the brr-result, :rewritten-rhs-avoided (was missing one "t").
+
+; Removed deprecated utilities warning$-cw (which was replaced by warning$-cw0)
+; and get-wormhole-status (which was replaced by get-persistent-whs).
+
   :parents (release-notes)
   :short "ACL2 Version  8.7 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -155156,28 +155154,41 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
 (defxdoc uncertified-books
   :parents (books)
   :short "Invalid @(see certificate)s and uncertified @(see books)"
-  :long "<p>For relevant background see @(see books), see @(see certificate),
- and see @(see portcullis).</p>
+  :long "<p>For relevant background see @(see books), see @(see books-tour),
+ see @(see certificate), and see @(see portcullis).</p>
+
+ <p>You may have been led to this topic by a warning or error message such as
+ the following.</p>
+
+ @({
+ There is no certificate on file for /u/smith/foo.lisp.  See :DOC
+ uncertified-books.
+ })
+
+ <p>The remedy is to <i>certify</i> the indicated book; see @(see
+ certify-book).  Such certification is typically a <i>very</i> good idea, as
+ discussed further below.  After certification succeeds, the book will have a
+ valid @(see certificate) and the message will no longer be printed.  The rest
+ of this topic explains issues pertaining to books that are <i>uncertified</i>,
+ that is, have not been certified.</p>
 
  <p>@(tsee Include-book) has a special provision for dealing with an
- uncertified book, i.e., a file with no @(see certificate) or an invalid @(see
- certificate) (i.e., one whose @(see book-hash) values describe files other
- than the ones actually read).  In this case, a warning is printed and the book
- is otherwise processed much as though it were certified and had an open @(see
- portcullis).</p>
+ uncertified book, i.e., a file whose @(see certificate) is missing or
+ invalid (e.g., one for a different ACL2 version or whose @(see book-hash)
+ value describes a file other than the one actually read).  In this case, a
+ warning is printed (as above) and the book is usually processed much as though
+ it were certified.
 
- <p>If a book @('B.lisp') is uncertified and a file @('B.port') exists, then
- the forms in @('B.port') are evaluated before the forms in @('B.lisp').  Such
- a file @('B.port') is typically created calling @(tsee certify-book) on book
- @('\"B\"') with argument @(':write-port t'), so that @('B.port') contains the
- @(see portcullis) @(see command)s for @('B') (the commands present in the
- @(see world) when that certification was attempted).  To avoid loading
- @('.port') files, see @(see compilation).</p>
+ If a book @('B.lisp') was previously certified, it will probably have a
+ corresponding file @('B.port') representing the @(see portcullis) @(see
+ command)s for that previous certification.  (See keyword argument
+ @(':write-port') of @(tsee certify-book).)  Then if @('B.lisp') is currently
+ uncertified and @('B.port') exists, evaluation of @('(include-book \"B\")')
+ will cause the forms in @('B.port') to be evaluated before the forms in
+ @('B.lisp').  To avoid such evaluation for @('.port') files, see @(see
+ compilation).</p>
 
- <p>Inclusion of uncertified books can be handy, but it can have disastrous
- consequences.</p>
-
- <p>The provision allowing uncertified @(see books) to be included can have
+ <p>The ability to include uncertified @(see books) is handy but it can have
  disastrous consequences, ranging from hard lisp errors, to damaged memory, to
  quiet logical inconsistency.</p>
 

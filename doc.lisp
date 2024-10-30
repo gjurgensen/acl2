@@ -15440,8 +15440,8 @@ Subtopics
   [47m:poly-list[0m, and [47m:failure-reason[0m.  In addition, by using [47m[brr@][0m you
   can obtain this information in the form of ACL2 data objects.  This
   allows the development of more sophisticated ``break conditions''
-  that test the context of of the pending break and that return a
-  list of commands to execute if a break occurs; see [monitor] for
+  that test the context of the pending break and that return a list
+  of commands to execute if a break occurs; see [monitor] for
   examples.  In this connection we point out the macro form [47m(ok-if
   term)[0m.  See [ok-if].  This command exits break-rewrite if [47mterm[0m
   evaluates to non-[47mnil[0m and otherwise does not exit.  Thus it is
@@ -41957,10 +41957,10 @@ Example 2
   this process easier, we use a macro, [47mfmx[0m.  It takes up to eleven
   arguments, the first of which is a format string, [47mstr[0m, and the
   others of which are taken as the values of format variables; for
-  similar utilities that can be called in [47m:[0m[47m[logic][0m mode functions,
-  see [cw] and [fmx-cw].  The variables used are [47m#\\0[0m through [47m#\\9[0m.
-  The macro constructs an appropriate alist, [47ma[0m, and then evaluates
-  [47m(fmt` str a 0 *standard-co* state nil)[0m.
+  similar utilities that do not take or return [state], see [cw] and
+  [fmx-cw].  The variables used are [47m#\\0[0m through [47m#\\9[0m.  The macro
+  constructs an appropriate alist, [47ma[0m, and then evaluates [47m(fmt` str a
+  0 *standard-co* state nil)[0m.
 
   Thus,
 
@@ -42337,9 +42337,11 @@ Example 2
 
   [47mFmx-cw[0m is a variant of [47mcw[0m: both take the same arguments and have the
   same behavior on well-formed input, and both return [47mnil[0m.  See [cw]
-  for documentation on how to use both utilities.  Unlike [47mcw[0m, [47mfmx-cw[0m
-  is well-[guard]ed, so it can catch errors in the use of
-  tilde-directives.  Here is an example of such a guard violation.
+  for documentation on how to use both utilities.  Unlike [47mcw[0m, which
+  has a [guard] of [47mt[0m, [47mfmx-cw[0m has a non-trivial guard that can can
+  catch errors in the use of tilde-directives.  Here is an example of
+  such a guard violation, where the corresponding call of [47mcw[0m would
+  instead cause a hard error.
 
     ACL2 !>(fmx-cw \"Hello ~s0.\" '(world))
 
@@ -42354,13 +42356,11 @@ Example 2
     ACL2 !>
 
   Thus, call [47mfmx-cw[0m instead of [47mcw[0m in the body of [47m:[0m[47m[logic][0m mode
-  definition when you want its [guard] verification to avoid runtime
-  errors from that call.  (While the guard on [47mfmx-cw[0m is likely
-  complete in practice, this is not an ironclad guarantee.  Perhaps,
-  some day, all formatted printing code will be fully guarded and
-  guard-verified.)  Note that if you call [47mfmx-cw[0m in a definition, the
-  guard proof may benefit from the lemma, [47mfmx-cw-msg-1-opener[0m, found
-  in [community-book] [47mbooks/system/fmx-cw.lisp[0m.
+  definition when you want its [guard] verification to help ensure
+  the absence of runtime errors from that call.  Note that if you
+  call [47mfmx-cw[0m in a definition, the guard proof may benefit from the
+  lemma, [47mfmx-cw-msg-1-opener[0m, found in [community-book]
+  [47mbooks/system/fmx-cw.lisp[0m.
 
   The variant [47mfmx!-cw[0m avoids the insertion of backslash () characters
   when forced to print past the right margin.  Thus, use [47mfmx!-cw[0m
@@ -48506,25 +48506,6 @@ Conclusion
                           "See [with-serialize-character].")
  (GET-SKIPPED-PROOFS-P (POINTERS)
                        "See [system-utilities].")
- (GET-WORMHOLE-STATUS
-  (WORMHOLE)
-  "Make a wormhole's status visible outside the wormhole
-
-    General Form:
-    (get-wormhole-status name state)
-
-  Warning: This function is deprecated and will likely be eliminated
-  after ACL2 Version 8.6.
-
-  This function has been renamed to be [47m[get-persistent-whs][0m, i.e.,
-  ``persistent wormhole status''.  While the old name is still
-  defined, we recommend that you use the new name because it
-  clarifies which status object is being fetched: the persistent one
-  (i.e., the one that must be logically read from the ACL2 oracle and
-  which survives the exit from a wormhole to the next entrance to
-  that wormhole) and not the ephemeral one sometimes found in [47m(@
-  wormhole-status)[0m.  If these concepts are new to you we recommend
-  you read about [47m[wormhole-status][0m.")
  (GETENV$
   (PROGRAMMING-WITH-STATE ACL2-BUILT-INS)
   "Read an environment variable
@@ -82237,7 +82218,7 @@ Subtopics
   argument position because of the effect of [47mcommutativity-of-+[0m.
 
   A new class of rule, [47m:linear-alias[0m rules, allows one to implement the
-  nqthm package and similar hacks in which a [disable]d function is
+  Nqthm package and similar hacks in which a [disable]d function is
   to be known equivalent to an arithmetic function.
 
   A new class of rule, [47m:built-in-clause[0m rules, allows one to extend the
@@ -84130,10 +84111,10 @@ Subtopics
   seldom used and complicated the linear arithmetic decision
   procedure in ways that made it difficult to extend to handle some
   non-linear special cases.  The only use of the rule-class that we
-  know of was in our own [47mnqthm[0m books, which were an attempt to
+  know of was in our own [47mNqthm[0m books, which were an attempt to
   provide an embedding of the Nqthm logic and theorem prover into
   ACL2.  But that facility was also practically never used, as far as
-  we know.  So both [47mlinear-alias[0m rules and the [47mnqthm[0m books have been
+  we know.  So both [47mlinear-alias[0m rules and the [47mNqthm[0m books have been
   eliminated.
 
   In earlier versions of ACL2, when the [47mIF[0m-form of [47m(AND p q)[0m was
@@ -155163,28 +155144,37 @@ Type Specs
   (BOOKS)
   "Invalid [certificate]s and uncertified [books]
 
-  For relevant background see [books], see [certificate], and see
-  [portcullis].
+  For relevant background see [books], see [books-tour], see
+  [certificate], and see [portcullis].
+
+  You may have been led to this topic by a warning or error message
+  such as the following.
+
+    There is no certificate on file for /u/smith/foo.lisp.  See :DOC
+    uncertified-books.
+
+  The remedy is to [3mcertify[0m the indicated book; see [certify-book].
+  Such certification is typically a [3mvery[0m good idea, as discussed
+  further below.  After certification succeeds, the book will have a
+  valid [certificate] and the message will no longer be printed.  The
+  rest of this topic explains issues pertaining to books that are
+  [3muncertified[0m, that is, have not been certified.
 
   [47m[Include-book][0m has a special provision for dealing with an
-  uncertified book, i.e., a file with no [certificate] or an invalid
-  [certificate] (i.e., one whose [book-hash] values describe files
-  other than the ones actually read).  In this case, a warning is
-  printed and the book is otherwise processed much as though it were
-  certified and had an open [portcullis].
+  uncertified book, i.e., a file whose [certificate] is missing or
+  invalid (e.g., one for a different ACL2 version or whose
+  [book-hash] value describes a file other than the one actually
+  read).  In this case, a warning is printed (as above) and the book
+  is usually processed much as though it were certified.  If a book
+  [47mB.lisp[0m was previously certified, it will probably have a
+  corresponding file [47mB.port[0m representing the [portcullis] [command]s
+  for that previous certification.  (See keyword argument [47m:write-port[0m
+  of [47m[certify-book][0m.)  Then if [47mB.lisp[0m is currently uncertified and
+  [47mB.port[0m exists, evaluation of [47m(include-book \"B\")[0m will cause the
+  forms in [47mB.port[0m to be evaluated before the forms in [47mB.lisp[0m.  To
+  avoid such evaluation for [47m.port[0m files, see [compilation].
 
-  If a book [47mB.lisp[0m is uncertified and a file [47mB.port[0m exists, then the
-  forms in [47mB.port[0m are evaluated before the forms in [47mB.lisp[0m.  Such a
-  file [47mB.port[0m is typically created calling [47m[certify-book][0m on book [47m\"B\"[0m
-  with argument [47m:write-port t[0m, so that [47mB.port[0m contains the
-  [portcullis] [command]s for [47mB[0m (the commands present in the [world]
-  when that certification was attempted).  To avoid loading [47m.port[0m
-  files, see [compilation].
-
-  Inclusion of uncertified books can be handy, but it can have
-  disastrous consequences.
-
-  The provision allowing uncertified [books] to be included can have
+  The ability to include uncertified [books] is handy but it can have
   disastrous consequences, ranging from hard lisp errors, to damaged
   memory, to quiet logical inconsistency.
 
@@ -164263,9 +164253,6 @@ Subtopics
 Subtopics
 
   [Get-persistent-whs]
-      Make a wormhole's status visible outside the wormhole
-
-  [Get-wormhole-status]
       Make a wormhole's status visible outside the wormhole
 
   [Make-wormhole-status]
