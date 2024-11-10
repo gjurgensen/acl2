@@ -107888,6 +107888,12 @@ it."
 ; Removed deprecated utilities warning$-cw (which was replaced by warning$-cw0)
 ; and get-wormhole-status (which was replaced by get-persistent-whs).
 
+; Replaced two uses of array-total-size-limit with array-dimension-limit.
+; Thanks to Camm Maguire for noticing these misuses of array-total-size-limit.
+; These two constants are actually equal in each of the six Lisps upon which
+; ACL2 can be built (at least, in the Lisp versions tested), so this change
+; should not have any observable effect.
+
   :parents (release-notes)
   :short "ACL2 Version  8.7 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
