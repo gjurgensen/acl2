@@ -13520,7 +13520,7 @@ with any questions about building the community books.</p>")
  <p>where each @('xi') is either @(tsee eqlablep) or a true list of @(tsee
  eqlablep) objects.  The final @('otherwise') or @('t') case is optional; if
  neither is present, then an equivalent expression results from adding the
- final case @('(t nil)')..</p>
+ final case @('(t nil)').</p>
 
  <p>As suggested above, each case @('(xi val-i)') generates an if-then-else
  expression as follows.  If @('xi') is a non-nil atom (i.e., @('xi') is not
@@ -134522,7 +134522,7 @@ work on <tt>(q x)</tt>.</p>
  character unless @(tsee fmt!), @(tsee fms!), or @(tsee fmt1!) is used, or
  state global @('write-for-read') is true.</p>
 
- <p>Note that A right margin of 40 is used for pretty printing with @(tsee fmt)
+ <p>Note that a right margin of 40 is used for pretty printing with @(tsee fmt)
  directives @('~y'), @('~Y'), @('~q'), and @('~Q') and can be changed to a
  positive integer @('N') with @('(set-ppr-flat-right-margin N state)').</p>")
 
