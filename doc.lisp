@@ -16682,7 +16682,7 @@ Subtopics
   where each [47mxi[0m is either [47m[eqlablep][0m or a true list of [47m[eqlablep][0m
   objects.  The final [47motherwise[0m or [47mt[0m case is optional; if neither is
   present, then an equivalent expression results from adding the
-  final case [47m(t nil)[0m..
+  final case [47m(t nil)[0m.
 
   As suggested above, each case [47m(xi val-i)[0m generates an if-then-else
   expression as follows.  If [47mxi[0m is a non-nil atom (i.e., [47mxi[0m is not
@@ -134508,7 +134508,7 @@ Subtopics
   character unless [47m[fmt!][0m, [47m[fms!][0m, or [47m[fmt1!][0m is used, or state
   global [47mwrite-for-read[0m is true.
 
-  Note that A right margin of 40 is used for pretty printing with [47m[fmt][0m
+  Note that a right margin of 40 is used for pretty printing with [47m[fmt][0m
   directives [47m~y[0m, [47m~Y[0m, [47m~q[0m, and [47m~Q[0m and can be changed to a positive
   integer [47mN[0m with [47m(set-ppr-flat-right-margin N state)[0m.")
  (SET-FMT-SOFT-RIGHT-MARGIN

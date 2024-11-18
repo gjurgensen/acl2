@@ -9,9 +9,9 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(in-package "ALEOBFT-DYNAMIC")
+(in-package "ALEOBFT-STAKE")
 
-(include-book "certificates-of-validators")
+(include-book "signed-certificates")
 
 (local (include-book "kestrel/built-ins/disable" :dir :system))
 (local (acl2::disable-most-builtin-logic-defuns))
@@ -29,38 +29,35 @@
    (xdoc::p
     "A signer of a certificate is either the author or an endorser.
      The author adds the certificate to its DAG as it creates the certificate,
-     as defined in the transitions for @('create-certificate'),
+     as defined in the transitions for @('create'),
      so it has a record of the certificate.
-     As also defined in the transitions for @('create-certificate'),
+     As also defined in the transitions for @('create'),
      an endorser adds the certificate's author and round
      to the set of endorsed pairs,
      which also constitutes a record of the certificate.
      Certificate creation also broadcasts the certificate to endorsers
      (as well as to other correct validators, except the author),
      so an endorser may receive the whole certificate at some point,
-     via a @('receive-certificate') event,
+     via a @('receive') event,
+     and then move it to the DAG via a @('store') event,
      upon which it removes the author-round pair from the endorsed set,
-     but it adds the whole certificate to the buffer,
+     but it adds the whole certificate to the DAG,
      so it still has a record of the certificate.
-     A @('store-certificate') event may move the certificate
-     from the buffer to the DAG,
-     but again the endorser still has a record of that certificate.
      Certificates are never removed by other events.")
    (xdoc::p
     "Thus, both in the case of the author and in the case of an endorser,
      the signer in question always has a record of the certificate,
-     in its own validator state, in three possible forms:
+     in its own validator state, in two possible forms:
      in the DAG (the whole certificate),
-     or in the buffer (the whole certificate),
      or in the set of endorsed pairs (just author and round).")
    (xdoc::p
     "Note the difference between this notion and that of "
-    (xdoc::seetopic "owned-certificates" "owned certificates")
+    (xdoc::seetopic "associated-certificates" "associated certificates")
     ": the latter consist of
      the certificates in the validator state
      or in transit in the network;
      these are all whole certificates,
-     and apply to all correct validators.
+     and apply to all validators.
      In contrast, certificate records are all in the validator state,
      but are not necessarily whole certificates
      (it could be just authors and rounds),
@@ -69,13 +66,12 @@
     "It may be tempting to formalize the notion of
      `a signer having a record of a certificate'
      as the disjunction of
-     (i) the certificate is in the DAG of the signer,
-     (ii) the certificate is in the buffer of the signer, and
-     (iii) the author and round of the certificate form a pair
+     (i) the certificate is in the DAG of the signer, or
+     (ii) the author and round of the certificate form a pair
      in the set of endorsed pairs of the signer.
-     However, this would not be quite preserved
-     by @('receive-certificate') events.
+     However, this would not be quite preserved by @('store') events.
      The validator receiving a certificate @('C')
+     and storing it in the DAG
      could already have a record of a certificate @('C0'),
      different from @('C') but with the same author and round,
      i.e. @('C.author = C0.author') and @('C.round = C0.round').
@@ -84,11 +80,12 @@
      at this point of this formal development,
      and in fact we need to use the notion of signer records
      to prove non-equivocation, so we cannot assume it here.
-     The problem is that, upon receiving @('C'),
+     The problem is that, upon storing a received @('C') into the DAG,
      if the record of @('C0') is in the set of endorsed pairs,
-     and not in the DAG or in the buffer,
+     and not in the DAG,
      the pair of the common author and round is removed from the set,
-     and thus the validator no longer has a record of @('C0'),
+     and thus the validator no longer has a record of @('C0')
+     in the sense defined by the tempting definition above,
      although it now has a record of @('C').
      So we need to weaken the notion of
      `a signer having a record of a certificate @('C')'
@@ -96,11 +93,10 @@
      (i) the DAG of the signer has some certificate @('C\'')
      (the same as @('C') or not)
      with the author and round of @('C'),
-     (ii) the buffer of the signer has some certificate @('C\'')
-     (the same as @('C') or not)
-     with the author and round of @('C'), and
-     (iii) the author and round of @('C') form a pair
+     (ii) the author and round of @('C') form a pair
      in the set of endorsed pairs of the signer.
+     That is, the notion is only about the author and signer,
+     not the whole certificate.
      This is the formulation we define and prove here."))
   :order-subtopics t
   :default-parent t)
@@ -118,17 +114,13 @@
    (xdoc::p
     "This is the case if
      the DAG has some certificate with the given author and round,
-     the buffer has some certificate with the given author and round,
      or the given author and round are in the set of endorsed pairs.
-     We express the first two conditions by saying that
-     @(tsee certificate-with-author+round) does not return @('nil')."))
+     We express the first condition by saying that
+     @(tsee cert-with-author+round) does not return @('nil')."))
   (b* (((validator-state vstate) vstate)
        (author (address-fix author))
        (round (pos-fix round)))
-    (or (and (certificate-with-author+round author round vstate.dag)
-             t)
-        (and (certificate-with-author+round author round vstate.buffer)
-             t)
+    (or (and (cert-with-author+round author round vstate.dag) t)
         (set::in (make-address+pos :address author :pos round)
                  vstate.endorsed)))
   :hooks (:fix))
@@ -144,13 +136,16 @@
   (xdoc::topstring
    (xdoc::p
     "We express this on the set of signed certificates
-     defined by @(tsee signed-certificates)."))
+     defined by @(tsee signed-certs)."))
   (forall (signer cert)
           (implies (and (set::in signer (correct-addresses systate))
-                        (set::in cert (signed-certificates signer systate)))
+                        (set::in cert (signed-certs signer systate)))
                    (signer-record-p (certificate->author cert)
                                     (certificate->round cert)
-                                    (get-validator-state signer systate)))))
+                                    (get-validator-state signer systate))))
+  ///
+  (fty::deffixequiv-sk signer-records-p
+    :args ((systate system-statep))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -165,7 +160,7 @@
   (implies (system-initp systate)
            (signer-records-p systate))
   :enable (signer-records-p
-           signed-certificates-when-init))
+           signed-certs-when-init))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -176,7 +171,7 @@
   :long
   (xdoc::topstring
    (xdoc::p
-    "A @('create-certificate') event adds a new certificate
+    "A @('create') event adds a new certificate
      to the set of certificates signed by each signer of the certificate.
      We prove a theorem saying that
      the author and round of the new certificate satisfy the invariant,
@@ -187,13 +182,13 @@
      are still recorded in the new states,
      because there is no other change for those w.r.t. their records.
      Then we prove a theorem showing the preservation of the system invariant
-     on all certificates after @('create-certificate'),
+     on all certificates after @('create'),
      via the two aforementioned theorems for new and old certificates.")
    (xdoc::p
     "For all other kinds of events, we prove two theorems:
      one is for each generic validator, and one is for the whole system.")
    (xdoc::p
-    "A @('receive-certificate') event may remove an endorsed pair,
+    "A @('store') event may remove an endorsed pair,
      but it also adds the certificate,
      whose author and round are the ones of the removed pair,
      to the buffer.
@@ -201,31 +196,25 @@
      For the other certificates, the invariant is also preserved
      because nothing changes for them in terms of their records.")
    (xdoc::p
-    "A @('store-certificate') event moves a certificate
-     from the buffer to the DAG of a validator,
-     so the record of the certificate is still there.
-     For the other certificates, nothing changes in terms of records.")
-   (xdoc::p
     "For the other kinds of events,
-     nothing changes for any certificate in terms of their records."))
+     nothing changes for any certificate in terms of its records."))
 
-  ;; create-certificate:
+  ;; create:
 
-  (defruled signer-record-p-of-create-certificate-next-new
+  (defruled signer-record-p-of-create-next-new
     (implies (and (set::in signer (certificate->signers cert))
                   (set::in signer (correct-addresses systate)))
              (signer-record-p (certificate->author cert)
                               (certificate->round cert)
                               (get-validator-state
-                               signer (create-certificate-next cert systate))))
+                               signer (create-next cert systate))))
     :enable (signer-record-p
-             validator-state->dag-of-create-certificate-next
-             validator-state->buffer-of-create-certificate-next
-             validator-state->endorsed-of-create-certificate-next
+             validator-state->dag-of-create-next
+             validator-state->endorsed-of-create-next
              certificate->signers
-             certificate-with-author+round-of-insert-iff))
+             cert-with-author+round-of-insert-iff))
 
-  (defruled signer-record-p-of-create-certificate-next-old
+  (defruled signer-record-p-of-create-next-old
     (implies (and (set::in signer (correct-addresses systate))
                   (signer-record-p (certificate->author cert1)
                                    (certificate->round cert1)
@@ -233,154 +222,139 @@
              (signer-record-p (certificate->author cert1)
                               (certificate->round cert1)
                               (get-validator-state
-                               signer (create-certificate-next cert systate))))
+                               signer (create-next cert systate))))
     :enable (signer-record-p
-             validator-state->dag-of-create-certificate-next
-             validator-state->buffer-of-create-certificate-next
-             validator-state->endorsed-of-create-certificate-next
-             certificate-with-author+round-of-insert-iff))
+             validator-state->dag-of-create-next
+             validator-state->endorsed-of-create-next
+             cert-with-author+round-of-insert-iff))
 
-  (defruled signer-records-p-of-create-certificate-next
+  (defruled signer-records-p-of-create-next
     (implies (signer-records-p systate)
-             (signer-records-p (create-certificate-next cert systate)))
+             (signer-records-p (create-next cert systate)))
     :enable (signer-records-p
              signer-records-p-necc
-             signed-certificates-of-create-certificate-next
-             signer-record-p-of-create-certificate-next-new
-             signer-record-p-of-create-certificate-next-old))
+             signed-certs-of-create-next
+             signer-record-p-of-create-next-new
+             signer-record-p-of-create-next-old))
 
-  ;; receive-certificate:
+  ;; receive:
 
-  (defruled signer-record-p-of-receive-certificate-next
+  (defruled signer-record-p-of-receive-next
     (implies (and (set::in signer (correct-addresses systate))
                   (signer-record-p (certificate->author cert)
                                    (certificate->round cert)
                                    (get-validator-state signer systate))
-                  (receive-certificate-possiblep msg systate))
+                  (receive-possiblep msg systate))
              (signer-record-p (certificate->author cert)
                               (certificate->round cert)
                               (get-validator-state
-                               signer (receive-certificate-next msg systate))))
+                               signer (receive-next msg systate))))
     :enable (signer-record-p
-             validator-state->dag-of-receive-certificate-next
-             validator-state->buffer-of-receive-certificate-next
-             validator-state->endorsed-of-receive-certificate-next
-             certificate-with-author+round-of-insert-iff))
+             cert-with-author+round-of-insert-iff))
 
-  (defruled signer-records-p-of-receive-certificate-next
+  (defruled signer-records-p-of-receive-next
     (implies (and (signer-records-p systate)
-                  (receive-certificate-possiblep msg systate))
-             (signer-records-p (receive-certificate-next msg systate)))
-    :enable (signed-certificates-of-receive-certificate-next
-             signer-record-p-of-receive-certificate-next
+                  (receive-possiblep msg systate))
+             (signer-records-p (receive-next msg systate)))
+    :enable (signed-certs-of-receive-next
+             signer-record-p-of-receive-next
              signer-records-p
              signer-records-p-necc))
 
-  ;; store-certificate:
+  ;; store:
 
-  (defruled signer-record-p-of-store-certificate-next
+  (defruled signer-record-p-of-store-next
     (implies (and (set::in signer (correct-addresses systate))
                   (signer-record-p (certificate->author cert)
                                    (certificate->round cert)
                                    (get-validator-state signer systate))
-                  (store-certificate-possiblep val1 cert1 systate))
+                  (store-possiblep val1 cert1 systate))
              (signer-record-p (certificate->author cert)
                               (certificate->round cert)
                               (get-validator-state
-                               signer (store-certificate-next val1
-                                                              cert1
-                                                              systate))))
+                               signer (store-next val1
+                                                  cert1
+                                                  systate))))
     :enable (signer-record-p
-             validator-state->dag-of-store-certificate-next
-             validator-state->buffer-of-store-certificate-next
-             validator-state->endorsed-of-store-certificate-next
-             certificate-with-author+round-of-insert-iff
-             certificate-with-author+round-of-delete))
+             validator-state->dag-of-store-next
+             validator-state->endorsed-of-store-next
+             cert-with-author+round-of-insert-iff))
 
-  (defruled signer-records-p-of-store-certificate-next
+  (defruled signer-records-p-of-store-next
     (implies (and (signer-records-p systate)
-                  (store-certificate-possiblep val cert systate))
-             (signer-records-p (store-certificate-next val cert systate)))
-    :enable (signed-certificates-of-store-certificate-next
-             signer-record-p-of-store-certificate-next
+                  (store-possiblep val cert systate))
+             (signer-records-p (store-next val cert systate)))
+    :enable (signed-certs-of-store-next
+             signer-record-p-of-store-next
              signer-records-p
              signer-records-p-necc))
 
-  ;; advance-round:
+  ;; advance:
 
-  (defruled signer-record-p-of-advance-round-next
+  (defruled signer-record-p-of-advance-next
     (implies (and (set::in signer (correct-addresses systate))
                   (signer-record-p (certificate->author cert)
                                    (certificate->round cert)
                                    (get-validator-state signer systate))
-                  (advance-round-possiblep val systate))
+                  (advance-possiblep val systate))
              (signer-record-p (certificate->author cert)
                               (certificate->round cert)
                               (get-validator-state
-                               signer (advance-round-next val systate))))
-    :enable (signer-record-p
-             validator-state->dag-of-advance-round-next
-             validator-state->buffer-of-advance-round-next
-             validator-state->endorsed-of-advance-round-next))
+                               signer (advance-next val systate))))
+    :enable signer-record-p)
 
-  (defruled signer-records-p-of-advance-round-next
+  (defruled signer-records-p-of-advance-next
     (implies (and (signer-records-p systate)
-                  (advance-round-possiblep val systate))
-             (signer-records-p (advance-round-next val systate)))
-    :enable (signed-certificates-of-advance-round-next
-             signer-record-p-of-advance-round-next
+                  (advance-possiblep val systate))
+             (signer-records-p (advance-next val systate)))
+    :enable (signed-certs-of-advance-next
+             signer-record-p-of-advance-next
              signer-records-p
              signer-records-p-necc))
 
-  ;; commit-anchors:
+  ;; commit:
 
-  (defruled signer-record-p-of-commit-anchors-next
+  (defruled signer-record-p-of-commit-next
     (implies (and (set::in signer (correct-addresses systate))
                   (signer-record-p (certificate->author cert)
                                    (certificate->round cert)
                                    (get-validator-state signer systate))
-                  (commit-anchors-possiblep val systate))
+                  (commit-possiblep val systate))
              (signer-record-p (certificate->author cert)
                               (certificate->round cert)
                               (get-validator-state
-                               signer (commit-anchors-next val systate))))
-    :enable (signer-record-p
-             validator-state->dag-of-commit-anchors-next
-             validator-state->buffer-of-commit-anchors-next
-             validator-state->endorsed-of-commit-anchors-next))
+                               signer (commit-next val systate))))
+    :enable signer-record-p)
 
-  (defruled signer-records-p-of-commit-anchors-next
+  (defruled signer-records-p-of-commit-next
     (implies (and (signer-records-p systate)
-                  (commit-anchors-possiblep val systate))
-             (signer-records-p (commit-anchors-next val systate)))
-    :enable (signed-certificates-of-commit-anchors-next
-             signer-record-p-of-commit-anchors-next
+                  (commit-possiblep val systate))
+             (signer-records-p (commit-next val systate)))
+    :enable (signed-certs-of-commit-next
+             signer-record-p-of-commit-next
              signer-records-p
              signer-records-p-necc))
 
-  ;; timer-expires:
+  ;; timeout:
 
-  (defruled signer-record-p-of-timer-expires-next
+  (defruled signer-record-p-of-timeout-next
     (implies (and (set::in signer (correct-addresses systate))
                   (signer-record-p (certificate->author cert)
                                    (certificate->round cert)
                                    (get-validator-state signer systate))
-                  (timer-expires-possiblep val systate))
+                  (timeout-possiblep val systate))
              (signer-record-p (certificate->author cert)
                               (certificate->round cert)
                               (get-validator-state
-                               signer (timer-expires-next val systate))))
-    :enable (signer-record-p
-             validator-state->dag-of-timer-expires-next
-             validator-state->buffer-of-timer-expires-next
-             validator-state->endorsed-of-timer-expires-next))
+                               signer (timeout-next val systate))))
+    :enable signer-record-p)
 
-  (defruled signer-records-p-of-timer-expires-next
+  (defruled signer-records-p-of-timeout-next
     (implies (and (signer-records-p systate)
-                  (timer-expires-possiblep val systate))
-             (signer-records-p (timer-expires-next val systate)))
-    :enable (signed-certificates-of-timer-expires-next
-             signer-record-p-of-timer-expires-next
+                  (timeout-possiblep val systate))
+             (signer-records-p (timeout-next val systate)))
+    :enable (signed-certs-of-timeout-next
+             signer-record-p-of-timeout-next
              signer-records-p
              signer-records-p-necc))
 
@@ -400,21 +374,14 @@
           reachable from an initial state via a sequence of events."
 
   (defruled signer-records-p-of-events-next
-    (implies (and (system-statep systate)
-                  (signer-records-p systate)
+    (implies (and (signer-records-p systate)
                   (events-possiblep events systate))
              (signer-records-p (events-next events systate)))
     :induct t
-    :disable ((:e tau-system))
     :enable (events-possiblep
-             events-next
-             signer-records-p-of-event-next))
+             events-next))
 
   (defruled signer-records-p-when-reachable
-    (implies (and (system-statep systate)
-                  (system-initp systate)
+    (implies (and (system-initp systate)
                   (events-possiblep events systate))
-             (signer-records-p (events-next events systate)))
-    :disable ((:e tau-system))
-    :enable (signer-records-p-when-init
-             signer-records-p-of-events-next)))
+             (signer-records-p (events-next events systate)))))
