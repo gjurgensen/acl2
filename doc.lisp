@@ -105255,6 +105255,13 @@ Heuristic and Efficiency Improvements
 
 Bug Fixes
 
+  A Lisp error is now avoided when saving event-data (see
+  [saving-event-data] and submitting certain ill-formed attempts at
+  [events].  Thanks to Eric Smith for sending the following example.
+
+    (assign event-data-fal 'event-data-fal)
+    (defuns foo (x) x)
+
 
 Changes at the System Level
 

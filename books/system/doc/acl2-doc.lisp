@@ -107925,6 +107925,15 @@ it."
 
  <h3>Bug Fixes</h3>
 
+ <p>A Lisp error is now avoided when saving event-data (see @(see
+ saving-event-data) and submitting certain ill-formed attempts at @(see
+ events).  Thanks to Eric Smith for sending the following example.</p>
+
+ @({
+ (assign event-data-fal 'event-data-fal)
+ (defuns foo (x) x)
+ })
+
  <h3>Changes at the System Level</h3>
 
  <h3>EMACS Support</h3>
