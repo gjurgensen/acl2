@@ -9,7 +9,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(in-package "ALEOBFT-DYNAMIC")
+(in-package "ALEOBFT-STAKE")
 
 (include-book "ordered-even-blocks")
 (include-book "nonforking-blockchains-def-and-init")
@@ -37,7 +37,7 @@
    (xdoc::p
     "Here we formulate this invariant,
      and we prove that it is a consequence of
-     the non-forking blockchains invariant.
+     the invariant that blockchains do not non fork.
      We also need the already proved invariant that
      rounds in blockchains are even and strictly increasing.")
    (xdoc::p
@@ -82,7 +82,7 @@
    (xdoc::p
     "Here we define the invariant,
      and we prove that is is implied by other invariants.
-     In @(see same-committees) we prove that
+     Elsewhere we prove that
      this invariant holds in every reachable state."))
   :order-subtopics t
   :default-parent t)
@@ -108,8 +108,10 @@
                     (validator-state->blockchain
                      (get-validator-state val1 systate))
                     (validator-state->blockchain
-                     (get-validator-state val2 systate))
-                    (all-addresses systate)))))
+                     (get-validator-state val2 systate)))))
+  ///
+  (fty::deffixequiv-sk same-committees-p
+    :args ((systate system-statep))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -118,7 +120,7 @@
   :long
   (xdoc::topstring
    (xdoc::p
-    "As explained in @(see same-committees),
+    "As explained in @(see same-committees-def-and-implied),
      the interesting case of the proof is that of
      a longer blockchain extending a shorter blockchain.
      In @(tsee lists-noforkp),
@@ -203,7 +205,8 @@
      if the round is after the last one,
      no block is removed.")
    (xdoc::p
-    "With reference to the explanation in @(see same-committees),
+    "With reference to the explanation in
+     @(see same-committees-def-and-implied),
      this theorem will be used to show that
      trimming the shorter blockchain does not change it."))
   (implies (> (pos-fix round)
@@ -247,7 +250,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defrule bonded-committee-at-round-loop-to-trim-blocks-for-round
+(defruled bonded-committee-at-round-loop-to-trim-blocks-for-round
   :short "Rephrasing of @(tsee bonded-committee-at-round)
           in terms of @(tsee trim-blocks-for-round);
           part 1 of 2."
@@ -279,19 +282,17 @@
      just so that we can then simplify them to the same thing."))
   (implies (>= (pos-fix round1)
                (pos-fix round))
-           (equal (bonded-committee-at-round-loop round blocks all-vals)
+           (equal (bonded-committee-at-round-loop round blocks)
                   (bonded-committee-at-round-loop
                    round
-                   (trim-blocks-for-round round1 blocks)
-                   all-vals)))
-  :rule-classes nil
+                   (trim-blocks-for-round round1 blocks))))
   :induct t
   :enable (trim-blocks-for-round
            bonded-committee-at-round-loop))
 
 ;;;;;;;;;;;;;;;;;;;;
 
-(defrule bonded-committee-at-round-to-trim-blocks-for-round
+(defruled bonded-committee-at-round-to-trim-blocks-for-round
   :short "Rephrasing of @(tsee bonded-committee-at-round)
           in terms of @(tsee trim-blocks-for-round);
           part 2 of 2."
@@ -309,15 +310,13 @@
      the committee is in fact calculable.
      This hypothesis will be satisfied in our main theorem:
      see the inner implication in @(tsee same-committees-p)."))
-  (implies (and (bonded-committee-at-round round blocks all-vals)
+  (implies (and (bonded-committee-at-round round blocks)
                 (>= (pos-fix round1)
                     (pos-fix round)))
-           (equal (bonded-committee-at-round round blocks all-vals)
+           (equal (bonded-committee-at-round round blocks)
                   (bonded-committee-at-round-loop
                    round
-                   (trim-blocks-for-round round1 blocks)
-                   all-vals)))
-  :rule-classes nil
+                   (trim-blocks-for-round round1 blocks))))
   :use bonded-committee-at-round-loop-to-trim-blocks-for-round
   :enable bonded-committee-at-round)
 
@@ -457,10 +456,10 @@
                        (nthcdr (- (len blocks2)
                                   (len blocks1))
                                blocks2))
-                (bonded-committee-at-round round blocks1 all-vals)
-                (bonded-committee-at-round round blocks2 all-vals))
-           (equal (bonded-committee-at-round round blocks1 all-vals)
-                  (bonded-committee-at-round round blocks2 all-vals)))
+                (bonded-committee-at-round round blocks1)
+                (bonded-committee-at-round round blocks2))
+           (equal (bonded-committee-at-round round blocks1)
+                  (bonded-committee-at-round round blocks2)))
   :use ((:instance bonded-committee-at-round-to-trim-blocks-for-round
                    (blocks blocks1)
                    (round1 (block->round (nth (1- (- (len blocks2)
@@ -533,10 +532,10 @@
                        (nthcdr (- (len blocks2)
                                   (len blocks1))
                                blocks2))
-                (active-committee-at-round round blocks1 all-vals)
-                (active-committee-at-round round blocks2 all-vals))
-           (equal (active-committee-at-round round blocks1 all-vals)
-                  (active-committee-at-round round blocks2 all-vals)))
+                (active-committee-at-round round blocks1)
+                (active-committee-at-round round blocks2))
+           (equal (active-committee-at-round round blocks1)
+                  (active-committee-at-round round blocks2)))
   :enable (active-committee-at-round
            same-bonded-committees-longer-shorter))
 
@@ -567,10 +566,10 @@
   (implies (and (lists-noforkp blocks1 blocks2)
                 (blocks-ordered-even-p blocks1)
                 (blocks-ordered-even-p blocks2)
-                (active-committee-at-round round blocks1 all-vals)
-                (active-committee-at-round round blocks2 all-vals))
-           (equal (equal (active-committee-at-round round blocks1 all-vals)
-                         (active-committee-at-round round blocks2 all-vals))
+                (active-committee-at-round round blocks1)
+                (active-committee-at-round round blocks2))
+           (equal (equal (active-committee-at-round round blocks1)
+                         (active-committee-at-round round blocks2))
                   t))
   :enable (lists-noforkp
            same-active-committees-longer-shorter))
