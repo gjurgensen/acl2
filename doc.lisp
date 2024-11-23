@@ -167378,10 +167378,10 @@ Subtopics
   "(meta) run instructions without prover output
 
     Example:
-    (quiet induct prove)
+    (quiet! induct prove)
 
     General Form:
-    (quiet &rest instruction-list)
+    (quiet! &rest instruction-list)
 
   Run the [47minstruction-list[0m through the top-level loop with no output.
   See [ACL2-pc::quiet]; the two commands are equivalent, except that
