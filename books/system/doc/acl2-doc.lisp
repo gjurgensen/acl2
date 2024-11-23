@@ -167982,10 +167982,10 @@ run instructions without prover output"
 run instructions without prover output"
   :long "@({
   Example:
-  (quiet induct prove)
+  (quiet! induct prove)
 
   General Form:
-  (quiet &rest instruction-list)
+  (quiet! &rest instruction-list)
  })
 
  <p>Run the @('instruction-list') through the top-level loop with no output.
