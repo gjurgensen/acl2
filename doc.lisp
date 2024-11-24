@@ -115112,6 +115112,29 @@ Subtopics
   if [47mj[0m is not a natural, then [47mk[0m is in [47m(nats-below j)[0m precisely if [47mk[0m
   is [47m0[0m.
 
+  The one weakness of the rule above is that it only rewrites [47m(member x
+  (nats-below y))[0m when an instance of that target term occurs in a
+  propositional setting, e.g., when the governing equivalence
+  relation is [47miff[0m.  But, thanks to Andrei Koltsov, an even stronger
+  version is available as an unconditional [47mequal[0mity rewrite:
+
+    (defthm member-nats-below-stronger
+      (equal (member x (nats-below y))
+             (if (natp x)
+                 (if (natp y)
+                     (if (<= x y)
+                         (nats-below x)
+                         nil)
+                     (if (= x 0) '(0) nil))
+                 nil)))
+
+  The key observation is that when [47mx[0m and [47my[0m are both naturals and [47m(<= x
+  y)[0m, the result that [47mmember[0m computes can be expressed with
+  [47mnats-below[0m.  You may wonder whether this stronger rule allows the
+  immediate proof of the earlier [47mmember-nats-below-strong[0m and the
+  answer is yes, because from the definition of [47mnats-below[0m ACL2 has
+  observed that [47m(nats-below x)[0m is a [47mcons[0m whenever [47mx[0m is a natural.
+
   Use [47mif[0m to lay out the cases you must consider, if you can think of a
   simpler, equivalent expression for every possible case.
 
