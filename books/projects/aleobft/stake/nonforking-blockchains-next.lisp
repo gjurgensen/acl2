@@ -9,7 +9,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(in-package "ALEOBFT-DYNAMIC")
+(in-package "ALEOBFT-STAKE")
 
 (include-book "nonforking-anchors-def-and-init-and-next")
 (include-book "blockchain-redundant-def-and-init-and-next")
@@ -32,8 +32,8 @@
      the preservation of blockchain non-forking is proved
      separately from its definition and establishment proof,
      as done for certificate non-equivocation
-     (see @(see unequivocal-accepted-certificates-def-and-init)
-     and @(see unequivocal-accepted-certificates-next)),
+     (see @(see unequivocal-dags-def-and-init)
+     and @(see unequivocal-dags-next)),
      due to the need for simultaneous induction.
      Although it would be possible to prove the non-forking of blockchains
      from other invariants, particularly the non-forking of anchors,
@@ -44,7 +44,7 @@
      we need to prove the preservation of blockchain non-forking
      from old state to new state.")
    (xdoc::p
-    "In @(see nonforking-blockchains) we prove that
+    "Elsewhere we prove that
      the invariant holds in every reachable state."))
   :order-subtopics t
   :default-parent t)
@@ -58,7 +58,7 @@
   :long
   (xdoc::topstring
    (xdoc::p
-    "The only event that may modify blockchains is @('commit-anchors').
+    "The only event that may modify blockchains is @('commit').
      To prove that blockchains in the new state do not fork,
      we do not need to assume that in the old state:
      it suffices to assume the non-forking of anchors in the old state,
@@ -71,69 +71,59 @@
      that lifts the non-forking of two anchor sequences
      to the non-forking of two blockchains
      calculated from the anchors from two DAGs.
-     In @('lists-noforkp-of-blockchain-of-commit-anchors-next'),
+     In @('lists-noforkp-of-blockchain-of-commit-next'),
      which provides most of the desired proof,
      we instantiate @('lists-noforkp-of-calculate-blockchain-when-anchors')
      with the committed anchors in the new state,
      and the DAGs in the new state, which are the same as in the old state
-     (@('commit-anchors') does not change any DAGs).
-     We disable tau to make the proof more explicit
-     in its use of some of the already proved invariant preservation theorems.
+     (@('commit') does not change any DAGs).
      We need to use the redundancy of the blockchains invariant
      to rephrase the blockchains in terms of @(tsee calculate-blockchain),
      so that @('lists-noforkp-of-calculate-blockchain-when-anchors') applies.
-     The main theorem @('nonforking-blockchains-p-of-commit-anchors-next')
+     The main theorem @('nonforking-blockchains-p-of-commit-next')
      is then proved easily
-     from @('lists-noforkp-of-blockchain-of-commit-anchors-next').")
+     from @('lists-noforkp-of-blockchain-of-commit-next').")
    (xdoc::p
     "The other five kinds of events do not modify the blockchain,
      and thus the preservation of non-forking is easy to prove."))
 
-  ;; create-certificate:
+  ;; create:
 
-  (defruled nonforking-blockchains-p-of-create-certificate-next
+  (defruled nonforking-blockchains-p-of-create-next
     (implies (and (nonforking-blockchains-p systate)
-                  (create-certificate-possiblep cert systate))
-             (nonforking-blockchains-p
-              (create-certificate-next cert systate)))
+                  (create-possiblep cert systate))
+             (nonforking-blockchains-p (create-next cert systate)))
     :enable (nonforking-blockchains-p
-             nonforking-blockchains-p-necc
-             validator-state->blockchain-of-create-certificate-next))
+             nonforking-blockchains-p-necc))
 
-  ;; receive-certificate:
+  ;; receive:
 
-  (defruled nonforking-blockchains-p-of-receive-certificate-next
+  (defruled nonforking-blockchains-p-of-receive-next
     (implies (and (nonforking-blockchains-p systate)
-                  (receive-certificate-possiblep msg systate))
-             (nonforking-blockchains-p
-              (receive-certificate-next msg systate)))
+                  (receive-possiblep msg systate))
+             (nonforking-blockchains-p (receive-next msg systate)))
     :enable (nonforking-blockchains-p
-             nonforking-blockchains-p-necc
-             validator-state->blockchain-of-receive-certificate-next))
+             nonforking-blockchains-p-necc))
 
-  ;; store-certificate:
+  ;; store:
 
-  (defruled nonforking-blockchains-p-of-store-certificate-next
+  (defruled nonforking-blockchains-p-of-store-next
     (implies (and (nonforking-blockchains-p systate)
-                  (store-certificate-possiblep val cert systate))
-             (nonforking-blockchains-p
-              (store-certificate-next val cert systate)))
+                  (store-possiblep val cert systate))
+             (nonforking-blockchains-p (store-next val cert systate)))
     :enable (nonforking-blockchains-p
-             nonforking-blockchains-p-necc
-             validator-state->blockchain-of-store-certificate-next))
+             nonforking-blockchains-p-necc))
 
-  ;; advance-round:
+  ;; advance:
 
-  (defruled nonforking-blockchains-p-of-advance-round-next
+  (defruled nonforking-blockchains-p-of-advance-next
     (implies (and (nonforking-blockchains-p systate)
-                  (advance-round-possiblep val systate))
-             (nonforking-blockchains-p
-              (advance-round-next val systate)))
+                  (advance-possiblep val systate))
+             (nonforking-blockchains-p (advance-next val systate)))
     :enable (nonforking-blockchains-p
-             nonforking-blockchains-p-necc
-             validator-state->blockchain-of-advance-round-next))
+             nonforking-blockchains-p-necc))
 
-  ;; commit-anchors:
+  ;; commit:
 
   (defruled lists-noforkp-of-calculate-blockchain-when-anchors
     (implies (and (lists-noforkp anchors1 anchors2)
@@ -157,131 +147,120 @@
           (:instance calculate-blockchain-of-unequivocal-dags
                      (anchors anchors2))))
 
-  (defruled lists-noforkp-of-blockchain-of-commit-anchors-next
-    (implies (and (nonforking-anchors-p systate)
-                  (blockchain-redundant-p systate)
-                  (unequivocal-accepted-certificates-p systate)
-                  (backward-closed-p systate)
-                  (ordered-even-p systate)
+  (defruled lists-noforkp-of-blockchain-of-commit-next
+    (implies (and (backward-closed-p systate)
                   (last-blockchain-round-p systate)
-                  (accepted-certificate-committee-p systate)
-                  (omni-paths-p systate)
-                  (last-anchor-present-p systate)
+                  (ordered-even-p systate)
+                  (dag-committees-p systate)
+                  (unequivocal-dags-p systate)
                   (same-committees-p systate)
                   (signer-quorum-p systate)
                   (previous-quorum-p systate)
+                  (last-anchor-present-p systate)
+                  (omni-paths-p systate)
+                  (nonforking-anchors-p systate)
                   (committed-redundant-p systate)
-                  (commit-anchors-possiblep val systate)
+                  (blockchain-redundant-p systate)
+                  (commit-possiblep val systate)
+                  (addressp val)
                   (set::in val1 (correct-addresses systate))
                   (set::in val2 (correct-addresses systate)))
              (lists-noforkp
               (validator-state->blockchain
-               (get-validator-state
-                val1 (commit-anchors-next val systate)))
+               (get-validator-state val1 (commit-next val systate)))
               (validator-state->blockchain
-               (get-validator-state
-                val2 (commit-anchors-next val systate)))))
-    :disable ((:e tau-system))
-    :enable (nonforking-anchors-p-of-commit-anchors-next
-             blockchain-redundant-p-of-commit-anchors-next
+               (get-validator-state val2 (commit-next val systate)))))
+    :enable (nonforking-anchors-p-of-commit-next
+             blockchain-redundant-p-of-commit-next
              validator-blockchain-redundant-p
-             validator-state->dag-of-commit-anchors-next
-             certificate-set-unequivocalp-when-unequivocal-accepted
-             certificate-sets-unequivocalp-when-unequivocal-accepted
+             unequivocal-dags-p-necc
+             unequivocal-dags-p-necc-single
              backward-closed-p-necc
-             last-anchor-present-p-of-commit-anchors-next)
+             last-anchor-present-p-of-commit-next)
     :use ((:instance nonforking-anchors-p-necc
-                     (systate (commit-anchors-next val systate)))
+                     (systate (commit-next val systate)))
           (:instance blockchain-redundant-p-necc
                      (val val1)
-                     (systate (commit-anchors-next val systate)))
+                     (systate (commit-next val systate)))
           (:instance blockchain-redundant-p-necc
                      (val val2)
-                     (systate (commit-anchors-next val systate)))
+                     (systate (commit-next val systate)))
           (:instance lists-noforkp-of-calculate-blockchain-when-anchors
                      (anchors1 (committed-anchors
                                 (get-validator-state
-                                 val1 (commit-anchors-next val systate))
-                                (all-addresses systate)))
+                                 val1 (commit-next val systate))))
                      (anchors2 (committed-anchors
                                 (get-validator-state
-                                 val2 (commit-anchors-next val systate))
-                                (all-addresses systate)))
+                                 val2 (commit-next val systate))))
                      (dag1 (validator-state->dag
                             (get-validator-state val1 systate)))
                      (dag2 (validator-state->dag
                             (get-validator-state val2 systate))))
           (:instance certificates-dag-paths-p-of-committed-anchors
                      (vstate (get-validator-state
-                              val1 (commit-anchors-next val systate)))
-                     (all-vals (all-addresses systate)))
+                              val1 (commit-next val systate))))
           (:instance certificates-dag-paths-p-of-committed-anchors
                      (vstate (get-validator-state
-                              val2 (commit-anchors-next val systate)))
-                     (all-vals (all-addresses systate)))
+                              val2 (commit-next val systate))))
           (:instance last-anchor-present-p-necc
                      (val val1)
-                     (systate (commit-anchors-next val systate)))
+                     (systate (commit-next val systate)))
           (:instance last-anchor-present-p-necc
                      (val val2)
-                     (systate (commit-anchors-next val systate)))
+                     (systate (commit-next val systate)))
           (:instance last-anchor-in-dag
                      (vstate (get-validator-state
-                              val1 (commit-anchors-next val systate)))
-                     (all-vals (all-addresses systate)))
+                              val1 (commit-next val systate))))
           (:instance last-anchor-in-dag
                      (vstate (get-validator-state
-                              val2 (commit-anchors-next val systate)))
-                     (all-vals (all-addresses systate)))))
+                              val2 (commit-next val systate))))))
 
-  (defruled nonforking-blockchains-p-of-commit-anchors-next
-    (implies (and (nonforking-anchors-p systate)
-                  (blockchain-redundant-p systate)
-                  (unequivocal-accepted-certificates-p systate)
-                  (backward-closed-p systate)
-                  (ordered-even-p systate)
+  (defruled nonforking-blockchains-p-of-commit-next
+    (implies (and (backward-closed-p systate)
                   (last-blockchain-round-p systate)
-                  (accepted-certificate-committee-p systate)
-                  (omni-paths-p systate)
-                  (last-anchor-present-p systate)
+                  (ordered-even-p systate)
+                  (dag-committees-p systate)
+                  (unequivocal-dags-p systate)
                   (same-committees-p systate)
                   (signer-quorum-p systate)
                   (previous-quorum-p systate)
+                  (last-anchor-present-p systate)
+                  (omni-paths-p systate)
+                  (nonforking-anchors-p systate)
                   (committed-redundant-p systate)
-                  (commit-anchors-possiblep val systate))
-             (nonforking-blockchains-p
-              (commit-anchors-next val systate)))
+                  (blockchain-redundant-p systate)
+                  (commit-possiblep val systate)
+                  (addressp val))
+             (nonforking-blockchains-p (commit-next val systate)))
     :enable (nonforking-blockchains-p
-             lists-noforkp-of-blockchain-of-commit-anchors-next))
+             lists-noforkp-of-blockchain-of-commit-next))
 
-  ;; timer-expires:
+  ;; timeout:
 
-  (defruled nonforking-blockchains-p-of-timer-expires-next
+  (defruled nonforking-blockchains-p-of-timeout-next
     (implies (and (nonforking-blockchains-p systate)
-                  (timer-expires-possiblep val systate))
-             (nonforking-blockchains-p
-              (timer-expires-next val systate)))
+                  (timeout-possiblep val systate))
+             (nonforking-blockchains-p (timeout-next val systate)))
     :enable (nonforking-blockchains-p
-             nonforking-blockchains-p-necc
-             validator-state->blockchain-of-timer-expires-next))
+             nonforking-blockchains-p-necc))
 
   ;; all events:
 
   (defruled nonforking-blockchains-p-of-event-next
     (implies (and (nonforking-blockchains-p systate)
-                  (nonforking-anchors-p systate)
-                  (blockchain-redundant-p systate)
-                  (unequivocal-accepted-certificates-p systate)
                   (backward-closed-p systate)
-                  (ordered-even-p systate)
                   (last-blockchain-round-p systate)
-                  (accepted-certificate-committee-p systate)
-                  (omni-paths-p systate)
-                  (last-anchor-present-p systate)
+                  (ordered-even-p systate)
+                  (dag-committees-p systate)
+                  (unequivocal-dags-p systate)
                   (same-committees-p systate)
                   (signer-quorum-p systate)
                   (previous-quorum-p systate)
+                  (last-anchor-present-p systate)
+                  (omni-paths-p systate)
+                  (nonforking-anchors-p systate)
                   (committed-redundant-p systate)
+                  (blockchain-redundant-p systate)
                   (event-possiblep event systate))
              (nonforking-blockchains-p (event-next event systate)))
     :enable (event-possiblep

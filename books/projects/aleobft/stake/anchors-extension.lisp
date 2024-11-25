@@ -9,10 +9,10 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(in-package "ALEOBFT-DYNAMIC")
+(in-package "ALEOBFT-STAKE")
 
-(include-book "anchors")
 (include-book "dag-omni-paths")
+(include-book "anchors")
 
 (local (include-book "arithmetic-3/top" :dir :system))
 
@@ -32,7 +32,7 @@
     "We show that all the anchors in a DAG from a later anchor
      are an extension of all the anchors from an earlier anchor.
      This relies on the property, proved in @(see dag-omni-paths),
-     that if an anchor has at least @($f+1$) successors,
+     that if an anchor has more than @($f$) voting stake,
      there are paths to it from all the certificates
      at least two rounds ahead in the same or different DAG.
      Under this condition, which is expressed by @(tsee dag-omni-paths-p),
@@ -56,7 +56,7 @@
     "This is proved by induction on
      the anchors that form the extension.
      We have two anchors, @('anchor') and @('anchor1'),
-     with the latter coming after the former.
+     with the latter coming strictly after the former.
      In order to prove this theorem by induction,
      we formulate it over a generic round @('round')
      between @('anchor') (inclusive) and @('anchor1') (exclusive),
@@ -69,11 +69,11 @@
     "(equal (cons anchor1"
     "             (collect-anchors anchor"
     "                              (- (certificate->round anchor) 2)"
-    "                              0 dag blockchain all-vals))"
+    "                              0 dag blockchain))"
     "       (append (list anchor)"
     "               (collect-anchors anchor"
     "                                (- (certificate->round anchor) 2)"
-    "                                0 dag blockchain all-vals)))")
+    "                                0 dag blockchain)))")
    (xdoc::p
     "The @(tsee cons) on the left side arises
      thanks to the @(tsee dag-omni-paths-p) hypothesis,
@@ -89,15 +89,14 @@
      expand to terms involving the same recursive calls,
      and the induction hypothesis ensures equality."))
   (implies (and (certificate-setp dag)
-                (dag-committees-p dag blockchain all-vals)
+                (dag-has-committees-p dag blockchain)
                 (set::in anchor dag)
                 (evenp (certificate->round anchor))
                 (equal (certificate->author anchor)
                        (leader-at-round (certificate->round anchor)
                                         (active-committee-at-round
                                          (certificate->round anchor)
-                                         blockchain
-                                         all-vals)))
+                                         blockchain)))
                 (dag-omni-paths-p anchor dag)
                 (set::in anchor1 dag)
                 (evenp (certificate->round anchor1))
@@ -109,39 +108,33 @@
                                    round
                                    0
                                    dag
-                                   blockchain
-                                   all-vals)
+                                   blockchain)
                   (append
                    (collect-anchors anchor1
                                     round
                                     (certificate->round anchor)
                                     dag
-                                    blockchain
-                                    all-vals)
+                                    blockchain)
                    (collect-anchors anchor
                                     (- (certificate->round anchor) 2)
                                     0
                                     dag
-                                    blockchain
-                                    all-vals))))
+                                    blockchain))))
   :induct (collect-anchors anchor1
                            round
                            (certificate->round anchor)
                            dag
-                           blockchain
-                           all-vals)
+                           blockchain)
   :enable (collect-anchors
            active-committee-at-earlier-round-when-at-later-round
            path-to-author+round-in-dag
-           certificate->round-of-path-to-author+round
            append
            evenp)
   :hints ('(:use ((:instance dag-omni-paths-p-necc
                              (cert1 anchor1)
                              (cert anchor))
-                  (:instance dag-committees-p-necc
-                             (cert anchor1)
-                             (blocks blockchain))))))
+                  (:instance dag-has-committees-p-necc
+                             (cert anchor1))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -154,29 +147,27 @@
      since @(tsee collect-all-anchors) is essentially
      a wrapper of @(tsee collect-anchors)."))
   (implies (and (certificate-setp dag)
-                (dag-committees-p dag blockchain all-vals)
+                (dag-has-committees-p dag blockchain)
                 (set::in anchor dag)
                 (evenp (certificate->round anchor))
                 (equal (certificate->author anchor)
                        (leader-at-round (certificate->round anchor)
                                         (active-committee-at-round
                                          (certificate->round anchor)
-                                         blockchain
-                                         all-vals)))
+                                         blockchain)))
                 (dag-omni-paths-p anchor dag)
                 (set::in anchor1 dag)
                 (evenp (certificate->round anchor1))
                 (< (certificate->round anchor)
                    (certificate->round anchor1)))
-           (equal (collect-all-anchors anchor1 dag blockchain all-vals)
+           (equal (collect-all-anchors anchor1 dag blockchain)
                   (append
                    (collect-anchors anchor1
                                     (- (certificate->round anchor1) 2)
                                     (certificate->round anchor)
                                     dag
-                                    blockchain
-                                    all-vals)
-                   (collect-all-anchors anchor dag blockchain all-vals))))
+                                    blockchain)
+                   (collect-all-anchors anchor dag blockchain))))
   :enable (collect-all-anchors
            evenp)
   :use (:instance collect-anchors-to-append-of-collect-anchors
@@ -206,35 +197,33 @@
                 (certificate-sets-unequivocalp dag1 dag2)
                 (dag-closedp dag1)
                 (dag-closedp dag2)
-                (dag-committees-p dag1 blockchain1 all-vals)
-                (dag-committees-p dag2 blockchain2 all-vals)
-                (same-active-committees-p blockchain1 blockchain2 all-vals)
+                (dag-has-committees-p dag1 blockchain1)
+                (dag-has-committees-p dag2 blockchain2)
+                (same-active-committees-p blockchain1 blockchain2)
                 (set::in anchor1 dag1)
                 (evenp (certificate->round anchor1))
                 (equal (certificate->author anchor1)
                        (leader-at-round (certificate->round anchor1)
                                         (active-committee-at-round
                                          (certificate->round anchor1)
-                                         blockchain1
-                                         all-vals)))
+                                         blockchain1)))
                 (dag-omni-paths-p anchor1 dag2)
                 (set::in anchor2 dag2)
                 (evenp (certificate->round anchor2))
                 (< (certificate->round anchor1)
                    (certificate->round anchor2)))
-           (equal (collect-all-anchors anchor2 dag2 blockchain2 all-vals)
+           (equal (collect-all-anchors anchor2 dag2 blockchain2)
                   (append
                    (collect-anchors anchor2
                                     (- (certificate->round anchor2) 2)
                                     (certificate->round anchor1)
                                     dag2
-                                    blockchain2
-                                    all-vals)
-                   (collect-all-anchors anchor1 dag1 blockchain1 all-vals))))
+                                    blockchain2)
+                   (collect-all-anchors anchor1 dag1 blockchain1))))
   :enable (evenp
            active-committee-at-earlier-round-when-at-later-round
            same-active-committees-p-necc
-           dag-committees-p-necc)
+           dag-has-committees-p-necc)
   :use ((:instance collect-all-anchors-to-append-of-collect-anchors
                    (dag dag2)
                    (blockchain blockchain2)
