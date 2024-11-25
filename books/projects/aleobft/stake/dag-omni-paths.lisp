@@ -9,7 +9,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(in-package "ALEOBFT-DYNAMIC")
+(in-package "ALEOBFT-STAKE")
 
 (include-book "dags")
 (include-book "successor-predecessor-intersection")
@@ -26,24 +26,26 @@
 (defxdoc+ dag-omni-paths
   :parents (correctness)
   :short "Property that certain certificates in DAGs
-          are reachable from all certificates in later rounds,
-          also in separate DAGs."
+          are reachable from all the certificates in later rounds,
+          also in different DAGs."
   :long
   (xdoc::topstring
    (xdoc::p
     "This is a core property of AleoBFT.
      Take an anchor @($A$) (or any certificate, for that matter) in a DAG,
-     with at least @($f+1$) votes
+     with more than @($f$) voting stake
      (where @($f$) is introduced in @(tsee max-faulty-for-total)),
-     i.e. at least @($f+1$) successors in the round just after @($A$).
+     i.e. where the total stake of successors in the round just after @($A$)
+     is more than  @($f$).
      Then if there is a(ny) certificate @($C$) two rounds after @($A$),
-     it must have @($n-f$) predecessors in the round just before,
-     which is the round just after @($A$).
-     Since there can be at most @($n$) certificates in that round
-     (the one just after @($A$) and just before @($C$)),
+     its predecessors in the round just before,
+     which is the same as the round just after @($A$),
+     must have at least @($n-f$) total stake.
+     Since there can be at most @($n$) total stake in that round
+     (the same round that is both just after @($A$) and just before @($C$)),
      the intersection argument in @(see successor-predecessor-intersection)
      shows that there must be a certificate @($B$) between @($A$) and @($C$).
-     That is, there is a path from @($C$) to @($A$).
+     That is, there is a path from @($C$) to @($A$), through @($B$).
      The above holds for every @($C$) two rounds after @($A$).
      Any certificate @($D$) in the round after @($C$)
      must have predecessors in the previous round,
@@ -56,13 +58,13 @@
      because it is easier to understand,
      but it also holds across two DAGs of possibly different validators.
      Given a certificate (anchor) @($A$) in DAG 1 at round @($r$),
-     with at least @($f+1$) voters for @($A$) in DAG 1 at round @($r+1$),
-     and @($n-f$) predecessors in DAG 2 at round @($r+1$),
+     with more than @($f$) voting stake for @($A$) in DAG 1 at round @($r+1$),
+     and at least @($n-f$) predecessor stake in DAG 2 at round @($r+1$),
      every certificate @($C$) in DAG 2 at round @($r+2$) or later
      has a path to @($A$), which must be also in DAG 2.
      The reason is that there must be a certificate @($B$)
-     that is both in the @($f+1$) or more voters in DAG 1
-     and in the @($n-f$) certificates in DAG 2.
+     that is both in the successors of @($A$) in DAG 1
+     and in the predecessors of @($C$) in DAG 2.
      In DAG 1, it has an edge to @($A$).
      Because of the backward closure of DAG 2,
      @($A$) must be in DAG 2 too, with an edge to it from @($B$).
@@ -76,8 +78,10 @@
    (xdoc::p
     "Here we formulate and prove this core property, for two DAGs.
      We do not need to talk about anchors specifically,
-     because @($A$) can be any certificate, not necessarily at an even round,
-     so long as it has at least @($f+1$) successors."))
+     because @($A$) can be any certificate,
+     not necessarily at an even round,
+     not necessarily a leader certificate
+     so long as it has more than @($f$) successors' stake."))
   :order-subtopics t
   :default-parent t)
 
@@ -92,7 +96,7 @@
   (xdoc::topstring
    (xdoc::p
     "This is the predicate expressing the key property that we prove here,
-     where @('cert') is the certificate with @($f+1$) or more successors.
+     where @('cert') is the certificate with more than @($f$) successors' stake.
      We universally quantify over a generic certificate @('cert1')
      whose round is greater than or equal to
      two plus the round of the given certificate @('cert').
@@ -154,14 +158,14 @@
      in the definition of @(tsee dag-omni-paths-p).")
    (xdoc::p
     "The reason why we define this predicate is that
-     we will prove @(tsee dag-omni-paths-p) by induction on rounds,
+     below we prove @(tsee dag-omni-paths-p) by induction on rounds,
      starting from two rounds just after the certificate.
      With reference to the discussion in @(see dag-omni-paths),
      @('cert') is @($A$),
      and the base case of the induction is for
      the generic certificate @($C$) two rounds after @($A$),
-     and the generic certificate @($D$) is at later rounds.
-     So we will prove that this predicate holds for every round,
+     while the generic certificate @($D$) is at later rounds.
+     So we prove below that this predicate holds for every round,
      in the induction proof."))
   (forall (cert1)
           (implies (and (set::in cert1 dag)
@@ -183,7 +187,7 @@
    (xdoc::p
     "This provides an alternative definition of @(tsee dag-omni-paths-p)
      as a quantification over the rounds of @(tsee dag-omni-paths-round-p),
-     which is convenient for our proof by induction.
+     which is convenient for our proof by induction, as mentioned above.
      We prove that it is indeed equivalent to @(tsee dag-omni-paths-p),
      which is conceptually easy but takes a few steps
      to deal with the quantifiers."))
@@ -240,7 +244,7 @@
      But since the common certificate is also in @('dag2'),
      and the two DAGs are (individually and mutually) unequivocal,
      the result of @(tsee path-to-author+round)
-     applied to the common certificate
+     applied to the common certificate (as source)
      must be the same in the two DAGs, namely @('cert1').
      So we have that @('cert1') is also in @('dag2') besides @('dag1')."))
   (implies (and (certificate-setp dag1)
@@ -254,18 +258,19 @@
                 (set::in cert2 dag2)
                 (equal (certificate->round cert2)
                        (+ 2 (certificate->round cert1)))
-                (dag-committees-p dag1 blocks1 all-vals)
-                (dag-committees-p dag2 blocks2 all-vals)
-                (same-active-committees-p blocks1 blocks2 all-vals)
-                (dag-rounds-in-committees-p dag1 blocks1 all-vals)
-                (dag-rounds-in-committees-p dag2 blocks2 all-vals)
-                (dag-predecessor-cardinality-p dag2 blocks2 all-vals)
-                (>= (set::cardinality (successors cert1 dag1))
-                    (1+ (committee-max-faulty
-                         (active-committee-at-round
-                          (1+ (certificate->round cert1))
-                          blocks1
-                          all-vals)))))
+                (dag-has-committees-p dag1 blockchain1)
+                (dag-has-committees-p dag2 blockchain2)
+                (dag-in-committees-p dag1 blockchain1)
+                (dag-in-committees-p dag2 blockchain2)
+                (same-active-committees-p blockchain1 blockchain2)
+                (dag-predecessor-quorum-p dag2 blockchain2)
+                (> (committee-members-stake
+                    (certificate-set->author-set (successors cert1 dag1))
+                    (active-committee-at-round (1+ (certificate->round cert1))
+                                               blockchain1))
+                   (committee-max-faulty-stake
+                    (active-committee-at-round (1+ (certificate->round cert1))
+                                               blockchain1))))
            (and (equal (path-to-author+round
                         (pick-successor/predecessor dag1 dag2 cert1 cert2)
                         (certificate->author cert1)
@@ -310,18 +315,19 @@
                 (set::in cert2 dag2)
                 (equal (certificate->round cert2)
                        (+ 2 (certificate->round cert1)))
-                (dag-committees-p dag1 blocks1 all-vals)
-                (dag-committees-p dag2 blocks2 all-vals)
-                (same-active-committees-p blocks1 blocks2 all-vals)
-                (dag-rounds-in-committees-p dag1 blocks1 all-vals)
-                (dag-rounds-in-committees-p dag2 blocks2 all-vals)
-                (dag-predecessor-cardinality-p dag2 blocks2 all-vals)
-                (>= (set::cardinality (successors cert1 dag1))
-                    (1+ (committee-max-faulty
-                         (active-committee-at-round
-                          (1+ (certificate->round cert1))
-                          blocks1
-                          all-vals)))))
+                (dag-has-committees-p dag1 blockchain1)
+                (dag-has-committees-p dag2 blockchain2)
+                (dag-in-committees-p dag1 blockchain1)
+                (dag-in-committees-p dag2 blockchain2)
+                (same-active-committees-p blockchain1 blockchain2)
+                (dag-predecessor-quorum-p dag2 blockchain2)
+                (> (committee-members-stake
+                    (certificate-set->author-set (successors cert1 dag1))
+                    (active-committee-at-round (1+ (certificate->round cert1))
+                                               blockchain1))
+                   (committee-max-faulty-stake
+                    (active-committee-at-round (1+ (certificate->round cert1))
+                                               blockchain1))))
            (equal (path-to-author+round cert2
                                         (certificate->author cert1)
                                         (certificate->round cert1)
@@ -359,18 +365,19 @@
                 (dag-closedp dag1)
                 (dag-closedp dag2)
                 (set::in cert dag1)
-                (dag-committees-p dag1 blocks1 all-vals)
-                (dag-committees-p dag2 blocks2 all-vals)
-                (same-active-committees-p blocks1 blocks2 all-vals)
-                (dag-rounds-in-committees-p dag1 blocks1 all-vals)
-                (dag-rounds-in-committees-p dag2 blocks2 all-vals)
-                (dag-predecessor-cardinality-p dag2 blocks2 all-vals)
-                (>= (set::cardinality (successors cert dag1))
-                    (1+ (committee-max-faulty
-                         (active-committee-at-round
-                          (1+ (certificate->round cert))
-                          blocks1
-                          all-vals)))))
+                (dag-has-committees-p dag1 blockchain1)
+                (dag-has-committees-p dag2 blockchain2)
+                (dag-in-committees-p dag1 blockchain1)
+                (dag-in-committees-p dag2 blockchain2)
+                (same-active-committees-p blockchain1 blockchain2)
+                (dag-predecessor-quorum-p dag2 blockchain2)
+                (> (committee-members-stake
+                    (certificate-set->author-set (successors cert dag1))
+                    (active-committee-at-round (1+ (certificate->round cert))
+                                               blockchain1))
+                   (committee-max-faulty-stake
+                    (active-committee-at-round (1+ (certificate->round cert))
+                                               blockchain1))))
            (dag-omni-paths-round-p (+ 2 (certificate->round cert))
                                    cert
                                    dag2))
@@ -393,20 +400,20 @@
     "Having proved the base case in @(tsee dag-omni-paths-round-p-base-case),
      we need to prove the step case, which is done via this theorem first.
      This theorem says that
-     if every certificate in round @($r$) has a path to @($A),
-     then every certificate in round @($r+1$) has a path to @($A$);
+     if every certificate in round @($r'$) has a path to @($A),
+     then every certificate in round @($r'+1$) has a path to @($A$);
      here @('cert') is @($A$).
-     The reason is that every certificate in round @($r+1$)
+     The reason is that every certificate in round @($r'+1$)
      has a path to its predecessors,
      and each such predecessor has a path to @($A$) by the induction hypothesis
      (which is stated as an explicit hypothesis in this theorem).
      We use the transitivity of DAG paths,
-     to compose the path from round @($r+1$) to @($r$)
-     with the path from round @($r$) to certificate @($A$).
+     to compose the path from round @($r'+1$) to @($r'$)
+     with the path from round @($r'$) to certificate @($A$).
      We need to choose a specific predecessor,
      and we pick the first one (i.e. @(tsee set::head));
-     its existence is guaranteed by @(tsee dag-predecessor-cardinality-p),
-     and the fact that the quorum number is always positive.")
+     its existence is guaranteed by @(tsee dag-predecessor-quorum-p),
+     and the fact that the quorum stake is always positive.")
    (xdoc::p
     "Although our proof by induction involves two DAGs,
      this theorem only involves one,
@@ -432,7 +439,7 @@
   (implies (and (certificate-setp dag)
                 (certificate-set-unequivocalp dag)
                 (dag-closedp dag)
-                (dag-predecessor-cardinality-p dag blocks all-vals)
+                (dag-predecessor-quorum-p dag blockchain)
                 cert ; weaker than (set::in cert dag)
                 (posp round)
                 (dag-omni-paths-round-p round cert dag))
@@ -464,7 +471,7 @@
                            dag)))
                    (author (certificate->author cert))
                    (round (certificate->round cert))))
-  :enable (not-emptyp-predecessors-when-dag-predecessor-cardinality-p
+  :enable (not-emptyp-predecessors-when-dag-predecessor-quorum-p
            head-of-predecessors-in-predecessors
            round-of-head-of-predecessors
            head-of-predecessors-in-dag
@@ -480,7 +487,7 @@
     "This is a simple consequence of
      @(tsee dag-omni-paths-round-p-of-next-round),
      but it is formulated in a way usable in the proof by induction.
-     Instead of rounds @($r$) and @($r+1$),
+     Instead of rounds @($r'$) and @($r'+1$),
      this theorem is formulated in terms of rounds
      @($a + 2 + d$) and @($a + 2 + d + 1$),
      where @($a$) is the round of @($A$)
@@ -490,7 +497,7 @@
   (implies (and (certificate-setp dag)
                 (certificate-set-unequivocalp dag)
                 (dag-closedp dag)
-                (dag-predecessor-cardinality-p dag blocks all-vals)
+                (dag-predecessor-quorum-p dag blockchain)
                 cert ; weaker than (set::in cert dag)
                 (natp round-delta)
                 (dag-omni-paths-round-p (+ round-delta
@@ -527,19 +534,20 @@
                 (certificate-sets-unequivocalp dag1 dag2)
                 (dag-closedp dag1)
                 (dag-closedp dag2)
-                (dag-committees-p dag1 blocks1 all-vals)
-                (dag-committees-p dag2 blocks2 all-vals)
-                (same-active-committees-p blocks1 blocks2 all-vals)
-                (dag-rounds-in-committees-p dag1 blocks1 all-vals)
-                (dag-rounds-in-committees-p dag2 blocks2 all-vals)
-                (dag-predecessor-cardinality-p dag2 blocks2 all-vals)
+                (dag-has-committees-p dag1 blockchain1)
+                (dag-has-committees-p dag2 blockchain2)
+                (dag-in-committees-p dag1 blockchain1)
+                (dag-in-committees-p dag2 blockchain2)
+                (same-active-committees-p blockchain1 blockchain2)
+                (dag-predecessor-quorum-p dag2 blockchain2)
                 (set::in cert dag1)
-                (>= (set::cardinality (successors cert dag1))
-                    (1+ (committee-max-faulty
-                         (active-committee-at-round
-                          (1+ (certificate->round cert))
-                          blocks1
-                          all-vals))))
+                (> (committee-members-stake
+                    (certificate-set->author-set (successors cert dag1))
+                    (active-committee-at-round (1+ (certificate->round cert))
+                                               blockchain1))
+                   (committee-max-faulty-stake
+                    (active-committee-at-round (1+ (certificate->round cert))
+                                               blockchain1)))
                 (natp round-delta))
            (dag-omni-paths-round-p (+ round-delta
                                       (+ 2 (certificate->round cert)))
@@ -550,20 +558,20 @@
   :hints ('(:use (dag-omni-paths-round-p-base-case
                   (:instance dag-omni-paths-round-p-step-case
                              (round-delta (1- round-delta))
-                             (blocks blocks2)
+                             (blockchain blockchain2)
                              (dag dag2))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defruled dag-omni-paths-round-p-holds
   :short "Proof that @(tsee dag-omni-paths-round-p) holds
-          for every round @($r \\geq a+2$)."
+          for every round @($r' \\geq a+2$)."
   :long
   (xdoc::topstring
    (xdoc::p
     "This is just a reformulation of
      @(tsee dag-omni-paths-round-p-of-round-delta),
-     with a generic round @($r$), constrained to be @($a+2$) or more.
+     with a generic round @($r'$), constrained to be @($a+2$) or more.
      This is an appropriate form for our final proof,
      in @(tsee dag-omni-paths-p-holds)."))
   (implies (and (certificate-setp dag1)
@@ -573,19 +581,20 @@
                 (certificate-sets-unequivocalp dag1 dag2)
                 (dag-closedp dag1)
                 (dag-closedp dag2)
-                (dag-committees-p dag1 blocks1 all-vals)
-                (dag-committees-p dag2 blocks2 all-vals)
-                (same-active-committees-p blocks1 blocks2 all-vals)
-                (dag-rounds-in-committees-p dag1 blocks1 all-vals)
-                (dag-rounds-in-committees-p dag2 blocks2 all-vals)
-                (dag-predecessor-cardinality-p dag2 blocks2 all-vals)
+                (dag-has-committees-p dag1 blockchain1)
+                (dag-has-committees-p dag2 blockchain2)
+                (dag-in-committees-p dag1 blockchain1)
+                (dag-in-committees-p dag2 blockchain2)
+                (same-active-committees-p blockchain1 blockchain2)
+                (dag-predecessor-quorum-p dag2 blockchain2)
                 (set::in cert dag1)
-                (>= (set::cardinality (successors cert dag1))
-                    (1+ (committee-max-faulty
-                         (active-committee-at-round
-                          (1+ (certificate->round cert))
-                          blocks1
-                          all-vals))))
+                (> (committee-members-stake
+                    (certificate-set->author-set (successors cert dag1))
+                    (active-committee-at-round (1+ (certificate->round cert))
+                                               blockchain1))
+                   (committee-max-faulty-stake
+                    (active-committee-at-round (1+ (certificate->round cert))
+                                               blockchain1)))
                 (natp round)
                 (>= round
                     (+ 2 (certificate->round cert))))
@@ -615,19 +624,20 @@
                 (certificate-sets-unequivocalp dag1 dag2)
                 (dag-closedp dag1)
                 (dag-closedp dag2)
-                (dag-committees-p dag1 blocks1 all-vals)
-                (dag-committees-p dag2 blocks2 all-vals)
-                (same-active-committees-p blocks1 blocks2 all-vals)
-                (dag-rounds-in-committees-p dag1 blocks1 all-vals)
-                (dag-rounds-in-committees-p dag2 blocks2 all-vals)
-                (dag-predecessor-cardinality-p dag2 blocks2 all-vals)
+                (dag-has-committees-p dag1 blockchain1)
+                (dag-has-committees-p dag2 blockchain2)
+                (dag-in-committees-p dag1 blockchain1)
+                (dag-in-committees-p dag2 blockchain2)
+                (same-active-committees-p blockchain1 blockchain2)
+                (dag-predecessor-quorum-p dag2 blockchain2)
                 (set::in cert dag1)
-                (>= (set::cardinality (successors cert dag1))
-                    (1+ (committee-max-faulty
-                         (active-committee-at-round
-                          (1+ (certificate->round cert))
-                          blocks1
-                          all-vals)))))
+                (> (committee-members-stake
+                    (certificate-set->author-set (successors cert dag1))
+                    (active-committee-at-round (1+ (certificate->round cert))
+                                               blockchain1))
+                   (committee-max-faulty-stake
+                    (active-committee-at-round (1+ (certificate->round cert))
+                                               blockchain1))))
            (dag-omni-paths-p cert dag2))
   :enable (dag-omni-paths-p-alt-def
            dag-omni-paths-rounds-p)

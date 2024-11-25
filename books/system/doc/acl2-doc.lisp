@@ -114951,6 +114951,31 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  @('k') is a natural less than or equal to @('j'); if @('j') is not a natural,
  then @('k') is in @('(nats-below j)') precisely if @('k') is @('0').</p>
 
+ <p>The one weakness of the rule above is that it only rewrites @('(member
+ x (nats-below y))') when an instance of that target term occurs in a
+ propositional setting, e.g., when the governing equivalence relation is
+ @('iff').  But, thanks to Andrei Koltsov, an even stronger version is
+ available as an unconditional @('equal')ity rewrite:</p>
+
+ @({
+ (defthm member-nats-below-stronger
+   (equal (member x (nats-below y))
+          (if (natp x)
+              (if (natp y)
+                  (if (<= x y)
+                      (nats-below x)
+                      nil)
+                  (if (= x 0) '(0) nil))
+              nil)))
+ })
+
+ <p>The key observation is that when @('x') and @('y') are both naturals and
+ @('(<= x y)'), the result that @('member') computes can be expressed with
+ @('nats-below').  You may wonder whether this stronger rule allows the
+ immediate proof of the earlier @('member-nats-below-strong') and the answer is
+ yes, because from the definition of @('nats-below') ACL2 has observed that
+ @('(nats-below x)') is a @('cons') whenever @('x') is a natural.</p>
+
  <p>Use @('if') to lay out the cases you must consider, if you can think of a
  simpler, equivalent expression for every possible case.</p>
 

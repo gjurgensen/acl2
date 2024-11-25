@@ -9,7 +9,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(in-package "ALEOBFT-DYNAMIC")
+(in-package "ALEOBFT-STAKE")
 
 (include-book "certificates")
 (include-book "dags")
@@ -38,7 +38,7 @@
      it has nothing to do with correct and faulty validators;
      it only has to do with paths in DAGs.
      When an anchor @($A$) at a round @($r$)
-     has enough votes (i.e. successors) at round @($r+1$),
+     has enough voting stake from the successors at round @($r+1$),
      then if there is a certificate @($C$) at round @($r+2$)
      then there must be a certificate @($B$) at round @($r+1$)
      that is both a successor (i.e. voter) of @($A$)
@@ -62,36 +62,44 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defruled cardinality-of-successor-predecessor-intersection
-  :short "Abstract form of the intersection theorem."
+(defruled not-empty-successor-predecessor-author-intersection
+  :short "Non-empty intersection of successor and predecessor authors."
   :long
   (xdoc::topstring
    (xdoc::p
     "Here @('n') and @('f') are
      the @($n$) and @($f$) mentioned in @(tsee max-faulty-for-total).
-     Here @('successors') represents the successors of @($A$),
-     while @('predecessors') represents the predecessors of @($C$),
+     Here @('successors-vals') represents
+     the authors of the successors of @($A$),
+     while @('predecessors') represents
+     the authors of the predecessors of @($C$),
      with reference to @(see successor-predecessor-intersection).")
    (xdoc::p
-    "If the total number of successors and predecessors is bounded by @('n'),
-     there are at least @('f + 1') successors,
-     and there are @('n - f') predecessors,
-     then in order for them to have no intersection
-     there should be @('n + 1') of them,
+    "If (i) the total stake of successor and predecessor authors
+     is bounded by @('n'),
+     (ii) the total stake of the successor authors
+     is more than @('f'),
+     and (iii) the total stake of the predecessor authors
+     is at least @('n - f'),
+     then in order for the two sets to have no intersection
+     their total stake would have to be more than @('n'),
      which contradicts the first hypothesis.
      So there must be at least one in the intersection."))
-  (implies (and (<= (set::cardinality (set::union successors predecessors))
+  (implies (and (address-setp successor-vals)
+                (address-setp predecessor-vals)
+                (<= (committee-members-stake (set::union successor-vals
+                                                         predecessor-vals)
+                                             commtt)
                     n)
-                (>= (set::cardinality successors)
-                    (1+ f))
-                (equal (set::cardinality predecessors)
-                       (- n f)))
-           (>= (set::cardinality (set::intersect successors predecessors))
-               1))
-  :rule-classes :linear
-  :enable set::expand-cardinality-of-intersect
-  :disable (set::expand-cardinality-of-union
-            set::cardinality-zero-emptyp))
+                (> (committee-members-stake successor-vals commtt)
+                   f)
+                (>= (committee-members-stake predecessor-vals commtt)
+                    (- n f)))
+           (not (set::emptyp (set::intersect successor-vals
+                                             predecessor-vals))))
+  :enable committee-members-stake-of-intersect-expand
+  :use (:instance committee-members-stake-0-to-emptyp
+                  (members (set::intersect successor-vals predecessor-vals))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -101,7 +109,7 @@
   (xdoc::topstring
    (xdoc::p
     "This is used to establish
-     a hypothesis of @(tsee cardinality-of-successors+predecessors).
+     a hypothesis of @(tsee not-empty-successor-predecessor-intersection).
      If (again with reference to @(see successor-predecessor-intersection))
      @($A$) and @($C$) are two rounds apart,
      then the successors of @($A$) and the predecessors of @($C$)
@@ -123,128 +131,62 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defruled cardinality-of-successors+predecessors
-  :short "Relation between the number of successor and predecessor certificates
-          and the number of their authors."
+(defruled not-empty-successor-predecessor-intersection
+  :short "Non-empty intersection of successors and predecessors"
   :long
   (xdoc::topstring
    (xdoc::p
-    "This is used in
-     the proof of @(tsee cardinality-of-successors+predecessors-bound).
-     Because of non-equivocation,
-     specifically that the two DAGs are individually and mutually unequivocal,
-     their union is also unequivocal.
-     So the union of successors and predecessors is unequivocal,
-     and since these certificates all have the same round,
-     there is a bijection between these certificates and their authors."))
+    "This lifts @(tsee not-empty-successor-predecessor-author-intersection)
+     from the authors,
+     over which stake is calculated,
+     to the certificates,
+     which are the ones whose non-empty intersection we need to show.
+     With reference to @(see successor-predecessor-intersection),
+     here @('cert1') is @($A$) and @('cert2') is @($C$);
+     we show that the successors of @($A$) and the predecessors of @($C$)
+     have a non-empty intersection.
+     The key theorem used in the proof is
+     @('certs-same-round-unequiv-intersect-when-authors-intersect')."))
   (implies (and (certificate-setp dag1)
                 (certificate-setp dag2)
                 (certificate-set-unequivocalp dag1)
                 (certificate-set-unequivocalp dag2)
                 (certificate-sets-unequivocalp dag1 dag2)
                 (equal (certificate->round cert2)
-                       (+ 2 (certificate->round cert1))))
-           (equal (set::cardinality
-                   (set::union (successors cert1 dag1)
-                               (predecessors cert2 dag2)))
-                  (set::cardinality
-                   (certificate-set->author-set
-                    (set::union (successors cert1 dag1)
-                                (predecessors cert2 dag2))))))
-  :enable (cardinality-of-authors-when-unequiv-and-all-same-rounds
-           successors+predecessors-same-round
+                       (+ 2 (certificate->round cert1)))
+                (set::subset (certificate-set->author-set
+                              (successors cert1 dag1))
+                             (committee-members commtt))
+                (set::subset (certificate-set->author-set
+                              (predecessors cert2 dag2))
+                             (committee-members commtt))
+                (> (committee-members-stake
+                    (certificate-set->author-set
+                     (successors cert1 dag1))
+                    commtt)
+                   (committee-max-faulty-stake commtt))
+                (>= (committee-members-stake
+                     (certificate-set->author-set
+                      (predecessors cert2 dag2))
+                     commtt)
+                    (committee-quorum-stake commtt)))
+           (not (set::emptyp (set::intersect (successors cert1 dag1)
+                                             (predecessors cert2 dag2)))))
+  :enable (committee-quorum-stake
+           committee-total-stake
+           committee-members-stake-monotone
            certificate-set-unequivocalp-of-union
            certificate-set-unequivocalp-when-subset
            certificate-sets-unequivocalp-when-subsets
-           successors-subset-of-dag
-           predecessors-subset-of-dag)
-  :disable set::expand-cardinality-of-union)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defruled cardinality-of-successors+predecessors-bound
-  :short "Bound on the cardinality of successors and predecessors."
-  :long
-  (xdoc::topstring
-   (xdoc::p
-    "This is used to establish the first hypothesis of
-     @(tsee cardinality-of-successor-predecessor-intersection)
-     in its instantiation in
-     @(tsee successor-predecessor-intersection-not-empty).
-     Assuming that the authors of the successor and predecessor certificates
-     are all members of a committee
-     (this fact can be established from other facts,
-     when this successor-predecessor intersection property is used),
-     then clearly the total number of authors
-     is bounded by the committee size.
-     But we know from @(tsee cardinality-of-successors+predecessors)
-     that the number of authors is the same as the number of certificates,
-     and thus we obtain the desired bound on certificates."))
-  (implies (and (certificate-setp dag1)
-                (certificate-setp dag2)
-                (certificate-set-unequivocalp dag1)
-                (certificate-set-unequivocalp dag2)
-                (certificate-sets-unequivocalp dag1 dag2)
-                (equal (certificate->round cert2)
-                       (+ 2 (certificate->round cert1)))
-                (set::subset (certificate-set->author-set
-                              (successors cert1 dag1))
-                             (committee-members commtt))
-                (set::subset (certificate-set->author-set
-                              (predecessors cert2 dag2))
-                             (committee-members commtt)))
-           (<= (set::cardinality
-                (set::union (successors cert1 dag1)
-                            (predecessors cert2 dag2)))
-               (committee-total commtt)))
-  :enable (committee-total
-           cardinality-of-successors+predecessors
-           certificate-set->author-set-of-union)
-  :disable set::expand-cardinality-of-union)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defruled successor-predecessor-intersection-not-empty
-  :short "The intersection of successors and predecessors is not empty."
-  :long
-  (xdoc::topstring
-   (xdoc::p
-    "This is the main intersection theorem.
-     Mainly, we instantiate the abstract one,
-     i.e. @(tsee cardinality-of-successor-predecessor-intersection),
-     and we use @(tsee cardinality-of-successors+predecessors-bound)
-     to establish the bound hypothesis."))
-  (implies (and (certificate-setp dag1)
-                (certificate-setp dag2)
-                (certificate-set-unequivocalp dag1)
-                (certificate-set-unequivocalp dag2)
-                (certificate-sets-unequivocalp dag1 dag2)
-                (equal (certificate->round cert2)
-                       (+ 2 (certificate->round cert1)))
-                (set::subset (certificate-set->author-set
-                              (successors cert1 dag1))
-                             (committee-members commtt))
-                (set::subset (certificate-set->author-set
-                              (predecessors cert2 dag2))
-                             (committee-members commtt))
-                (>= (set::cardinality (successors cert1 dag1))
-                    (1+ (committee-max-faulty commtt)))
-                (equal (set::cardinality (predecessors cert2 dag2))
-                       (committee-quorum commtt)))
-           (not (set::emptyp (set::intersect (successors cert1 dag1)
-                                             (predecessors cert2 dag2)))))
-  :use ((:instance cardinality-of-successor-predecessor-intersection
-                   (successors (successors cert1 dag1))
-                   (predecessors (predecessors cert2 dag2))
-                   (n (committee-total commtt))
-                   (f (committee-max-faulty commtt)))
-        (:instance set::cardinality-zero-emptyp
-                   (x (set::intersect (successors cert1 dag1)
-                                      (predecessors cert2 dag2)))))
-  :enable (committee-quorum
-           cardinality-of-successors+predecessors-bound)
-  :disable (set::expand-cardinality-of-union
-            set::cardinality-zero-emptyp))
+           successors+predecessors-same-round
+           certs-same-round-unequiv-intersect-when-authors-intersect)
+  :use (:instance not-empty-successor-predecessor-author-intersection
+                  (successor-vals (certificate-set->author-set
+                                   (successors cert1 dag1)))
+                  (predecessor-vals (certificate-set->author-set
+                                     (predecessors cert2 dag2)))
+                  (n (committee-total-stake commtt))
+                  (f (committee-max-faulty-stake commtt))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -263,7 +205,7 @@
    (xdoc::p
     "We pick the first one, but the exact choice does not matter.
      We show that, under the assumptions in
-     @(tsee successor-predecessor-intersection-not-empty),
+     @(tsee not-empty-successor-predecessor-intersection),
      this function returns a certificate that is
      in the successors, in the predecessors, and in both DAGs."))
   (b* ((common (set::intersect (successors cert1 dag1)
@@ -294,7 +236,8 @@
     :use (:instance successors-subset-of-dag (cert cert1) (dag dag1))
     :enable (pick-successor/predecessor-in-successors
              set::expensive-rules)
-    :disable pick-successor/predecessor)
+    :disable (pick-successor/predecessor
+              successors-subset-of-dag))
 
   (defruled pick-successor/predecessor-in-dag2
     (implies (and (certificate-setp dag2)
@@ -304,9 +247,10 @@
     :use (:instance predecessors-subset-of-dag (cert cert2) (dag dag2))
     :enable (pick-successor/predecessor-in-predecessors
              set::expensive-rules)
-    :disable pick-successor/predecessor)
+    :disable (pick-successor/predecessor
+              predecessors-subset-of-dag))
 
-  (defruled pick-successor/predecessor-when-cardinalities
+  (defruled pick-successor/predecessor-not-nil
     (implies (and (certificate-setp dag1)
                   (certificate-setp dag2)
                   (certificate-set-unequivocalp dag1)
@@ -320,12 +264,18 @@
                   (set::subset (certificate-set->author-set
                                 (predecessors cert2 dag2))
                                (committee-members commtt))
-                  (>= (set::cardinality (successors cert1 dag1))
-                      (1+ (committee-max-faulty commtt)))
-                  (equal (set::cardinality (predecessors cert2 dag2))
-                         (committee-quorum commtt)))
+                  (> (committee-members-stake
+                      (certificate-set->author-set
+                       (successors cert1 dag1))
+                      commtt)
+                     (committee-max-faulty-stake commtt))
+                  (>= (committee-members-stake
+                       (certificate-set->author-set
+                        (predecessors cert2 dag2))
+                       commtt)
+                      (committee-quorum-stake commtt)))
              (pick-successor/predecessor dag1 dag2 cert1 cert2))
-    :use (successor-predecessor-intersection-not-empty
+    :use (not-empty-successor-predecessor-intersection
           (:instance consp-when-certificatep
                      (x (pick-successor/predecessor dag1 dag2 cert1 cert2))))
     :disable consp-when-certificatep))
@@ -341,7 +291,7 @@
      the theorems proved in @(tsee pick-successor/predecessor),
      by using stronger hypotheses on the DAGs
      that imply the specific properties used in those previous theorems.
-     The hypotheses on the DAGs are all invariants, proved elsewhere.
+     The hypotheses on the DAGs are all invariants, as proved elsewhere.
      The key properties are that the picked certificate
      is among the successors of @('cert1') in the first DAG,
      among the precedessors of @('cert2') in the second DAG,
@@ -358,28 +308,28 @@
                 (set::in cert2 dag2)
                 (equal (certificate->round cert2)
                        (+ 2 (certificate->round cert1)))
-                (dag-committees-p dag1 blocks1 all-vals)
-                (dag-committees-p dag2 blocks2 all-vals)
-                (same-active-committees-p blocks1 blocks2 all-vals)
-                (dag-rounds-in-committees-p dag1 blocks1 all-vals)
-                (dag-rounds-in-committees-p dag2 blocks2 all-vals)
-                (dag-predecessor-cardinality-p dag2 blocks2 all-vals)
-                (>= (set::cardinality (successors cert1 dag1))
-                    (1+ (committee-max-faulty
-                         (active-committee-at-round
-                          (1+ (certificate->round cert1))
-                          blocks1
-                          all-vals)))))
+                (dag-has-committees-p dag1 blockchain1)
+                (dag-has-committees-p dag2 blockchain2)
+                (dag-in-committees-p dag1 blockchain1)
+                (dag-in-committees-p dag2 blockchain2)
+                (same-active-committees-p blockchain1 blockchain2)
+                (dag-predecessor-quorum-p dag2 blockchain2)
+                (> (committee-members-stake
+                    (certificate-set->author-set (successors cert1 dag1))
+                    (active-committee-at-round (1+ (certificate->round cert1))
+                                               blockchain1))
+                   (committee-max-faulty-stake
+                    (active-committee-at-round (1+ (certificate->round cert1))
+                                               blockchain1))))
            (b* ((cert (pick-successor/predecessor dag1 dag2 cert1 cert2)))
              (and (set::in cert (successors cert1 dag1))
                   (set::in cert (predecessors cert2 dag2))
                   (set::in cert dag1)
                   (set::in cert dag2))))
-  :use ((:instance pick-successor/predecessor-when-cardinalities
+  :use ((:instance pick-successor/predecessor-not-nil
                    (commtt (active-committee-at-round
                             (1+ (certificate->round cert1))
-                            blocks2
-                            all-vals)))
+                            blockchain2)))
         pick-successor/predecessor-in-successors
         pick-successor/predecessor-in-predecessors
         pick-successor/predecessor-in-dag1
@@ -392,87 +342,98 @@
   :prep-lemmas
 
   ((defruled lemma1
-     (implies (dag-rounds-in-committees-p dag1 blocks1 all-vals)
+     (implies (and (certificate-setp dag1)
+                   (dag-in-committees-p dag1 blockchain1))
               (set::subset (certificate-set->author-set
                             (successors cert1 dag1))
                            (committee-members
                             (active-committee-at-round
-                             (1+ (certificate->round cert1)) blocks1 all-vals))))
-     :use ((:instance dag-rounds-in-committees-p-necc
+                             (1+ (certificate->round cert1)) blockchain1))))
+     :use ((:instance round-in-committee-when-dag-in-committees-p
                       (dag dag1)
-                      (blocks blocks1)
+                      (blockchain blockchain1)
                       (round (1+ (certificate->round cert1))))
            (:instance set::emptyp-subset-2
                       (x (successors cert1 dag1))
-                      (y (certificates-with-round (1+ (certificate->round cert1))
-                                                  dag1))))
-     :enable (successors-subset-of-next-round
-              certificate-set->author-set-monotone
-              set::expensive-rules
-              emptyp-of-certificate-set->author-set)
+                      (y (certs-with-round (1+ (certificate->round cert1))
+                                           dag1))))
+     :enable (certificate-set->author-set-monotone
+              set::expensive-rules)
      :disable set::emptyp-subset-2)
 
    (defruled lemma2
      (implies (and (certificate-setp dag2)
-                   (dag-rounds-in-committees-p dag2 blocks2 all-vals)
+                   (dag-in-committees-p dag2 blockchain2)
                    (equal (certificate->round cert2)
                           (+ 2 (certificate->round cert1))))
               (set::subset (certificate-set->author-set
                             (predecessors cert2 dag2))
                            (committee-members
                             (active-committee-at-round
-                             (1- (certificate->round cert2)) blocks2 all-vals))))
-     :use ((:instance dag-rounds-in-committees-p-necc
+                             (1- (certificate->round cert2)) blockchain2))))
+     :use ((:instance round-in-committee-when-dag-in-committees-p
                       (dag dag2)
-                      (blocks blocks2)
+                      (blockchain blockchain2)
                       (round (1- (certificate->round cert2))))
            (:instance set::emptyp-subset-2
                       (x (predecessors cert2 dag2))
-                      (y (certificates-with-round (1- (certificate->round cert2))
-                                                  dag2))))
-     :enable (predecessors-subset-of-previous-round
-              certificate-set->author-set-monotone
-              set::expensive-rules
-              emptyp-of-certificate-set->author-set)
+                      (y (certs-with-round (1- (certificate->round cert2))
+                                           dag2))))
+     :enable (certificate-set->author-set-monotone
+              set::expensive-rules)
      :disable set::emptyp-subset-2)
 
    (defruled lemma3
      (implies (and (certificate-setp dag1)
-                   (dag-committees-p dag1 blocks1 all-vals)
-                   (dag-committees-p dag2 blocks2 all-vals)
-                   (same-active-committees-p blocks1 blocks2 all-vals)
+                   (dag-has-committees-p dag1 blockchain1)
+                   (dag-has-committees-p dag2 blockchain2)
+                   (dag-in-committees-p dag1 blockchain1)
+                   (dag-in-committees-p dag2 blockchain2)
+                   (same-active-committees-p blockchain1 blockchain2)
                    (set::in cert2 dag2)
                    (equal (certificate->round cert2)
                           (+ 2 (certificate->round cert1)))
-                   (>= (set::cardinality (successors cert1 dag1))
-                       (1+ (committee-max-faulty
-                            (active-committee-at-round
-                             (1+ (certificate->round cert1))
-                             blocks1
-                             all-vals)))))
+                   (> (committee-members-stake
+                       (certificate-set->author-set (successors cert1 dag1))
+                       (active-committee-at-round
+                        (1+ (certificate->round cert1))
+                        blockchain1))
+                      (committee-max-faulty-stake
+                       (active-committee-at-round
+                        (1+ (certificate->round cert1))
+                        blockchain1))))
               (equal (active-committee-at-round
-                      (1+ (certificate->round cert1)) blocks1 all-vals)
+                      (1+ (certificate->round cert1)) blockchain1)
                      (active-committee-at-round
-                      (1+ (certificate->round cert1)) blocks2 all-vals)))
+                      (1+ (certificate->round cert1)) blockchain2)))
      :use ((:instance same-active-committees-p-necc
-                      (round (1+ (certificate->round cert1))))
-           (:instance dag-committees-p-necc
+                      (round (1+ (certificate->round cert1)))
+                      (blocks1 blockchain1)
+                      (blocks2 blockchain2))
+           (:instance dag-has-committees-p-necc
                       (dag dag1)
-                      (blocks blocks1)
+                      (blockchain blockchain1)
                       (cert (set::head (successors cert1 dag1))))
-           (:instance dag-committees-p-necc
+           (:instance dag-has-committees-p-necc
                       (dag dag2)
-                      (blocks blocks2)
+                      (blockchain blockchain2)
+                      (cert cert2))
+           (:instance dag-in-committees-p-necc
+                      (dag dag1)
+                      (blockchain blockchain1)
+                      (cert (set::head (successors cert1 dag1))))
+           (:instance dag-in-committees-p-necc
+                      (dag dag2)
+                      (blockchain blockchain2)
                       (cert cert2))
            (:instance set::in-head
                       (x (successors cert1 dag1)))
            (:instance active-committee-at-previous-round-when-at-round
-                      (blocks blocks2)
+                      (blocks blockchain2)
                       (round (certificate->round cert2)))
            (:instance set::cardinality-zero-emptyp
                       (x (successors cert1 dag1))))
-     :enable (successors-subset-of-dag
-              set::expensive-rules
+     :enable (set::expensive-rules
               certificate->round-of-element-of-successors)
      :disable (set::in-head
                set::cardinality-zero-emptyp))
@@ -481,14 +442,16 @@
      (implies (and (set::in cert2 dag2)
                    (equal (certificate->round cert2)
                           (+ 2 (certificate->round cert1)))
-                   (dag-predecessor-cardinality-p dag2 blocks2 all-vals))
-              (equal (set::cardinality (predecessors cert2 dag2))
-                     (committee-quorum
-                      (active-committee-at-round
-                       (1+ (certificate->round cert1))
-                       blocks2
-                       all-vals))))
-     :use (:instance dag-predecessor-cardinality-p-necc
+                   (dag-predecessor-quorum-p dag2 blockchain2))
+              (>= (committee-members-stake
+                   (certificate-set->author-set
+                    (predecessors cert2 dag2))
+                   (active-committee-at-round (1+ (certificate->round cert1))
+                                              blockchain2))
+                  (committee-quorum-stake
+                   (active-committee-at-round (1+ (certificate->round cert1))
+                                              blockchain2))))
+     :use (:instance dag-predecessor-quorum-p-necc
                      (dag dag2)
-                     (blocks blocks2)
+                     (blockchain blockchain2)
                      (cert cert2)))))
