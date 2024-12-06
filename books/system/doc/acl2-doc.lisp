@@ -107934,6 +107934,11 @@ it."
  (defuns foo (x) x)
  })
 
+ <p>Fixed a bug in @(tsee memoize-partial) that was interfering with proper
+ operation of @(tsee save-and-clear-memoization-settings) and @(tsee
+ restore-memoization-settings).  (Implementation note: The fix involved
+ changing what is stored in the table, @('partial-functions-table').)</p>
+
  <h3>Changes at the System Level</h3>
 
  <h3>EMACS Support</h3>
@@ -145680,24 +145685,24 @@ work on <tt>(q x)</tt>.</p>
  as in the single-value return case.  Otherwise @('msg') should be a @(tsee
  msgp) &mdash; a string or a cons suitable for printing with the @(tsee fmt)
  directive, @('~@').  In that case, @('msg') is printed (using @(tsee fmt)
- @('~@')) instead of the generic error message.  Here is a simple example from
- the ACL2 sources.</p>
+ @('~@')) instead of the generic error message.  Here is a simple example
+ adapted from former code in the ACL2 sources.</p>
 
  @({
- (defun partial-functions-table-guard (fn val wrld)
+ (defun my-table-guard (fn val wrld)
    (let ((msg0 ; nil if fn/val is OK as a key/value pair, else a msg
-          (partial-functions-table-guard-msg fn val wrld)))
+          (my-table-guard-msg fn val wrld)))
      (cond
       (msg0 (mv nil
                 (msg
-                 \"Illegal partial-functions-table key and value (see :DOC ~
+                 \"Illegal my-table key and value (see :DOC ~
                   memoize-partial):~|key = ~y0value  = ~y1Reason:~%~@2~|~%\"
                  fn val msg0)))
       (t (mv t nil)))))
 
- (table partial-functions-table nil nil
+ (table my-table nil nil
         :guard
-        (partial-functions-table-guard key val world))
+        (my-table-guard key val world))
  })
 
  <p>Note that it is not allowed to change the @(':guard') on a table once it
