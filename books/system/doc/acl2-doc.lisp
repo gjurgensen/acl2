@@ -16049,13 +16049,6 @@ with any questions about building the community books.</p>")
 
  ")
 
-(defxdoc clear-hash-tables
-  :parents (memoize) ; skip programming as parent, since this is deprecated
-  :short "Deprecated feature"
-  :long "<p>Deprecated.  Calls @(tsee clear-memoize-tables) and then @(tsee
- hons-clear) or @(tsee hons-wash), whichever makes sense for the underlying
- Common Lisp.</p>")
-
 (defxdoc clear-memoize-statistics
   :parents (memoize)
   :short "Clears all profiling info displayed by @('(')@(tsee
@@ -107934,10 +107927,12 @@ it."
  (defuns foo (x) x)
  })
 
- <p>Fixed a bug in @(tsee memoize-partial) that was interfering with proper
- operation of @(tsee save-and-clear-memoization-settings) and @(tsee
- restore-memoization-settings).  (Implementation note: The fix involved
- changing what is stored in the table, @('partial-functions-table').)</p>
+ <p>Fixed a bug in the interaction of @(tsee memoize-partial) with utilities
+ @(tsee save-and-clear-memoization-settings) and @(tsee
+ restore-memoization-settings).  The latter utilities no longer have an effect
+ on functions created by @(tsee memoize-partial) (or, and this is quite
+ obscure, on memoization from calls of @(tsee memoize) with a non-@('nil')
+ value of the keyword, @(':total')).</p>
 
  <h3>Changes at the System Level</h3>
 
@@ -131974,8 +131969,12 @@ work on <tt>(q x)</tt>.</p>
 
  <p>Calls of this macro achieve two changes.  The first copies the current
  memoization settings into an ACL2 @(see table), and the second unmemoizes all
- functions that were memoized by calls of @(tsee memoize).  Also see @(see
- restore-memoization-settings).</p>")
+ functions that were memoized by calls of @(tsee memoize).  But note that this
+ skips memoization settings that are either derived from calls of @(tsee
+ memoize-partial) or have a non-@('nil') value of @(tsee memoize) argument
+ @(':invoke')</p>
+
+ <p>Also see @(see restore-memoization-settings).</p>")
 
 (defxdoc save-exec
   :parents (interfacing-tools command-line)
@@ -155535,7 +155534,10 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  <p>To remove the effects of all @(tsee memoize) @(see events), evaluate:
  @('(clear-memo-table)').  To save and restore memoization, see @(see
  save-and-clear-memoization-settings) and see @(see
- restore-memoization-settings).</p>")
+ restore-memoization-settings).  These are both legal @(see event) forms.
+ Note: These events do not affect memoization from @(tsee memoize) events that
+ either are derived from calls of @(tsee memoize-partial) or have a
+ non-@('nil') value of @(tsee memoize) argument @(':invoke')</p>")
 
 (defxdoc unmonitor
   :parents (break-rewrite)
