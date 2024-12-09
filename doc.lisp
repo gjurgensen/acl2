@@ -105262,6 +105262,12 @@ Bug Fixes
     (assign event-data-fal 'event-data-fal)
     (defuns foo (x) x)
 
+  Fixed a bug in [47m[memoize-partial][0m that was interfering with proper
+  operation of [47m[save-and-clear-memoization-settings][0m and
+  [47m[restore-memoization-settings][0m.  (Implementation note: The fix
+  involved changing what is stored in the table,
+  [47mpartial-functions-table[0m.)
+
 
 Changes at the System Level
 
@@ -145631,22 +145637,22 @@ Subtopics
   [47m[msgp][0m --- a string or a cons suitable for printing with the [47m[fmt][0m
   directive, [47m~@[0m.  In that case, [47mmsg[0m is printed (using [47m[fmt][0m [47m~@[0m)
   instead of the generic error message.  Here is a simple example
-  from the ACL2 sources.
+  adapted from former code in the ACL2 sources.
 
-    (defun partial-functions-table-guard (fn val wrld)
+    (defun my-table-guard (fn val wrld)
       (let ((msg0 ; nil if fn/val is OK as a key/value pair, else a msg
-             (partial-functions-table-guard-msg fn val wrld)))
+             (my-table-guard-msg fn val wrld)))
         (cond
          (msg0 (mv nil
                    (msg
-                    \"Illegal partial-functions-table key and value (see :DOC ~
+                    \"Illegal my-table key and value (see :DOC ~
                      memoize-partial):~|key = ~y0value  = ~y1Reason:~%~@2~|~%\"
                     fn val msg0)))
          (t (mv t nil)))))
 
-    (table partial-functions-table nil nil
+    (table my-table nil nil
            :guard
-           (partial-functions-table-guard key val world))
+           (my-table-guard key val world))
 
   Note that it is not allowed to change the [47m:guard[0m on a table once it
   has been explicitly set.  Before the [47m:guard[0m is explicitly set, it
