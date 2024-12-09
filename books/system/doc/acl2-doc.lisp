@@ -42794,7 +42794,22 @@ current fast alists."
  running regression tests using ACL2 built on GCL, to keep memory from
  exceeding what is available.  Consider dividing 1.0 by the number of threads;
  so for example, for 4 threads (i.e., using &ldquo;@('-j 4')&rdquo; in your
- @('make') command), you may want to specify @('GCL_MEM_MULTIPLE=0.25').</p>")
+ @('make') command), you may want to specify @('GCL_MEM_MULTIPLE=0.25').  But
+ you can probably run with more threads (e.g., perhaps 20 threads or more on a
+ 64 MB machine) by instead doing a ``pooled memory run'', which may be
+ performed as in the following example (bash syntax), as suggested by Camm
+ Maguire.  Warning: the use of @('HOME') may change soon if it hasn't
+ already.</p>
+
+ @({
+ HOME=/tmp ACL2=$(pwd)/saved_acl2 GCL_MULTIPROCESS_MEMORY_POOL=t \\
+   make -j 20 regression-fresh
+ })
+
+ <p>(Technical explanation: The reason for setting @('HOME') to directory
+ @('/tmp') is to keep a so-called ``pool file'' local, since otherwise it will
+ be on your home directory, which may be updated too infrequently if on a
+ shared file system.)</p>")
 
 (defxdoc geneqv
   :parents (introduction-to-the-theorem-prover break-rewrite)
@@ -45022,7 +45037,8 @@ current fast alists."
 
  <p>By default, these utilities all use an underlying notion of run time
  provided by the host Common Lisp implementation: specifically, the Common Lisp
- functions @('get-internal-run-time') for cpu time and
+ functions @('get-internal-run-time') for cpu time (or a slight variant if the
+ host Lisp is a version of GCL that precedes 2.7.0) and
  @('get-internal-real-time') for real (wall clock) time.  While the latter is
  specified to measure elapsed time, the former is left to the implementation,
  which might well only measure time spent in the Lisp process.  Consider the
@@ -60882,10 +60898,13 @@ tables in the current Hons Space."
 
  <p><b>WARNING!</b> If @('ld-redefinition-action') is non-@('nil') then ACL2 is
  liable to be made unsafe or unsound, or behave in unexpected ways.  For
- example, redefining a macro or inlined function called in the body of a
- function, @('g'), may not cause the new definition to be called by @('g').
- Redefinition should be viewed as a way to facilitate unsafe, but potentially
- useful, hacking.</p>
+ example, redefining a macro or inlined function, @('f'), that is called in the
+ body of another function, @('g'), may not cause the new version of @('f') to
+ be called by @('g').  In addition, for some Lisps, in particular GCL Version
+ 2.7.0 or later, the return type @('TP') inferred for the original definition
+ of @('f') might cause mishandling of the return value from @('f') as @('g')
+ still expects that value's type to be @('TP').  Redefinition should be viewed
+ as a way to facilitate unsafe, but potentially useful, hacking.</p>
 
  <p>The keyword command @(':')@(tsee redef) will set
  @('ld-redefinition-action') to a convenient setting allowing unsound
@@ -61919,11 +61938,24 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
  example, @('(list 5 6 7)') returns a list of length 3 whose elements are
  @('5'), @('6'), and @('7') respectively.  Also see @(see list*).</p>
 
+ <p>If a call of @('list') results in an error due to too many arguments,
+ consider using @(tsee list$).</p>
+
  <p>@('List') is defined in Common Lisp.  See any Common Lisp documentation for
  more information.</p>
 
  @(def list)
  @(def list-macro)")
+
+(defxdoc list$
+  :parents (lists acl2-built-ins)
+  :short "Build a list"
+  :long "<p>@('List$') is a macro that is virtually interchangeable with @(tsee
+ list).  The only difference is that when the host Lisp is @(see GCL) with GCL
+ version at least 2.7.0, @('list') may cause an error when given too many
+ arguments (generally, more than 63).  In such cases, @('list$') may be used in
+ place of @('list'), since @('list$') has no restriction on the number of
+ arguments.</p>")
 
 (defxdoc list*
   :parents (lists acl2-built-ins)
@@ -107887,6 +107919,72 @@ it."
 ; ACL2 can be built (at least, in the Lisp versions tested), so this change
 ; should not have any observable effect.
 
+; Made changes so that GCL Version 2.7.0 (and presumably later versions) can
+; host ACL2.  These are described below, including (breaking with normal such
+; comments) book changes.  Thanks to Camm Maguire for working with us through
+; both ACL2 issues and GCL Version 2.7.0 issues.
+
+;   A new macro, list$, is much like list except that it avoids an argument
+;   limit in GCL 2.7.0 for list.
+;
+;   The implementation-level changes are as follows.  These changes affect only
+;   GCL 2.7.0 builds of ACL2 except as indicated in the first item.
+;
+;   - Incorporated modifications by Camm Maguire to hons-raw.lisp, to
+;     accommodate the reduced value in GCL 2.7.0 for the constant
+;     array-dimension-limit.  (The sbits array had grown too long in some
+;     certifications, so that array has been replaced by an array of bit-array
+;     "chunks".)  For more information see the Essay on the Sbits Structure in
+;     hons-raw.lisp.  NOTE: This change applies to any Lisp supporting static
+;     honses in ACL2; these are currently GCL and CCL.
+;
+;   - In our-get-internal-run-time, restricted the existing exception for GCL
+;     to GCL versions preceding 2.7.0 (to accommodate change in GCL to
+;     get-internal-run-time).  Made a related update to macro our-time (which
+;     supports time$).
+;
+;   - Added invocation of (si::do-recomp) to the end of the compilation phase
+;     of building an ACL2 executable.
+;
+;   - ACL2 no longer increases the stack size by setting si::*multiply-stacks*
+;     (as this is no longer necessary).
+;
+;   - Memoize-partial recompiles functions being introduced when necessary,
+;     after definitional replacement of logical by executable.
+;
+;   Documentation changes are as follows.
+;
+;   - Extend :DOC gcl to explain how to do a ``pooled memory run'' to get
+;     more parallelism.  (NOTE: This applies to versions of GCL preceding 2.7.0
+;     as well.)
+;
+;   - Extend :DOC ld-redefinition-action to explain that in GCL 2.7.0 and
+;     later,, recompilation of callers may be necessary after redefinition.
+;
+;   - Added :DOC list$, and added pointer to it in :DOC list.
+;
+;   Changes to books are as follows.
+;
+;   - Excluded certification by "make regression" using GCL of
+;     books/centaur/bigmems/bigmem-asymmetric/concrete-asymmetric.lisp, which
+;     extends its existing exclusion for CMUCL and LispWorks, because
+;     array-dimension-limit in GCL 2.7.0 is not large enough to accommodate a
+;     proposed stobj array.
+;
+;   - Bug fix in books/system/hons-check/hons-check.lisp (usually minor,
+;     but critical in GCL 2.7.0): added two function symbols to the state
+;     global, logic-fns-with-raw-code, as advised in :DOC comp.
+;
+;   - In the following books a call of LIST was replaced by the corresponding
+;     call of LIST$ (newly introduced in this commit, as described above) to
+;     avoid an error: books/centaur/vl2014/expr.lisp,
+;     books/projects/fm9001/control.lisp, and
+;     books/system/tests/loop-tests.lisp.
+;
+;   Finally, in the course of this project: some comments were improved; and
+;   some trivial type-related improvements were made, e.g., in the definition
+;   of len.
+
   :parents (release-notes)
   :short "ACL2 Version  8.7 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -107935,6 +108033,20 @@ it."
  value of the keyword, @(':total')).</p>
 
  <h3>Changes at the System Level</h3>
+
+ <p>Modifications have been made that allow ACL2 to be hosted on GCL Version
+ 2.7.0 and presumably later @(see GCL) versions; previously only GCL versions
+ before 2.7.0 could host ACL2.  Essentially the only user-visible change (other
+ than error prevention) is the introduction of @(tsee list$), a macro
+ equivalent to @(tsee list) that can be used without a GCL 2.7.0 restriction on
+ the number of arguments.  The most sweeping implementation-level change is the
+ replacement of an array in support of so-called <i>static honses</i>, the
+ <i>sbits array</i>, by a structure that avoids a reduced bound on array
+ dimensions imposed by GCL 2.7.0.  Details may be found in a Lisp comment in
+ the form @('(defxdoc note-8-7 ...)') in @(see community-books) file
+ @('books/system/doc/acl2-doc.lisp').  Thanks to Camm Maguire for his help with
+ this project, inluding (but by no means limited to) his contribution of a new
+ sbits implementation.</p>
 
  <h3>EMACS Support</h3>
 
