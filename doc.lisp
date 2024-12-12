@@ -134277,7 +134277,7 @@ Subtopics
   certify.  That isn't a huge penalty, but on the other hand it seems
   likely that [47m(set-dwp t)[0m is helpful only in rare instances.
 
-  To get the current value of [47mdwp[0m, evaluate [47m(get-dwp (w state))[0m.")
+  To get the current value of [47mdwp[0m, evaluate [47m(get-dwp nil (w state))[0m.")
  (SET-DWP!
   (TYPE-REASONING)
   "Affect the effort made in [type-reasoning], non-[47m[local][0mly
