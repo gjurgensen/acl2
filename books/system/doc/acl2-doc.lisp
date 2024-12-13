@@ -134348,7 +134348,7 @@ work on <tt>(q x)</tt>.</p>
  a huge penalty, but on the other hand it seems likely that @('(set-dwp t)') is
  helpful only in rare instances.</p>
 
- <p>To get the current value of @('dwp'), evaluate @('(get-dwp (w
+ <p>To get the current value of @('dwp'), evaluate @('(get-dwp nil (w
  state))').</p>")
 
 (defxdoc set-dwp!
