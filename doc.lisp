@@ -105296,6 +105296,12 @@ Bug Fixes
   this is quite obscure, on memoization from calls of [47m[memoize][0m with
   a non-[47mnil[0m value of the keyword, [47m:total[0m).
 
+  An attachable stobj (see [attach-stobj]) was created by the
+  executable ([47m:EXEC[0m) function associated with its stobj creator (see
+  [defabsstobj]), even when that stobj was given an attachment.  This
+  bug has been fixed: the stobj is now created by the [47m:EXEC[0m of the
+  attachment's creator.
+
 
 Changes at the System Level
 
