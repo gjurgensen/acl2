@@ -108032,6 +108032,12 @@ it."
  obscure, on memoization from calls of @(tsee memoize) with a non-@('nil')
  value of the keyword, @(':total')).</p>
 
+ <p>An attachable stobj (see @(see attach-stobj)) was created by the
+ executable (@(':EXEC')) function associated with its stobj creator (see @(see
+ defabsstobj)), even when that stobj was given an attachment.  This bug has
+ been fixed: the stobj is now created by the @(':EXEC') of the attachment's
+ creator.</p>
+
  <h3>Changes at the System Level</h3>
 
  <p>Modifications have been made that allow ACL2 to be hosted on GCL Version
