@@ -107959,7 +107959,7 @@ it."
 ;     as well.)
 ;
 ;   - Extend :DOC ld-redefinition-action to explain that in GCL 2.7.0 and
-;     later,, recompilation of callers may be necessary after redefinition.
+;     later, recompilation of callers may be necessary after redefinition.
 ;
 ;   - Added :DOC list$, and added pointer to it in :DOC list.
 ;
@@ -108032,6 +108032,12 @@ it."
  obscure, on memoization from calls of @(tsee memoize) with a non-@('nil')
  value of the keyword, @(':total')).</p>
 
+ <p>An attachable stobj (see @(see attach-stobj)) was created by the
+ executable (@(':EXEC')) function associated with its stobj creator (see @(see
+ defabsstobj)), even when that stobj was given an attachment.  This bug has
+ been fixed: the stobj is now created by the @(':EXEC') of the attachment's
+ creator.</p>
+
  <h3>Changes at the System Level</h3>
 
  <p>Modifications have been made that allow ACL2 to be hosted on GCL Version
@@ -108045,7 +108051,7 @@ it."
  dimensions imposed by GCL 2.7.0.  Details may be found in a Lisp comment in
  the form @('(defxdoc note-8-7 ...)') in @(see community-books) file
  @('books/system/doc/acl2-doc.lisp').  Thanks to Camm Maguire for his help with
- this project, inluding (but by no means limited to) his contribution of a new
+ this project, including (but by no means limited to) his contribution of a new
  sbits implementation.</p>
 
  <h3>EMACS Support</h3>
@@ -132013,7 +132019,7 @@ work on <tt>(q x)</tt>.</p>
  <p>When the term is a call of @('ev-w'), an unsafe hack allowing such calls is
  as follows.  Warning: This may result in unsoundness!  (On a related note: For
  discussion about unsoundness when converting such @(see program)-mode
- functions to @(see logic) mode, see @(see program-only).</p>
+ functions to @(see logic) mode, see @(see program-only).)</p>
 
  @({
  (value :q)
