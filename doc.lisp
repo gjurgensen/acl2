@@ -10856,6 +10856,10 @@ Subtopics
   (DEFABSSTOBJ)
   "Attach an ``implementation [stobj]'' to an attachable stobj
 
+  For an illustration of [47mattach-stobj[0m, see [community-books] directory
+  [47mbooks/demos/attach-stobj/[0m, in particular file [47mREADME.txt[0m in that
+  directory.
+
   This topic assumes familiarity with abstract [stobj]s; see
   [defabsstobj].  It documents a way to modify the foundation and
   primitives of an abstract [stobj], [47mgen[0m, that is introduced by
@@ -105295,6 +105299,12 @@ Bug Fixes
   have an effect on functions created by [47m[memoize-partial][0m (or, and
   this is quite obscure, on memoization from calls of [47m[memoize][0m with
   a non-[47mnil[0m value of the keyword, [47m:total[0m).
+
+  An attachable stobj (see [attach-stobj]) was created by the
+  executable ([47m:EXEC[0m) function associated with its stobj creator (see
+  [defabsstobj]), even when that stobj was given an attachment.  This
+  bug has been fixed: the stobj is now created by the [47m:EXEC[0m of the
+  attachment's creator.
 
 
 Changes at the System Level
