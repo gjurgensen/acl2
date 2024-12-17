@@ -77,7 +77,7 @@ Subtopics
   [defthm], [in-theory], [xargs], [state], etc., without an [47macl2::[0m
   prefix.
 
-  The constant [47m*acl2-exports*[0m lists [47m1658[0m symbols, including most
+  The constant [47m*acl2-exports*[0m lists [47m1659[0m symbols, including most
   documented ACL2 system constants, functions, and macros.  You will
   typically also want to import many symbols from Common Lisp; see
   [*common-lisp-symbols-from-main-lisp-package*].
@@ -411,8 +411,8 @@ Subtopics
        ld-user-stobjs-modified-warning
        ld-verbose
        legal-case-clausesp len len-update-nth
-       length let let* let-mbe lex-fix
-       lexorder lexp list list* list*-macro
+       length let let* let-mbe lex-fix lexorder
+       lexp list list$ list* list*-macro
        list-macro listp local logand
        logandc1 logandc2 logbitp logcount
        logeqv logic logic-fns-list-listp
@@ -3743,6 +3743,9 @@ Subtopics
       Total order on ACL2 objects
 
   [List]
+      Build a list
+
+  [List$]
       Build a list
 
   [List*]
@@ -10852,6 +10855,10 @@ Subtopics
  (ATTACH-STOBJ
   (DEFABSSTOBJ)
   "Attach an ``implementation [stobj]'' to an attachable stobj
+
+  For an illustration of [47mattach-stobj[0m, see [community-books] directory
+  [47mbooks/demos/attach-stobj/[0m, in particular file [47mREADME.txt[0m in that
+  directory.
 
   This topic assumes familiarity with abstract [stobj]s; see
   [defabsstobj].  It documents a way to modify the foundation and
@@ -18855,7 +18862,9 @@ Subtopics
   specs.'' Such strings are used to specify where in the proof
   attempt a given hint is to be applied.  The function
   [47mparse-clause-id[0m converts goal-specs into clause identifiers, which
-  are cons-trees containing natural numbers.
+  are cons-trees containing natural numbers (and if [47m:OR[0m [hints] are
+  used, they may also contain symbols of the form [47mDn[0m where [47mn[0m is a
+  natural number, e.g., [47mD23[0m.)
 
   Examples of goal-specs and their corresponding clause identifiers are
   shown below.
@@ -19247,12 +19256,6 @@ Subtopics
   [Set-skip-meta-termp-checks!]
       Skip output checks non-[local]ly for [meta] functions and
       [clause-processor]s")
- (CLEAR-HASH-TABLES
-  (MEMOIZE)
-  "Deprecated feature
-
-  Deprecated.  Calls [47m[clear-memoize-tables][0m and then [47m[hons-clear][0m or
-  [47m[hons-wash][0m, whichever makes sense for the underlying Common Lisp.")
  (CLEAR-MEMOIZE-STATISTICS
   (MEMOIZE)
   "Clears all profiling info displayed by [47m([0m[47m[memoize-summary][0m[47m)[0m
@@ -46366,7 +46369,19 @@ Subtopics
   from exceeding what is available.  Consider dividing 1.0 by the
   number of threads; so for example, for 4 threads (i.e., using ``[47m-j
   4[0m'' in your [47mmake[0m command), you may want to specify
-  [47mGCL_MEM_MULTIPLE=0.25[0m.")
+  [47mGCL_MEM_MULTIPLE=0.25[0m.  But you can probably run with more threads
+  (e.g., perhaps 20 threads or more on a 64 MB machine) by instead
+  doing a ``pooled memory run'', which may be performed as in the
+  following example (bash syntax), as suggested by Camm Maguire.
+  Warning: the use of [47mHOME[0m may change soon if it hasn't already.
+
+    HOME=/tmp ACL2=$(pwd)/saved_acl2 GCL_MULTIPROCESS_MEMORY_POOL=t \\
+      make -j 20 regression-fresh
+
+  (Technical explanation: The reason for setting [47mHOME[0m to directory [47m/tmp[0m
+  is to keep a so-called ``pool file'' local, since otherwise it will
+  be on your home directory, which may be updated too infrequently if
+  on a shared file system.)")
  (GCS (POINTERS)
       "See [get-command-sequence].")
  (GENEQV
@@ -48415,12 +48430,13 @@ Conclusion
 
   By default, these utilities all use an underlying notion of run time
   provided by the host Common Lisp implementation: specifically, the
-  Common Lisp functions [47mget-internal-run-time[0m for cpu time and
-  [47mget-internal-real-time[0m for real (wall clock) time.  While the
-  latter is specified to measure elapsed time, the former is left to
-  the implementation, which might well only measure time spent in the
-  Lisp process.  Consider the following example, which is a bit
-  arcane but basically sleeps for 2 seconds.
+  Common Lisp functions [47mget-internal-run-time[0m for cpu time (or a
+  slight variant if the host Lisp is a version of GCL that precedes
+  2.7.0) and [47mget-internal-real-time[0m for real (wall clock) time.
+  While the latter is specified to measure elapsed time, the former
+  is left to the implementation, which might well only measure time
+  spent in the Lisp process.  Consider the following example, which
+  is a bit arcane but basically sleeps for 2 seconds.
 
     (defttag t) ; to allow sys-call
     (make-event
@@ -64878,10 +64894,14 @@ Subtopics
 
   [31;1mWARNING![0m If [47mld-redefinition-action[0m is non-[47mnil[0m then ACL2 is liable to
   be made unsafe or unsound, or behave in unexpected ways.  For
-  example, redefining a macro or inlined function called in the body
-  of a function, [47mg[0m, may not cause the new definition to be called by
-  [47mg[0m.  Redefinition should be viewed as a way to facilitate unsafe,
-  but potentially useful, hacking.
+  example, redefining a macro or inlined function, [47mf[0m, that is called
+  in the body of another function, [47mg[0m, may not cause the new version
+  of [47mf[0m to be called by [47mg[0m.  In addition, for some Lisps, in particular
+  GCL Version 2.7.0 or later, the return type [47mTP[0m inferred for the
+  original definition of [47mf[0m might cause mishandling of the return
+  value from [47mf[0m as [47mg[0m still expects that value's type to be [47mTP[0m.
+  Redefinition should be viewed as a way to facilitate unsafe, but
+  potentially useful, hacking.
 
   The keyword command [47m:[0m[47m[redef][0m will set [47mld-redefinition-action[0m to a
   convenient setting allowing unsound redefinition.  See below.
@@ -65958,6 +65978,9 @@ Subtopics
   5 6 7)[0m returns a list of length 3 whose elements are [47m5[0m, [47m6[0m, and [47m7[0m
   respectively.  Also see [list*].
 
+  If a call of [47mlist[0m results in an error due to too many arguments,
+  consider using [47m[list$][0m.
+
   [47mList[0m is defined in Common Lisp.  See any Common Lisp documentation
   for more information.
 
@@ -65975,6 +65998,16 @@ Subtopics
                 (cons (car lst)
                       (cons (list-macro (cdr lst)) nil)))
         nil))")
+ (LIST$
+  (LISTS ACL2-BUILT-INS)
+  "Build a list
+
+  [47mList$[0m is a macro that is virtually interchangeable with [47m[list][0m.  The
+  only difference is that when the host Lisp is [gcl] with GCL
+  version at least 2.7.0, [47mlist[0m may cause an error when given too many
+  arguments (generally, more than 63).  In such cases, [47mlist$[0m may be
+  used in place of [47mlist[0m, since [47mlist$[0m has no restriction on the number
+  of arguments.")
  (LIST*
   (LISTS ACL2-BUILT-INS)
   "Build a list
@@ -66094,6 +66127,9 @@ Subtopics
       Length of a string or proper list
 
   [List]
+      Build a list
+
+  [List$]
       Build a list
 
   [List*]
@@ -76873,9 +76909,6 @@ Subtopics
 
 
 Subtopics
-
-  [Clear-hash-tables]
-      Deprecated feature
 
   [Clear-memoize-statistics]
       Clears all profiling info displayed by [47m([0m[47m[memoize-summary][0m[47m)[0m
@@ -105262,8 +105295,36 @@ Bug Fixes
     (assign event-data-fal 'event-data-fal)
     (defuns foo (x) x)
 
+  Fixed a bug in the interaction of [47m[memoize-partial][0m with utilities
+  [47m[save-and-clear-memoization-settings][0m and
+  [47m[restore-memoization-settings][0m.  The latter utilities no longer
+  have an effect on functions created by [47m[memoize-partial][0m (or, and
+  this is quite obscure, on memoization from calls of [47m[memoize][0m with
+  a non-[47mnil[0m value of the keyword, [47m:total[0m).
+
+  An attachable stobj (see [attach-stobj]) was created by the
+  executable ([47m:EXEC[0m) function associated with its stobj creator (see
+  [defabsstobj]), even when that stobj was given an attachment.  This
+  bug has been fixed: the stobj is now created by the [47m:EXEC[0m of the
+  attachment's creator.
+
 
 Changes at the System Level
+
+  Modifications have been made that allow ACL2 to be hosted on GCL
+  Version 2.7.0 and presumably later [gcl] versions; previously only
+  GCL versions before 2.7.0 could host ACL2.  Essentially the only
+  user-visible change (other than error prevention) is the
+  introduction of [47m[list$][0m, a macro equivalent to [47m[list][0m that can be
+  used without a GCL 2.7.0 restriction on the number of arguments.
+  The most sweeping implementation-level change is the replacement of
+  an array in support of so-called [3mstatic honses[0m, the [3msbits array[0m, by
+  a structure that avoids a reduced bound on array dimensions imposed
+  by GCL 2.7.0.  Details may be found in a Lisp comment in the form
+  [47m(defxdoc note-8-7 ...)[0m in [community-books] file
+  [47mbooks/system/doc/acl2-doc.lisp[0m.  Thanks to Camm Maguire for his
+  help with this project, including (but by no means limited to) his
+  contribution of a new sbits implementation.
 
 
 EMACS Support
@@ -131983,7 +132044,7 @@ Subtopics
   When the term is a call of [47mev-w[0m, an unsafe hack allowing such calls
   is as follows.  Warning: This may result in unsoundness!  (On a
   related note: For discussion about unsoundness when converting such
-  [program]-mode functions to [logic] mode, see [program-only].
+  [program]-mode functions to [logic] mode, see [program-only].)
 
     (value :q)
     (setf (symbol-function (*1*-symbol 'ev-w))
@@ -132042,6 +132103,10 @@ Subtopics
   Calls of this macro achieve two changes.  The first copies the
   current memoization settings into an ACL2 [table], and the second
   unmemoizes all functions that were memoized by calls of [47m[memoize][0m.
+  But note that this skips memoization settings that are either
+  derived from calls of [47m[memoize-partial][0m or have a non-[47mnil[0m value of
+  [47m[memoize][0m argument [47m:invoke[0m
+
   Also see [restore-memoization-settings].")
  (SAVE-EXEC
   (INTERFACING-TOOLS COMMAND-LINE)
@@ -134224,7 +134289,7 @@ Subtopics
   certify.  That isn't a huge penalty, but on the other hand it seems
   likely that [47m(set-dwp t)[0m is helpful only in rare instances.
 
-  To get the current value of [47mdwp[0m, evaluate [47m(get-dwp (w state))[0m.")
+  To get the current value of [47mdwp[0m, evaluate [47m(get-dwp nil (w state))[0m.")
  (SET-DWP!
   (TYPE-REASONING)
   "Affect the effort made in [type-reasoning], non-[47m[local][0mly
@@ -145631,22 +145696,22 @@ Subtopics
   [47m[msgp][0m --- a string or a cons suitable for printing with the [47m[fmt][0m
   directive, [47m~@[0m.  In that case, [47mmsg[0m is printed (using [47m[fmt][0m [47m~@[0m)
   instead of the generic error message.  Here is a simple example
-  from the ACL2 sources.
+  adapted from former code in the ACL2 sources.
 
-    (defun partial-functions-table-guard (fn val wrld)
+    (defun my-table-guard (fn val wrld)
       (let ((msg0 ; nil if fn/val is OK as a key/value pair, else a msg
-             (partial-functions-table-guard-msg fn val wrld)))
+             (my-table-guard-msg fn val wrld)))
         (cond
          (msg0 (mv nil
                    (msg
-                    \"Illegal partial-functions-table key and value (see :DOC ~
+                    \"Illegal my-table key and value (see :DOC ~
                      memoize-partial):~|key = ~y0value  = ~y1Reason:~%~@2~|~%\"
                     fn val msg0)))
          (t (mv t nil)))))
 
-    (table partial-functions-table nil nil
+    (table my-table nil nil
            :guard
-           (partial-functions-table-guard key val world))
+           (my-table-guard key val world))
 
   Note that it is not allowed to change the [47m:guard[0m on a table once it
   has been explicitly set.  Before the [47m:guard[0m is explicitly set, it
@@ -155533,7 +155598,10 @@ Subtopics
   To remove the effects of all [47m[memoize][0m [events], evaluate:
   [47m(clear-memo-table)[0m.  To save and restore memoization, see
   [save-and-clear-memoization-settings] and see
-  [restore-memoization-settings].")
+  [restore-memoization-settings].  These are both legal [event]
+  forms.  Note: These events do not affect memoization from [47m[memoize][0m
+  events that either are derived from calls of [47m[memoize-partial][0m or
+  have a non-[47mnil[0m value of [47m[memoize][0m argument [47m:invoke[0m")
  (UNMONITOR
   (BREAK-REWRITE)
   "To stop monitoring a rule name
