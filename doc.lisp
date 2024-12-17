@@ -105311,7 +105311,7 @@ Changes at the System Level
   by GCL 2.7.0.  Details may be found in a Lisp comment in the form
   [47m(defxdoc note-8-7 ...)[0m in [community-books] file
   [47mbooks/system/doc/acl2-doc.lisp[0m.  Thanks to Camm Maguire for his
-  help with this project, inluding (but by no means limited to) his
+  help with this project, including (but by no means limited to) his
   contribution of a new sbits implementation.
 
 
@@ -132032,7 +132032,7 @@ Subtopics
   When the term is a call of [47mev-w[0m, an unsafe hack allowing such calls
   is as follows.  Warning: This may result in unsoundness!  (On a
   related note: For discussion about unsoundness when converting such
-  [program]-mode functions to [logic] mode, see [program-only].
+  [program]-mode functions to [logic] mode, see [program-only].)
 
     (value :q)
     (setf (symbol-function (*1*-symbol 'ev-w))
