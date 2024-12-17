@@ -7738,16 +7738,19 @@ and @(tsee include-book)"
   :parents (defabsstobj)
   :short "Attach an &ldquo;implementation @(see stobj)&rdquo; to an attachable
  stobj"
-  :long "<p>This topic assumes familiarity with abstract @(see stobj)s; see
- @(see defabsstobj).  It documents a way to modify the foundation and
- primitives of an abstract @(see stobj), @('gen'), that is introduced by
- @('defabsstobj') using the keyword argument @(':attachable t').  Such a stobj
- is called an <i>attachable</i> stobj.  Execution of its primitives can be
- provided by corresponding primitives of a specified abstract stobj, @('impl'),
- which we say is <i>attached to</i> @('gen') (or: @('impl') is the
- <i>implementation stobj attached to</i> @('gen')); said differently, @('gen')
- has @('impl') as an attachment.  That relationship is specified by the
- following</p>
+  :long "<p>For an illustration of @('attach-stobj'), see @(see
+ community-books) directory @('books/demos/attach-stobj/'), in particular file
+ @('README.txt') in that directory.</p>
+
+ <p>This topic assumes familiarity with abstract @(see stobj)s; see @(see
+ defabsstobj).  It documents a way to modify the foundation and primitives of
+ an abstract @(see stobj), @('gen'), that is introduced by @('defabsstobj')
+ using the keyword argument @(':attachable t').  Such a stobj is called an
+ <i>attachable</i> stobj.  Execution of its primitives can be provided by
+ corresponding primitives of a specified abstract stobj, @('impl'), which we
+ say is <i>attached to</i> @('gen') (or: @('impl') is the <i>implementation
+ stobj attached to</i> @('gen')); said differently, @('gen') has @('impl') as
+ an attachment.  That relationship is specified by the following</p>
 
  @({
  General Form:
@@ -108031,6 +108034,12 @@ it."
  on functions created by @(tsee memoize-partial) (or, and this is quite
  obscure, on memoization from calls of @(tsee memoize) with a non-@('nil')
  value of the keyword, @(':total')).</p>
+
+ <p>An attachable stobj (see @(see attach-stobj)) was created by the
+ executable (@(':EXEC')) function associated with its stobj creator (see @(see
+ defabsstobj)), even when that stobj was given an attachment.  This bug has
+ been fixed: the stobj is now created by the @(':EXEC') of the attachment's
+ creator.</p>
 
  <h3>Changes at the System Level</h3>
 
