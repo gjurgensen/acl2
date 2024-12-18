@@ -18862,7 +18862,9 @@ Subtopics
   specs.'' Such strings are used to specify where in the proof
   attempt a given hint is to be applied.  The function
   [47mparse-clause-id[0m converts goal-specs into clause identifiers, which
-  are cons-trees containing natural numbers.
+  are cons-trees containing natural numbers (and if [47m:OR[0m [hints] are
+  used, they may also contain symbols of the form [47mDn[0m where [47mn[0m is a
+  natural number, e.g., [47mD23[0m.)
 
   Examples of goal-specs and their corresponding clause identifiers are
   shown below.
