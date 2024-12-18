@@ -15653,7 +15653,9 @@ with any questions about building the community books.</p>")
  are represented as strings they are called ``goal specs.''  Such strings are
  used to specify where in the proof attempt a given hint is to be applied.  The
  function @('parse-clause-id') converts goal-specs into clause identifiers,
- which are cons-trees containing natural numbers.</p>
+ which are cons-trees containing natural numbers (and if @(':OR') @(see hints)
+ are used, they may also contain symbols of the form @('Dn') where @('n') is a
+ natural number, e.g., @('D23').)</p>
 
  <p>Examples of goal-specs and their corresponding clause identifiers are shown
  below.</p>
