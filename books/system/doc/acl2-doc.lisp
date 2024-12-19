@@ -21053,6 +21053,7 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
     :congruent-to congruent-to
     :non-executable non-executable
     :protect-default protect-default
+    :attachable att
     :exports (e1 ... ek))
  })
 
@@ -21128,6 +21129,9 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
  provides the value of keyword @(':PROTECT') for each member of @('exports')
  that does not explicitly specify @(':PROTECT').  See the discussion of
  @('exports') below.</p>
+
+ <p>@('Attachable') should be @('nil') (the default) or @('t').  See @(see
+ attach-stobj) for a discussion of this keyword.</p>
 
  <p>An important aspect of the @('congruent-to') parameter is that if it is not
  @('nil'), then the checks for lemmas &mdash; @('{CORRESPONDENCE}'),
