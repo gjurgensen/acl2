@@ -7765,9 +7765,12 @@ and @(tsee include-book)"
  foundation of @('gen'), as well as execution of the primitives of @('gen'),
  will effectively be provided by @('impl'); details are below.</p>
 
- <p>In the General Form above, @('impl') is allowed to be @('nil'), in which
- case any existing attachment for @('gen') will be removed.  Below, we assume
- the common case that @('impl') is not @('nil').</p>
+ <p>In the General Form above, @('impl') is allowed to be @('nil'), i.e., the
+ event @('(attach-stobj gen nil)') is legal, where it is still required that
+ @('gen') not be the name of any existing event.  The effect of this
+ ``attachment'' of @('nil') is to cancel the effect of any previous
+ @('(attach-stobj gen impl)') on any future introduction of @('gen').  Below,
+ we assume the common case that @('impl') is not @('nil').</p>
 
  <p>Note that @('impl') may itself have an attachment, say, @('impl2'), in
  which case we say that @('impl2') is attached to @('gen').  If furthermore
