@@ -10882,9 +10882,12 @@ Subtopics
   of [47mgen[0m, as well as execution of the primitives of [47mgen[0m, will
   effectively be provided by [47mimpl[0m; details are below.
 
-  In the General Form above, [47mimpl[0m is allowed to be [47mnil[0m, in which case
-  any existing attachment for [47mgen[0m will be removed.  Below, we assume
-  the common case that [47mimpl[0m is not [47mnil[0m.
+  In the General Form above, [47mimpl[0m is allowed to be [47mnil[0m, i.e., the event
+  [47m(attach-stobj gen nil)[0m is legal, where it is still required that
+  [47mgen[0m not be the name of any existing event.  The effect of this
+  ``attachment'' of [47mnil[0m is to cancel the effect of any previous
+  [47m(attach-stobj gen impl)[0m on any future introduction of [47mgen[0m.  Below,
+  we assume the common case that [47mimpl[0m is not [47mnil[0m.
 
   Note that [47mimpl[0m may itself have an attachment, say, [47mimpl2[0m, in which
   case we say that [47mimpl2[0m is attached to [47mgen[0m.  If furthermore [47mimpl3[0m is
