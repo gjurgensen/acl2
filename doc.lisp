@@ -24449,6 +24449,7 @@ Subtopics
       :congruent-to congruent-to
       :non-executable non-executable
       :protect-default protect-default
+      :attachable att
       :exports (e1 ... ek))
 
   The keyword argument [47m:EXPORTS[0m must be supplied, and missing or [47mnil[0m
@@ -24523,6 +24524,9 @@ Subtopics
       the value of keyword [47m:PROTECT[0m for each member of [47mexports[0m that
       does not explicitly specify [47m:PROTECT[0m.  See the discussion of
       [47mexports[0m below.
+
+      [47mAttachable[0m should be [47mnil[0m (the default) or [47mt[0m.  See [attach-stobj] for
+      a discussion of this keyword.
 
       An important aspect of the [47mcongruent-to[0m parameter is that if it is
       not [47mnil[0m, then the checks for lemmas --- [47m{CORRESPONDENCE}[0m,
