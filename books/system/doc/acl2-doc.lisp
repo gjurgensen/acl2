@@ -7765,9 +7765,12 @@ and @(tsee include-book)"
  foundation of @('gen'), as well as execution of the primitives of @('gen'),
  will effectively be provided by @('impl'); details are below.</p>
 
- <p>In the General Form above, @('impl') is allowed to be @('nil'), in which
- case any existing attachment for @('gen') will be removed.  Below, we assume
- the common case that @('impl') is not @('nil').</p>
+ <p>In the General Form above, @('impl') is allowed to be @('nil'), i.e., the
+ event @('(attach-stobj gen nil)') is legal, where it is still required that
+ @('gen') not be the name of any existing event.  The effect of this
+ ``attachment'' of @('nil') is to cancel the effect of any previous
+ @('(attach-stobj gen impl)') on any future introduction of @('gen').  Below,
+ we assume the common case that @('impl') is not @('nil').</p>
 
  <p>Note that @('impl') may itself have an attachment, say, @('impl2'), in
  which case we say that @('impl2') is attached to @('gen').  If furthermore
@@ -21053,6 +21056,7 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
     :congruent-to congruent-to
     :non-executable non-executable
     :protect-default protect-default
+    :attachable att
     :exports (e1 ... ek))
  })
 
@@ -21128,6 +21132,9 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
  provides the value of keyword @(':PROTECT') for each member of @('exports')
  that does not explicitly specify @(':PROTECT').  See the discussion of
  @('exports') below.</p>
+
+ <p>@('Attachable') should be @('nil') (the default) or @('t').  See @(see
+ attach-stobj) for a discussion of this keyword.</p>
 
  <p>An important aspect of the @('congruent-to') parameter is that if it is not
  @('nil'), then the checks for lemmas &mdash; @('{CORRESPONDENCE}'),
