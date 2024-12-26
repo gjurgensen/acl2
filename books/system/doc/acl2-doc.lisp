@@ -107997,6 +107997,10 @@ it."
 ;   some trivial type-related improvements were made, e.g., in the definition
 ;   of len.
 
+; Made fixes to an error message in each of set-temp-touchable-fns,
+; set-temp-touchable-vars, and logical-name-type, thanks to Eric Smith (who
+; supplied fixes).
+
   :parents (release-notes)
   :short "ACL2 Version  8.7 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
