@@ -152643,13 +152643,21 @@ work on <tt>(q x)</tt>.</p>
 
  @({
     ACL2 !>:pe binding
-       d     33  (INCLUDE-BOOK
-                      \"/slocal/src/acl2/v1-9/books/public/alist-defthms\")
-
-    >V d          (DEFUN BINDING (X A)
-                         \"The value bound to X in alist A.\"
-                         (DECLARE (XARGS :GUARD (ALISTP A)))
-                         (CDR (ASSOC-EQUAL X A)))
+   d       1  (INCLUDE-BOOK \"data-structures/alist-defthms\"
+                            :DIR ...)
+              \
+              [Included books, outermost to innermost:
+               \".../acl2/acl2-8.5/books/data-structures/alist-defthms.lisp\"
+               \".../acl2/acl2-8.5/books/data-structures/alist-defuns.lisp\"
+              ]
+              \
+>V d           (DEFUN
+                BINDING (X A)
+                \"The value bound to X in alist A.\"
+                (DECLARE
+                   (XARGS :GUARD (AND (ALISTP A)
+                                      (OR (EQLABLEP X) (EQLABLE-ALISTP A)))))
+                (CDR (ASSOC X A)))
  })
 
  <p>This tells us that @('binding') was introduced by the given @(tsee
@@ -152787,7 +152795,7 @@ work on <tt>(q x)</tt>.</p>
         (booleanp (pnump x)))
       ;;
       (defthm nil-not-pnump
-        (not (pnump nil)))).
+        (not (pnump nil))))
  })
 
  <p>This introduces a Boolean-valued recognizer @('pnump'), with the additional
@@ -152897,7 +152905,7 @@ work on <tt>(q x)</tt>.</p>
 
  @({
     (defthm add-in-book
-      (in-book? nm (add-phone nm pnum bk))).
+      (in-book? nm (add-phone nm pnum bk)))
  })
 
  <p>You may wonder why we didn't need any hypotheses about the ``types'' of the
@@ -152911,7 +152919,7 @@ work on <tt>(q x)</tt>.</p>
       (implies (and (namep nm)
                     (pnump pnum)
                     (phonebookp bk))
-               (in-book? nm (add-phone nm pnum bk)))),
+               (in-book? nm (add-phone nm pnum bk))))
  })
 
  <p>but that would have yielded a weaker and less useful lemma because it would
@@ -153018,41 +153026,98 @@ work on <tt>(q x)</tt>.</p>
              (del-phone nm bk)))
  })
 
- <p>Unfortunately, when we try to prove this, we encounter subgoals that seem
- to be true, but for which the prover is stumped.  For example, consider the
- following goal.  (Note: @('endp') holds of lists that are empty.)</p>
+ <p>Unfortunately, our attempt to prove it failed with the subgoal under top
+ level induction:</p>
 
  @({
-    Subgoal *1/4
-    (IMPLIES (AND (NOT (ENDP BK))
-                  (NOT (EQUAL NM (CAAR BK)))
-                  (NOT (BOUND? NM (CDR BK)))
-                  (BOUND? NM BK))
-             (EQUAL (REMBIND NM (BIND NM PNUM BK))
-                    (REMBIND NM BK))).
+    Subgoal *1/4''
+    (IMPLIES (AND (CONSP BK)
+                  (NOT (EQUAL NM (CAR (CAR BK))))
+                  (NOT (BOUND?-EQUAL NM (CDR BK)))
+                  (BOUND?-EQUAL NM BK))
+             (EQUAL (REMBIND-EQUAL NM (BIND-EQUAL NM PNUM (CDR BK)))
+                    (REMBIND-EQUAL NM (CDR BK))))
  })
+
+ <p>We have defined @('del-phone') over @('rembind'), @('change-phone') over
+ @('bound?') and @('bind'), but we have ``equal'' suffixes in a subgoal. The
+ cause are theorems of the form <tt>***->***-equal</tt>, which are given in
+ the included book. We can use @(see history)'s @(see pl) command to print the
+ rools for a given name or term. Here is the part of @(see pl)'s output, we are
+ interested in now, for the @('rembind') function:</p>
+
+ @({
+    ACL2 !>:pl rembind
+    ...
+
+    Rune:         (:REWRITE REMBIND->REMBIND-EQUAL)
+    Enabled:      T
+    Hyps:         T
+    Equiv:        EQUAL
+    Lhs:          (REMBIND X A)
+    Rhs:          (REMBIND-EQUAL X A)
+    Backchain-limit-lst: NIL
+    Subclass:     ABBREVIATION
+
+    ...
+ })
+
+ <p>We can know from it that @(see rewrite) rule @('rembind->rembind-equal')
+ is @(see enable)d and that it replaces <i>lhs</i> with <i>rhs</i>. For a
+ functions @('bind'), @('binding') and @('bound?) we have similar rules.</p>
 
  <p>Our intuition about @('rembind') and @('bind') tells us that this goal
  should be true even without the hypotheses.  We attempt to prove the following
  lemma.</p>
 
  @({
-    (defthm rembind-bind
-      (equal (rembind nm (bind nm pnum bk))
-             (rembind nm bk)))
+    (defthm rembind-equal-bind-equal
+      (equal (rembind-equal nm (bind-equal nm pnum bk))
+             (rembind-equal nm bk)))
  })
 
  <p>The prover proves this by induction, and stores it as a rewrite rule.
  After that, the prover has no difficulty in proving @('del-change').</p>
 
- <p>The need to prove lemma @('rembind-bind') illustrates a point we made early
- in this example: the collection of @(see rewrite) rules supplied by a
- previously certified book will almost never be everything you'll need.  It
+ <p>The need to prove lemma @('rembind-equal-bind-equal') illustrates a point
+ we made early in this example: the collection of @(see rewrite) rules supplied
+ by a previously certified book will almost never be everything you'll need. It
  would be nice if we could operate purely in the realm of names, phone numbers,
  and phone books without ever having to prove any new facts about alists.
- Unfortunately, we needed a fact about the relation between @('rembind') and
- @('bind') that wasn't supplied with the alists theory.  Hopefully, such
- omissions will be rare.</p>
+ Unfortunately, we needed a fact about the relation between @('rembind-equal')
+ and @('bind-equal') that wasn't supplied with the alists theory. Hopefully,
+ such omissions will be rare.</p>
+
+ <p>Let's take two steps back now (just enter @(':')@(':u') command twice) to
+ get acquainted with a method that will be very useful to us. What happens if
+ we define previous lemma another way?</p>
+
+ @({
+    (defthm rembind-bind
+      (equal (rembind name (bind name num book))
+             (rembind name book)))
+ })
+
+ <p>An attempt to prove @('del-change') would be failed then with the same
+ subgoal as above. In this case we can give to the prover the hint to use
+ @('rembind-bind') as an instance of @('del-change')(See @(see hints) and
+ find keywords @(':')@('use') and @(':')@('instance')):</p>
+
+ @({
+    (defthm del-change-lemma-instance-example
+      (equal (del-phone nm (change-phone nm pnum bk))
+             (del-phone nm bk))
+      :hints ((\"Goal\" :use (:instance rembind-bind
+                                        (name nm)
+                                        (num pnum)
+                                        (book bk)))))
+ )}
+
+ <p>As discribed in @(see hints), by @(':')@('use') hint the prover replaces
+ a goal @('G') with new goal (@('IMPLIES') @('P') @('G')), where @('P') is the
+ specified theorem. The @(':')@('instance') form permits to instantiate the
+ free variables of previously proved theorems. More information on this subject
+ is given in @(see lemma-instance) topic.</p>
 
  <p>Finally, let's consider our property 5 above: a name will not be in the
  book after we delete it.  We formalize this as follows:</p>
@@ -153101,35 +153166,46 @@ work on <tt>(q x)</tt>.</p>
       (implies (and (phonebookp bk)
                     (in-book? nm bk))
                (namep nm))
-      :hints ((\"Goal\" :in-theory (enable bound?))))
+      :hints ((\"Goal\" :in-theory (enable bound?-equal))))
 
     (defthm find-phone-pnump
       (implies (and (phonebookp bk)
                     (in-book? nm bk))
                (pnump (find-phone nm bk)))
-      :hints ((\"Goal\" :in-theory (enable bound? binding))))
+      :hints ((\"Goal\" :in-theory (enable bound?-equal
+                                           binding-equal))))
  })
 
  <p>Note the ``@(':')@(tsee hints)'' on the last two lemmas.  Neither of these
  would prove without these @(see hints), because once again there are some
- facts about @('bound?') and @('binding') not available in our current context.
- Now, we could figure out what those facts are and try to prove them.
- Alternatively, we can @(see enable) @('bound?') and @('binding') and hope that
- by opening up these functions, the conjectures will reduce to versions that
- the prover does know enough about or can prove by induction.  In this case,
- this strategy works.  The hints tell the prover to @(see enable) the functions
- in question when considering the designated goal.</p>
+ facts about @('bound?-equal') and @('binding-equal') not available in our
+ current context. Now, we could figure out what those facts are and try to
+ prove them. Alternatively, we can @(see enable) @('bound?-equal') and
+ @('binding-equal') and hope that by opening up these functions, the
+ conjectures will reduce to versions that the prover does know enough about or
+ can prove by induction. In this case, this strategy works. The hints tell
+ the prover to @(see enable) the functions in question when considering the
+ designated goal.</p>
+
+ <p>It's important to undestand that it's not enaugh to @(see enable)
+ @('bound?') and @('binding') functions because of mentioned above rewrite
+ rules of the form <tt>***->***-equal</tt>, which will replace @(see enable)d
+ functions with @(see disable)d ones. We can use @(see history)'s very
+ informative command @(':')@(see pl) to get a lot of information about rules
+ of given name.</p>
 
  <p>Below we develop the theorems showing that @('add-phone'),
- @('change-phone'), and @('del-phone') preserve our proposed invariant.  Notice
- that along the way we have to prove some subsidiary facts, some of which are
- pretty ugly.  It would be a good idea for you to try, say,
- @('add-phone-preserves-invariant') without introducing the following four
- lemmas first.  See if you can develop the proof and only add these lemmas as
- you need assistance.  Then try @('change-phone-preserves-invariant') and
- @('del-phone-preserves-invariant').  They will be easier.  It is illuminating
- to think about why @('del-phone-preserves-invariant') does not need any
- ``type'' hypotheses.</p>
+ @('change-phone'), and @('del-phone') preserve our proposed invariant.
+ Notice that along the way we have to prove some subsidiary facts,
+ some of which are pretty ugly. It would be a good idea for you
+ to try, say, @('add-phone-preserves-invariant') without introducing
+ the following four lemmas first. Perhaps, you will use an instantiation
+ of lemmas meyhod, described above. See if you can develop the proof and
+ only add these lemmas as you need assistance.  Then try
+ @('change-phone-preserves-invariant')
+ and @('del-phone-preserves-invariant'). They will be easier.
+ It is illuminating to think about why @('del-phone-preserves-invariant')
+ does not need any ``type'' hypotheses.</p>
 
  @({
     (defthm bind-preserves-phonebookp
@@ -153138,42 +153214,95 @@ work on <tt>(q x)</tt>.</p>
                     (pnump num))
                (phonebookp (bind nm num bk))))
 
+    (defthm member-equal-strip-cars-bind-equal
+      (implies (and (not (equal x y))
+                    (not (member-equal x (strip-cars a))))
+               (not (member-equal x (strip-cars (bind-equal y z a))))))
+
+    (defthm bind-equal-preserves-domain-setp
+      (implies (and (alistp bk)
+                    (setp (domain bk)))
+               (setp (domain (bind-equal nm num bk))))
+      :hints ((\"Goal\" :in-theory (enable domain))))
+ })
+
+ <p>Let's take two steps back to redefine @(member-equal-strip-cars-bind-equal):</p>
+
+ @({
     (defthm member-equal-strip-cars-bind
       (implies (and (not (equal x y))
                     (not (member-equal x (strip-cars a))))
                (not (member-equal x (strip-cars (bind y z a))))))
+ })
 
-    (defthm bind-preserves-domain-setp
+ <p>Then @('bind-equal-preserves-domain-setp') fails:</p>
+
+ @({
+    Subgoal *1/5''
+    (IMPLIES (AND (CONSP BK)
+             (NOT (EQUAL NM (CAR (CAR BK))))
+             (SETP (STRIP-CARS (BIND-EQUAL NM NUM (CDR BK))))
+             (CONSP (CAR BK))
+             (ALISTP (CDR BK))
+             (NOT (MEMBER-EQUAL (CAR (CAR BK))
+                                (STRIP-CARS (CDR BK))))
+             (SETP (STRIP-CARS (CDR BK))))
+        (NOT (MEMBER-EQUAL (CAR (CAR BK))
+                           (STRIP-CARS (BIND-EQUAL NM NUM (CDR BK))))))
+ })
+
+ <p>We can use @(see lemma-instance) to prove it:</p>
+
+ @({
+    (defthm bind-equal-preserves-domain-setp
       (implies (and (alistp bk)
                     (setp (domain bk)))
-               (setp (domain (bind nm num bk))))
-      :hints ((\"Goal\" :in-theory (enable domain))))
+               (setp (domain (bind-equal nm num bk))))
+      :hints ((\"Goal\" :in-theory (enable domain))
+              (\"Subgoal *1/5''\" :use (:instance
+                                        member-equal-strip-cars-bind
+                                        (x (car (car bk)))
+                                        (y nm)
+                                        (z num)
+                                        (a (cdr bk))))))
+ })
 
+ <p>The use of @(see lemma-instance) is somewhat artificial in this example,
+ but this method gives great opportunities to lead ACL2 in proving theorems.</p>
+
+ @({
     (defthm phonebookp-alistp
       (implies (phonebookp bk)
                (alistp bk)))
+
+    (defthm bind-equal-preserves-phonebookp
+      (implies (and (phonebookp bk)
+                    (namep nm)
+                    (pnump num))
+               (phonebookp (bind-equal nm num bk))))
 
     (defthm ADD-PHONE-PRESERVES-INVARIANT
       (implies (and (valid-phonebookp bk)
                     (namep nm)
                     (pnump num))
                (valid-phonebookp (add-phone nm num bk)))
-      :hints ((\"Goal\" :in-theory (disable domain-bind))))
+      :hints ((\"Goal\" :in-theory (disable domain-bind-equal))))
 
     (defthm CHANGE-PHONE-PRESERVES-INVARIANT
       (implies (and (valid-phonebookp bk)
                     (namep nm)
                     (pnump num))
                (valid-phonebookp (change-phone nm num bk)))
-      :hints ((\"Goal\" :in-theory (disable domain-bind))))
+      :hints ((\"Goal\" :in-theory (disable domain-bind-equal))))
+
+    (defthm member-remove-equal
+      (implies (and (not (equal a b))
+                    (not (member a x)))
+               (not (member a (remove-equal b x)))))
 
     (defthm remove-equal-preserves-setp
       (implies (setp l)
                (setp (remove-equal x l))))
-
-    (defthm rembind-preserves-phonebookp
-      (implies (phonebookp bk)
-               (phonebookp (rembind nm bk))))
 
     (defthm DEL-PHONE-PRESERVES-INVARIANT
       (implies (valid-phonebookp bk)
@@ -153223,7 +153352,8 @@ work on <tt>(q x)</tt>.</p>
 
     (defthm member-equal-strip-cdrs-rembind
       (implies (not (member-equal x (strip-cdrs y)))
-               (not (member-equal x (strip-cdrs (rembind z y))))))
+               (not (member-equal x (strip-cdrs
+                                     (rembind-equal z y))))))
 
     (defthm DEL-PHONE-PRESERVES-PHONENUMS-UNIQUE
       (implies (phonenums-unique bk)
@@ -153231,11 +153361,16 @@ work on <tt>(q x)</tt>.</p>
       :hints ((\"Goal\" :in-theory (enable range))))
 
     (defthm strip-cdrs-bind-non-member
-      (implies (and (not (bound? x a))
+      (implies (and (not (bound?-equal x a))
                     (alistp a))
-               (equal (strip-cdrs (bind x y a))
+               (equal (strip-cdrs (bind-equal x y a))
                       (append (strip-cdrs a) (list y))))
-      :hints ((\"Goal\" :in-theory (enable bound?))))
+      :hints ((\"Goal\" :in-theory (enable bound?-equal))))
+
+    (defthm member-append
+      (iff (member e (append x y))
+           (or (member e x)
+               (member e y))))
 
     (defthm setp-append-list
       (implies (setp l)
@@ -153249,10 +153384,11 @@ work on <tt>(q x)</tt>.</p>
                (phonenums-unique (add-phone nm pnum bk)))
       :hints ((\"Goal\" :in-theory (enable range))))
 
-    (defthm member-equal-strip-cdrs-bind
+    (defthm member-equal-strip-cdrs-bind-equal
       (implies (and (not (member-equal z (strip-cdrs a)))
                     (not (equal z y)))
-               (not (member-equal z (strip-cdrs (bind x y a))))))
+               (not (member-equal z (strip-cdrs
+                                     (bind-equal x y a))))))
 
     (defthm CHANGE-PHONE-PRESERVES-PHONENUMS-UNIQUE
       (implies (and (phonenums-unique bk)
