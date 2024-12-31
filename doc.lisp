@@ -10856,6 +10856,10 @@ Subtopics
   (DEFABSSTOBJ)
   "Attach an ``implementation [stobj]'' to an attachable stobj
 
+  For an illustration of [47mattach-stobj[0m, see [community-books] directory
+  [47mbooks/demos/attach-stobj/[0m, in particular file [47mREADME.txt[0m in that
+  directory.
+
   This topic assumes familiarity with abstract [stobj]s; see
   [defabsstobj].  It documents a way to modify the foundation and
   primitives of an abstract [stobj], [47mgen[0m, that is introduced by
@@ -10878,9 +10882,12 @@ Subtopics
   of [47mgen[0m, as well as execution of the primitives of [47mgen[0m, will
   effectively be provided by [47mimpl[0m; details are below.
 
-  In the General Form above, [47mimpl[0m is allowed to be [47mnil[0m, in which case
-  any existing attachment for [47mgen[0m will be removed.  Below, we assume
-  the common case that [47mimpl[0m is not [47mnil[0m.
+  In the General Form above, [47mimpl[0m is allowed to be [47mnil[0m, i.e., the event
+  [47m(attach-stobj gen nil)[0m is legal, where it is still required that
+  [47mgen[0m not be the name of any existing event.  The effect of this
+  ``attachment'' of [47mnil[0m is to cancel the effect of any previous
+  [47m(attach-stobj gen impl)[0m on any future introduction of [47mgen[0m.  Below,
+  we assume the common case that [47mimpl[0m is not [47mnil[0m.
 
   Note that [47mimpl[0m may itself have an attachment, say, [47mimpl2[0m, in which
   case we say that [47mimpl2[0m is attached to [47mgen[0m.  If furthermore [47mimpl3[0m is
@@ -18858,7 +18865,9 @@ Subtopics
   specs.'' Such strings are used to specify where in the proof
   attempt a given hint is to be applied.  The function
   [47mparse-clause-id[0m converts goal-specs into clause identifiers, which
-  are cons-trees containing natural numbers.
+  are cons-trees containing natural numbers (and if [47m:OR[0m [hints] are
+  used, they may also contain symbols of the form [47mDn[0m where [47mn[0m is a
+  natural number, e.g., [47mD23[0m.)
 
   Examples of goal-specs and their corresponding clause identifiers are
   shown below.
@@ -24443,6 +24452,7 @@ Subtopics
       :congruent-to congruent-to
       :non-executable non-executable
       :protect-default protect-default
+      :attachable att
       :exports (e1 ... ek))
 
   The keyword argument [47m:EXPORTS[0m must be supplied, and missing or [47mnil[0m
@@ -24517,6 +24527,9 @@ Subtopics
       the value of keyword [47m:PROTECT[0m for each member of [47mexports[0m that
       does not explicitly specify [47m:PROTECT[0m.  See the discussion of
       [47mexports[0m below.
+
+      [47mAttachable[0m should be [47mnil[0m (the default) or [47mt[0m.  See [attach-stobj] for
+      a discussion of this keyword.
 
       An important aspect of the [47mcongruent-to[0m parameter is that if it is
       not [47mnil[0m, then the checks for lemmas --- [47m{CORRESPONDENCE}[0m,
@@ -105296,6 +105309,12 @@ Bug Fixes
   this is quite obscure, on memoization from calls of [47m[memoize][0m with
   a non-[47mnil[0m value of the keyword, [47m:total[0m).
 
+  An attachable stobj (see [attach-stobj]) was created by the
+  executable ([47m:EXEC[0m) function associated with its stobj creator (see
+  [defabsstobj]), even when that stobj was given an attachment.  This
+  bug has been fixed: the stobj is now created by the [47m:EXEC[0m of the
+  attachment's creator.
+
 
 Changes at the System Level
 
@@ -105311,7 +105330,7 @@ Changes at the System Level
   by GCL 2.7.0.  Details may be found in a Lisp comment in the form
   [47m(defxdoc note-8-7 ...)[0m in [community-books] file
   [47mbooks/system/doc/acl2-doc.lisp[0m.  Thanks to Camm Maguire for his
-  help with this project, inluding (but by no means limited to) his
+  help with this project, including (but by no means limited to) his
   contribution of a new sbits implementation.
 
 
@@ -132032,7 +132051,7 @@ Subtopics
   When the term is a call of [47mev-w[0m, an unsafe hack allowing such calls
   is as follows.  Warning: This may result in unsoundness!  (On a
   related note: For discussion about unsoundness when converting such
-  [program]-mode functions to [logic] mode, see [program-only].
+  [program]-mode functions to [logic] mode, see [program-only].)
 
     (value :q)
     (setf (symbol-function (*1*-symbol 'ev-w))

@@ -4602,17 +4602,22 @@ and @(tsee include-book)"
   :parents (numbers acl2-built-ins)
   :short "Set aside fixnums in GCL"
   :long "<p>@('(Allocate-fixnum-range fixnum-lo fixnum-hi)') causes Gnu Common
- Lisp
- (GCL) to create a persistent table for the integers between @('fixnum-lo') and
- @('fixnum-hi') (both bounds inclusive). This table is referenced first when
- any integer is boxed and the existing box in the table is used if the integer
- is in bounds.  This can speed up GCL considerably by avoiding wasteful fixnum
- boxing.  Here, @('fixnum-lo') and @('fixnum-hi') should be fixnums.  On 32-bit
- machines it would be good for them to be of type @('(signed-byte 30)'), with
- @('fixnum-lo <= fixnum-hi').</p>
+ Lisp (GCL), versions preceding 2.7, to create a persistent table for the
+ integers between @('fixnum-lo') and @('fixnum-hi') (both bounds
+ inclusive). This table is referenced first when any integer is boxed and the
+ existing box in the table is used if the integer is in bounds.  This can speed
+ up GCL (again, for versions preceding 2.7) considerably by avoiding wasteful
+ fixnum boxing.  Here, @('fixnum-lo') and @('fixnum-hi') should be fixnums.  On
+ 32-bit machines it would be good for them to be of type @('(signed-byte 30)'),
+ with @('fixnum-lo <= fixnum-hi').</p>
 
- <p>When this function is executed in a Lisp implementation other than GCL, it
- has no side effect.  This function always returns @('nil').</p>")
+ <p>When this function is executed in a Lisp implementation other than a GCL
+ version preceding 2.7, it has no side effect other than to print a message.
+ This function always returns @('nil').</p>
+
+ <p>In GCL versions starting with 2.7.0, allocation for the table would
+ generally be a no-op other than to waste space, which is why
+ @('allocate-fixnum-range') is a no-op for those versions.</p>")
 
 (defxdoc alpha-char-p
   :parents (characters acl2-built-ins)
@@ -7738,16 +7743,19 @@ and @(tsee include-book)"
   :parents (defabsstobj)
   :short "Attach an &ldquo;implementation @(see stobj)&rdquo; to an attachable
  stobj"
-  :long "<p>This topic assumes familiarity with abstract @(see stobj)s; see
- @(see defabsstobj).  It documents a way to modify the foundation and
- primitives of an abstract @(see stobj), @('gen'), that is introduced by
- @('defabsstobj') using the keyword argument @(':attachable t').  Such a stobj
- is called an <i>attachable</i> stobj.  Execution of its primitives can be
- provided by corresponding primitives of a specified abstract stobj, @('impl'),
- which we say is <i>attached to</i> @('gen') (or: @('impl') is the
- <i>implementation stobj attached to</i> @('gen')); said differently, @('gen')
- has @('impl') as an attachment.  That relationship is specified by the
- following</p>
+  :long "<p>For an illustration of @('attach-stobj'), see @(see
+ community-books) directory @('books/demos/attach-stobj/'), in particular file
+ @('README.txt') in that directory.</p>
+
+ <p>This topic assumes familiarity with abstract @(see stobj)s; see @(see
+ defabsstobj).  It documents a way to modify the foundation and primitives of
+ an abstract @(see stobj), @('gen'), that is introduced by @('defabsstobj')
+ using the keyword argument @(':attachable t').  Such a stobj is called an
+ <i>attachable</i> stobj.  Execution of its primitives can be provided by
+ corresponding primitives of a specified abstract stobj, @('impl'), which we
+ say is <i>attached to</i> @('gen') (or: @('impl') is the <i>implementation
+ stobj attached to</i> @('gen')); said differently, @('gen') has @('impl') as
+ an attachment.  That relationship is specified by the following</p>
 
  @({
  General Form:
@@ -7762,9 +7770,12 @@ and @(tsee include-book)"
  foundation of @('gen'), as well as execution of the primitives of @('gen'),
  will effectively be provided by @('impl'); details are below.</p>
 
- <p>In the General Form above, @('impl') is allowed to be @('nil'), in which
- case any existing attachment for @('gen') will be removed.  Below, we assume
- the common case that @('impl') is not @('nil').</p>
+ <p>In the General Form above, @('impl') is allowed to be @('nil'), i.e., the
+ event @('(attach-stobj gen nil)') is legal, where it is still required that
+ @('gen') not be the name of any existing event.  The effect of this
+ ``attachment'' of @('nil') is to cancel the effect of any previous
+ @('(attach-stobj gen impl)') on any future introduction of @('gen').  Below,
+ we assume the common case that @('impl') is not @('nil').</p>
 
  <p>Note that @('impl') may itself have an attachment, say, @('impl2'), in
  which case we say that @('impl2') is attached to @('gen').  If furthermore
@@ -15650,7 +15661,9 @@ with any questions about building the community books.</p>")
  are represented as strings they are called ``goal specs.''  Such strings are
  used to specify where in the proof attempt a given hint is to be applied.  The
  function @('parse-clause-id') converts goal-specs into clause identifiers,
- which are cons-trees containing natural numbers.</p>
+ which are cons-trees containing natural numbers (and if @(':OR') @(see hints)
+ are used, they may also contain symbols of the form @('Dn') where @('n') is a
+ natural number, e.g., @('D23').)</p>
 
  <p>Examples of goal-specs and their corresponding clause identifiers are shown
  below.</p>
@@ -21048,6 +21061,7 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
     :congruent-to congruent-to
     :non-executable non-executable
     :protect-default protect-default
+    :attachable att
     :exports (e1 ... ek))
  })
 
@@ -21123,6 +21137,9 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
  provides the value of keyword @(':PROTECT') for each member of @('exports')
  that does not explicitly specify @(':PROTECT').  See the discussion of
  @('exports') below.</p>
+
+ <p>@('Attachable') should be @('nil') (the default) or @('t').  See @(see
+ attach-stobj) for a discussion of this keyword.</p>
 
  <p>An important aspect of the @('congruent-to') parameter is that if it is not
  @('nil'), then the checks for lemmas &mdash; @('{CORRESPONDENCE}'),
@@ -107959,7 +107976,7 @@ it."
 ;     as well.)
 ;
 ;   - Extend :DOC ld-redefinition-action to explain that in GCL 2.7.0 and
-;     later,, recompilation of callers may be necessary after redefinition.
+;     later, recompilation of callers may be necessary after redefinition.
 ;
 ;   - Added :DOC list$, and added pointer to it in :DOC list.
 ;
@@ -107984,6 +108001,14 @@ it."
 ;   Finally, in the course of this project: some comments were improved; and
 ;   some trivial type-related improvements were made, e.g., in the definition
 ;   of len.
+
+; Made fixes to an error message in each of set-temp-touchable-fns,
+; set-temp-touchable-vars, and logical-name-type, thanks to Eric Smith (who
+; supplied fixes).
+
+; The ACL2 function allocate-fixnum-range is now a no-op for GCL versions 2.7.0
+; and later.  Thanks to Camm Maguire for the suggestion, and the explanation
+; that its effect would generally be only to waste space in GCL 2.7.0.
 
   :parents (release-notes)
   :short "ACL2 Version  8.7 (xxx, 20xx) Notes"
@@ -108032,6 +108057,12 @@ it."
  obscure, on memoization from calls of @(tsee memoize) with a non-@('nil')
  value of the keyword, @(':total')).</p>
 
+ <p>An attachable stobj (see @(see attach-stobj)) was created by the
+ executable (@(':EXEC')) function associated with its stobj creator (see @(see
+ defabsstobj)), even when that stobj was given an attachment.  This bug has
+ been fixed: the stobj is now created by the @(':EXEC') of the attachment's
+ creator.</p>
+
  <h3>Changes at the System Level</h3>
 
  <p>Modifications have been made that allow ACL2 to be hosted on GCL Version
@@ -108045,7 +108076,7 @@ it."
  dimensions imposed by GCL 2.7.0.  Details may be found in a Lisp comment in
  the form @('(defxdoc note-8-7 ...)') in @(see community-books) file
  @('books/system/doc/acl2-doc.lisp').  Thanks to Camm Maguire for his help with
- this project, inluding (but by no means limited to) his contribution of a new
+ this project, including (but by no means limited to) his contribution of a new
  sbits implementation.</p>
 
  <h3>EMACS Support</h3>
@@ -132013,7 +132044,7 @@ work on <tt>(q x)</tt>.</p>
  <p>When the term is a call of @('ev-w'), an unsafe hack allowing such calls is
  as follows.  Warning: This may result in unsoundness!  (On a related note: For
  discussion about unsoundness when converting such @(see program)-mode
- functions to @(see logic) mode, see @(see program-only).</p>
+ functions to @(see logic) mode, see @(see program-only).)</p>
 
  @({
  (value :q)
