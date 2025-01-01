@@ -4602,17 +4602,22 @@ and @(tsee include-book)"
   :parents (numbers acl2-built-ins)
   :short "Set aside fixnums in GCL"
   :long "<p>@('(Allocate-fixnum-range fixnum-lo fixnum-hi)') causes Gnu Common
- Lisp
- (GCL) to create a persistent table for the integers between @('fixnum-lo') and
- @('fixnum-hi') (both bounds inclusive). This table is referenced first when
- any integer is boxed and the existing box in the table is used if the integer
- is in bounds.  This can speed up GCL considerably by avoiding wasteful fixnum
- boxing.  Here, @('fixnum-lo') and @('fixnum-hi') should be fixnums.  On 32-bit
- machines it would be good for them to be of type @('(signed-byte 30)'), with
- @('fixnum-lo <= fixnum-hi').</p>
+ Lisp (GCL), versions preceding 2.7, to create a persistent table for the
+ integers between @('fixnum-lo') and @('fixnum-hi') (both bounds
+ inclusive). This table is referenced first when any integer is boxed and the
+ existing box in the table is used if the integer is in bounds.  This can speed
+ up GCL (again, for versions preceding 2.7) considerably by avoiding wasteful
+ fixnum boxing.  Here, @('fixnum-lo') and @('fixnum-hi') should be fixnums.  On
+ 32-bit machines it would be good for them to be of type @('(signed-byte 30)'),
+ with @('fixnum-lo <= fixnum-hi').</p>
 
- <p>When this function is executed in a Lisp implementation other than GCL, it
- has no side effect.  This function always returns @('nil').</p>")
+ <p>When this function is executed in a Lisp implementation other than a GCL
+ version preceding 2.7, it has no side effect other than to print a message.
+ This function always returns @('nil').</p>
+
+ <p>In GCL versions starting with 2.7.0, allocation for the table would
+ generally be a no-op other than to waste space, which is why
+ @('allocate-fixnum-range') is a no-op for those versions.</p>")
 
 (defxdoc alpha-char-p
   :parents (characters acl2-built-ins)
@@ -108000,6 +108005,10 @@ it."
 ; Made fixes to an error message in each of set-temp-touchable-fns,
 ; set-temp-touchable-vars, and logical-name-type, thanks to Eric Smith (who
 ; supplied fixes).
+
+; The ACL2 function allocate-fixnum-range is now a no-op for GCL versions 2.7.0
+; and later.  Thanks to Camm Maguire for the suggestion, and the explanation
+; that its effect would generally be only to waste space in GCL 2.7.0.
 
   :parents (release-notes)
   :short "ACL2 Version  8.7 (xxx, 20xx) Notes"
