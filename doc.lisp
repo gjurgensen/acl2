@@ -7200,17 +7200,23 @@ Subtopics
   "Set aside fixnums in GCL
 
   [47m(Allocate-fixnum-range fixnum-lo fixnum-hi)[0m causes Gnu Common Lisp
-  (GCL) to create a persistent table for the integers between
-  [47mfixnum-lo[0m and [47mfixnum-hi[0m (both bounds inclusive). This table is
-  referenced first when any integer is boxed and the existing box in
-  the table is used if the integer is in bounds.  This can speed up
-  GCL considerably by avoiding wasteful fixnum boxing.  Here,
-  [47mfixnum-lo[0m and [47mfixnum-hi[0m should be fixnums.  On 32-bit machines it
-  would be good for them to be of type [47m(signed-byte 30)[0m, with
-  [47mfixnum-lo <= fixnum-hi[0m.
+  (GCL), versions preceding 2.7, to create a persistent table for the
+  integers between [47mfixnum-lo[0m and [47mfixnum-hi[0m (both bounds inclusive).
+  This table is referenced first when any integer is boxed and the
+  existing box in the table is used if the integer is in bounds.
+  This can speed up GCL (again, for versions preceding 2.7)
+  considerably by avoiding wasteful fixnum boxing.  Here, [47mfixnum-lo[0m
+  and [47mfixnum-hi[0m should be fixnums.  On 32-bit machines it would be
+  good for them to be of type [47m(signed-byte 30)[0m, with [47mfixnum-lo <=
+  fixnum-hi[0m.
 
-  When this function is executed in a Lisp implementation other than
-  GCL, it has no side effect.  This function always returns [47mnil[0m.")
+  When this function is executed in a Lisp implementation other than a
+  GCL version preceding 2.7, it has no side effect other than to
+  print a message.  This function always returns [47mnil[0m.
+
+  In GCL versions starting with 2.7.0, allocation for the table would
+  generally be a no-op other than to waste space, which is why
+  [47mallocate-fixnum-range[0m is a no-op for those versions.")
  (ALPHA-CHAR-P
   (CHARACTERS ACL2-BUILT-INS)
   "Recognizer for alphabetic characters
@@ -153409,7 +153415,9 @@ Subtopics
   in the form of ``[books].''
 
   This example was written almost entirely by Bill Young of
-  Computational Logic, Inc.
+  Computational Logic, Inc.  It was updated in December, 2024 (from
+  the original version of about two decades ago) thanks to Andrei
+  Koltsov, to work with recent ACL2 versions.
 
   This example is based on one developed by Ricky Butler and Sally
   Johnson of NASA Langley for the PVS system, and subsequently
@@ -153446,14 +153454,15 @@ Subtopics
   others, start our specification and proof effort from a much richer
   foundation, and hopefully devote more of our time to the problem at
   hand.  Unfortunately, it is not completely simple for the new user
-  to know what [books] are available and what they contain.  We hope
-  later to improve the documentation of the growing collection of
-  [community-books] that are typically downloaded with ACL2; for now,
-  the reader is encouraged to look in the README.html file in the
-  books' top-level directory.  For present purposes, the beginning
-  user can simply take our word that a book exists containing useful
-  alist definitions and facts.  These definitions and lemmas can be
-  introduced into the current theory using the [command]:
+  to know what [books] are available and what they contain.
+  Documentation is available for the growing collection of
+  [community-books] that are typically downloaded with ACL2, and a
+  mailing list, [47macl2-help[0m, is available (see the {ACL2 home page |
+  http://www.cs.utexas.edu/users/moore/acl2/}.  For present purposes,
+  the beginning user can simply take our word that a book exists
+  containing useful alist definitions and facts.  These definitions
+  and lemmas can be introduced into the current theory using the
+  [command]:
 
     (include-book \"data-structures/alist-defthms\" :dir :system)
 
@@ -153523,27 +153532,38 @@ Subtopics
   other defined function), using the [47m:[0m[47m[pe][0m command:
 
     ACL2 !>:pe binding
-       d     33  (INCLUDE-BOOK
-                      \"/slocal/src/acl2/v1-9/books/public/alist-defthms\")
+       d   1  (INCLUDE-BOOK \"data-structures/alist-defthms\"
+                            :DIR ...)
 
-    >V d          (DEFUN BINDING (X A)
-                         \"The value bound to X in alist A.\"
-                         (DECLARE (XARGS :GUARD (ALISTP A)))
-                         (CDR (ASSOC-EQUAL X A)))
+              [Included books, outermost to innermost:
+               \".../acl2/books/data-structures/alist-defthms.lisp\"
+               \".../acl2/books/data-structures/alist-defuns.lisp\"
+              ]
+
+    >V d       (DEFUN
+                BINDING (X A)
+                \"The value bound to X in alist A.\"
+                (DECLARE
+                   (XARGS :GUARD (AND (ALISTP A)
+                                      (OR (EQLABLEP X) (EQLABLE-ALISTP A)))))
+                (CDR (ASSOC X A)))
 
   This tells us that [47mbinding[0m was introduced by the given [47m[include-book][0m
   form, is currently [disable]d in the current theory, and has the
   definition given by the displayed [47m[defun][0m form.  We see that
-  [47mbinding[0m is actually defined in terms of the primitive [47m[assoc-equal][0m
-  function.  If we look at the definition of [47m[assoc-equal][0m:
+  [47mbinding[0m is actually defined in terms of the primitive [47m[assoc][0m.  If
+  we submit [47m:pe assoc[0m then we can see that [47massoc[0m is a macro that
+  essentially serves as an abbreviation for the primitive function
+  [47m[assoc-equal][0m.  We say no more about [47massoc[0m here but instead focus
+  on [47massoc-equal[0m.  If we use [47m:pe[0m to look at the definition of
+  [47m[assoc-equal][0m:
 
-    ACL2 !>:pe assoc-equal
-     V     -489  (DEFUN ASSOC-EQUAL (X ALIST)
-                        (DECLARE (XARGS :GUARD (ALISTP ALIST)))
-                        (COND ((ENDP ALIST) NIL)
-                              ((EQUAL X (CAR (CAR ALIST)))
-                               (CAR ALIST))
-                              (T (ASSOC-EQUAL X (CDR ALIST)))))
+    PV    -8489  (DEFUN ASSOC-EQUAL (X ALIST)
+                   (DECLARE (XARGS :GUARD (ALISTP ALIST)))
+                   (COND ((ENDP ALIST) NIL)
+                         ((EQUAL X (CAR (CAR ALIST)))
+                          (CAR ALIST))
+                         (T (ASSOC-EQUAL X (CDR ALIST)))))
 
   we can see that [47m[assoc-equal][0m returns [47mnil[0m upon reaching the end of an
   unsuccessful search down the alist.  So [47mbinding[0m returns [47m(cdr nil)[0m
@@ -153650,7 +153670,7 @@ Subtopics
   legal keys for our phonebook alist.
 
   We wish to do something similar to define what it means to be a legal
-  phone number.  We submit the following form to ACL2:
+  phone number.  We submit the following form to ACL2.
 
     (encapsulate
       ;; Introduce a recognizer for phone numbers.
@@ -153663,7 +153683,7 @@ Subtopics
         (booleanp (pnump x)))
       ;;
       (defthm nil-not-pnump
-        (not (pnump nil)))).
+        (not (pnump nil))))
 
   This introduces a Boolean-valued recognizer [47mpnump[0m, with the
   additional proviso that the constant [47mnil[0m is not a [47mpnump[0m.  We impose
@@ -153770,13 +153790,13 @@ Subtopics
   of the arguments.  In fact, [47madd-in-book[0m is really expressing a
   property that is true of alists in general, not just of the
   particular variety of alists we are dealing with.  Of course, we
-  could have added some extraneous hypotheses and proved:
+  could have added some extraneous hypotheses and proved
 
     (defthm add-in-book
       (implies (and (namep nm)
                     (pnump pnum)
                     (phonebookp bk))
-               (in-book? nm (add-phone nm pnum bk)))),
+               (in-book? nm (add-phone nm pnum bk))))
 
   but that would have yielded a weaker and less useful lemma because it
   would apply to fewer situations.  In general, it is best to state
@@ -153873,39 +153893,90 @@ Subtopics
       (equal (del-phone nm (change-phone nm pnum bk))
              (del-phone nm bk)))
 
-  Unfortunately, when we try to prove this, we encounter subgoals that
-  seem to be true, but for which the prover is stumped.  For example,
-  consider the following goal.  (Note: [47mendp[0m holds of lists that are
-  empty.)
+  Unfortunately, our attempt to prove it failed with the following
+  subgoal under a top-level induction.
 
-    Subgoal *1/4
-    (IMPLIES (AND (NOT (ENDP BK))
-                  (NOT (EQUAL NM (CAAR BK)))
-                  (NOT (BOUND? NM (CDR BK)))
-                  (BOUND? NM BK))
-             (EQUAL (REMBIND NM (BIND NM PNUM BK))
-                    (REMBIND NM BK))).
+    Subgoal *1/4''
+    (IMPLIES (AND (CONSP BK)
+                  (NOT (EQUAL NM (CAR (CAR BK))))
+                  (NOT (BOUND?-EQUAL NM (CDR BK)))
+                  (BOUND?-EQUAL NM BK))
+             (EQUAL (REMBIND-EQUAL NM (BIND-EQUAL NM PNUM (CDR BK)))
+                    (REMBIND-EQUAL NM (CDR BK))))
+
+  We have defined [47mdel-phone[0m using [47mrembind[0m, and [47mchange-phone[0m using
+  [47min-book[0m (which uses [47mbound?[0m) and [47mbind[0m; but we have ``equal''
+  suffixes in the subgoal.  The cause is theorems of the form
+  [47m***->***-equal[0m, which are given in the included book.  We can use
+  [history]'s [47m:[0m[47m[pl][0m command to print the rules for a given name or
+  term.  Here is the part of [47m:[0m[47m[pl][0m's output we are interested in now,
+  for the [47mrembind[0m function:
+
+    ACL2 !>:pl rembind
+    ...
+
+    Rune:         (:REWRITE REMBIND->REMBIND-EQUAL)
+    Enabled:      T
+    Hyps:         T
+    Equiv:        EQUAL
+    Lhs:          (REMBIND X A)
+    Rhs:          (REMBIND-EQUAL X A)
+    Backchain-limit-lst: NIL
+    Subclass:     ABBREVIATION
+
+    ...
+
+  We can see that [rewrite] rule [47mrembind->rembind-equal[0m is [enable]d
+  and that it replaces [3mlhs[0m with [3mrhs[0m.  For functions [47mbind[0m, [47mbinding[0m and
+  [47mbound?[0m we have similar rules.
 
   Our intuition about [47mrembind[0m and [47mbind[0m tells us that this goal should
   be true even without the hypotheses.  We attempt to prove the
   following lemma.
 
-    (defthm rembind-bind
-      (equal (rembind nm (bind nm pnum bk))
-             (rembind nm bk)))
+    (defthm rembind-equal-bind-equal
+      (equal (rembind-equal nm (bind-equal nm pnum bk))
+             (rembind-equal nm bk)))
 
   The prover proves this by induction, and stores it as a rewrite rule.
   After that, the prover has no difficulty in proving [47mdel-change[0m.
 
-  The need to prove lemma [47mrembind-bind[0m illustrates a point we made
-  early in this example: the collection of [rewrite] rules supplied
-  by a previously certified book will almost never be everything
-  you'll need.  It would be nice if we could operate purely in the
-  realm of names, phone numbers, and phone books without ever having
-  to prove any new facts about alists.  Unfortunately, we needed a
-  fact about the relation between [47mrembind[0m and [47mbind[0m that wasn't
-  supplied with the alists theory.  Hopefully, such omissions will be
-  rare.
+  The need to prove lemma [47mrembind-equal-bind-equal[0m illustrates a point
+  we made early in this example: the collection of [rewrite] rules
+  supplied by a previously certified book will almost never be
+  everything you'll need. It would be nice if we could operate purely
+  in the realm of names, phone numbers, and phone books without ever
+  having to prove any new facts about alists.  Unfortunately, we
+  needed a fact about the relation between [47mrembind-equal[0m and
+  [47mbind-equal[0m that wasn't supplied with the alists theory. Hopefully,
+  such omissions will be rare.
+
+  Let's take two steps back now (just enter the [47m:u[0m command twice) to
+  get acquainted with a method that will be very useful to us.  What
+  happens if we state the previous lemma another way?
+
+    (defthm rembind-bind
+      (equal (rembind name (bind name num book))
+             (rembind name book)))
+
+  An attempt to prove [47mdel-change[0m would fail then with the same subgoal
+  as above.  In this case we can give to the prover the hint to use
+  [47mrembind-bind[0m as an instance of [47mdel-change[0m (see [hints] and find
+  keywords [47m:use[0m and [47m:instance[0m):
+
+    (defthm del-change-lemma-instance-example
+      (equal (del-phone nm (change-phone nm pnum bk))
+             (del-phone nm bk))
+      :hints ((\"Goal\" :use (:instance rembind-bind
+                                      (name nm)
+                                      (num pnum)
+                                      (book bk)))))
+
+  As described in [hints], a [47m:use[0m hint causes the prover to replace a
+  goal [47mG[0m with new goal ([47mIMPLIES[0m [47mP[0m [47mG[0m), where [47mP[0m is the specified
+  theorem to use.  The [47m:instance[0m form specifies instantiation of the
+  free variables of a previously proved theorem.  See
+  [lemma-instance] for more information on this subject.
 
   Finally, let's consider our property 5 above: a name will not be in
   the book after we delete it.  We formalize this as follows:
@@ -153921,7 +153992,7 @@ Subtopics
   ensure that [31;1many[0m name occurs at most once in any valid phonebook.
 
   To complete this example, let's consider adding an [31;1minvariant[0m to our
-  specification.  In particular, suppose we want to assure that no
+  specification.  In particular, suppose we want to ensure that no
   client has more than one associated phone number.  One way to
   ensure this is to require that the domain of the alist is a ``set''
   (has no duplicates).
@@ -153950,32 +154021,43 @@ Subtopics
       (implies (and (phonebookp bk)
                     (in-book? nm bk))
                (namep nm))
-      :hints ((\"Goal\" :in-theory (enable bound?))))
+      :hints ((\"Goal\" :in-theory (enable bound?-equal))))
 
     (defthm find-phone-pnump
       (implies (and (phonebookp bk)
                     (in-book? nm bk))
                (pnump (find-phone nm bk)))
-      :hints ((\"Goal\" :in-theory (enable bound? binding))))
+      :hints ((\"Goal\" :in-theory (enable bound?-equal
+                                         binding-equal))))
 
   Note the ``[47m:[0m[47m[hints][0m'' on the last two lemmas.  Neither of these would
   prove without these [hints], because once again there are some
-  facts about [47mbound?[0m and [47mbinding[0m not available in our current
-  context.  Now, we could figure out what those facts are and try to
-  prove them.  Alternatively, we can [enable] [47mbound?[0m and [47mbinding[0m and
-  hope that by opening up these functions, the conjectures will
-  reduce to versions that the prover does know enough about or can
-  prove by induction.  In this case, this strategy works.  The hints
-  tell the prover to [enable] the functions in question when
-  considering the designated goal.
+  facts about [47mbound?-equal[0m and [47mbinding-equal[0m not available in our
+  current context.  Now, we could figure out what those facts are and
+  try to prove them.  Alternatively, we can [enable] [47mbound?-equal[0m and
+  [47mbinding-equal[0m and hope that by opening up these functions, the
+  conjectures will reduce to versions that the prover does know
+  enough about, perhaps using proof by induction.  In this case, this
+  strategy works.  The hints tell the prover to [enable] the
+  functions in question when considering the designated goal and any
+  subgoals of it.
+
+  It's important to understand that it's not enough to [enable] the
+  [47mbound?[0m and [47mbinding[0m functions.  That's because rewrite rules of the
+  form [47m***->***-equal[0m (mentioned above) will replace [enable]d
+  functions with [disable]d ones for which there are not sufficient
+  rules to complete the proof.  We can use [history]'s very
+  informative command [47m:[0m[pl] to get a lot of information about rules
+  for a given name.
 
   Below we develop the theorems showing that [47madd-phone[0m, [47mchange-phone[0m,
   and [47mdel-phone[0m preserve our proposed invariant.  Notice that along
   the way we have to prove some subsidiary facts, some of which are
   pretty ugly.  It would be a good idea for you to try, say,
   [47madd-phone-preserves-invariant[0m without introducing the following
-  four lemmas first.  See if you can develop the proof and only add
-  these lemmas as you need assistance.  Then try
+  four lemmas first.  Perhaps you will use the instantiation of
+  lemmas method, described above.  See if you can develop the proof
+  and only add these lemmas as you need assistance.  Then try
   [47mchange-phone-preserves-invariant[0m and [47mdel-phone-preserves-invariant[0m.
   They will be easier.  It is illuminating to think about why
   [47mdel-phone-preserves-invariant[0m does not need any ``type''
@@ -153987,44 +154069,96 @@ Subtopics
                     (pnump num))
                (phonebookp (bind nm num bk))))
 
+    (defthm member-equal-strip-cars-bind-equal
+      (implies (and (not (equal x y))
+                    (not (member-equal x (strip-cars a))))
+               (not (member-equal x (strip-cars (bind-equal y z a))))))
+
+    (defthm bind-equal-preserves-domain-setp
+      (implies (and (alistp bk)
+                    (setp (domain bk)))
+               (setp (domain (bind-equal nm num bk))))
+      :hints ((\"Goal\" :in-theory (enable domain))))
+
+  Let's take two steps back (using [47m:u[0m twice) and prove the following
+  instead of [47mmember-equal-strip-cars-bind-equal[0m:
+
     (defthm member-equal-strip-cars-bind
       (implies (and (not (equal x y))
                     (not (member-equal x (strip-cars a))))
                (not (member-equal x (strip-cars (bind y z a))))))
 
-    (defthm bind-preserves-domain-setp
+  Then [47mbind-equal-preserves-domain-setp[0m fails:
+
+    Subgoal *1/5''
+    (IMPLIES (AND (CONSP BK)
+             (NOT (EQUAL NM (CAR (CAR BK))))
+             (SETP (STRIP-CARS (BIND-EQUAL NM NUM (CDR BK))))
+             (CONSP (CAR BK))
+             (ALISTP (CDR BK))
+             (NOT (MEMBER-EQUAL (CAR (CAR BK))
+                                (STRIP-CARS (CDR BK))))
+             (SETP (STRIP-CARS (CDR BK))))
+        (NOT (MEMBER-EQUAL (CAR (CAR BK))
+                           (STRIP-CARS (BIND-EQUAL NM NUM (CDR BK))))))
+
+  We can use a [lemma-instance] to prove it:
+
+    (defthm bind-equal-preserves-domain-setp
       (implies (and (alistp bk)
                     (setp (domain bk)))
-               (setp (domain (bind nm num bk))))
-      :hints ((\"Goal\" :in-theory (enable domain))))
+               (setp (domain (bind-equal nm num bk))))
+      :hints ((\"Goal\" :in-theory (enable domain))
+              (\"Subgoal *1/5''\" :use (:instance
+                                      member-equal-strip-cars-bind
+                                      (x (car (car bk)))
+                                      (y nm)
+                                      (z num)
+                                      (a (cdr bk))))))
+
+  The use of [lemma-instance] is somewhat artificial in this example,
+  but this method gives great opportunities to lead ACL2 in proving
+  theorems.  That said, it is generally preferable to avoid [47m:use[0m
+  hints in favor of developing a useful set of [rewrite] rules, since
+  those rules can help to automate future proof attempts.
+
+  We continue now with proofs that our operations preserve the
+  [47mphonebook'[0m invariant.
 
     (defthm phonebookp-alistp
       (implies (phonebookp bk)
                (alistp bk)))
 
-    (defthm ADD-PHONE-PRESERVES-INVARIANT
+    (defthm bind-equal-preserves-phonebookp
+      (implies (and (phonebookp bk)
+                    (namep nm)
+                    (pnump num))
+               (phonebookp (bind-equal nm num bk))))
+
+    (defthm add-phone-preserves-invariant
       (implies (and (valid-phonebookp bk)
                     (namep nm)
                     (pnump num))
                (valid-phonebookp (add-phone nm num bk)))
-      :hints ((\"Goal\" :in-theory (disable domain-bind))))
+      :hints ((\"Goal\" :in-theory (disable domain-bind-equal))))
 
-    (defthm CHANGE-PHONE-PRESERVES-INVARIANT
+    (defthm change-phone-preserves-invariant
       (implies (and (valid-phonebookp bk)
                     (namep nm)
                     (pnump num))
                (valid-phonebookp (change-phone nm num bk)))
-      :hints ((\"Goal\" :in-theory (disable domain-bind))))
+      :hints ((\"Goal\" :in-theory (disable domain-bind-equal))))
+
+    (defthm member-remove-equal
+      (implies (and (not (equal a b))
+                    (not (member a x)))
+               (not (member a (remove-equal b x)))))
 
     (defthm remove-equal-preserves-setp
       (implies (setp l)
                (setp (remove-equal x l))))
 
-    (defthm rembind-preserves-phonebookp
-      (implies (phonebookp bk)
-               (phonebookp (rembind nm bk))))
-
-    (defthm DEL-PHONE-PRESERVES-INVARIANT
+    (defthm del-phone-preserves-invariant
       (implies (valid-phonebookp bk)
                (valid-phonebookp (del-phone nm bk))))
 
@@ -154068,38 +154202,45 @@ Subtopics
 
     (defthm member-equal-strip-cdrs-rembind
       (implies (not (member-equal x (strip-cdrs y)))
-               (not (member-equal x (strip-cdrs (rembind z y))))))
+               (not (member-equal x (strip-cdrs
+                                     (rembind-equal z y))))))
 
-    (defthm DEL-PHONE-PRESERVES-PHONENUMS-UNIQUE
+    (defthm del-phone-preserves-phonenums-unique
       (implies (phonenums-unique bk)
                (phonenums-unique (del-phone nm bk)))
       :hints ((\"Goal\" :in-theory (enable range))))
 
     (defthm strip-cdrs-bind-non-member
-      (implies (and (not (bound? x a))
+      (implies (and (not (bound?-equal x a))
                     (alistp a))
-               (equal (strip-cdrs (bind x y a))
+               (equal (strip-cdrs (bind-equal x y a))
                       (append (strip-cdrs a) (list y))))
-      :hints ((\"Goal\" :in-theory (enable bound?))))
+      :hints ((\"Goal\" :in-theory (enable bound?-equal))))
+
+    (defthm member-append
+      (iff (member e (append x y))
+           (or (member e x)
+               (member e y))))
 
     (defthm setp-append-list
       (implies (setp l)
                (equal (setp (append l (list x)))
                       (not (member-equal x l)))))
 
-    (defthm ADD-PHONE-PRESERVES-PHONENUMS-UNIQUE
+    (defthm add-phone-preserves-phonenums-unique
       (implies (and (phonenums-unique bk)
                     (new-pnump pnum bk)
                     (alistp bk))
                (phonenums-unique (add-phone nm pnum bk)))
       :hints ((\"Goal\" :in-theory (enable range))))
 
-    (defthm member-equal-strip-cdrs-bind
+    (defthm member-equal-strip-cdrs-bind-equal
       (implies (and (not (member-equal z (strip-cdrs a)))
                     (not (equal z y)))
-               (not (member-equal z (strip-cdrs (bind x y a))))))
+               (not (member-equal z (strip-cdrs
+                                     (bind-equal x y a))))))
 
-    (defthm CHANGE-PHONE-PRESERVES-PHONENUMS-UNIQUE
+    (defthm change-phone-preserves-phonenums-unique
       (implies (and (phonenums-unique bk)
                     (new-pnump pnum bk)
                     (alistp bk))
