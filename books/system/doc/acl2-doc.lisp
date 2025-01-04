@@ -25625,11 +25625,11 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
  })
 
  <p>expands to the following, except that some output is inhibited for the
- @(tsee in-theory) event:</p>
+ @(tsee in-theory) and @(tsee value-triple) @(see events):</p>
 
  @({
   (progn
-    (defthmd NAME TERM ...)
+    (defthm NAME TERM ...)
     (in-theory (disable NAME))
     (value-triple '(:defthmd NAME))).
  })
