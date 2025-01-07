@@ -1,9 +1,7 @@
-; X86ISA Library
-
-; Note: The license below is based on the template at:
 ; http://opensource.org/licenses/BSD-3-Clause
 
-; Copyright (C) 2018, Shilpi Goel
+; Copyright (C) 2025, Yahya Sohail
+
 ; All rights reserved.
 
 ; Redistribution and use in source and binary forms, with or without
@@ -34,41 +32,54 @@
 ; OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ; Original Author(s):
-; Shilpi Goel         <shigoel@gmail.com>
+; Yahya Sohail        <yahya@yahyasohail.com>
 
 (in-package "X86ISA")
 
-(include-book "centaur/fty/bitstruct" :dir :system)
+(include-book "oslib/argv" :dir :system)
 
-;; We do these once, here, to avoid each defbitstruct below doing them locally:
-(local (include-book "centaur/bitops/ihsext-basics" :dir :system))
-(local (include-book "centaur/bitops/equal-by-logbitp" :dir :system))
-(local (include-book "arithmetic/top-with-meta" :dir :system))
+(include-book "asmtest")
+(include-book "../top" :ttags (:undef-flg :other-non-det :instrument))
 
-(local (xdoc::set-default-parents structures))
+(def-snippet-data real-snippet-data)
 
-;; Bitstruct field widths:
+(init-x86-state-64
+ nil
+ 0
+ nil         ;; GPRs
+ nil         ;; CRs
+ nil         ;; MSRs
+ nil         ;; SRs (visible)
+ nil nil nil ;; (hidden)
+ 0           ;; rflags
+ nil         ;;memory
+ x86)
 
-(defbitstruct  2bits  2)
-(defbitstruct  3bits  3)
-(defbitstruct  4bits  4)
-(defbitstruct  5bits  5)
-(defbitstruct  6bits  6)
-(defbitstruct  7bits  7)
-(defbitstruct  8bits  8)
-(defbitstruct 10bits 10)
-(defbitstruct 11bits 11)
-(defbitstruct 12bits 12)
-(defbitstruct 13bits 13)
-(defbitstruct 16bits 16)
-(defbitstruct 17bits 17)
-(defbitstruct 19bits 19)
-(defbitstruct 22bits 22)
-(defbitstruct 24bits 24)
-(defbitstruct 31bits 31)
-(defbitstruct 32bits 32)
-(defbitstruct 36bits 36)
-(defbitstruct 40bits 40)
-(defbitstruct 45bits 45)
-(defbitstruct 54bits 54)
-(defbitstruct 64bits 64)
+(!ctri *cr0* (change-cr0bits (ctri *cr0* x86)
+                             :em 0
+                             :mp 1) x86)
+
+(!ctri *cr4* (change-cr4bits (ctri *cr4* x86)
+                             :osfxsr 1
+                             :osxmmexcpt 1) x86)
+
+(binary-file-load "asmtest" :elf t)
+
+(define run-test (x86 state)
+  (b* (((mv argv state) (oslib::argv state))
+       ((when (or (not (consp argv))
+                  (not (stringp (car argv)))))
+        (prog2$ (raise "error argv nil")
+                (mv nil x86 state)))
+       (name (car argv))
+       (- (cw "~x0~%" name))
+       ((mv res x86 state)
+        (test-snippet name
+                      :input-file (str::cat "inputs/" name ".in")
+                      :output-file (str::cat "outputs/" name ".out")))
+       (- (cw "~x0~%" res))
+       (- (good-bye)))
+      (mv res x86 state)))
+
+:q
+(save-exec "check-test" "MODIFIED" :init-forms '((x86isa::run-test x86isa::x86 state)))
