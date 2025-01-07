@@ -29002,10 +29002,10 @@ Subtopics
     (defthmd NAME TERM ...)
 
   expands to the following, except that some output is inhibited for
-  the [47m[in-theory][0m event:
+  the [47m[in-theory][0m and [47m[value-triple][0m [events]:
 
     (progn
-      (defthmd NAME TERM ...)
+      (defthm NAME TERM ...)
       (in-theory (disable NAME))
       (value-triple '(:defthmd NAME))).
 
