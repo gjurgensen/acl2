@@ -108078,8 +108078,8 @@ it."
  <h3>Bug Fixes</h3>
 
  <p>Fixed a soundness bug in the @(see proof-builder) that could cause goals
- from forced @(tsee force)d hypotheses to be created incorrectly.  (This bug
- has been around for at least 10 years and probably for 30 years!)</p>
+ from @(tsee force)d hypotheses to be created incorrectly.  (This bug has been
+ around for at least 10 years and probably for 30 years!)</p>
 
  <p>A Lisp error is now avoided when saving event-data (see @(see
  saving-event-data) and submitting certain ill-formed attempts at @(see
