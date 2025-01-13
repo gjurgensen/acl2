@@ -108010,6 +108010,42 @@ it."
 ; and later.  Thanks to Camm Maguire for the suggestion, and the explanation
 ; that its effect would generally be only to waste space in GCL 2.7.0.
 
+; Here is an example of the proof-builder soundness bug involving forcing.
+; These events were admitted before the bug was fixed.
+;
+;   (encapsulate
+;     (((p1 *) => *)
+;      ((p2 *) => *)
+;      ((f *) => *))
+;     (local (defun p1 (x) x))
+;     (local (defun f (x)
+;              x))
+;     (local (defun p2 (x)
+;              (equal (f x) x)))
+;     (defthm f-p2
+;       (implies (and (p1 x)
+;                     (force (p2 x)))
+;                (equal (f x) x)))
+;     (defthm f-not-p2
+;       (implies (and (p1 x)
+;                     (not (p2 x)))
+;                (not (equal (f x) x)))
+;       :hints (("Goal" :in-theory (disable f-p2))))
+;     )
+;   (defthm needs-p2-hyp
+;     (implies (p1 x)
+;              (equal (f x) x))
+;     :instructions (:promote
+;                    :s ; creates bad goal
+;                    :s))
+;   (defthm false
+;     nil
+;     :rule-classes nil
+;     :hints (("Goal" :use ((:functional-instance needs-p2-hyp
+;                                                 (f (lambda (x) (not x)))
+;                                                 (p1 (lambda (x) t))
+;                                                 (p2 (lambda (x) nil)))))))
+
   :parents (release-notes)
   :short "ACL2 Version  8.7 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -108040,6 +108076,10 @@ it."
  by adding suitable proclaiming in ACL2).</p>
 
  <h3>Bug Fixes</h3>
+
+ <p>Fixed a soundness bug in the @(see proof-builder) that could cause goals
+ from @(tsee force)d hypotheses to be created incorrectly.  (This bug has been
+ around for at least 10 years and probably for 30 years!)</p>
 
  <p>A Lisp error is now avoided when saving event-data (see @(see
  saving-event-data) and submitting certain ill-formed attempts at @(see

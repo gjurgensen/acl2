@@ -105301,6 +105301,10 @@ Heuristic and Efficiency Improvements
 
 Bug Fixes
 
+  Fixed a soundness bug in the [proof-builder] that could cause goals
+  from [47m[force][0md hypotheses to be created incorrectly.  (This bug has
+  been around for at least 10 years and probably for 30 years!)
+
   A Lisp error is now avoided when saving event-data (see
   [saving-event-data] and submitting certain ill-formed attempts at
   [events].  Thanks to Eric Smith for sending the following example.
