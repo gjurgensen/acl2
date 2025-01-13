@@ -77,7 +77,7 @@ Subtopics
   [defthm], [in-theory], [xargs], [state], etc., without an [47macl2::[0m
   prefix.
 
-  The constant [47m*acl2-exports*[0m lists [47m1658[0m symbols, including most
+  The constant [47m*acl2-exports*[0m lists [47m1659[0m symbols, including most
   documented ACL2 system constants, functions, and macros.  You will
   typically also want to import many symbols from Common Lisp; see
   [*common-lisp-symbols-from-main-lisp-package*].
@@ -411,8 +411,8 @@ Subtopics
        ld-user-stobjs-modified-warning
        ld-verbose
        legal-case-clausesp len len-update-nth
-       length let let* let-mbe lex-fix
-       lexorder lexp list list* list*-macro
+       length let let* let-mbe lex-fix lexorder
+       lexp list list$ list* list*-macro
        list-macro listp local logand
        logandc1 logandc2 logbitp logcount
        logeqv logic logic-fns-list-listp
@@ -3743,6 +3743,9 @@ Subtopics
       Total order on ACL2 objects
 
   [List]
+      Build a list
+
+  [List$]
       Build a list
 
   [List*]
@@ -7197,17 +7200,23 @@ Subtopics
   "Set aside fixnums in GCL
 
   [47m(Allocate-fixnum-range fixnum-lo fixnum-hi)[0m causes Gnu Common Lisp
-  (GCL) to create a persistent table for the integers between
-  [47mfixnum-lo[0m and [47mfixnum-hi[0m (both bounds inclusive). This table is
-  referenced first when any integer is boxed and the existing box in
-  the table is used if the integer is in bounds.  This can speed up
-  GCL considerably by avoiding wasteful fixnum boxing.  Here,
-  [47mfixnum-lo[0m and [47mfixnum-hi[0m should be fixnums.  On 32-bit machines it
-  would be good for them to be of type [47m(signed-byte 30)[0m, with
-  [47mfixnum-lo <= fixnum-hi[0m.
+  (GCL), versions preceding 2.7, to create a persistent table for the
+  integers between [47mfixnum-lo[0m and [47mfixnum-hi[0m (both bounds inclusive).
+  This table is referenced first when any integer is boxed and the
+  existing box in the table is used if the integer is in bounds.
+  This can speed up GCL (again, for versions preceding 2.7)
+  considerably by avoiding wasteful fixnum boxing.  Here, [47mfixnum-lo[0m
+  and [47mfixnum-hi[0m should be fixnums.  On 32-bit machines it would be
+  good for them to be of type [47m(signed-byte 30)[0m, with [47mfixnum-lo <=
+  fixnum-hi[0m.
 
-  When this function is executed in a Lisp implementation other than
-  GCL, it has no side effect.  This function always returns [47mnil[0m.")
+  When this function is executed in a Lisp implementation other than a
+  GCL version preceding 2.7, it has no side effect other than to
+  print a message.  This function always returns [47mnil[0m.
+
+  In GCL versions starting with 2.7.0, allocation for the table would
+  generally be a no-op other than to waste space, which is why
+  [47mallocate-fixnum-range[0m is a no-op for those versions.")
  (ALPHA-CHAR-P
   (CHARACTERS ACL2-BUILT-INS)
   "Recognizer for alphabetic characters
@@ -10853,6 +10862,10 @@ Subtopics
   (DEFABSSTOBJ)
   "Attach an ``implementation [stobj]'' to an attachable stobj
 
+  For an illustration of [47mattach-stobj[0m, see [community-books] directory
+  [47mbooks/demos/attach-stobj/[0m, in particular file [47mREADME.txt[0m in that
+  directory.
+
   This topic assumes familiarity with abstract [stobj]s; see
   [defabsstobj].  It documents a way to modify the foundation and
   primitives of an abstract [stobj], [47mgen[0m, that is introduced by
@@ -10875,9 +10888,12 @@ Subtopics
   of [47mgen[0m, as well as execution of the primitives of [47mgen[0m, will
   effectively be provided by [47mimpl[0m; details are below.
 
-  In the General Form above, [47mimpl[0m is allowed to be [47mnil[0m, in which case
-  any existing attachment for [47mgen[0m will be removed.  Below, we assume
-  the common case that [47mimpl[0m is not [47mnil[0m.
+  In the General Form above, [47mimpl[0m is allowed to be [47mnil[0m, i.e., the event
+  [47m(attach-stobj gen nil)[0m is legal, where it is still required that
+  [47mgen[0m not be the name of any existing event.  The effect of this
+  ``attachment'' of [47mnil[0m is to cancel the effect of any previous
+  [47m(attach-stobj gen impl)[0m on any future introduction of [47mgen[0m.  Below,
+  we assume the common case that [47mimpl[0m is not [47mnil[0m.
 
   Note that [47mimpl[0m may itself have an attachment, say, [47mimpl2[0m, in which
   case we say that [47mimpl2[0m is attached to [47mgen[0m.  If furthermore [47mimpl3[0m is
@@ -18855,7 +18871,9 @@ Subtopics
   specs.'' Such strings are used to specify where in the proof
   attempt a given hint is to be applied.  The function
   [47mparse-clause-id[0m converts goal-specs into clause identifiers, which
-  are cons-trees containing natural numbers.
+  are cons-trees containing natural numbers (and if [47m:OR[0m [hints] are
+  used, they may also contain symbols of the form [47mDn[0m where [47mn[0m is a
+  natural number, e.g., [47mD23[0m.)
 
   Examples of goal-specs and their corresponding clause identifiers are
   shown below.
@@ -19247,12 +19265,6 @@ Subtopics
   [Set-skip-meta-termp-checks!]
       Skip output checks non-[local]ly for [meta] functions and
       [clause-processor]s")
- (CLEAR-HASH-TABLES
-  (MEMOIZE)
-  "Deprecated feature
-
-  Deprecated.  Calls [47m[clear-memoize-tables][0m and then [47m[hons-clear][0m or
-  [47m[hons-wash][0m, whichever makes sense for the underlying Common Lisp.")
  (CLEAR-MEMOIZE-STATISTICS
   (MEMOIZE)
   "Clears all profiling info displayed by [47m([0m[47m[memoize-summary][0m[47m)[0m
@@ -24446,6 +24458,7 @@ Subtopics
       :congruent-to congruent-to
       :non-executable non-executable
       :protect-default protect-default
+      :attachable att
       :exports (e1 ... ek))
 
   The keyword argument [47m:EXPORTS[0m must be supplied, and missing or [47mnil[0m
@@ -24520,6 +24533,9 @@ Subtopics
       the value of keyword [47m:PROTECT[0m for each member of [47mexports[0m that
       does not explicitly specify [47m:PROTECT[0m.  See the discussion of
       [47mexports[0m below.
+
+      [47mAttachable[0m should be [47mnil[0m (the default) or [47mt[0m.  See [attach-stobj] for
+      a discussion of this keyword.
 
       An important aspect of the [47mcongruent-to[0m parameter is that if it is
       not [47mnil[0m, then the checks for lemmas --- [47m{CORRESPONDENCE}[0m,
@@ -28986,10 +29002,10 @@ Subtopics
     (defthmd NAME TERM ...)
 
   expands to the following, except that some output is inhibited for
-  the [47m[in-theory][0m event:
+  the [47m[in-theory][0m and [47m[value-triple][0m [events]:
 
     (progn
-      (defthmd NAME TERM ...)
+      (defthm NAME TERM ...)
       (in-theory (disable NAME))
       (value-triple '(:defthmd NAME))).
 
@@ -46366,7 +46382,19 @@ Subtopics
   from exceeding what is available.  Consider dividing 1.0 by the
   number of threads; so for example, for 4 threads (i.e., using ``[47m-j
   4[0m'' in your [47mmake[0m command), you may want to specify
-  [47mGCL_MEM_MULTIPLE=0.25[0m.")
+  [47mGCL_MEM_MULTIPLE=0.25[0m.  But you can probably run with more threads
+  (e.g., perhaps 20 threads or more on a 64 MB machine) by instead
+  doing a ``pooled memory run'', which may be performed as in the
+  following example (bash syntax), as suggested by Camm Maguire.
+  Warning: the use of [47mHOME[0m may change soon if it hasn't already.
+
+    HOME=/tmp ACL2=$(pwd)/saved_acl2 GCL_MULTIPROCESS_MEMORY_POOL=t \\
+      make -j 20 regression-fresh
+
+  (Technical explanation: The reason for setting [47mHOME[0m to directory [47m/tmp[0m
+  is to keep a so-called ``pool file'' local, since otherwise it will
+  be on your home directory, which may be updated too infrequently if
+  on a shared file system.)")
  (GCS (POINTERS)
       "See [get-command-sequence].")
  (GENEQV
@@ -48415,12 +48443,13 @@ Conclusion
 
   By default, these utilities all use an underlying notion of run time
   provided by the host Common Lisp implementation: specifically, the
-  Common Lisp functions [47mget-internal-run-time[0m for cpu time and
-  [47mget-internal-real-time[0m for real (wall clock) time.  While the
-  latter is specified to measure elapsed time, the former is left to
-  the implementation, which might well only measure time spent in the
-  Lisp process.  Consider the following example, which is a bit
-  arcane but basically sleeps for 2 seconds.
+  Common Lisp functions [47mget-internal-run-time[0m for cpu time (or a
+  slight variant if the host Lisp is a version of GCL that precedes
+  2.7.0) and [47mget-internal-real-time[0m for real (wall clock) time.
+  While the latter is specified to measure elapsed time, the former
+  is left to the implementation, which might well only measure time
+  spent in the Lisp process.  Consider the following example, which
+  is a bit arcane but basically sleeps for 2 seconds.
 
     (defttag t) ; to allow sys-call
     (make-event
@@ -64878,10 +64907,14 @@ Subtopics
 
   [31;1mWARNING![0m If [47mld-redefinition-action[0m is non-[47mnil[0m then ACL2 is liable to
   be made unsafe or unsound, or behave in unexpected ways.  For
-  example, redefining a macro or inlined function called in the body
-  of a function, [47mg[0m, may not cause the new definition to be called by
-  [47mg[0m.  Redefinition should be viewed as a way to facilitate unsafe,
-  but potentially useful, hacking.
+  example, redefining a macro or inlined function, [47mf[0m, that is called
+  in the body of another function, [47mg[0m, may not cause the new version
+  of [47mf[0m to be called by [47mg[0m.  In addition, for some Lisps, in particular
+  GCL Version 2.7.0 or later, the return type [47mTP[0m inferred for the
+  original definition of [47mf[0m might cause mishandling of the return
+  value from [47mf[0m as [47mg[0m still expects that value's type to be [47mTP[0m.
+  Redefinition should be viewed as a way to facilitate unsafe, but
+  potentially useful, hacking.
 
   The keyword command [47m:[0m[47m[redef][0m will set [47mld-redefinition-action[0m to a
   convenient setting allowing unsound redefinition.  See below.
@@ -65958,6 +65991,9 @@ Subtopics
   5 6 7)[0m returns a list of length 3 whose elements are [47m5[0m, [47m6[0m, and [47m7[0m
   respectively.  Also see [list*].
 
+  If a call of [47mlist[0m results in an error due to too many arguments,
+  consider using [47m[list$][0m.
+
   [47mList[0m is defined in Common Lisp.  See any Common Lisp documentation
   for more information.
 
@@ -65975,6 +66011,16 @@ Subtopics
                 (cons (car lst)
                       (cons (list-macro (cdr lst)) nil)))
         nil))")
+ (LIST$
+  (LISTS ACL2-BUILT-INS)
+  "Build a list
+
+  [47mList$[0m is a macro that is virtually interchangeable with [47m[list][0m.  The
+  only difference is that when the host Lisp is [gcl] with GCL
+  version at least 2.7.0, [47mlist[0m may cause an error when given too many
+  arguments (generally, more than 63).  In such cases, [47mlist$[0m may be
+  used in place of [47mlist[0m, since [47mlist$[0m has no restriction on the number
+  of arguments.")
  (LIST*
   (LISTS ACL2-BUILT-INS)
   "Build a list
@@ -66094,6 +66140,9 @@ Subtopics
       Length of a string or proper list
 
   [List]
+      Build a list
+
+  [List$]
       Build a list
 
   [List*]
@@ -76873,9 +76922,6 @@ Subtopics
 
 
 Subtopics
-
-  [Clear-hash-tables]
-      Deprecated feature
 
   [Clear-memoize-statistics]
       Clears all profiling info displayed by [47m([0m[47m[memoize-summary][0m[47m)[0m
@@ -105255,6 +105301,10 @@ Heuristic and Efficiency Improvements
 
 Bug Fixes
 
+  Fixed a soundness bug in the [proof-builder] that could cause goals
+  from [47m[force][0md hypotheses to be created incorrectly.  (This bug has
+  been around for at least 10 years and probably for 30 years!)
+
   A Lisp error is now avoided when saving event-data (see
   [saving-event-data] and submitting certain ill-formed attempts at
   [events].  Thanks to Eric Smith for sending the following example.
@@ -105262,8 +105312,36 @@ Bug Fixes
     (assign event-data-fal 'event-data-fal)
     (defuns foo (x) x)
 
+  Fixed a bug in the interaction of [47m[memoize-partial][0m with utilities
+  [47m[save-and-clear-memoization-settings][0m and
+  [47m[restore-memoization-settings][0m.  The latter utilities no longer
+  have an effect on functions created by [47m[memoize-partial][0m (or, and
+  this is quite obscure, on memoization from calls of [47m[memoize][0m with
+  a non-[47mnil[0m value of the keyword, [47m:total[0m).
+
+  An attachable stobj (see [attach-stobj]) was created by the
+  executable ([47m:EXEC[0m) function associated with its stobj creator (see
+  [defabsstobj]), even when that stobj was given an attachment.  This
+  bug has been fixed: the stobj is now created by the [47m:EXEC[0m of the
+  attachment's creator.
+
 
 Changes at the System Level
+
+  Modifications have been made that allow ACL2 to be hosted on GCL
+  Version 2.7.0 and presumably later [gcl] versions; previously only
+  GCL versions before 2.7.0 could host ACL2.  Essentially the only
+  user-visible change (other than error prevention) is the
+  introduction of [47m[list$][0m, a macro equivalent to [47m[list][0m that can be
+  used without a GCL 2.7.0 restriction on the number of arguments.
+  The most sweeping implementation-level change is the replacement of
+  an array in support of so-called [3mstatic honses[0m, the [3msbits array[0m, by
+  a structure that avoids a reduced bound on array dimensions imposed
+  by GCL 2.7.0.  Details may be found in a Lisp comment in the form
+  [47m(defxdoc note-8-7 ...)[0m in [community-books] file
+  [47mbooks/system/doc/acl2-doc.lisp[0m.  Thanks to Camm Maguire for his
+  help with this project, including (but by no means limited to) his
+  contribution of a new sbits implementation.
 
 
 EMACS Support
@@ -131983,7 +132061,7 @@ Subtopics
   When the term is a call of [47mev-w[0m, an unsafe hack allowing such calls
   is as follows.  Warning: This may result in unsoundness!  (On a
   related note: For discussion about unsoundness when converting such
-  [program]-mode functions to [logic] mode, see [program-only].
+  [program]-mode functions to [logic] mode, see [program-only].)
 
     (value :q)
     (setf (symbol-function (*1*-symbol 'ev-w))
@@ -132042,6 +132120,10 @@ Subtopics
   Calls of this macro achieve two changes.  The first copies the
   current memoization settings into an ACL2 [table], and the second
   unmemoizes all functions that were memoized by calls of [47m[memoize][0m.
+  But note that this skips memoization settings that are either
+  derived from calls of [47m[memoize-partial][0m or have a non-[47mnil[0m value of
+  [47m[memoize][0m argument [47m:invoke[0m
+
   Also see [restore-memoization-settings].")
  (SAVE-EXEC
   (INTERFACING-TOOLS COMMAND-LINE)
@@ -134224,7 +134306,7 @@ Subtopics
   certify.  That isn't a huge penalty, but on the other hand it seems
   likely that [47m(set-dwp t)[0m is helpful only in rare instances.
 
-  To get the current value of [47mdwp[0m, evaluate [47m(get-dwp (w state))[0m.")
+  To get the current value of [47mdwp[0m, evaluate [47m(get-dwp nil (w state))[0m.")
  (SET-DWP!
   (TYPE-REASONING)
   "Affect the effort made in [type-reasoning], non-[47m[local][0mly
@@ -145631,22 +145713,22 @@ Subtopics
   [47m[msgp][0m --- a string or a cons suitable for printing with the [47m[fmt][0m
   directive, [47m~@[0m.  In that case, [47mmsg[0m is printed (using [47m[fmt][0m [47m~@[0m)
   instead of the generic error message.  Here is a simple example
-  from the ACL2 sources.
+  adapted from former code in the ACL2 sources.
 
-    (defun partial-functions-table-guard (fn val wrld)
+    (defun my-table-guard (fn val wrld)
       (let ((msg0 ; nil if fn/val is OK as a key/value pair, else a msg
-             (partial-functions-table-guard-msg fn val wrld)))
+             (my-table-guard-msg fn val wrld)))
         (cond
          (msg0 (mv nil
                    (msg
-                    \"Illegal partial-functions-table key and value (see :DOC ~
+                    \"Illegal my-table key and value (see :DOC ~
                      memoize-partial):~|key = ~y0value  = ~y1Reason:~%~@2~|~%\"
                     fn val msg0)))
          (t (mv t nil)))))
 
-    (table partial-functions-table nil nil
+    (table my-table nil nil
            :guard
-           (partial-functions-table-guard key val world))
+           (my-table-guard key val world))
 
   Note that it is not allowed to change the [47m:guard[0m on a table once it
   has been explicitly set.  Before the [47m:guard[0m is explicitly set, it
@@ -153337,7 +153419,9 @@ Subtopics
   in the form of ``[books].''
 
   This example was written almost entirely by Bill Young of
-  Computational Logic, Inc.
+  Computational Logic, Inc.  It was updated in December, 2024 (from
+  the original version of about two decades ago) thanks to Andrei
+  Koltsov, to work with recent ACL2 versions.
 
   This example is based on one developed by Ricky Butler and Sally
   Johnson of NASA Langley for the PVS system, and subsequently
@@ -153374,14 +153458,15 @@ Subtopics
   others, start our specification and proof effort from a much richer
   foundation, and hopefully devote more of our time to the problem at
   hand.  Unfortunately, it is not completely simple for the new user
-  to know what [books] are available and what they contain.  We hope
-  later to improve the documentation of the growing collection of
-  [community-books] that are typically downloaded with ACL2; for now,
-  the reader is encouraged to look in the README.html file in the
-  books' top-level directory.  For present purposes, the beginning
-  user can simply take our word that a book exists containing useful
-  alist definitions and facts.  These definitions and lemmas can be
-  introduced into the current theory using the [command]:
+  to know what [books] are available and what they contain.
+  Documentation is available for the growing collection of
+  [community-books] that are typically downloaded with ACL2, and a
+  mailing list, [47macl2-help[0m, is available (see the {ACL2 home page |
+  http://www.cs.utexas.edu/users/moore/acl2/}.  For present purposes,
+  the beginning user can simply take our word that a book exists
+  containing useful alist definitions and facts.  These definitions
+  and lemmas can be introduced into the current theory using the
+  [command]:
 
     (include-book \"data-structures/alist-defthms\" :dir :system)
 
@@ -153451,27 +153536,38 @@ Subtopics
   other defined function), using the [47m:[0m[47m[pe][0m command:
 
     ACL2 !>:pe binding
-       d     33  (INCLUDE-BOOK
-                      \"/slocal/src/acl2/v1-9/books/public/alist-defthms\")
+       d   1  (INCLUDE-BOOK \"data-structures/alist-defthms\"
+                            :DIR ...)
 
-    >V d          (DEFUN BINDING (X A)
-                         \"The value bound to X in alist A.\"
-                         (DECLARE (XARGS :GUARD (ALISTP A)))
-                         (CDR (ASSOC-EQUAL X A)))
+              [Included books, outermost to innermost:
+               \".../acl2/books/data-structures/alist-defthms.lisp\"
+               \".../acl2/books/data-structures/alist-defuns.lisp\"
+              ]
+
+    >V d       (DEFUN
+                BINDING (X A)
+                \"The value bound to X in alist A.\"
+                (DECLARE
+                   (XARGS :GUARD (AND (ALISTP A)
+                                      (OR (EQLABLEP X) (EQLABLE-ALISTP A)))))
+                (CDR (ASSOC X A)))
 
   This tells us that [47mbinding[0m was introduced by the given [47m[include-book][0m
   form, is currently [disable]d in the current theory, and has the
   definition given by the displayed [47m[defun][0m form.  We see that
-  [47mbinding[0m is actually defined in terms of the primitive [47m[assoc-equal][0m
-  function.  If we look at the definition of [47m[assoc-equal][0m:
+  [47mbinding[0m is actually defined in terms of the primitive [47m[assoc][0m.  If
+  we submit [47m:pe assoc[0m then we can see that [47massoc[0m is a macro that
+  essentially serves as an abbreviation for the primitive function
+  [47m[assoc-equal][0m.  We say no more about [47massoc[0m here but instead focus
+  on [47massoc-equal[0m.  If we use [47m:pe[0m to look at the definition of
+  [47m[assoc-equal][0m:
 
-    ACL2 !>:pe assoc-equal
-     V     -489  (DEFUN ASSOC-EQUAL (X ALIST)
-                        (DECLARE (XARGS :GUARD (ALISTP ALIST)))
-                        (COND ((ENDP ALIST) NIL)
-                              ((EQUAL X (CAR (CAR ALIST)))
-                               (CAR ALIST))
-                              (T (ASSOC-EQUAL X (CDR ALIST)))))
+    PV    -8489  (DEFUN ASSOC-EQUAL (X ALIST)
+                   (DECLARE (XARGS :GUARD (ALISTP ALIST)))
+                   (COND ((ENDP ALIST) NIL)
+                         ((EQUAL X (CAR (CAR ALIST)))
+                          (CAR ALIST))
+                         (T (ASSOC-EQUAL X (CDR ALIST)))))
 
   we can see that [47m[assoc-equal][0m returns [47mnil[0m upon reaching the end of an
   unsuccessful search down the alist.  So [47mbinding[0m returns [47m(cdr nil)[0m
@@ -153578,7 +153674,7 @@ Subtopics
   legal keys for our phonebook alist.
 
   We wish to do something similar to define what it means to be a legal
-  phone number.  We submit the following form to ACL2:
+  phone number.  We submit the following form to ACL2.
 
     (encapsulate
       ;; Introduce a recognizer for phone numbers.
@@ -153591,7 +153687,7 @@ Subtopics
         (booleanp (pnump x)))
       ;;
       (defthm nil-not-pnump
-        (not (pnump nil)))).
+        (not (pnump nil))))
 
   This introduces a Boolean-valued recognizer [47mpnump[0m, with the
   additional proviso that the constant [47mnil[0m is not a [47mpnump[0m.  We impose
@@ -153698,13 +153794,13 @@ Subtopics
   of the arguments.  In fact, [47madd-in-book[0m is really expressing a
   property that is true of alists in general, not just of the
   particular variety of alists we are dealing with.  Of course, we
-  could have added some extraneous hypotheses and proved:
+  could have added some extraneous hypotheses and proved
 
     (defthm add-in-book
       (implies (and (namep nm)
                     (pnump pnum)
                     (phonebookp bk))
-               (in-book? nm (add-phone nm pnum bk)))),
+               (in-book? nm (add-phone nm pnum bk))))
 
   but that would have yielded a weaker and less useful lemma because it
   would apply to fewer situations.  In general, it is best to state
@@ -153801,39 +153897,90 @@ Subtopics
       (equal (del-phone nm (change-phone nm pnum bk))
              (del-phone nm bk)))
 
-  Unfortunately, when we try to prove this, we encounter subgoals that
-  seem to be true, but for which the prover is stumped.  For example,
-  consider the following goal.  (Note: [47mendp[0m holds of lists that are
-  empty.)
+  Unfortunately, our attempt to prove it failed with the following
+  subgoal under a top-level induction.
 
-    Subgoal *1/4
-    (IMPLIES (AND (NOT (ENDP BK))
-                  (NOT (EQUAL NM (CAAR BK)))
-                  (NOT (BOUND? NM (CDR BK)))
-                  (BOUND? NM BK))
-             (EQUAL (REMBIND NM (BIND NM PNUM BK))
-                    (REMBIND NM BK))).
+    Subgoal *1/4''
+    (IMPLIES (AND (CONSP BK)
+                  (NOT (EQUAL NM (CAR (CAR BK))))
+                  (NOT (BOUND?-EQUAL NM (CDR BK)))
+                  (BOUND?-EQUAL NM BK))
+             (EQUAL (REMBIND-EQUAL NM (BIND-EQUAL NM PNUM (CDR BK)))
+                    (REMBIND-EQUAL NM (CDR BK))))
+
+  We have defined [47mdel-phone[0m using [47mrembind[0m, and [47mchange-phone[0m using
+  [47min-book[0m (which uses [47mbound?[0m) and [47mbind[0m; but we have ``equal''
+  suffixes in the subgoal.  The cause is theorems of the form
+  [47m***->***-equal[0m, which are given in the included book.  We can use
+  [history]'s [47m:[0m[47m[pl][0m command to print the rules for a given name or
+  term.  Here is the part of [47m:[0m[47m[pl][0m's output we are interested in now,
+  for the [47mrembind[0m function:
+
+    ACL2 !>:pl rembind
+    ...
+
+    Rune:         (:REWRITE REMBIND->REMBIND-EQUAL)
+    Enabled:      T
+    Hyps:         T
+    Equiv:        EQUAL
+    Lhs:          (REMBIND X A)
+    Rhs:          (REMBIND-EQUAL X A)
+    Backchain-limit-lst: NIL
+    Subclass:     ABBREVIATION
+
+    ...
+
+  We can see that [rewrite] rule [47mrembind->rembind-equal[0m is [enable]d
+  and that it replaces [3mlhs[0m with [3mrhs[0m.  For functions [47mbind[0m, [47mbinding[0m and
+  [47mbound?[0m we have similar rules.
 
   Our intuition about [47mrembind[0m and [47mbind[0m tells us that this goal should
   be true even without the hypotheses.  We attempt to prove the
   following lemma.
 
-    (defthm rembind-bind
-      (equal (rembind nm (bind nm pnum bk))
-             (rembind nm bk)))
+    (defthm rembind-equal-bind-equal
+      (equal (rembind-equal nm (bind-equal nm pnum bk))
+             (rembind-equal nm bk)))
 
   The prover proves this by induction, and stores it as a rewrite rule.
   After that, the prover has no difficulty in proving [47mdel-change[0m.
 
-  The need to prove lemma [47mrembind-bind[0m illustrates a point we made
-  early in this example: the collection of [rewrite] rules supplied
-  by a previously certified book will almost never be everything
-  you'll need.  It would be nice if we could operate purely in the
-  realm of names, phone numbers, and phone books without ever having
-  to prove any new facts about alists.  Unfortunately, we needed a
-  fact about the relation between [47mrembind[0m and [47mbind[0m that wasn't
-  supplied with the alists theory.  Hopefully, such omissions will be
-  rare.
+  The need to prove lemma [47mrembind-equal-bind-equal[0m illustrates a point
+  we made early in this example: the collection of [rewrite] rules
+  supplied by a previously certified book will almost never be
+  everything you'll need. It would be nice if we could operate purely
+  in the realm of names, phone numbers, and phone books without ever
+  having to prove any new facts about alists.  Unfortunately, we
+  needed a fact about the relation between [47mrembind-equal[0m and
+  [47mbind-equal[0m that wasn't supplied with the alists theory. Hopefully,
+  such omissions will be rare.
+
+  Let's take two steps back now (just enter the [47m:u[0m command twice) to
+  get acquainted with a method that will be very useful to us.  What
+  happens if we state the previous lemma another way?
+
+    (defthm rembind-bind
+      (equal (rembind name (bind name num book))
+             (rembind name book)))
+
+  An attempt to prove [47mdel-change[0m would fail then with the same subgoal
+  as above.  In this case we can give to the prover the hint to use
+  [47mrembind-bind[0m as an instance of [47mdel-change[0m (see [hints] and find
+  keywords [47m:use[0m and [47m:instance[0m):
+
+    (defthm del-change-lemma-instance-example
+      (equal (del-phone nm (change-phone nm pnum bk))
+             (del-phone nm bk))
+      :hints ((\"Goal\" :use (:instance rembind-bind
+                                      (name nm)
+                                      (num pnum)
+                                      (book bk)))))
+
+  As described in [hints], a [47m:use[0m hint causes the prover to replace a
+  goal [47mG[0m with new goal ([47mIMPLIES[0m [47mP[0m [47mG[0m), where [47mP[0m is the specified
+  theorem to use.  The [47m:instance[0m form specifies instantiation of the
+  free variables of a previously proved theorem.  See
+  [lemma-instance] for more information on this subject.
 
   Finally, let's consider our property 5 above: a name will not be in
   the book after we delete it.  We formalize this as follows:
@@ -153849,7 +153996,7 @@ Subtopics
   ensure that [31;1many[0m name occurs at most once in any valid phonebook.
 
   To complete this example, let's consider adding an [31;1minvariant[0m to our
-  specification.  In particular, suppose we want to assure that no
+  specification.  In particular, suppose we want to ensure that no
   client has more than one associated phone number.  One way to
   ensure this is to require that the domain of the alist is a ``set''
   (has no duplicates).
@@ -153878,32 +154025,43 @@ Subtopics
       (implies (and (phonebookp bk)
                     (in-book? nm bk))
                (namep nm))
-      :hints ((\"Goal\" :in-theory (enable bound?))))
+      :hints ((\"Goal\" :in-theory (enable bound?-equal))))
 
     (defthm find-phone-pnump
       (implies (and (phonebookp bk)
                     (in-book? nm bk))
                (pnump (find-phone nm bk)))
-      :hints ((\"Goal\" :in-theory (enable bound? binding))))
+      :hints ((\"Goal\" :in-theory (enable bound?-equal
+                                         binding-equal))))
 
   Note the ``[47m:[0m[47m[hints][0m'' on the last two lemmas.  Neither of these would
   prove without these [hints], because once again there are some
-  facts about [47mbound?[0m and [47mbinding[0m not available in our current
-  context.  Now, we could figure out what those facts are and try to
-  prove them.  Alternatively, we can [enable] [47mbound?[0m and [47mbinding[0m and
-  hope that by opening up these functions, the conjectures will
-  reduce to versions that the prover does know enough about or can
-  prove by induction.  In this case, this strategy works.  The hints
-  tell the prover to [enable] the functions in question when
-  considering the designated goal.
+  facts about [47mbound?-equal[0m and [47mbinding-equal[0m not available in our
+  current context.  Now, we could figure out what those facts are and
+  try to prove them.  Alternatively, we can [enable] [47mbound?-equal[0m and
+  [47mbinding-equal[0m and hope that by opening up these functions, the
+  conjectures will reduce to versions that the prover does know
+  enough about, perhaps using proof by induction.  In this case, this
+  strategy works.  The hints tell the prover to [enable] the
+  functions in question when considering the designated goal and any
+  subgoals of it.
+
+  It's important to understand that it's not enough to [enable] the
+  [47mbound?[0m and [47mbinding[0m functions.  That's because rewrite rules of the
+  form [47m***->***-equal[0m (mentioned above) will replace [enable]d
+  functions with [disable]d ones for which there are not sufficient
+  rules to complete the proof.  We can use [history]'s very
+  informative command [47m:[0m[pl] to get a lot of information about rules
+  for a given name.
 
   Below we develop the theorems showing that [47madd-phone[0m, [47mchange-phone[0m,
   and [47mdel-phone[0m preserve our proposed invariant.  Notice that along
   the way we have to prove some subsidiary facts, some of which are
   pretty ugly.  It would be a good idea for you to try, say,
   [47madd-phone-preserves-invariant[0m without introducing the following
-  four lemmas first.  See if you can develop the proof and only add
-  these lemmas as you need assistance.  Then try
+  four lemmas first.  Perhaps you will use the instantiation of
+  lemmas method, described above.  See if you can develop the proof
+  and only add these lemmas as you need assistance.  Then try
   [47mchange-phone-preserves-invariant[0m and [47mdel-phone-preserves-invariant[0m.
   They will be easier.  It is illuminating to think about why
   [47mdel-phone-preserves-invariant[0m does not need any ``type''
@@ -153915,44 +154073,96 @@ Subtopics
                     (pnump num))
                (phonebookp (bind nm num bk))))
 
+    (defthm member-equal-strip-cars-bind-equal
+      (implies (and (not (equal x y))
+                    (not (member-equal x (strip-cars a))))
+               (not (member-equal x (strip-cars (bind-equal y z a))))))
+
+    (defthm bind-equal-preserves-domain-setp
+      (implies (and (alistp bk)
+                    (setp (domain bk)))
+               (setp (domain (bind-equal nm num bk))))
+      :hints ((\"Goal\" :in-theory (enable domain))))
+
+  Let's take two steps back (using [47m:u[0m twice) and prove the following
+  instead of [47mmember-equal-strip-cars-bind-equal[0m:
+
     (defthm member-equal-strip-cars-bind
       (implies (and (not (equal x y))
                     (not (member-equal x (strip-cars a))))
                (not (member-equal x (strip-cars (bind y z a))))))
 
-    (defthm bind-preserves-domain-setp
+  Then [47mbind-equal-preserves-domain-setp[0m fails:
+
+    Subgoal *1/5''
+    (IMPLIES (AND (CONSP BK)
+             (NOT (EQUAL NM (CAR (CAR BK))))
+             (SETP (STRIP-CARS (BIND-EQUAL NM NUM (CDR BK))))
+             (CONSP (CAR BK))
+             (ALISTP (CDR BK))
+             (NOT (MEMBER-EQUAL (CAR (CAR BK))
+                                (STRIP-CARS (CDR BK))))
+             (SETP (STRIP-CARS (CDR BK))))
+        (NOT (MEMBER-EQUAL (CAR (CAR BK))
+                           (STRIP-CARS (BIND-EQUAL NM NUM (CDR BK))))))
+
+  We can use a [lemma-instance] to prove it:
+
+    (defthm bind-equal-preserves-domain-setp
       (implies (and (alistp bk)
                     (setp (domain bk)))
-               (setp (domain (bind nm num bk))))
-      :hints ((\"Goal\" :in-theory (enable domain))))
+               (setp (domain (bind-equal nm num bk))))
+      :hints ((\"Goal\" :in-theory (enable domain))
+              (\"Subgoal *1/5''\" :use (:instance
+                                      member-equal-strip-cars-bind
+                                      (x (car (car bk)))
+                                      (y nm)
+                                      (z num)
+                                      (a (cdr bk))))))
+
+  The use of [lemma-instance] is somewhat artificial in this example,
+  but this method gives great opportunities to lead ACL2 in proving
+  theorems.  That said, it is generally preferable to avoid [47m:use[0m
+  hints in favor of developing a useful set of [rewrite] rules, since
+  those rules can help to automate future proof attempts.
+
+  We continue now with proofs that our operations preserve the
+  [47mphonebook'[0m invariant.
 
     (defthm phonebookp-alistp
       (implies (phonebookp bk)
                (alistp bk)))
 
-    (defthm ADD-PHONE-PRESERVES-INVARIANT
+    (defthm bind-equal-preserves-phonebookp
+      (implies (and (phonebookp bk)
+                    (namep nm)
+                    (pnump num))
+               (phonebookp (bind-equal nm num bk))))
+
+    (defthm add-phone-preserves-invariant
       (implies (and (valid-phonebookp bk)
                     (namep nm)
                     (pnump num))
                (valid-phonebookp (add-phone nm num bk)))
-      :hints ((\"Goal\" :in-theory (disable domain-bind))))
+      :hints ((\"Goal\" :in-theory (disable domain-bind-equal))))
 
-    (defthm CHANGE-PHONE-PRESERVES-INVARIANT
+    (defthm change-phone-preserves-invariant
       (implies (and (valid-phonebookp bk)
                     (namep nm)
                     (pnump num))
                (valid-phonebookp (change-phone nm num bk)))
-      :hints ((\"Goal\" :in-theory (disable domain-bind))))
+      :hints ((\"Goal\" :in-theory (disable domain-bind-equal))))
+
+    (defthm member-remove-equal
+      (implies (and (not (equal a b))
+                    (not (member a x)))
+               (not (member a (remove-equal b x)))))
 
     (defthm remove-equal-preserves-setp
       (implies (setp l)
                (setp (remove-equal x l))))
 
-    (defthm rembind-preserves-phonebookp
-      (implies (phonebookp bk)
-               (phonebookp (rembind nm bk))))
-
-    (defthm DEL-PHONE-PRESERVES-INVARIANT
+    (defthm del-phone-preserves-invariant
       (implies (valid-phonebookp bk)
                (valid-phonebookp (del-phone nm bk))))
 
@@ -153996,38 +154206,45 @@ Subtopics
 
     (defthm member-equal-strip-cdrs-rembind
       (implies (not (member-equal x (strip-cdrs y)))
-               (not (member-equal x (strip-cdrs (rembind z y))))))
+               (not (member-equal x (strip-cdrs
+                                     (rembind-equal z y))))))
 
-    (defthm DEL-PHONE-PRESERVES-PHONENUMS-UNIQUE
+    (defthm del-phone-preserves-phonenums-unique
       (implies (phonenums-unique bk)
                (phonenums-unique (del-phone nm bk)))
       :hints ((\"Goal\" :in-theory (enable range))))
 
     (defthm strip-cdrs-bind-non-member
-      (implies (and (not (bound? x a))
+      (implies (and (not (bound?-equal x a))
                     (alistp a))
-               (equal (strip-cdrs (bind x y a))
+               (equal (strip-cdrs (bind-equal x y a))
                       (append (strip-cdrs a) (list y))))
-      :hints ((\"Goal\" :in-theory (enable bound?))))
+      :hints ((\"Goal\" :in-theory (enable bound?-equal))))
+
+    (defthm member-append
+      (iff (member e (append x y))
+           (or (member e x)
+               (member e y))))
 
     (defthm setp-append-list
       (implies (setp l)
                (equal (setp (append l (list x)))
                       (not (member-equal x l)))))
 
-    (defthm ADD-PHONE-PRESERVES-PHONENUMS-UNIQUE
+    (defthm add-phone-preserves-phonenums-unique
       (implies (and (phonenums-unique bk)
                     (new-pnump pnum bk)
                     (alistp bk))
                (phonenums-unique (add-phone nm pnum bk)))
       :hints ((\"Goal\" :in-theory (enable range))))
 
-    (defthm member-equal-strip-cdrs-bind
+    (defthm member-equal-strip-cdrs-bind-equal
       (implies (and (not (member-equal z (strip-cdrs a)))
                     (not (equal z y)))
-               (not (member-equal z (strip-cdrs (bind x y a))))))
+               (not (member-equal z (strip-cdrs
+                                     (bind-equal x y a))))))
 
-    (defthm CHANGE-PHONE-PRESERVES-PHONENUMS-UNIQUE
+    (defthm change-phone-preserves-phonenums-unique
       (implies (and (phonenums-unique bk)
                     (new-pnump pnum bk)
                     (alistp bk))
@@ -155533,7 +155750,10 @@ Subtopics
   To remove the effects of all [47m[memoize][0m [events], evaluate:
   [47m(clear-memo-table)[0m.  To save and restore memoization, see
   [save-and-clear-memoization-settings] and see
-  [restore-memoization-settings].")
+  [restore-memoization-settings].  These are both legal [event]
+  forms.  Note: These events do not affect memoization from [47m[memoize][0m
+  events that either are derived from calls of [47m[memoize-partial][0m or
+  have a non-[47mnil[0m value of [47m[memoize][0m argument [47m:invoke[0m")
  (UNMONITOR
   (BREAK-REWRITE)
   "To stop monitoring a rule name

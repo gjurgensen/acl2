@@ -4602,17 +4602,22 @@ and @(tsee include-book)"
   :parents (numbers acl2-built-ins)
   :short "Set aside fixnums in GCL"
   :long "<p>@('(Allocate-fixnum-range fixnum-lo fixnum-hi)') causes Gnu Common
- Lisp
- (GCL) to create a persistent table for the integers between @('fixnum-lo') and
- @('fixnum-hi') (both bounds inclusive). This table is referenced first when
- any integer is boxed and the existing box in the table is used if the integer
- is in bounds.  This can speed up GCL considerably by avoiding wasteful fixnum
- boxing.  Here, @('fixnum-lo') and @('fixnum-hi') should be fixnums.  On 32-bit
- machines it would be good for them to be of type @('(signed-byte 30)'), with
- @('fixnum-lo <= fixnum-hi').</p>
+ Lisp (GCL), versions preceding 2.7, to create a persistent table for the
+ integers between @('fixnum-lo') and @('fixnum-hi') (both bounds
+ inclusive). This table is referenced first when any integer is boxed and the
+ existing box in the table is used if the integer is in bounds.  This can speed
+ up GCL (again, for versions preceding 2.7) considerably by avoiding wasteful
+ fixnum boxing.  Here, @('fixnum-lo') and @('fixnum-hi') should be fixnums.  On
+ 32-bit machines it would be good for them to be of type @('(signed-byte 30)'),
+ with @('fixnum-lo <= fixnum-hi').</p>
 
- <p>When this function is executed in a Lisp implementation other than GCL, it
- has no side effect.  This function always returns @('nil').</p>")
+ <p>When this function is executed in a Lisp implementation other than a GCL
+ version preceding 2.7, it has no side effect other than to print a message.
+ This function always returns @('nil').</p>
+
+ <p>In GCL versions starting with 2.7.0, allocation for the table would
+ generally be a no-op other than to waste space, which is why
+ @('allocate-fixnum-range') is a no-op for those versions.</p>")
 
 (defxdoc alpha-char-p
   :parents (characters acl2-built-ins)
@@ -7738,16 +7743,19 @@ and @(tsee include-book)"
   :parents (defabsstobj)
   :short "Attach an &ldquo;implementation @(see stobj)&rdquo; to an attachable
  stobj"
-  :long "<p>This topic assumes familiarity with abstract @(see stobj)s; see
- @(see defabsstobj).  It documents a way to modify the foundation and
- primitives of an abstract @(see stobj), @('gen'), that is introduced by
- @('defabsstobj') using the keyword argument @(':attachable t').  Such a stobj
- is called an <i>attachable</i> stobj.  Execution of its primitives can be
- provided by corresponding primitives of a specified abstract stobj, @('impl'),
- which we say is <i>attached to</i> @('gen') (or: @('impl') is the
- <i>implementation stobj attached to</i> @('gen')); said differently, @('gen')
- has @('impl') as an attachment.  That relationship is specified by the
- following</p>
+  :long "<p>For an illustration of @('attach-stobj'), see @(see
+ community-books) directory @('books/demos/attach-stobj/'), in particular file
+ @('README.txt') in that directory.</p>
+
+ <p>This topic assumes familiarity with abstract @(see stobj)s; see @(see
+ defabsstobj).  It documents a way to modify the foundation and primitives of
+ an abstract @(see stobj), @('gen'), that is introduced by @('defabsstobj')
+ using the keyword argument @(':attachable t').  Such a stobj is called an
+ <i>attachable</i> stobj.  Execution of its primitives can be provided by
+ corresponding primitives of a specified abstract stobj, @('impl'), which we
+ say is <i>attached to</i> @('gen') (or: @('impl') is the <i>implementation
+ stobj attached to</i> @('gen')); said differently, @('gen') has @('impl') as
+ an attachment.  That relationship is specified by the following</p>
 
  @({
  General Form:
@@ -7762,9 +7770,12 @@ and @(tsee include-book)"
  foundation of @('gen'), as well as execution of the primitives of @('gen'),
  will effectively be provided by @('impl'); details are below.</p>
 
- <p>In the General Form above, @('impl') is allowed to be @('nil'), in which
- case any existing attachment for @('gen') will be removed.  Below, we assume
- the common case that @('impl') is not @('nil').</p>
+ <p>In the General Form above, @('impl') is allowed to be @('nil'), i.e., the
+ event @('(attach-stobj gen nil)') is legal, where it is still required that
+ @('gen') not be the name of any existing event.  The effect of this
+ ``attachment'' of @('nil') is to cancel the effect of any previous
+ @('(attach-stobj gen impl)') on any future introduction of @('gen').  Below,
+ we assume the common case that @('impl') is not @('nil').</p>
 
  <p>Note that @('impl') may itself have an attachment, say, @('impl2'), in
  which case we say that @('impl2') is attached to @('gen').  If furthermore
@@ -15650,7 +15661,9 @@ with any questions about building the community books.</p>")
  are represented as strings they are called ``goal specs.''  Such strings are
  used to specify where in the proof attempt a given hint is to be applied.  The
  function @('parse-clause-id') converts goal-specs into clause identifiers,
- which are cons-trees containing natural numbers.</p>
+ which are cons-trees containing natural numbers (and if @(':OR') @(see hints)
+ are used, they may also contain symbols of the form @('Dn') where @('n') is a
+ natural number, e.g., @('D23').)</p>
 
  <p>Examples of goal-specs and their corresponding clause identifiers are shown
  below.</p>
@@ -16048,13 +16061,6 @@ with any questions about building the community books.</p>")
  2006.</p></blockquote>
 
  ")
-
-(defxdoc clear-hash-tables
-  :parents (memoize) ; skip programming as parent, since this is deprecated
-  :short "Deprecated feature"
-  :long "<p>Deprecated.  Calls @(tsee clear-memoize-tables) and then @(tsee
- hons-clear) or @(tsee hons-wash), whichever makes sense for the underlying
- Common Lisp.</p>")
 
 (defxdoc clear-memoize-statistics
   :parents (memoize)
@@ -21055,6 +21061,7 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
     :congruent-to congruent-to
     :non-executable non-executable
     :protect-default protect-default
+    :attachable att
     :exports (e1 ... ek))
  })
 
@@ -21130,6 +21137,9 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
  provides the value of keyword @(':PROTECT') for each member of @('exports')
  that does not explicitly specify @(':PROTECT').  See the discussion of
  @('exports') below.</p>
+
+ <p>@('Attachable') should be @('nil') (the default) or @('t').  See @(see
+ attach-stobj) for a discussion of this keyword.</p>
 
  <p>An important aspect of the @('congruent-to') parameter is that if it is not
  @('nil'), then the checks for lemmas &mdash; @('{CORRESPONDENCE}'),
@@ -25615,11 +25625,11 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
  })
 
  <p>expands to the following, except that some output is inhibited for the
- @(tsee in-theory) event:</p>
+ @(tsee in-theory) and @(tsee value-triple) @(see events):</p>
 
  @({
   (progn
-    (defthmd NAME TERM ...)
+    (defthm NAME TERM ...)
     (in-theory (disable NAME))
     (value-triple '(:defthmd NAME))).
  })
@@ -42801,7 +42811,22 @@ current fast alists."
  running regression tests using ACL2 built on GCL, to keep memory from
  exceeding what is available.  Consider dividing 1.0 by the number of threads;
  so for example, for 4 threads (i.e., using &ldquo;@('-j 4')&rdquo; in your
- @('make') command), you may want to specify @('GCL_MEM_MULTIPLE=0.25').</p>")
+ @('make') command), you may want to specify @('GCL_MEM_MULTIPLE=0.25').  But
+ you can probably run with more threads (e.g., perhaps 20 threads or more on a
+ 64 MB machine) by instead doing a ``pooled memory run'', which may be
+ performed as in the following example (bash syntax), as suggested by Camm
+ Maguire.  Warning: the use of @('HOME') may change soon if it hasn't
+ already.</p>
+
+ @({
+ HOME=/tmp ACL2=$(pwd)/saved_acl2 GCL_MULTIPROCESS_MEMORY_POOL=t \\
+   make -j 20 regression-fresh
+ })
+
+ <p>(Technical explanation: The reason for setting @('HOME') to directory
+ @('/tmp') is to keep a so-called ``pool file'' local, since otherwise it will
+ be on your home directory, which may be updated too infrequently if on a
+ shared file system.)</p>")
 
 (defxdoc geneqv
   :parents (introduction-to-the-theorem-prover break-rewrite)
@@ -45029,7 +45054,8 @@ current fast alists."
 
  <p>By default, these utilities all use an underlying notion of run time
  provided by the host Common Lisp implementation: specifically, the Common Lisp
- functions @('get-internal-run-time') for cpu time and
+ functions @('get-internal-run-time') for cpu time (or a slight variant if the
+ host Lisp is a version of GCL that precedes 2.7.0) and
  @('get-internal-real-time') for real (wall clock) time.  While the latter is
  specified to measure elapsed time, the former is left to the implementation,
  which might well only measure time spent in the Lisp process.  Consider the
@@ -60889,10 +60915,13 @@ tables in the current Hons Space."
 
  <p><b>WARNING!</b> If @('ld-redefinition-action') is non-@('nil') then ACL2 is
  liable to be made unsafe or unsound, or behave in unexpected ways.  For
- example, redefining a macro or inlined function called in the body of a
- function, @('g'), may not cause the new definition to be called by @('g').
- Redefinition should be viewed as a way to facilitate unsafe, but potentially
- useful, hacking.</p>
+ example, redefining a macro or inlined function, @('f'), that is called in the
+ body of another function, @('g'), may not cause the new version of @('f') to
+ be called by @('g').  In addition, for some Lisps, in particular GCL Version
+ 2.7.0 or later, the return type @('TP') inferred for the original definition
+ of @('f') might cause mishandling of the return value from @('f') as @('g')
+ still expects that value's type to be @('TP').  Redefinition should be viewed
+ as a way to facilitate unsafe, but potentially useful, hacking.</p>
 
  <p>The keyword command @(':')@(tsee redef) will set
  @('ld-redefinition-action') to a convenient setting allowing unsound
@@ -61926,11 +61955,24 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
  example, @('(list 5 6 7)') returns a list of length 3 whose elements are
  @('5'), @('6'), and @('7') respectively.  Also see @(see list*).</p>
 
+ <p>If a call of @('list') results in an error due to too many arguments,
+ consider using @(tsee list$).</p>
+
  <p>@('List') is defined in Common Lisp.  See any Common Lisp documentation for
  more information.</p>
 
  @(def list)
  @(def list-macro)")
+
+(defxdoc list$
+  :parents (lists acl2-built-ins)
+  :short "Build a list"
+  :long "<p>@('List$') is a macro that is virtually interchangeable with @(tsee
+ list).  The only difference is that when the host Lisp is @(see GCL) with GCL
+ version at least 2.7.0, @('list') may cause an error when given too many
+ arguments (generally, more than 63).  In such cases, @('list$') may be used in
+ place of @('list'), since @('list$') has no restriction on the number of
+ arguments.</p>")
 
 (defxdoc list*
   :parents (lists acl2-built-ins)
@@ -107894,6 +107936,116 @@ it."
 ; ACL2 can be built (at least, in the Lisp versions tested), so this change
 ; should not have any observable effect.
 
+; Made changes so that GCL Version 2.7.0 (and presumably later versions) can
+; host ACL2.  These are described below, including (breaking with normal such
+; comments) book changes.  Thanks to Camm Maguire for working with us through
+; both ACL2 issues and GCL Version 2.7.0 issues.
+
+;   A new macro, list$, is much like list except that it avoids an argument
+;   limit in GCL 2.7.0 for list.
+;
+;   The implementation-level changes are as follows.  These changes affect only
+;   GCL 2.7.0 builds of ACL2 except as indicated in the first item.
+;
+;   - Incorporated modifications by Camm Maguire to hons-raw.lisp, to
+;     accommodate the reduced value in GCL 2.7.0 for the constant
+;     array-dimension-limit.  (The sbits array had grown too long in some
+;     certifications, so that array has been replaced by an array of bit-array
+;     "chunks".)  For more information see the Essay on the Sbits Structure in
+;     hons-raw.lisp.  NOTE: This change applies to any Lisp supporting static
+;     honses in ACL2; these are currently GCL and CCL.
+;
+;   - In our-get-internal-run-time, restricted the existing exception for GCL
+;     to GCL versions preceding 2.7.0 (to accommodate change in GCL to
+;     get-internal-run-time).  Made a related update to macro our-time (which
+;     supports time$).
+;
+;   - Added invocation of (si::do-recomp) to the end of the compilation phase
+;     of building an ACL2 executable.
+;
+;   - ACL2 no longer increases the stack size by setting si::*multiply-stacks*
+;     (as this is no longer necessary).
+;
+;   - Memoize-partial recompiles functions being introduced when necessary,
+;     after definitional replacement of logical by executable.
+;
+;   Documentation changes are as follows.
+;
+;   - Extend :DOC gcl to explain how to do a ``pooled memory run'' to get
+;     more parallelism.  (NOTE: This applies to versions of GCL preceding 2.7.0
+;     as well.)
+;
+;   - Extend :DOC ld-redefinition-action to explain that in GCL 2.7.0 and
+;     later, recompilation of callers may be necessary after redefinition.
+;
+;   - Added :DOC list$, and added pointer to it in :DOC list.
+;
+;   Changes to books are as follows.
+;
+;   - Excluded certification by "make regression" using GCL of
+;     books/centaur/bigmems/bigmem-asymmetric/concrete-asymmetric.lisp, which
+;     extends its existing exclusion for CMUCL and LispWorks, because
+;     array-dimension-limit in GCL 2.7.0 is not large enough to accommodate a
+;     proposed stobj array.
+;
+;   - Bug fix in books/system/hons-check/hons-check.lisp (usually minor,
+;     but critical in GCL 2.7.0): added two function symbols to the state
+;     global, logic-fns-with-raw-code, as advised in :DOC comp.
+;
+;   - In the following books a call of LIST was replaced by the corresponding
+;     call of LIST$ (newly introduced in this commit, as described above) to
+;     avoid an error: books/centaur/vl2014/expr.lisp,
+;     books/projects/fm9001/control.lisp, and
+;     books/system/tests/loop-tests.lisp.
+;
+;   Finally, in the course of this project: some comments were improved; and
+;   some trivial type-related improvements were made, e.g., in the definition
+;   of len.
+
+; Made fixes to an error message in each of set-temp-touchable-fns,
+; set-temp-touchable-vars, and logical-name-type, thanks to Eric Smith (who
+; supplied fixes).
+
+; The ACL2 function allocate-fixnum-range is now a no-op for GCL versions 2.7.0
+; and later.  Thanks to Camm Maguire for the suggestion, and the explanation
+; that its effect would generally be only to waste space in GCL 2.7.0.
+
+; Here is an example of the proof-builder soundness bug involving forcing.
+; These events were admitted before the bug was fixed.
+;
+;   (encapsulate
+;     (((p1 *) => *)
+;      ((p2 *) => *)
+;      ((f *) => *))
+;     (local (defun p1 (x) x))
+;     (local (defun f (x)
+;              x))
+;     (local (defun p2 (x)
+;              (equal (f x) x)))
+;     (defthm f-p2
+;       (implies (and (p1 x)
+;                     (force (p2 x)))
+;                (equal (f x) x)))
+;     (defthm f-not-p2
+;       (implies (and (p1 x)
+;                     (not (p2 x)))
+;                (not (equal (f x) x)))
+;       :hints (("Goal" :in-theory (disable f-p2))))
+;     )
+;   (defthm needs-p2-hyp
+;     (implies (p1 x)
+;              (equal (f x) x))
+;     :instructions (:promote
+;                    :s ; creates bad goal
+;                    :s))
+;   (defthm false
+;     nil
+;     :rule-classes nil
+;     :hints (("Goal" :use ((:functional-instance needs-p2-hyp
+;                                                 (f (lambda (x) (not x)))
+;                                                 (p1 (lambda (x) t))
+;                                                 (p2 (lambda (x) nil)))))))
+
   :parents (release-notes)
   :short "ACL2 Version  8.7 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -107925,6 +108077,10 @@ it."
 
  <h3>Bug Fixes</h3>
 
+ <p>Fixed a soundness bug in the @(see proof-builder) that could cause goals
+ from @(tsee force)d hypotheses to be created incorrectly.  (This bug has been
+ around for at least 10 years and probably for 30 years!)</p>
+
  <p>A Lisp error is now avoided when saving event-data (see @(see
  saving-event-data) and submitting certain ill-formed attempts at @(see
  events).  Thanks to Eric Smith for sending the following example.</p>
@@ -107934,7 +108090,34 @@ it."
  (defuns foo (x) x)
  })
 
+ <p>Fixed a bug in the interaction of @(tsee memoize-partial) with utilities
+ @(tsee save-and-clear-memoization-settings) and @(tsee
+ restore-memoization-settings).  The latter utilities no longer have an effect
+ on functions created by @(tsee memoize-partial) (or, and this is quite
+ obscure, on memoization from calls of @(tsee memoize) with a non-@('nil')
+ value of the keyword, @(':total')).</p>
+
+ <p>An attachable stobj (see @(see attach-stobj)) was created by the
+ executable (@(':EXEC')) function associated with its stobj creator (see @(see
+ defabsstobj)), even when that stobj was given an attachment.  This bug has
+ been fixed: the stobj is now created by the @(':EXEC') of the attachment's
+ creator.</p>
+
  <h3>Changes at the System Level</h3>
+
+ <p>Modifications have been made that allow ACL2 to be hosted on GCL Version
+ 2.7.0 and presumably later @(see GCL) versions; previously only GCL versions
+ before 2.7.0 could host ACL2.  Essentially the only user-visible change (other
+ than error prevention) is the introduction of @(tsee list$), a macro
+ equivalent to @(tsee list) that can be used without a GCL 2.7.0 restriction on
+ the number of arguments.  The most sweeping implementation-level change is the
+ replacement of an array in support of so-called <i>static honses</i>, the
+ <i>sbits array</i>, by a structure that avoids a reduced bound on array
+ dimensions imposed by GCL 2.7.0.  Details may be found in a Lisp comment in
+ the form @('(defxdoc note-8-7 ...)') in @(see community-books) file
+ @('books/system/doc/acl2-doc.lisp').  Thanks to Camm Maguire for his help with
+ this project, including (but by no means limited to) his contribution of a new
+ sbits implementation.</p>
 
  <h3>EMACS Support</h3>
 
@@ -131901,7 +132084,7 @@ work on <tt>(q x)</tt>.</p>
  <p>When the term is a call of @('ev-w'), an unsafe hack allowing such calls is
  as follows.  Warning: This may result in unsoundness!  (On a related note: For
  discussion about unsoundness when converting such @(see program)-mode
- functions to @(see logic) mode, see @(see program-only).</p>
+ functions to @(see logic) mode, see @(see program-only).)</p>
 
  @({
  (value :q)
@@ -131969,8 +132152,12 @@ work on <tt>(q x)</tt>.</p>
 
  <p>Calls of this macro achieve two changes.  The first copies the current
  memoization settings into an ACL2 @(see table), and the second unmemoizes all
- functions that were memoized by calls of @(tsee memoize).  Also see @(see
- restore-memoization-settings).</p>")
+ functions that were memoized by calls of @(tsee memoize).  But note that this
+ skips memoization settings that are either derived from calls of @(tsee
+ memoize-partial) or have a non-@('nil') value of @(tsee memoize) argument
+ @(':invoke')</p>
+
+ <p>Also see @(see restore-memoization-settings).</p>")
 
 (defxdoc save-exec
   :parents (interfacing-tools command-line)
@@ -134232,7 +134419,7 @@ work on <tt>(q x)</tt>.</p>
  a huge penalty, but on the other hand it seems likely that @('(set-dwp t)') is
  helpful only in rare instances.</p>
 
- <p>To get the current value of @('dwp'), evaluate @('(get-dwp (w
+ <p>To get the current value of @('dwp'), evaluate @('(get-dwp nil (w
  state))').</p>")
 
 (defxdoc set-dwp!
@@ -145680,24 +145867,24 @@ work on <tt>(q x)</tt>.</p>
  as in the single-value return case.  Otherwise @('msg') should be a @(tsee
  msgp) &mdash; a string or a cons suitable for printing with the @(tsee fmt)
  directive, @('~@').  In that case, @('msg') is printed (using @(tsee fmt)
- @('~@')) instead of the generic error message.  Here is a simple example from
- the ACL2 sources.</p>
+ @('~@')) instead of the generic error message.  Here is a simple example
+ adapted from former code in the ACL2 sources.</p>
 
  @({
- (defun partial-functions-table-guard (fn val wrld)
+ (defun my-table-guard (fn val wrld)
    (let ((msg0 ; nil if fn/val is OK as a key/value pair, else a msg
-          (partial-functions-table-guard-msg fn val wrld)))
+          (my-table-guard-msg fn val wrld)))
      (cond
       (msg0 (mv nil
                 (msg
-                 \"Illegal partial-functions-table key and value (see :DOC ~
+                 \"Illegal my-table key and value (see :DOC ~
                   memoize-partial):~|key = ~y0value  = ~y1Reason:~%~@2~|~%\"
                  fn val msg0)))
       (t (mv t nil)))))
 
- (table partial-functions-table nil nil
+ (table my-table nil nil
         :guard
-        (partial-functions-table-guard key val world))
+        (my-table-guard key val world))
  })
 
  <p>Note that it is not allowed to change the @(':guard') on a table once it
@@ -152380,7 +152567,9 @@ work on <tt>(q x)</tt>.</p>
  books).''</p>
 
  <p>This example was written almost entirely by Bill Young of Computational
- Logic, Inc.</p>
+ Logic, Inc.  It was updated in December, 2024 (from the original version of
+ about two decades ago) thanks to Andrei Koltsov, to work with recent ACL2
+ versions.</p>
 
  <p>This example is based on one developed by Ricky Butler and Sally Johnson of
  NASA Langley for the PVS system, and subsequently revised by Judy Crow, <i>et
@@ -152419,13 +152608,13 @@ work on <tt>(q x)</tt>.</p>
  proof effort from a much richer foundation, and hopefully devote more of our
  time to the problem at hand.  Unfortunately, it is not completely simple for
  the new user to know what @(see books) are available and what they contain.
- We hope later to improve the documentation of the growing collection of
- @(see community-books) that are typically downloaded with ACL2; for now, the
- reader is encouraged to look in the README.html file in the books' top-level
- directory.  For present purposes, the beginning user can simply take our word
- that a book exists containing useful alist definitions and facts.  These
- definitions and lemmas can be introduced into the current theory using the
- @(see command):</p>
+ Documentation is available for the growing collection of @(see
+ community-books) that are typically downloaded with ACL2, and a mailing list,
+ @('acl2-help'), is available (see the <a
+ href='http://www.cs.utexas.edu/users/moore/acl2/'>ACL2 home page</a>.  For
+ present purposes, the beginning user can simply take our word that a book
+ exists containing useful alist definitions and facts.  These definitions and
+ lemmas can be introduced into the current theory using the @(see command):</p>
 
  @({
     (include-book \"data-structures/alist-defthms\" :dir :system)
@@ -152505,29 +152694,40 @@ work on <tt>(q x)</tt>.</p>
 
  @({
     ACL2 !>:pe binding
-       d     33  (INCLUDE-BOOK
-                      \"/slocal/src/acl2/v1-9/books/public/alist-defthms\")
-
-    >V d          (DEFUN BINDING (X A)
-                         \"The value bound to X in alist A.\"
-                         (DECLARE (XARGS :GUARD (ALISTP A)))
-                         (CDR (ASSOC-EQUAL X A)))
+       d   1  (INCLUDE-BOOK \"data-structures/alist-defthms\"
+                            :DIR ...)
+              \
+              [Included books, outermost to innermost:
+               \".../acl2/books/data-structures/alist-defthms.lisp\"
+               \".../acl2/books/data-structures/alist-defuns.lisp\"
+              ]
+              \
+    >V d       (DEFUN
+                BINDING (X A)
+                \"The value bound to X in alist A.\"
+                (DECLARE
+                   (XARGS :GUARD (AND (ALISTP A)
+                                      (OR (EQLABLEP X) (EQLABLE-ALISTP A)))))
+                (CDR (ASSOC X A)))
  })
 
  <p>This tells us that @('binding') was introduced by the given @(tsee
  include-book) form, is currently @(see disable)d in the current theory, and
  has the definition given by the displayed @(tsee defun) form.  We see that
- @('binding') is actually defined in terms of the primitive @(tsee assoc-equal)
- function.  If we look at the definition of @(tsee assoc-equal):</p>
+ @('binding') is actually defined in terms of the primitive @(tsee assoc).  If
+ we submit @(':pe assoc') then we can see that @('assoc') is a macro that
+ essentially serves as an abbreviation for the primitive function @(tsee
+ assoc-equal).  We say no more about @('assoc') here but instead focus on
+ @('assoc-equal').  If we use @(':pe') to look at the definition of @(tsee
+ assoc-equal):</p>
 
  @({
-    ACL2 !>:pe assoc-equal
-     V     -489  (DEFUN ASSOC-EQUAL (X ALIST)
-                        (DECLARE (XARGS :GUARD (ALISTP ALIST)))
-                        (COND ((ENDP ALIST) NIL)
-                              ((EQUAL X (CAR (CAR ALIST)))
-                               (CAR ALIST))
-                              (T (ASSOC-EQUAL X (CDR ALIST)))))
+    PV    -8489  (DEFUN ASSOC-EQUAL (X ALIST)
+                   (DECLARE (XARGS :GUARD (ALISTP ALIST)))
+                   (COND ((ENDP ALIST) NIL)
+                         ((EQUAL X (CAR (CAR ALIST)))
+                          (CAR ALIST))
+                         (T (ASSOC-EQUAL X (CDR ALIST)))))
  })
 
  <p>we can see that @(tsee assoc-equal) returns @('nil') upon reaching the end
@@ -152635,7 +152835,7 @@ work on <tt>(q x)</tt>.</p>
  our phonebook alist.</p>
 
  <p>We wish to do something similar to define what it means to be a legal phone
- number.  We submit the following form to ACL2:</p>
+ number.  We submit the following form to ACL2.</p>
 
  @({
     (encapsulate
@@ -152649,7 +152849,7 @@ work on <tt>(q x)</tt>.</p>
         (booleanp (pnump x)))
       ;;
       (defthm nil-not-pnump
-        (not (pnump nil)))).
+        (not (pnump nil))))
  })
 
  <p>This introduces a Boolean-valued recognizer @('pnump'), with the additional
@@ -152766,14 +152966,14 @@ work on <tt>(q x)</tt>.</p>
  arguments.  In fact, @('add-in-book') is really expressing a property that is
  true of alists in general, not just of the particular variety of alists we are
  dealing with.  Of course, we could have added some extraneous hypotheses and
- proved:</p>
+ proved</p>
 
  @({
     (defthm add-in-book
       (implies (and (namep nm)
                     (pnump pnum)
                     (phonebookp bk))
-               (in-book? nm (add-phone nm pnum bk)))),
+               (in-book? nm (add-phone nm pnum bk))))
  })
 
  <p>but that would have yielded a weaker and less useful lemma because it would
@@ -152880,41 +153080,99 @@ work on <tt>(q x)</tt>.</p>
              (del-phone nm bk)))
  })
 
- <p>Unfortunately, when we try to prove this, we encounter subgoals that seem
- to be true, but for which the prover is stumped.  For example, consider the
- following goal.  (Note: @('endp') holds of lists that are empty.)</p>
+ <p>Unfortunately, our attempt to prove it failed with the following subgoal
+ under a top-level induction.</p>
 
  @({
-    Subgoal *1/4
-    (IMPLIES (AND (NOT (ENDP BK))
-                  (NOT (EQUAL NM (CAAR BK)))
-                  (NOT (BOUND? NM (CDR BK)))
-                  (BOUND? NM BK))
-             (EQUAL (REMBIND NM (BIND NM PNUM BK))
-                    (REMBIND NM BK))).
+    Subgoal *1/4''
+    (IMPLIES (AND (CONSP BK)
+                  (NOT (EQUAL NM (CAR (CAR BK))))
+                  (NOT (BOUND?-EQUAL NM (CDR BK)))
+                  (BOUND?-EQUAL NM BK))
+             (EQUAL (REMBIND-EQUAL NM (BIND-EQUAL NM PNUM (CDR BK)))
+                    (REMBIND-EQUAL NM (CDR BK))))
  })
+
+ <p>We have defined @('del-phone') using @('rembind'), and @('change-phone')
+ using @('in-book') (which uses @('bound?')) and @('bind'); but we have
+ ``equal'' suffixes in the subgoal.  The cause is theorems of the form
+ @('***->***-equal'), which are given in the included book.  We can use @(see
+ history)'s @(':')@(tsee pl) command to print the rules for a given name or
+ term.  Here is the part of @(':')@(tsee pl)'s output we are interested in now,
+ for the @('rembind') function:</p>
+
+ @({
+    ACL2 !>:pl rembind
+    ...
+
+    Rune:         (:REWRITE REMBIND->REMBIND-EQUAL)
+    Enabled:      T
+    Hyps:         T
+    Equiv:        EQUAL
+    Lhs:          (REMBIND X A)
+    Rhs:          (REMBIND-EQUAL X A)
+    Backchain-limit-lst: NIL
+    Subclass:     ABBREVIATION
+
+    ...
+ })
+
+ <p>We can see that @(see rewrite) rule @('rembind->rembind-equal') is @(see
+ enable)d and that it replaces <i>lhs</i> with <i>rhs</i>.  For functions
+ @('bind'), @('binding') and @('bound?') we have similar rules.</p>
 
  <p>Our intuition about @('rembind') and @('bind') tells us that this goal
  should be true even without the hypotheses.  We attempt to prove the following
  lemma.</p>
 
  @({
-    (defthm rembind-bind
-      (equal (rembind nm (bind nm pnum bk))
-             (rembind nm bk)))
+    (defthm rembind-equal-bind-equal
+      (equal (rembind-equal nm (bind-equal nm pnum bk))
+             (rembind-equal nm bk)))
  })
 
  <p>The prover proves this by induction, and stores it as a rewrite rule.
  After that, the prover has no difficulty in proving @('del-change').</p>
 
- <p>The need to prove lemma @('rembind-bind') illustrates a point we made early
- in this example: the collection of @(see rewrite) rules supplied by a
- previously certified book will almost never be everything you'll need.  It
+ <p>The need to prove lemma @('rembind-equal-bind-equal') illustrates a point
+ we made early in this example: the collection of @(see rewrite) rules supplied
+ by a previously certified book will almost never be everything you'll need. It
  would be nice if we could operate purely in the realm of names, phone numbers,
  and phone books without ever having to prove any new facts about alists.
- Unfortunately, we needed a fact about the relation between @('rembind') and
- @('bind') that wasn't supplied with the alists theory.  Hopefully, such
- omissions will be rare.</p>
+ Unfortunately, we needed a fact about the relation between @('rembind-equal')
+ and @('bind-equal') that wasn't supplied with the alists theory. Hopefully,
+ such omissions will be rare.</p>
+
+ <p>Let's take two steps back now (just enter the @(':u') command twice) to get
+ acquainted with a method that will be very useful to us.  What happens if we
+ state the previous lemma another way?</p>
+
+ @({
+    (defthm rembind-bind
+      (equal (rembind name (bind name num book))
+             (rembind name book)))
+ })
+
+ <p>An attempt to prove @('del-change') would fail then with the same subgoal
+ as above.  In this case we can give to the prover the hint to use
+ @('rembind-bind') as an instance of @('del-change') (see @(see hints) and find
+ keywords @(':use') and @(':instance')):</p>
+
+ @({
+    (defthm del-change-lemma-instance-example
+      (equal (del-phone nm (change-phone nm pnum bk))
+             (del-phone nm bk))
+      :hints ((\"Goal\" :use (:instance rembind-bind
+                                      (name nm)
+                                      (num pnum)
+                                      (book bk)))))
+ })
+
+ <p>As described in @(see hints), a @(':use') hint causes the prover to replace
+ a goal @('G') with new goal (@('IMPLIES') @('P') @('G')), where @('P') is the
+ specified theorem to use.  The @(':instance') form specifies instantiation of
+ the free variables of a previously proved theorem.  See @(see lemma-instance)
+ for more information on this subject.</p>
 
  <p>Finally, let's consider our property 5 above: a name will not be in the
  book after we delete it.  We formalize this as follows:</p>
@@ -152932,7 +153190,7 @@ work on <tt>(q x)</tt>.</p>
  <b>any</b> name occurs at most once in any valid phonebook.</p>
 
  <p>To complete this example, let's consider adding an <b>invariant</b> to our
- specification.  In particular, suppose we want to assure that no client has
+ specification.  In particular, suppose we want to ensure that no client has
  more than one associated phone number.  One way to ensure this is to require
  that the domain of the alist is a ``set'' (has no duplicates).</p>
 
@@ -152963,32 +153221,42 @@ work on <tt>(q x)</tt>.</p>
       (implies (and (phonebookp bk)
                     (in-book? nm bk))
                (namep nm))
-      :hints ((\"Goal\" :in-theory (enable bound?))))
+      :hints ((\"Goal\" :in-theory (enable bound?-equal))))
 
     (defthm find-phone-pnump
       (implies (and (phonebookp bk)
                     (in-book? nm bk))
                (pnump (find-phone nm bk)))
-      :hints ((\"Goal\" :in-theory (enable bound? binding))))
+      :hints ((\"Goal\" :in-theory (enable bound?-equal
+                                         binding-equal))))
  })
 
  <p>Note the ``@(':')@(tsee hints)'' on the last two lemmas.  Neither of these
  would prove without these @(see hints), because once again there are some
- facts about @('bound?') and @('binding') not available in our current context.
- Now, we could figure out what those facts are and try to prove them.
- Alternatively, we can @(see enable) @('bound?') and @('binding') and hope that
- by opening up these functions, the conjectures will reduce to versions that
- the prover does know enough about or can prove by induction.  In this case,
- this strategy works.  The hints tell the prover to @(see enable) the functions
- in question when considering the designated goal.</p>
+ facts about @('bound?-equal') and @('binding-equal') not available in our
+ current context.  Now, we could figure out what those facts are and try to
+ prove them.  Alternatively, we can @(see enable) @('bound?-equal') and
+ @('binding-equal') and hope that by opening up these functions, the
+ conjectures will reduce to versions that the prover does know enough about,
+ perhaps using proof by induction.  In this case, this strategy works.  The
+ hints tell the prover to @(see enable) the functions in question when
+ considering the designated goal and any subgoals of it.</p>
+
+ <p>It's important to understand that it's not enough to @(see enable) the
+ @('bound?') and @('binding') functions.  That's because rewrite rules of the
+ form @('***->***-equal') (mentioned above) will replace @(see enable)d
+ functions with @(see disable)d ones for which there are not sufficient rules
+ to complete the proof.  We can use @(see history)'s very informative command
+ @(':')@(see pl) to get a lot of information about rules for a given name.</p>
 
  <p>Below we develop the theorems showing that @('add-phone'),
  @('change-phone'), and @('del-phone') preserve our proposed invariant.  Notice
  that along the way we have to prove some subsidiary facts, some of which are
  pretty ugly.  It would be a good idea for you to try, say,
  @('add-phone-preserves-invariant') without introducing the following four
- lemmas first.  See if you can develop the proof and only add these lemmas as
- you need assistance.  Then try @('change-phone-preserves-invariant') and
+ lemmas first.  Perhaps you will use the instantiation of lemmas method,
+ described above.  See if you can develop the proof and only add these lemmas
+ as you need assistance.  Then try @('change-phone-preserves-invariant') and
  @('del-phone-preserves-invariant').  They will be easier.  It is illuminating
  to think about why @('del-phone-preserves-invariant') does not need any
  ``type'' hypotheses.</p>
@@ -153000,44 +153268,104 @@ work on <tt>(q x)</tt>.</p>
                     (pnump num))
                (phonebookp (bind nm num bk))))
 
+    (defthm member-equal-strip-cars-bind-equal
+      (implies (and (not (equal x y))
+                    (not (member-equal x (strip-cars a))))
+               (not (member-equal x (strip-cars (bind-equal y z a))))))
+
+    (defthm bind-equal-preserves-domain-setp
+      (implies (and (alistp bk)
+                    (setp (domain bk)))
+               (setp (domain (bind-equal nm num bk))))
+      :hints ((\"Goal\" :in-theory (enable domain))))
+ })
+
+ <p>Let's take two steps back (using @(':u') twice) and prove the following
+ instead of @('member-equal-strip-cars-bind-equal'):</p>
+
+ @({
     (defthm member-equal-strip-cars-bind
       (implies (and (not (equal x y))
                     (not (member-equal x (strip-cars a))))
                (not (member-equal x (strip-cars (bind y z a))))))
+ })
 
-    (defthm bind-preserves-domain-setp
+ <p>Then @('bind-equal-preserves-domain-setp') fails:</p>
+
+ @({
+    Subgoal *1/5''
+    (IMPLIES (AND (CONSP BK)
+             (NOT (EQUAL NM (CAR (CAR BK))))
+             (SETP (STRIP-CARS (BIND-EQUAL NM NUM (CDR BK))))
+             (CONSP (CAR BK))
+             (ALISTP (CDR BK))
+             (NOT (MEMBER-EQUAL (CAR (CAR BK))
+                                (STRIP-CARS (CDR BK))))
+             (SETP (STRIP-CARS (CDR BK))))
+        (NOT (MEMBER-EQUAL (CAR (CAR BK))
+                           (STRIP-CARS (BIND-EQUAL NM NUM (CDR BK))))))
+ })
+
+ <p>We can use a @(see lemma-instance) to prove it:</p>
+
+ @({
+    (defthm bind-equal-preserves-domain-setp
       (implies (and (alistp bk)
                     (setp (domain bk)))
-               (setp (domain (bind nm num bk))))
-      :hints ((\"Goal\" :in-theory (enable domain))))
+               (setp (domain (bind-equal nm num bk))))
+      :hints ((\"Goal\" :in-theory (enable domain))
+              (\"Subgoal *1/5''\" :use (:instance
+                                      member-equal-strip-cars-bind
+                                      (x (car (car bk)))
+                                      (y nm)
+                                      (z num)
+                                      (a (cdr bk))))))
+ })
 
+ <p>The use of @(see lemma-instance) is somewhat artificial in this example,
+ but this method gives great opportunities to lead ACL2 in proving theorems.
+ That said, it is generally preferable to avoid @(':use') hints in favor of
+ developing a useful set of @(see rewrite) rules, since those rules can help
+ to automate future proof attempts.</p>
+
+ <p>We continue now with proofs that our operations preserve the
+ @('phonebook'') invariant.</p>
+
+ @({
     (defthm phonebookp-alistp
       (implies (phonebookp bk)
                (alistp bk)))
 
-    (defthm ADD-PHONE-PRESERVES-INVARIANT
+    (defthm bind-equal-preserves-phonebookp
+      (implies (and (phonebookp bk)
+                    (namep nm)
+                    (pnump num))
+               (phonebookp (bind-equal nm num bk))))
+
+    (defthm add-phone-preserves-invariant
       (implies (and (valid-phonebookp bk)
                     (namep nm)
                     (pnump num))
                (valid-phonebookp (add-phone nm num bk)))
-      :hints ((\"Goal\" :in-theory (disable domain-bind))))
+      :hints ((\"Goal\" :in-theory (disable domain-bind-equal))))
 
-    (defthm CHANGE-PHONE-PRESERVES-INVARIANT
+    (defthm change-phone-preserves-invariant
       (implies (and (valid-phonebookp bk)
                     (namep nm)
                     (pnump num))
                (valid-phonebookp (change-phone nm num bk)))
-      :hints ((\"Goal\" :in-theory (disable domain-bind))))
+      :hints ((\"Goal\" :in-theory (disable domain-bind-equal))))
+
+    (defthm member-remove-equal
+      (implies (and (not (equal a b))
+                    (not (member a x)))
+               (not (member a (remove-equal b x)))))
 
     (defthm remove-equal-preserves-setp
       (implies (setp l)
                (setp (remove-equal x l))))
 
-    (defthm rembind-preserves-phonebookp
-      (implies (phonebookp bk)
-               (phonebookp (rembind nm bk))))
-
-    (defthm DEL-PHONE-PRESERVES-INVARIANT
+    (defthm del-phone-preserves-invariant
       (implies (valid-phonebookp bk)
                (valid-phonebookp (del-phone nm bk))))
  })
@@ -153085,38 +153413,45 @@ work on <tt>(q x)</tt>.</p>
 
     (defthm member-equal-strip-cdrs-rembind
       (implies (not (member-equal x (strip-cdrs y)))
-               (not (member-equal x (strip-cdrs (rembind z y))))))
+               (not (member-equal x (strip-cdrs
+                                     (rembind-equal z y))))))
 
-    (defthm DEL-PHONE-PRESERVES-PHONENUMS-UNIQUE
+    (defthm del-phone-preserves-phonenums-unique
       (implies (phonenums-unique bk)
                (phonenums-unique (del-phone nm bk)))
       :hints ((\"Goal\" :in-theory (enable range))))
 
     (defthm strip-cdrs-bind-non-member
-      (implies (and (not (bound? x a))
+      (implies (and (not (bound?-equal x a))
                     (alistp a))
-               (equal (strip-cdrs (bind x y a))
+               (equal (strip-cdrs (bind-equal x y a))
                       (append (strip-cdrs a) (list y))))
-      :hints ((\"Goal\" :in-theory (enable bound?))))
+      :hints ((\"Goal\" :in-theory (enable bound?-equal))))
+
+    (defthm member-append
+      (iff (member e (append x y))
+           (or (member e x)
+               (member e y))))
 
     (defthm setp-append-list
       (implies (setp l)
                (equal (setp (append l (list x)))
                       (not (member-equal x l)))))
 
-    (defthm ADD-PHONE-PRESERVES-PHONENUMS-UNIQUE
+    (defthm add-phone-preserves-phonenums-unique
       (implies (and (phonenums-unique bk)
                     (new-pnump pnum bk)
                     (alistp bk))
                (phonenums-unique (add-phone nm pnum bk)))
       :hints ((\"Goal\" :in-theory (enable range))))
 
-    (defthm member-equal-strip-cdrs-bind
+    (defthm member-equal-strip-cdrs-bind-equal
       (implies (and (not (member-equal z (strip-cdrs a)))
                     (not (equal z y)))
-               (not (member-equal z (strip-cdrs (bind x y a))))))
+               (not (member-equal z (strip-cdrs
+                                     (bind-equal x y a))))))
 
-    (defthm CHANGE-PHONE-PRESERVES-PHONENUMS-UNIQUE
+    (defthm change-phone-preserves-phonenums-unique
       (implies (and (phonenums-unique bk)
                     (new-pnump pnum bk)
                     (alistp bk))
@@ -155530,7 +155865,10 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  <p>To remove the effects of all @(tsee memoize) @(see events), evaluate:
  @('(clear-memo-table)').  To save and restore memoization, see @(see
  save-and-clear-memoization-settings) and see @(see
- restore-memoization-settings).</p>")
+ restore-memoization-settings).  These are both legal @(see event) forms.
+ Note: These events do not affect memoization from @(tsee memoize) events that
+ either are derived from calls of @(tsee memoize-partial) or have a
+ non-@('nil') value of @(tsee memoize) argument @(':invoke')</p>")
 
 (defxdoc unmonitor
   :parents (break-rewrite)
