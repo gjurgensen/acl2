@@ -58131,7 +58131,7 @@ Subtopics
   Invoke [47m:pe intern[0m to see the definition, or see
   [intern-in-package-of-symbol].
 
-  To see why is [47mintern[0m so restricted consider [47m(intern \"X\" \"P\")[0m.  In
+  To see why [47mintern[0m is so restricted consider [47m(intern \"X\" \"P\")[0m.  In
   particular, is it a symbol and if so, what is its
   [47m[symbol-package-name][0m?  One is tempted to say ``yes, it is a symbol
   in the package [47m\"P\"[0m.'' But if package [47m\"P\"[0m has not yet been defined,

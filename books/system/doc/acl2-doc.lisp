@@ -54474,7 +54474,7 @@ tables in the current Hons Space."
  call of a similar function whose second argument is a symbol.  Invoke @(':pe
  intern') to see the definition, or see @(see intern-in-package-of-symbol).</p>
 
- <p>To see why is @('intern') so restricted consider @('(intern \"X\" \"P\")').
+ <p>To see why @('intern') is so restricted consider @('(intern \"X\" \"P\")').
  In particular, is it a symbol and if so, what is its @(tsee
  symbol-package-name)?  One is tempted to say ``yes, it is a symbol in the
  package @('\"P\"').''  But if package @('\"P\"') has not yet been defined,
