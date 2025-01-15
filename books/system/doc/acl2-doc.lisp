@@ -20386,11 +20386,12 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
  </dl>
 
  <p>Declarations in ACL2 may occur only where @('dcl') occurs in the following
- display (not including lambda objects, discussed later below):</p>
+ display (not including lambda objects, discussed later below, and not showing
+ documentation strings here, which are essentially ignored by ACL2)):</p>
 
  <ul>
- <li>@('(DEFUN name args doc-string dcl ... dcl body)')</li>
- <li>@('(DEFMACRO name args doc-string dcl ... dcl body)')</li>
+ <li>@('(DEFUN name args dcl ... dcl body)')</li>
+ <li>@('(DEFMACRO name args dcl ... dcl body)')</li>
  <li>@('(LET ((v1 t1) ...) dcl ... dcl body)')</li>
  <li>@('(MV-LET (v1 ...) term dcl ... dcl body)')</li>
  <li>@('(FLET ((name args dcl ... dcl body) ...))')</li>
@@ -23086,7 +23087,8 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
 
  @({
   General Form:
-  (defexec fn (var1 ... varn) doc-string dcl ... dcl
+  (defexec fn (var1 ... varn)
+    dcl ... dcl ; optionally, also one documentation string, as for defun
     (mbe :LOGIC logic-body
          :EXEC  exec-body))
  })
@@ -23314,7 +23316,7 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
 
  @({
  General Form:
- (define-pc-macro cmd args doc-string dcl ... dcl body)
+ (define-pc-macro cmd args dcl ... dcl body)
  })
 
  <p>where @('cmd') is the name of the pc-macro that you want to define,
@@ -23935,7 +23937,9 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
   (one-of x 1 2 3)       ill-formed (guard violation)
 
   General Form:
-  (defmacro name macro-args doc-string dcl ... dcl body)
+  (defmacro name macro-args
+    dcl ... dcl ; optionally, also one documentation string; see below
+    body)
  })
 
  <p>where @('name') is a new symbolic name (see @(see name)), @('macro-args')
@@ -23944,11 +23948,13 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
  specified in a much more general way than is allowed by ACL2 @(tsee defun)
  @(see events); see @(see macro-args) for a description of keyword (@('&key'))
  and optional (@('&optional')) parameters as well as other so-called
- ``lambda-list keywords'', @('&rest') and @('&whole').  @('Doc-string'), if
- non-@('nil'), is an optional string that can provide documentation but is
- essentially ignored by ACL2.  Each @('dcl') is an optional declaration (see
- @(see declare)) except that the only @(tsee xargs) keyword permitted by
- @('defmacro') is @(':')@(tsee guard).</p>
+ ``lambda-list keywords'', @('&rest') and @('&whole').  Each @('dcl') is an
+ optional declaration (see @(see declare)) except that the only @(tsee xargs)
+ keyword permitted by @('defmacro') is @(':')@(tsee guard).</p>
+
+ <p>One documentation string may be included between the list of formal
+ parameters and the body, but it is essentially ignored by ACL2.  See @(see
+ documentation) for a discussion of documentation in ACL2.</p>
 
  <p>There are two restrictions on @('body') aside from it simply being a term
  in @('macro-args').  Both restrictions relate to ancestral uses of @(tsee
@@ -25933,7 +25939,9 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
         (* n (fact (1- n)))))
 
   General Form:
-  (defun fn (var1 ... varn) doc-string dcl ... dcl body),
+  (defun fn (var1 ... varn)
+    dcl ... dcl ; optionally, also one documentation string; see below
+    body)
  })
 
  <p>where @('fn') is the symbol you wish to define and is a new symbolic name
@@ -25950,13 +25958,12 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
  as @('&optional')) in the formals list of functions.  We do support some such
  keywords in macros and often you can achieve the desired syntax by defining a
  macro in addition to the general version of your function.  See @(see
- defmacro).  @('Doc-string'), if non-@('nil'), is an optional string that can
- provide documentation but is essentially ignored by ACL2.</p>
+ defmacro).</p>
 
- <p>The <i>declarations</i> (see @(see declare)), @('dcl'), are also optional.
- If more than one @('dcl') form appears, they are effectively grouped together
- as one.  Perhaps the most commonly used ACL2 specific declaration is of the
- form @('(declare (xargs :guard g :measure m))').  This declaration in the
+ <p>The <i>declarations</i> (see @(see declare)), @('dcl'), are optional.  If
+ more than one @('dcl') form appears, they are effectively grouped together as
+ one.  Perhaps the most commonly used ACL2 specific declaration is of the form
+ @('(declare (xargs :guard g :measure m))').  This declaration in the
  @('defun') of some function @('fn') has the effect of making the ``@(see
  guard)'' for @('fn') be the term @('g') and the ``measure'' be the term
  @('m').  The notion of ``measure'' is crucial to ACL2's definitional
@@ -25968,6 +25975,10 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
  supplied, then it must be a legal term.  Apart from these restrictions, the
  @(':measure') is ignored in @(':')@(tsee program) mode; see @(see
  defun-mode).</p>
+
+ <p>One documentation string may be included between the list of formal
+ parameters and the body, but it is essentially ignored by ACL2.  See @(see
+ documentation) for a discussion of documentation in ACL2.</p>
 
  <p>We now briefly discuss the ACL2 definitional principle, using the following
  definition form which is offered as a more or less generic example.</p>
@@ -26204,7 +26215,9 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
     (if (endp x) 0 (1+ (lng (cdr x)))))
 
   General Form:
-  (defun-inline fn (var1 ... varn) doc-string dcl ... dcl body)
+  (defun-inline fn (var1 ... varn)
+    dcl ... dcl ; optionally, also one documentation string; as for defun
+    body)
  })
 
  <p>satisfying the same requirements as in the General Form for @(tsee defun).
@@ -26215,9 +26228,8 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
  table) @(see events) are generated that allow the use of @('fn') in @(see
  theory) expressions to represent @('fn$inline') and that cause any
  untranslated (user-level) call of @('fn$inline') to be printed as the
- corresponding call of @('fn').  @('Doc-string'), if non-@('nil'), is an
- optional string that can provide documentation but is essentially ignored by
- ACL2.</p>
+ corresponding call of @('fn').  The documentation string is an optional string
+ that can provide documentation but is essentially ignored by ACL2.</p>
 
  <p>A form @('(defun-inline f ...)') actually defines a function named
  @('f$inline') and a corresponding macro named @('f') whose calls expand to

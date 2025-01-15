@@ -23803,11 +23803,13 @@ Usage
       information.
 
   Declarations in ACL2 may occur only where [47mdcl[0m occurs in the following
-  display (not including lambda objects, discussed later below):
+  display (not including lambda objects, discussed later below, and
+  not showing documentation strings here, which are essentially
+  ignored by ACL2)):
 
-    * [47m(DEFUN name args doc-string dcl ... dcl body)[0m
+    * [47m(DEFUN name args dcl ... dcl body)[0m
 
-    * [47m(DEFMACRO name args doc-string dcl ... dcl body)[0m
+    * [47m(DEFMACRO name args dcl ... dcl body)[0m
 
     * [47m(LET ((v1 t1) ...) dcl ... dcl body)[0m
 
@@ -26455,7 +26457,8 @@ Subtopics
   the [47m:logic[0m part of any superior [47mmbe[0m call is completely ignored.
 
     General Form:
-    (defexec fn (var1 ... varn) doc-string dcl ... dcl
+    (defexec fn (var1 ... varn)
+      dcl ... dcl ; optionally, also one documentation string, as for defun
       (mbe :LOGIC logic-body
            :EXEC  exec-body))
 
@@ -26665,7 +26668,7 @@ Restrictions
   effect.
 
     General Form:
-    (define-pc-macro cmd args doc-string dcl ... dcl body)
+    (define-pc-macro cmd args dcl ... dcl body)
 
   where [47mcmd[0m is the name of the pc-macro that you want to define, [47margs[0m
   is its list of formal parameters.  [47mArgs[0m may include lambda-list
@@ -27315,7 +27318,9 @@ Subtopics
     (one-of x 1 2 3)       ill-formed (guard violation)
 
     General Form:
-    (defmacro name macro-args doc-string dcl ... dcl body)
+    (defmacro name macro-args
+      dcl ... dcl ; optionally, also one documentation string; see below
+      body)
 
   where [47mname[0m is a new symbolic name (see [name]), [47mmacro-args[0m specifies
   the formal parameters of the macro, and [47mbody[0m is a term whose only
@@ -27323,11 +27328,13 @@ Subtopics
   specified in a much more general way than is allowed by ACL2
   [47m[defun][0m [events]; see [macro-args] for a description of keyword
   ([47m&key[0m) and optional ([47m&optional[0m) parameters as well as other
-  so-called ``lambda-list keywords'', [47m&rest[0m and [47m&whole[0m.  [47mDoc-string[0m,
-  if non-[47mnil[0m, is an optional string that can provide documentation
-  but is essentially ignored by ACL2.  Each [47mdcl[0m is an optional
-  declaration (see [declare]) except that the only [47m[xargs][0m keyword
-  permitted by [47mdefmacro[0m is [47m:[0m[47m[guard][0m.
+  so-called ``lambda-list keywords'', [47m&rest[0m and [47m&whole[0m.  Each [47mdcl[0m is
+  an optional declaration (see [declare]) except that the only
+  [47m[xargs][0m keyword permitted by [47mdefmacro[0m is [47m:[0m[47m[guard][0m.
+
+  One documentation string may be included between the list of formal
+  parameters and the body, but it is essentially ignored by ACL2.
+  See [documentation] for a discussion of documentation in ACL2.
 
   There are two restrictions on [47mbody[0m aside from it simply being a term
   in [47mmacro-args[0m.  Both restrictions relate to ancestral uses of
@@ -29316,7 +29323,9 @@ Subtopics
           (* n (fact (1- n)))))
 
     General Form:
-    (defun fn (var1 ... varn) doc-string dcl ... dcl body),
+    (defun fn (var1 ... varn)
+      dcl ... dcl ; optionally, also one documentation string; see below
+      body)
 
   where [47mfn[0m is the symbol you wish to define and is a new symbolic name
   (see [name]), [47m(var1 ... varn)[0m is its list of formal parameters (see
@@ -29332,19 +29341,17 @@ Subtopics
   as [47m&optional[0m) in the formals list of functions.  We do support some
   such keywords in macros and often you can achieve the desired
   syntax by defining a macro in addition to the general version of
-  your function.  See [defmacro].  [47mDoc-string[0m, if non-[47mnil[0m, is an
-  optional string that can provide documentation but is essentially
-  ignored by ACL2.
+  your function.  See [defmacro].
 
-  The [3mdeclarations[0m (see [declare]), [47mdcl[0m, are also optional.  If more
-  than one [47mdcl[0m form appears, they are effectively grouped together as
-  one.  Perhaps the most commonly used ACL2 specific declaration is
-  of the form [47m(declare (xargs :guard g :measure m))[0m.  This
-  declaration in the [47mdefun[0m of some function [47mfn[0m has the effect of
-  making the ``[guard]'' for [47mfn[0m be the term [47mg[0m and the ``measure'' be
-  the term [47mm[0m.  The notion of ``measure'' is crucial to ACL2's
-  definitional principle.  The notion of ``guard'' is not, and is
-  discussed elsewhere; see [verify-guards] and see
+  The [3mdeclarations[0m (see [declare]), [47mdcl[0m, are optional.  If more than
+  one [47mdcl[0m form appears, they are effectively grouped together as one.
+  Perhaps the most commonly used ACL2 specific declaration is of the
+  form [47m(declare (xargs :guard g :measure m))[0m.  This declaration in
+  the [47mdefun[0m of some function [47mfn[0m has the effect of making the
+  ``[guard]'' for [47mfn[0m be the term [47mg[0m and the ``measure'' be the term [47mm[0m.
+  The notion of ``measure'' is crucial to ACL2's definitional
+  principle.  The notion of ``guard'' is not, and is discussed
+  elsewhere; see [verify-guards] and see
   [set-verify-guards-eagerness].  Note that a [47m:measure[0m is not allowed
   for a non-recursive definition unless it is part of a
   [47m[mutual-recursion][0m (exception: a measure of [47mnil[0m is treated as
@@ -29352,6 +29359,10 @@ Subtopics
   supplied, then it must be a legal term.  Apart from these
   restrictions, the [47m:measure[0m is ignored in [47m:[0m[47m[program][0m mode; see
   [defun-mode].
+
+  One documentation string may be included between the list of formal
+  parameters and the body, but it is essentially ignored by ACL2.
+  See [documentation] for a discussion of documentation in ACL2.
 
   We now briefly discuss the ACL2 definitional principle, using the
   following definition form which is offered as a more or less
@@ -29647,7 +29658,9 @@ Subtopics
       (if (endp x) 0 (1+ (lng (cdr x)))))
 
     General Form:
-    (defun-inline fn (var1 ... varn) doc-string dcl ... dcl body)
+    (defun-inline fn (var1 ... varn)
+      dcl ... dcl ; optionally, also one documentation string; as for defun
+      body)
 
   satisfying the same requirements as in the General Form for [47m[defun][0m.
   The effect is to define a macro [47mfn[0m and a function [47mfn$inline[0m (i.e.,
@@ -29657,8 +29670,8 @@ Subtopics
   [47m[table][0m [events] are generated that allow the use of [47mfn[0m in [theory]
   expressions to represent [47mfn$inline[0m and that cause any untranslated
   (user-level) call of [47mfn$inline[0m to be printed as the corresponding
-  call of [47mfn[0m.  [47mDoc-string[0m, if non-[47mnil[0m, is an optional string that can
-  provide documentation but is essentially ignored by ACL2.
+  call of [47mfn[0m.  The documentation string is an optional string that
+  can provide documentation but is essentially ignored by ACL2.
 
   A form [47m(defun-inline f ...)[0m actually defines a function named
   [47mf$inline[0m and a corresponding macro named [47mf[0m whose calls expand to
