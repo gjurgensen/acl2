@@ -3,7 +3,7 @@
 ; acl2-doc.lisp - Documentation for the ACL2 Theorem Prover
 ;
 ; ACL2 Version 8.6 -- A Computational Logic for Applicative Common Lisp
-; Copyright (C) 2024, Regents of the University of Texas
+; Copyright (C) 2025, Regents of the University of Texas
 ;
 ; This documentation was derived from the ACL2 system in October 2013, which
 ; was a descendant of ACL2 Version 1.9, Copyright (C) 1997 Computational Logic,
@@ -811,7 +811,7 @@
 (defxdoc about-acl2
   :parents (start-here)
   :short "General information About ACL2"
-  :long "<p>This is @(`(:raw (@ acl2-version))`), @(see copyright) (C) 2024,
+  :long "<p>This is @(`(:raw (@ acl2-version))`), @(see copyright) (C) 2025,
  Regents of the University of Texas, authored by Matt Kaufmann and J Strother
  Moore.</p>
 
@@ -19142,7 +19142,7 @@ subtree of X with T, without duplication.</p>
  <p>@(`(:raw (@ acl2-version))`) &mdash; A Computational Logic for Applicative
  Common Lisp</p>
 
- <p>Copyright (C) 2024, Regents of the University of Texas</p>
+ <p>Copyright (C) 2025, Regents of the University of Texas</p>
 
  <p>This version of ACL2 is a descendant of ACL2 Version 1.9, Copyright (C)
  1997 Computational Logic, Inc.  See the documentation topic NOTE-2-0.</p>
@@ -40270,13 +40270,14 @@ current fast alists."
   :short "Floating-point and ACL2"
   :long "<p>ACL2 supports computation that uses floating-point operations; see
  @(see df).  If you are using an older Lisp, an attempt to build ACL2 may fail
- with an error complaining that &ldquo;<tt>feature :ieee-floating-point is
- missing from *features*</tt>&rdquo;.  If you believe that your host Lisp
- properly supports IEEE floating-point operations even though that feature is
- missing (e.g., quite possibly with older versions of CCL), you can avoid that
- built-time error by setting environment variable @('ACL2_FP_OK') to any
- non-empty string.  You might want to do that in a script that invokes your
- Lisp.</p>")
+ with an error complaining that &ldquo;feature :ieee-floating-point is
+ missing&rdquo; [from the Lisp's @('*features*')].  <b>THIS ERROR INDICATES
+ THAT ACL2 MAY BE UNSOUND WHEN BUILT ON THAT LISP!</b> If however you believe
+ that your Lisp properly supports IEEE floating-point operations even though
+ that feature is missing (e.g., quite possibly with older versions of CCL), you
+ can avoid that build-time error by setting environment variable
+ @('ACL2_FP_OK') to any non-empty string.  You might want to do that in a
+ script that invokes your Lisp.</p>")
 
 (defxdoc free-variables
   :parents (rule-classes rewrite)
@@ -140747,16 +140748,15 @@ work on <tt>(q x)</tt>.</p>
   this:</p>
 
  @({
- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- + ACL2 Version 8.6+ (a development snapshot based on ACL2 Version 8.6) +
- +   built November 6, 2024  16:13:03.                                  +
- +   (Git commit hash: e9790bdb14922c9a88aa23781b5d8bdf080fb05d)        +
- + Copyright (C) 2024, Regents of the University of Texas.              +
- + ACL2 comes with ABSOLUTELY NO WARRANTY.  This is free software and   +
- + you are welcome to redistribute it under certain conditions.  For    +
- + details, see the LICENSE file distributed with ACL2.                 +
- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
+  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  + ACL2 Version 8.6+ (a development snapshot based on ACL2 Version 8.6) +
+  +   built January 14, 2025  10:09:28.                                  +
+  +   (Git commit hash: 89b2701f59f8e561b17121cf0a25cb8d1910377f)        +
+  + Copyright (C) 2025, Regents of the University of Texas.              +
+  + ACL2 comes with ABSOLUTELY NO WARRANTY.  This is free software and   +
+  + you are welcome to redistribute it under certain conditions.  For    +
+  + details, see the LICENSE file distributed with ACL2.                 +
+  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  })
 
  <p>The third line of that banner can be modified by setting environment
@@ -140768,9 +140768,10 @@ work on <tt>(q x)</tt>.</p>
  @({
  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  + ACL2 Version 8.6+ (a development snapshot based on ACL2 Version 8.6) +
- +   built November 6, 2024  16:13:03.                                  +
- +   (Git commit hash: e9790bdb14922c9a88aa23781b5d8bdf080fb05d)        +
- + Copyright (C) 2024, Regents of the University of Texas.              +
+ +   built January 14, 2025  09:56:49.                                  +
+ +   (Note from the environment when this executable was saved:         +
+ +    This is my private executable.)                                   +
+ + Copyright (C) 2025, Regents of the University of Texas.              +
  + ACL2 comes with ABSOLUTELY NO WARRANTY.  This is free software and   +
  + you are welcome to redistribute it under certain conditions.  For    +
  + details, see the LICENSE file distributed with ACL2.                 +

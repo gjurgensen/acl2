@@ -1623,7 +1623,7 @@ Subtopics
   (START-HERE)
   "General information About ACL2
 
-  This is ACL2 Version 8.6, [copyright] (C) 2024, Regents of the
+  This is ACL2 Version 8.6, [copyright] (C) 2025, Regents of the
   University of Texas, authored by Matt Kaufmann and J Strother
   Moore.
 
@@ -22579,7 +22579,7 @@ Subtopics
   ACL2 Version 8.6 --- A Computational Logic for Applicative Common
   Lisp
 
-  Copyright (C) 2024, Regents of the University of Texas
+  Copyright (C) 2025, Regents of the University of Texas
 
   This version of ACL2 is a descendant of ACL2 Version 1.9, Copyright
   (C) 1997 Computational Logic, Inc.  See the documentation topic
@@ -43988,13 +43988,15 @@ Subtopics
 
   ACL2 supports computation that uses floating-point operations; see
   [df].  If you are using an older Lisp, an attempt to build ACL2 may
-  fail with an error complaining that ``[47mfeature :ieee-floating-point
-  is missing from *features*[0m''.  If you believe that your host Lisp
-  properly supports IEEE floating-point operations even though that
-  feature is missing (e.g., quite possibly with older versions of
-  CCL), you can avoid that built-time error by setting environment
-  variable [47mACL2_FP_OK[0m to any non-empty string.  You might want to do
-  that in a script that invokes your Lisp.")
+  fail with an error complaining that ``feature :ieee-floating-point
+  is missing'' [from the Lisp's [47m*features*[0m].  [31;1mTHIS ERROR INDICATES
+  THAT ACL2 MAY BE UNSOUND WHEN BUILT ON THAT LISP![0m If however you
+  believe that your Lisp properly supports IEEE floating-point
+  operations even though that feature is missing (e.g., quite
+  possibly with older versions of CCL), you can avoid that build-time
+  error by setting environment variable [47mACL2_FP_OK[0m to any non-empty
+  string.  You might want to do that in a script that invokes your
+  Lisp.")
  (FQUOTEP (POINTERS)
           "See [system-utilities].")
  (FREE-VARIABLES
@@ -140407,9 +140409,9 @@ Subtopics
 
     ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     + ACL2 Version 8.6+ (a development snapshot based on ACL2 Version 8.6) +
-    +   built November 6, 2024  16:13:03.                                  +
-    +   (Git commit hash: e9790bdb14922c9a88aa23781b5d8bdf080fb05d)        +
-    + Copyright (C) 2024, Regents of the University of Texas.              +
+    +   built January 14, 2025  10:09:28.                                  +
+    +   (Git commit hash: 89b2701f59f8e561b17121cf0a25cb8d1910377f)        +
+    + Copyright (C) 2025, Regents of the University of Texas.              +
     + ACL2 comes with ABSOLUTELY NO WARRANTY.  This is free software and   +
     + you are welcome to redistribute it under certain conditions.  For    +
     + details, see the LICENSE file distributed with ACL2.                 +
@@ -140423,9 +140425,10 @@ Subtopics
 
     ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     + ACL2 Version 8.6+ (a development snapshot based on ACL2 Version 8.6) +
-    +   built November 6, 2024  16:13:03.                                  +
-    +   (Git commit hash: e9790bdb14922c9a88aa23781b5d8bdf080fb05d)        +
-    + Copyright (C) 2024, Regents of the University of Texas.              +
+    +   built January 14, 2025  09:56:49.                                  +
+    +   (Note from the environment when this executable was saved:         +
+    +    This is my private executable.)                                   +
+    + Copyright (C) 2025, Regents of the University of Texas.              +
     + ACL2 comes with ABSOLUTELY NO WARRANTY.  This is free software and   +
     + you are welcome to redistribute it under certain conditions.  For    +
     + details, see the LICENSE file distributed with ACL2.                 +
