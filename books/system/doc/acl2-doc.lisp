@@ -3,7 +3,7 @@
 ; acl2-doc.lisp - Documentation for the ACL2 Theorem Prover
 ;
 ; ACL2 Version 8.6 -- A Computational Logic for Applicative Common Lisp
-; Copyright (C) 2024, Regents of the University of Texas
+; Copyright (C) 2025, Regents of the University of Texas
 ;
 ; This documentation was derived from the ACL2 system in October 2013, which
 ; was a descendant of ACL2 Version 1.9, Copyright (C) 1997 Computational Logic,
@@ -811,7 +811,7 @@
 (defxdoc about-acl2
   :parents (start-here)
   :short "General information About ACL2"
-  :long "<p>This is @(`(:raw (@ acl2-version))`), @(see copyright) (C) 2024,
+  :long "<p>This is @(`(:raw (@ acl2-version))`), @(see copyright) (C) 2025,
  Regents of the University of Texas, authored by Matt Kaufmann and J Strother
  Moore.</p>
 
@@ -19142,7 +19142,7 @@ subtree of X with T, without duplication.</p>
  <p>@(`(:raw (@ acl2-version))`) &mdash; A Computational Logic for Applicative
  Common Lisp</p>
 
- <p>Copyright (C) 2024, Regents of the University of Texas</p>
+ <p>Copyright (C) 2025, Regents of the University of Texas</p>
 
  <p>This version of ACL2 is a descendant of ACL2 Version 1.9, Copyright (C)
  1997 Computational Logic, Inc.  See the documentation topic NOTE-2-0.</p>
@@ -20386,11 +20386,12 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
  </dl>
 
  <p>Declarations in ACL2 may occur only where @('dcl') occurs in the following
- display (not including lambda objects, discussed later below):</p>
+ display (not including lambda objects, discussed later below, and not showing
+ documentation strings here, which are essentially ignored by ACL2)):</p>
 
  <ul>
- <li>@('(DEFUN name args doc-string dcl ... dcl body)')</li>
- <li>@('(DEFMACRO name args doc-string dcl ... dcl body)')</li>
+ <li>@('(DEFUN name args dcl ... dcl body)')</li>
+ <li>@('(DEFMACRO name args dcl ... dcl body)')</li>
  <li>@('(LET ((v1 t1) ...) dcl ... dcl body)')</li>
  <li>@('(MV-LET (v1 ...) term dcl ... dcl body)')</li>
  <li>@('(FLET ((name args dcl ... dcl body) ...))')</li>
@@ -23086,7 +23087,8 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
 
  @({
   General Form:
-  (defexec fn (var1 ... varn) doc-string dcl ... dcl
+  (defexec fn (var1 ... varn)
+    dcl ... dcl ; optionally, also one documentation string, as for defun
     (mbe :LOGIC logic-body
          :EXEC  exec-body))
  })
@@ -23314,7 +23316,7 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
 
  @({
  General Form:
- (define-pc-macro cmd args doc-string dcl ... dcl body)
+ (define-pc-macro cmd args dcl ... dcl body)
  })
 
  <p>where @('cmd') is the name of the pc-macro that you want to define,
@@ -23935,7 +23937,9 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
   (one-of x 1 2 3)       ill-formed (guard violation)
 
   General Form:
-  (defmacro name macro-args doc-string dcl ... dcl body)
+  (defmacro name macro-args
+    dcl ... dcl ; optionally, also one documentation string; see below
+    body)
  })
 
  <p>where @('name') is a new symbolic name (see @(see name)), @('macro-args')
@@ -23944,11 +23948,13 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
  specified in a much more general way than is allowed by ACL2 @(tsee defun)
  @(see events); see @(see macro-args) for a description of keyword (@('&key'))
  and optional (@('&optional')) parameters as well as other so-called
- ``lambda-list keywords'', @('&rest') and @('&whole').  @('Doc-string'), if
- non-@('nil'), is an optional string that can provide documentation but is
- essentially ignored by ACL2.  Each @('dcl') is an optional declaration (see
- @(see declare)) except that the only @(tsee xargs) keyword permitted by
- @('defmacro') is @(':')@(tsee guard).</p>
+ ``lambda-list keywords'', @('&rest') and @('&whole').  Each @('dcl') is an
+ optional declaration (see @(see declare)) except that the only @(tsee xargs)
+ keyword permitted by @('defmacro') is @(':')@(tsee guard).</p>
+
+ <p>One documentation string may be included between the list of formal
+ parameters and the body, but it is essentially ignored by ACL2.  See @(see
+ documentation) for a discussion of documentation in ACL2.</p>
 
  <p>There are two restrictions on @('body') aside from it simply being a term
  in @('macro-args').  Both restrictions relate to ancestral uses of @(tsee
@@ -25933,7 +25939,9 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
         (* n (fact (1- n)))))
 
   General Form:
-  (defun fn (var1 ... varn) doc-string dcl ... dcl body),
+  (defun fn (var1 ... varn)
+    dcl ... dcl ; optionally, also one documentation string; see below
+    body)
  })
 
  <p>where @('fn') is the symbol you wish to define and is a new symbolic name
@@ -25950,13 +25958,12 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
  as @('&optional')) in the formals list of functions.  We do support some such
  keywords in macros and often you can achieve the desired syntax by defining a
  macro in addition to the general version of your function.  See @(see
- defmacro).  @('Doc-string'), if non-@('nil'), is an optional string that can
- provide documentation but is essentially ignored by ACL2.</p>
+ defmacro).</p>
 
- <p>The <i>declarations</i> (see @(see declare)), @('dcl'), are also optional.
- If more than one @('dcl') form appears, they are effectively grouped together
- as one.  Perhaps the most commonly used ACL2 specific declaration is of the
- form @('(declare (xargs :guard g :measure m))').  This declaration in the
+ <p>The <i>declarations</i> (see @(see declare)), @('dcl'), are optional.  If
+ more than one @('dcl') form appears, they are effectively grouped together as
+ one.  Perhaps the most commonly used ACL2 specific declaration is of the form
+ @('(declare (xargs :guard g :measure m))').  This declaration in the
  @('defun') of some function @('fn') has the effect of making the ``@(see
  guard)'' for @('fn') be the term @('g') and the ``measure'' be the term
  @('m').  The notion of ``measure'' is crucial to ACL2's definitional
@@ -25968,6 +25975,10 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
  supplied, then it must be a legal term.  Apart from these restrictions, the
  @(':measure') is ignored in @(':')@(tsee program) mode; see @(see
  defun-mode).</p>
+
+ <p>One documentation string may be included between the list of formal
+ parameters and the body, but it is essentially ignored by ACL2.  See @(see
+ documentation) for a discussion of documentation in ACL2.</p>
 
  <p>We now briefly discuss the ACL2 definitional principle, using the following
  definition form which is offered as a more or less generic example.</p>
@@ -26204,7 +26215,9 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
     (if (endp x) 0 (1+ (lng (cdr x)))))
 
   General Form:
-  (defun-inline fn (var1 ... varn) doc-string dcl ... dcl body)
+  (defun-inline fn (var1 ... varn)
+    dcl ... dcl ; optionally, also one documentation string; as for defun
+    body)
  })
 
  <p>satisfying the same requirements as in the General Form for @(tsee defun).
@@ -26215,9 +26228,8 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
  table) @(see events) are generated that allow the use of @('fn') in @(see
  theory) expressions to represent @('fn$inline') and that cause any
  untranslated (user-level) call of @('fn$inline') to be printed as the
- corresponding call of @('fn').  @('Doc-string'), if non-@('nil'), is an
- optional string that can provide documentation but is essentially ignored by
- ACL2.</p>
+ corresponding call of @('fn').  The documentation string is an optional string
+ that can provide documentation but is essentially ignored by ACL2.</p>
 
  <p>A form @('(defun-inline f ...)') actually defines a function named
  @('f$inline') and a corresponding macro named @('f') whose calls expand to
@@ -40270,13 +40282,14 @@ current fast alists."
   :short "Floating-point and ACL2"
   :long "<p>ACL2 supports computation that uses floating-point operations; see
  @(see df).  If you are using an older Lisp, an attempt to build ACL2 may fail
- with an error complaining that &ldquo;<tt>feature :ieee-floating-point is
- missing from *features*</tt>&rdquo;.  If you believe that your host Lisp
- properly supports IEEE floating-point operations even though that feature is
- missing (e.g., quite possibly with older versions of CCL), you can avoid that
- built-time error by setting environment variable @('ACL2_FP_OK') to any
- non-empty string.  You might want to do that in a script that invokes your
- Lisp.</p>")
+ with an error complaining that &ldquo;feature :ieee-floating-point is
+ missing&rdquo; [from the Lisp's @('*features*')].  <b>THIS ERROR INDICATES
+ THAT ACL2 MAY BE UNSOUND WHEN BUILT ON THAT LISP!</b> If however you believe
+ that your Lisp properly supports IEEE floating-point operations even though
+ that feature is missing (e.g., quite possibly with older versions of CCL), you
+ can avoid that build-time error by setting environment variable
+ @('ACL2_FP_OK') to any non-empty string.  You might want to do that in a
+ script that invokes your Lisp.</p>")
 
 (defxdoc free-variables
   :parents (rule-classes rewrite)
@@ -54473,7 +54486,7 @@ tables in the current Hons Space."
  call of a similar function whose second argument is a symbol.  Invoke @(':pe
  intern') to see the definition, or see @(see intern-in-package-of-symbol).</p>
 
- <p>To see why is @('intern') so restricted consider @('(intern \"X\" \"P\")').
+ <p>To see why @('intern') is so restricted consider @('(intern \"X\" \"P\")').
  In particular, is it a symbol and if so, what is its @(tsee
  symbol-package-name)?  One is tempted to say ``yes, it is a symbol in the
  package @('\"P\"').''  But if package @('\"P\"') has not yet been defined,
@@ -108010,6 +108023,42 @@ it."
 ; and later.  Thanks to Camm Maguire for the suggestion, and the explanation
 ; that its effect would generally be only to waste space in GCL 2.7.0.
 
+; Here is an example of the proof-builder soundness bug involving forcing.
+; These events were admitted before the bug was fixed.
+;
+;   (encapsulate
+;     (((p1 *) => *)
+;      ((p2 *) => *)
+;      ((f *) => *))
+;     (local (defun p1 (x) x))
+;     (local (defun f (x)
+;              x))
+;     (local (defun p2 (x)
+;              (equal (f x) x)))
+;     (defthm f-p2
+;       (implies (and (p1 x)
+;                     (force (p2 x)))
+;                (equal (f x) x)))
+;     (defthm f-not-p2
+;       (implies (and (p1 x)
+;                     (not (p2 x)))
+;                (not (equal (f x) x)))
+;       :hints (("Goal" :in-theory (disable f-p2))))
+;     )
+;   (defthm needs-p2-hyp
+;     (implies (p1 x)
+;              (equal (f x) x))
+;     :instructions (:promote
+;                    :s ; creates bad goal
+;                    :s))
+;   (defthm false
+;     nil
+;     :rule-classes nil
+;     :hints (("Goal" :use ((:functional-instance needs-p2-hyp
+;                                                 (f (lambda (x) (not x)))
+;                                                 (p1 (lambda (x) t))
+;                                                 (p2 (lambda (x) nil)))))))
+
   :parents (release-notes)
   :short "ACL2 Version  8.7 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -108040,6 +108089,10 @@ it."
  by adding suitable proclaiming in ACL2).</p>
 
  <h3>Bug Fixes</h3>
+
+ <p>Fixed a soundness bug in the @(see proof-builder) that could cause goals
+ from @(tsee force)d hypotheses to be created incorrectly.  (This bug has been
+ around for at least 10 years and probably for 30 years!)</p>
 
  <p>A Lisp error is now avoided when saving event-data (see @(see
  saving-event-data) and submitting certain ill-formed attempts at @(see
@@ -140707,16 +140760,15 @@ work on <tt>(q x)</tt>.</p>
   this:</p>
 
  @({
- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- + ACL2 Version 8.6+ (a development snapshot based on ACL2 Version 8.6) +
- +   built November 6, 2024  16:13:03.                                  +
- +   (Git commit hash: e9790bdb14922c9a88aa23781b5d8bdf080fb05d)        +
- + Copyright (C) 2024, Regents of the University of Texas.              +
- + ACL2 comes with ABSOLUTELY NO WARRANTY.  This is free software and   +
- + you are welcome to redistribute it under certain conditions.  For    +
- + details, see the LICENSE file distributed with ACL2.                 +
- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
+  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  + ACL2 Version 8.6+ (a development snapshot based on ACL2 Version 8.6) +
+  +   built January 14, 2025  10:09:28.                                  +
+  +   (Git commit hash: 89b2701f59f8e561b17121cf0a25cb8d1910377f)        +
+  + Copyright (C) 2025, Regents of the University of Texas.              +
+  + ACL2 comes with ABSOLUTELY NO WARRANTY.  This is free software and   +
+  + you are welcome to redistribute it under certain conditions.  For    +
+  + details, see the LICENSE file distributed with ACL2.                 +
+  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  })
 
  <p>The third line of that banner can be modified by setting environment
@@ -140728,9 +140780,10 @@ work on <tt>(q x)</tt>.</p>
  @({
  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  + ACL2 Version 8.6+ (a development snapshot based on ACL2 Version 8.6) +
- +   built November 6, 2024  16:13:03.                                  +
- +   (Git commit hash: e9790bdb14922c9a88aa23781b5d8bdf080fb05d)        +
- + Copyright (C) 2024, Regents of the University of Texas.              +
+ +   built January 14, 2025  09:56:49.                                  +
+ +   (Note from the environment when this executable was saved:         +
+ +    This is my private executable.)                                   +
+ + Copyright (C) 2025, Regents of the University of Texas.              +
  + ACL2 comes with ABSOLUTELY NO WARRANTY.  This is free software and   +
  + you are welcome to redistribute it under certain conditions.  For    +
  + details, see the LICENSE file distributed with ACL2.                 +
