@@ -28818,8 +28818,8 @@ Subtopics
   the theory expression [47m(theory name)[0m.
 
   The value returned is the length of the resulting theory.  For
-  example, in the following, the theory associated with [47m'FOO[0m has 54
-  [rune]s:
+  example, in the following, the theory associated with [47m'FOO[0m has 60
+  [rune]s as of ACL2 Version 8.6:
 
     ACL2 !>(deftheory foo (union-theories '(binary-append)
                                           (theory 'minimal-theory)))
@@ -28827,9 +28827,8 @@ Subtopics
     Summary
     Form:  ( DEFTHEORY FOO ...)
     Rules: NIL
-    Warnings:  None
-    Time:  0.00 seconds (prove: 0.00, print: 0.00, other: 0.00)
-     54
+    Time:  0.01 seconds (prove: 0.00, print: 0.00, other: 0.01)
+     60
     ACL2 !>
 
   Note that the theory being defined depends on the context.  For
