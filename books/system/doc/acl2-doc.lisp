@@ -25437,7 +25437,8 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
  value of the theory expression @('(theory name)').</p>
 
  <p>The value returned is the length of the resulting theory.  For example, in
- the following, the theory associated with @(''FOO') has 54 @(see rune)s:</p>
+ the following, the theory associated with @(''FOO') has 60 @(see rune)s as of
+ ACL2 Version  8.6:</p>
 
  @({
   ACL2 !>(deftheory foo (union-theories '(binary-append)
@@ -25446,9 +25447,8 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
   Summary
   Form:  ( DEFTHEORY FOO ...)
   Rules: NIL
-  Warnings:  None
-  Time:  0.00 seconds (prove: 0.00, print: 0.00, other: 0.00)
-   54
+  Time:  0.01 seconds (prove: 0.00, print: 0.00, other: 0.01)
+   60
   ACL2 !>
  })
 
