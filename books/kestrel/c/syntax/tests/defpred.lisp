@@ -8,18 +8,15 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(in-package "C2C")
+(in-package "C$")
 
-(include-book "../../../syntax/input-files")
-(include-book "../../../syntax/output-files")
-(include-book "../../simpadd0-proofs")
+(include-book "../defpred")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(c$::input-files :files ("file.c")
-                 :process :parse
-                 :const *old-code*)
-
-(simpadd0 *old-code* *new-code* :proofs t)
-
-(c$::output-files :const *new-code*)
+; check that a certain identifier is never used as a variable:
+(defpred novarp
+  :extra-args ((ident identp))
+  :default t
+  :override
+  ((expr :ident (not (equal (expr-ident->ident expr) (ident-fix ident))))))
