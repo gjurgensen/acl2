@@ -28818,8 +28818,8 @@ Subtopics
   the theory expression [47m(theory name)[0m.
 
   The value returned is the length of the resulting theory.  For
-  example, in the following, the theory associated with [47m'FOO[0m has 54
-  [rune]s:
+  example, in the following, the theory associated with [47m'FOO[0m has 60
+  [rune]s as of ACL2 Version 8.6:
 
     ACL2 !>(deftheory foo (union-theories '(binary-append)
                                           (theory 'minimal-theory)))
@@ -28827,9 +28827,8 @@ Subtopics
     Summary
     Form:  ( DEFTHEORY FOO ...)
     Rules: NIL
-    Warnings:  None
-    Time:  0.00 seconds (prove: 0.00, print: 0.00, other: 0.00)
-     54
+    Time:  0.01 seconds (prove: 0.00, print: 0.00, other: 0.01)
+     60
     ACL2 !>
 
   Note that the theory being defined depends on the context.  For
@@ -123410,7 +123409,10 @@ Subtopics
   brackets with parentheses and the comma with a dot, [47m(1 . 2)[0m.  Thus,
   [47m((1 . 2) . (3 . 4))[0m is the pair containing the pair [47m(1 . 2)[0m in its
   left component and the pair [47m(3 . 4)[0m in its right.  In high school,
-  you might have written this object as <<1, 2>,<3, 4>>.
+  you might have written this object as <<1, 2>,<3, 4>>.  Note that
+  exactly one object must follow the dot; for example, the notation
+  [47m((1 . 2) . 3 4)[0m is illegal.  However, one or more objects may
+  precede the dot, as discussed below.
 
   In Lisp, pairs are called [3mconses[0m.  Non-conses are called [3matoms[0m.  The
   left component is called the [3mcar[0m  and the right component is called
