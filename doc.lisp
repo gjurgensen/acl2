@@ -123409,7 +123409,10 @@ Subtopics
   brackets with parentheses and the comma with a dot, [47m(1 . 2)[0m.  Thus,
   [47m((1 . 2) . (3 . 4))[0m is the pair containing the pair [47m(1 . 2)[0m in its
   left component and the pair [47m(3 . 4)[0m in its right.  In high school,
-  you might have written this object as <<1, 2>,<3, 4>>.
+  you might have written this object as <<1, 2>,<3, 4>>.  Note that
+  exactly one object must follow the dot; for example, the notation
+  [47m((1 . 2) . 3 4)[0m is illegal.  However, one or more objects may
+  precede the dot, as discussed below.
 
   In Lisp, pairs are called [3mconses[0m.  Non-conses are called [3matoms[0m.  The
   left component is called the [3mcar[0m  and the right component is called
@@ -148220,7 +148223,7 @@ Subtopics
   This information may allow the Common Lisp compiler to avoid
   certain run-time checks.  When evaluating code directly in the
   top-level loop or in [47m:[0m[47m[logic][0m-mode functions that have not been
-  [guard]-verified, [47mTHE[0m can perform run-type type checks.  See
+  [guard]-verified, [47mTHE[0m can perform run-time type checks.  See
   [declare] and [type-spec] for general, related background.
 
   General form:

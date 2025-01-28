@@ -122077,8 +122077,10 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  the angle brackets with parentheses and the comma with a dot, <tt>(1 . 2)</tt>.
  Thus, <tt>((1 . 2) . (3 . 4))</tt> is the pair containing the pair <tt>(1 . 2)</tt>
  in its left component and the pair <tt>(3 . 4)</tt> in its right.  In high
- school, you might have written this object as &lang;&lang;1, 2&rang;,&lang;3, 4&rang;&rang;.
- </p>
+ school, you might have written this object as &lang;&lang;1, 2&rang;,&lang;3,
+ 4&rang;&rang;.  Note that exactly one object must follow the dot; for example,
+ the notation <tt>((1 . 2) . 3 4)</tt> is illegal.  However, one or more
+ objects may precede the dot, as discussed below.</p>
 
  <p>
  In Lisp, pairs are called <i>conses</i>.  Non-conses are called <i>atoms</i>.
