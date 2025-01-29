@@ -148305,7 +148305,7 @@ work on <tt>(q x)</tt>.</p>
  may allow the Common Lisp compiler to avoid certain run-time checks.  When
  evaluating code directly in the top-level loop or in @(':')@(tsee logic)-mode
  functions that have not been @(see guard)-verified, @('THE') can perform
- run-type type checks.  See @(see declare) and @(see type-spec) for general,
+ run-time type checks.  See @(see declare) and @(see type-spec) for general,
  related background.</p>
 
  <p>General form:</p>
