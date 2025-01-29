@@ -148223,7 +148223,7 @@ Subtopics
   This information may allow the Common Lisp compiler to avoid
   certain run-time checks.  When evaluating code directly in the
   top-level loop or in [47m:[0m[47m[logic][0m-mode functions that have not been
-  [guard]-verified, [47mTHE[0m can perform run-type type checks.  See
+  [guard]-verified, [47mTHE[0m can perform run-time type checks.  See
   [declare] and [type-spec] for general, related background.
 
   General form:
