@@ -25402,10 +25402,10 @@ Subtopics
     ((computed-hint-1 clause)
      (computed-hint-2 clause stable-under-simplificationp))
 
-  The value returned by this function is added to the right of the
-  [47m:[0m[47m[hints][0m argument of every [47m[defthm][0m and [47m[thm][0m command, and to hints
-  provided to [47m[defun][0ms as well ([47m:hints[0m, [47m:guard-hints[0m, and (for
-  ACL2(r)) [47m:std-hints[0m).
+  The value returned by this function is appended to the right of any
+  explicitly provided :[hints] argument of every [47m[defthm][0m, [47m[thm][0m, and
+  [47m[defun][0m event, and similarly for the [47m:guard-hints[0m argument of
+  [47mdefun[0m, and, for ACL2(r), the [47m:std-hints[0m argument.
 
   See [set-default-hints] for a more general discussion.  Advanced
   users only: see [override-hints] for an advanced variant of default
@@ -60454,7 +60454,7 @@ More help
   Tau reasoning is used by the prover as part of [47mpreprocess-clause[0m, one
   of the first proof techniques the system tries.  The tau system
   filters out ``obvious'' subgoals.  The tau system is only tried
-  when subgoals first enter the waterfall and when they are stable
+  when a goal first enters the waterfall and when a goal is stable
   under simplification.
 
   (3) The tau system is ``benign'' in the sense that the only way it
@@ -148223,7 +148223,7 @@ Subtopics
   This information may allow the Common Lisp compiler to avoid
   certain run-time checks.  When evaluating code directly in the
   top-level loop or in [47m:[0m[47m[logic][0m-mode functions that have not been
-  [guard]-verified, [47mTHE[0m can perform run-type type checks.  See
+  [guard]-verified, [47mTHE[0m can perform run-time type checks.  See
   [declare] and [type-spec] for general, related background.
 
   General form:

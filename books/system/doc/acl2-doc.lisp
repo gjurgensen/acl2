@@ -22019,10 +22019,10 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
    (computed-hint-2 clause stable-under-simplificationp))
  })
 
- <p>The value returned by this function is added to the right of the
- @(':')@(tsee hints) argument of every @(tsee defthm) and @(tsee thm) command,
- and to hints provided to @(tsee defun)s as well (@(':hints'),
- @(':guard-hints'), and (for ACL2(r)) @(':std-hints')).</p>
+ <p>The value returned by this function is appended to the right of any
+ explicitly provided :[hints] argument of every @(tsee defthm), @(tsee thm),
+ and @(tsee defun) event, and similarly for the @(':guard-hints') argument of
+ @('defun'), and, for ACL2(r), the @(':std-hints') argument.</p>
 
  <p>See @(see set-default-hints) for a more general discussion.  Advanced users
  only: see @(see override-hints) for an advanced variant of default hints that
@@ -56889,8 +56889,8 @@ tables in the current Hons Space."
 
  <p>Tau reasoning is used by the prover as part of @('preprocess-clause'), one
  of the first proof techniques the system tries.  The tau system filters out
- ``obvious'' subgoals.  The tau system is only tried when subgoals first enter
- the waterfall and when they are stable under simplification.</p>
+ ``obvious'' subgoals.  The tau system is only tried when a goal first enters
+ the waterfall and when a goal is stable under simplification.</p>
 
  <p>(3) The tau system is ``benign'' in the sense that the only way it
  contributes to a proof is to eliminate (prove!) subgoals.  It does not
@@ -148305,7 +148305,7 @@ work on <tt>(q x)</tt>.</p>
  may allow the Common Lisp compiler to avoid certain run-time checks.  When
  evaluating code directly in the top-level loop or in @(':')@(tsee logic)-mode
  functions that have not been @(see guard)-verified, @('THE') can perform
- run-type type checks.  See @(see declare) and @(see type-spec) for general,
+ run-time type checks.  See @(see declare) and @(see type-spec) for general,
  related background.</p>
 
  <p>General form:</p>
