@@ -6379,7 +6379,8 @@ and @(tsee include-book)"
   <p>We see that we can provoke a guard violation with @('strange')
   even though it is guard verified with a guard of @('T').  Furthermore,
   we get the error both in the ACL2 read-eval-print loop and in the raw
-  Lisp under ACL2.</p>
+  Lisp under ACL2.  (Be careful though about exiting the ACL2 loop; see @(see
+  q).)</p>
 
   <p>This might at first violate your understanding of the link between ACL2
   and Common Lisp.  Naively, a guard verified ACL2 function with a guard of
@@ -11453,8 +11454,9 @@ with any questions about building the community books.</p>")
 
  <p>It is actually allowed to put raw lisp forms in a @('.acl2') file
  (presumably preceded by @(':q') or @('(value :q)') and followed by @('(lp)')).
- But this is not recommended; we make no guarantees about certification
- performed any time after raw Lisp has been entered in the ACL2 session.</p>
+ But this is not recommended (see @(see q)); we make no guarantees about
+ certification performed any time after raw Lisp has been entered in the ACL2
+ session.</p>
 
  <p>5. Generally, the next step is to include the following line after the
  `@('include')' of @('Makefile-generic') (see the first step above).</p>
@@ -12570,11 +12572,10 @@ with any questions about building the community books.</p>")
  by executing non-ACL2 Common Lisp.  It is even possible to disrupt and render
  inaccurate the interrupted evaluation of a simple ACL2 expression.</p>
 
- <p>For ACL2 built on most host Common Lisps, you will see the string @('[RAW
- LISP]') in the @(see prompt) at a break, to emphasize that one is inside a
- break and hence should quit from the break.  For some host Common Lisps, the
- top-level prompt also contains the string @('[RAW LISP]').  See @(see prompt)
- for how to control printing of that string.</p>
+ <p>For ACL2 built on most host Common Lisps, you can expect to see a different
+ prompt at the break than you would see in the ACL2 read-eval-print loop.  See
+ @(see prompt) for how to change the raw Lisp prompt to emphasize that one is
+ in raw Lisp, and hence may wish to quit from the break.</p>
 
  <p>The most reliable way to return to the ACL2 top level is by executing the
  following command: @('(')@(tsee abort!)@(')').  Appropriate cleanup will then
@@ -33578,11 +33579,12 @@ ld) and @(tsee include-book)"
   ACL2 !>:Q
  })
 
- <p>There is essentially no Common Lisp escape feature in the @(tsee lp) (but
- see @(see set-raw-mode)).  This is part of the price of purity.  To execute a
- form in Common Lisp as opposed to ACL2, exit @(tsee lp) with @(':')@(tsee q),
- submit the desired forms to the Common Lisp read-eval-print loop, and reenter
- ACL2 with @('(lp)').</p>")
+ <p>There is essentially no Common Lisp escape feature in the ACL2 loop (see
+ @(see lp)).  (A potentially unsound exception is raw-mode; see @(see
+ set-raw-mode).)  This is part of the price of purity.  To execute a form in
+ Common Lisp as opposed to ACL2, exit @(tsee lp) with @(':q'), submit the
+ desired forms to the Common Lisp read-eval-print loop, and reenter ACL2 with
+ @('(lp)').  WARNING: Doing so is potentially unsound; see @(see q).</p>")
 
 (defxdoc ev$
   :parents (apply$)
@@ -45745,7 +45747,7 @@ current fast alists."
  0.</p>
 
  <p>If you merely want to exit the ACL2 @(see command) loop, use @(':q')
- instead (see @(see q)).</p>
+ instead. (That can be risky; see @(see q)).</p>
 
  <p>We conclude with the following technical remark, to be ignored unless you
  are trying to do things in raw Lisp that involve quitting the session.  The
@@ -52300,7 +52302,7 @@ tables in the current Hons Space."
  more generally, the form it actually represents,
  @('(CONTINUE-FROM-ILLEGAL-STATE)'), which may need to be written as
  @('(ACL2::CONTINUE-FROM-ILLEGAL-STATE)') if the @(tsee current-package) is
- other than @('\"ACL2\"').  There is actually one exception: @(':q') is
+ other than @('\"ACL2\"').  There is actually one exception: @(':')@(tsee q) is
  accepted, to pop out of the current call of @(tsee ld).</p>
 
  <p>To get a bit more information from the error message displayed above, see
@@ -54869,13 +54871,13 @@ tables in the current Hons Space."
  <p>and you can pop out one level with @(':')@(tsee q) <see
  topic='ACL2____A_02Tiny_02Warning_02Sign'><icon src='res/tours/twarning.gif'/></see>
  (for ``quit'') or pop to the outermost ACL2 loop with @(':')@('abort!') <see
- topic='ACL2____A_02Tiny_02Warning_02Sign'><icon src='res/tours/twarning.gif'/></see>.
- If you are in the outermost call of the ACL2 interactive loop and you type
- @(':q'), you pop out into raw lisp.  The prompt there is generally different
- from the ACL2 prompt but that is outside our our control and varies from Lisp
- to Lisp.  We have arranged for many (but not all) Lisps to use a raw lisp
- prompt involving the string @('\"[RAW LISP]\"').  To get back into the ACL2
- interactive loop from raw lisp, evaluate @('(LP)').</p>
+ topic='ACL2____A_02Tiny_02Warning_02Sign'><icon
+ src='res/tours/twarning.gif'/></see>.  If you are in the outermost call of the
+ ACL2 interactive loop and you type @(':q'), you pop out into raw lisp, which
+ carries some risk; see @(see q).  The prompt in raw Lisp is generally
+ different from the ACL2 prompt but that is outside our our control and varies
+ from Lisp to Lisp.  See @(see prompt).  To get back into the ACL2 interactive
+ loop from raw lisp, evaluate @('(LP)').</p>
 
  <p>If you see a prompt that looks like an ACL2 prompt but has a number in
  front of it, e.g.,</p>
@@ -116526,9 +116528,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  the list of ACL2 source functions that have special raw-Lisp code.  It is
  important that these @(see program)-mode functions not be converted to @(see
  logic) mode.  Otherwise, one could arrange to prove a contradiction.  To see
- how, consider the following example, which shows how one might prove that a
- call of a program-only function, @('p-o'), returns two different values on the
- same input (an obvious contradiction).</p>
+ how, consider the following example, which takes advantage of an unsound use
+ of @(':')@(tsee q) to prove that a call of a program-only function, @('p-o'),
+ returns two different values on the same input (an obvious contradiction).</p>
 
  @({
  (defun p-o (x)
@@ -118000,17 +118002,21 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  ``modes.''  See @(see default-print-prompt) and see @(see ld-prompt) for
  details.</p>
 
- <p>The prompt during raw Lisp breaks is, with most Common Lisp
- implementations, adjusted by ACL2 to include the string @('\"[RAW LISP')\"],
- in order to reminder users not to submit ACL2 forms there; see @(see breaks).
- For Lisps that seem to use the same code for printing prompts at the top-level
- as in @(see breaks), the top-level prompt is similarly adjusted.  For Lisps
- with the above prompt adjustment, The following forms may be executed in raw
- Lisp (i.e., after typing @(':q')).</p>
+ <p>The prompt in raw Lisp, including @(see breaks) from the ACL2 loop, can be
+ adjusted by ACL2 to include the string @('\"[RAW LISP')\"], at least for most
+ Common Lisp implementations.  That change can help to remind users not to
+ submit ACL2 forms there.  That adjustment is made by executing the following
+ form in raw Lisp (for example, after typing @(':')@(tsee q)).</p>
 
  @({
-  (install-new-raw-prompt) ; install prompt with [RAW LISP] as described above
-  (install-old-raw-prompt) ; revert to original prompt from host Common Lisp
+ (install-new-raw-prompt)
+ })
+
+ <p>To return to printing the original Lisp prompt in raw lisp, evaluate the
+ following in raw Lisp.</p>
+
+ @({
+ (install-old-raw-prompt)
  })")
 
 (defxdoc proof-builder
@@ -119933,6 +119939,35 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  were when you exited with @(':q'), unless during your stay in Common Lisp you
  messed with the data structures representing the ACL2 @(see state) (including
  files, property lists, and single-threaded objects).</p>
+
+ <p>You may also issue the command @('(value :q)') to exit the ACL2 loop.  More
+ generally, if the result of evaluating a form in the ACL2 loop is the @(see
+ error-triple) @('(nil :q state)'), the ACL2 loop will be exited.</p>
+
+ <p>WARNING: The issuance of commands to raw Lisp may render your ACL2 session
+ unsound.  Furthermore, evaluation of forms after exiting the ACL2 loop with
+ @(':q') (or @('(value :q)'), etc.) is not guaranteed to agree with their
+ evaluation in the ACL2 loop.  Specifically, Common Lisp may read an expression
+ with the backquote character (@('`')) differently from how ACL2 reads the
+ expression.  (The technical reason, in Common Lisp parlance, is that ACL2
+ installs its own readtable in the ACL2 loop, which includes a custom backquote
+ reader.)  Results of evaluation may have surprising differences depending on
+ whether evaluation takes place in the ACL2 loop or in raw Lisp, as illustrated
+ by the following log produced using an ACL2 executable built on SBCL.</p>
+
+ @({
+ ACL2 !>(car (quote `(a b c)))
+ QUOTE
+ ACL2 !>:q
+
+ Exiting the ACL2 read-eval-print loop.  To re-enter, execute (LP).
+ * (car (quote `(a b c)))
+ SB-INT:QUASIQUOTE
+ *
+ })
+
+ <p>To minimize discrepancies (including that one) between ACL2 and raw Lisp,
+ use @(see raw-mode) instead of exiting the ACL2 loop.</p>
 
  <p>Unlike all other keyword commands, typing @(':q') is not equivalent to
  invoking the function @('q').  There is no function @('q').</p>")
@@ -128559,23 +128594,23 @@ work on <tt>(q x)</tt>.</p>
   ACL2 !>:q
 
   Exiting the ACL2 read-eval-print loop.  To re-enter, execute (LP).
-  ? [RAW LISP] (macroexpand-1
-                '(RETURN-LAST 'WITH-GUARD-CHECKING1-RAW
-                               (CHK-WITH-GUARD-CHECKING-ARG :NONE)
-                               (CAR 3)))
+  ? (macroexpand-1
+     '(RETURN-LAST 'WITH-GUARD-CHECKING1-RAW
+                   (CHK-WITH-GUARD-CHECKING-ARG :NONE)
+                   (CAR 3)))
   (WITH-GUARD-CHECKING1-RAW (CHK-WITH-GUARD-CHECKING-ARG :NONE) (CAR 3))
   T
-  ? [RAW LISP] (pprint
-                (macroexpand-1
-                 '(WITH-GUARD-CHECKING1-RAW
-                   (CHK-WITH-GUARD-CHECKING-ARG :NONE)
-                   (CAR 3))))
+  ? (pprint
+     (macroexpand-1
+      '(WITH-GUARD-CHECKING1-RAW
+        (CHK-WITH-GUARD-CHECKING-ARG :NONE)
+        (CAR 3))))
 
   (LET ((ACL2_GLOBAL_ACL2::GUARD-CHECKING-ON
          (CHK-WITH-GUARD-CHECKING-ARG :NONE)))
     (DECLARE (SPECIAL ACL2_GLOBAL_ACL2::GUARD-CHECKING-ON))
     (CAR 3))
-  ? [RAW LISP]
+  ?
  })
 
  <p>The above raw Lisp code binds the state global variable
@@ -128788,13 +128823,13 @@ work on <tt>(q x)</tt>.</p>
   ACL2 !>:q
 
   Exiting the ACL2 read-eval-print loop.  To re-enter, execute (LP).
-  ? [RAW LISP] (macroexpand-1
-                '(RETURN-LAST 'WITH-PROFILING-RAW
-                               '(ASSOC-EQ FGETPROP REWRITE)
-                               (MINI-PROVEALL)))
+  ? (macroexpand-1
+     '(RETURN-LAST 'WITH-PROFILING-RAW
+                   '(ASSOC-EQ FGETPROP REWRITE)
+                   (MINI-PROVEALL)))
   (WITH-PROFILING-RAW '(ASSOC-EQ FGETPROP REWRITE) (MINI-PROVEALL))
   T
-  ? [RAW LISP]
+  ?
  })
 
  <p>To understand the macro @('with-profiling-raw') you could look at the
@@ -128850,7 +128885,8 @@ work on <tt>(q x)</tt>.</p>
  values.</p>
 
  @({
-  :q
+  (defttag t)
+  (set-raw-mode t)
   (defmacro my-time1-raw (val form)
     (declare (ignore val))
     `(let  ((start-time (get-internal-run-time))
@@ -128860,8 +128896,7 @@ work on <tt>(q x)</tt>.</p>
                (float (/ (- end-time start-time)
                          internal-time-units-per-second)))
        (values-list result)))
-  (lp)
-  (defttag t)
+  (set-raw-mode nil)
   (defmacro-last my-time1)
   (defmacro my-time (form)
     `(my-time1 nil ,form))
@@ -132338,8 +132373,8 @@ work on <tt>(q x)</tt>.</p>
  <p><b>Details</b>:</p>
 
  <p>(1) You must first exit the ACL2 read-eval-print loop, typically by
- executing @(':q'), before evaluating a @('save-exec') call; otherwise an error
- occurs.</p>
+ executing @(':')@(tsee q), before evaluating a @('save-exec') call; otherwise
+ an error occurs.</p>
 
  <p>(2) The image will be saved so that in the new image, the raw Lisp package
  and the package in the ACL2 read-eval-print loop (see @(see lp)) will be the
@@ -136819,7 +136854,7 @@ work on <tt>(q x)</tt>.</p>
 
  <p>Even without this problem it is important to enter the ACL2 loop (see @(see
  lp)), for example in order to set the @(tsee cbd) and (to get more technical)
- the readtable.</p>
+ the readtable.  See @(see q).</p>
 
  <p>ACL2 provides a ``raw mode'' for execution of raw Lisp forms.  In this
  mode, @(tsee include-book) reduces essentially to a Common Lisp @('load').
@@ -139767,7 +139802,7 @@ work on <tt>(q x)</tt>.</p>
  <li>There is no soundness guarantee for a session in which there is raw Lisp
  evaluation with side effects.  (ACL2 normally avoids putting the user into raw
  Lisp, but this can happen with an interrupt, the use of @(tsee break$), or
- explicitly leaving the top-level loop with @(':q').)  &ldquo;Side
+ explicitly leaving the top-level loop with @(':')@(tsee q).)  &ldquo;Side
  effects&rdquo; should be interpreted as generously as possible: this certainly
  includes redefining a function or assigning to a variable, but not merely
  evaluating an arithmetic expression, for example.</li>
