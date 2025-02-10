@@ -33580,7 +33580,7 @@ ld) and @(tsee include-book)"
  })
 
  <p>There is essentially no Common Lisp escape feature in the ACL2 loop (see
- @(see lp)).  (A potentially unsound exceptoni is raw-mode; see @(see
+ @(see lp)).  (A potentially unsound exception is raw-mode; see @(see
  set-raw-mode).)  This is part of the price of purity.  To execute a form in
  Common Lisp as opposed to ACL2, exit @(tsee lp) with @(':q'), submit the
  desired forms to the Common Lisp read-eval-print loop, and reenter ACL2 with
