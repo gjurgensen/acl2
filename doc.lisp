@@ -37132,7 +37132,7 @@ Subtopics
     ACL2 !>:Q
 
   There is essentially no Common Lisp escape feature in the ACL2 loop
-  (see [lp]).  (A potentially unsound exceptoni is raw-mode; see
+  (see [lp]).  (A potentially unsound exception is raw-mode; see
   [set-raw-mode].)  This is part of the price of purity.  To execute
   a form in Common Lisp as opposed to ACL2, exit [47m[lp][0m with [47m:q[0m, submit
   the desired forms to the Common Lisp read-eval-print loop, and
