@@ -3,7 +3,7 @@
 ; acl2-doc.lisp - Documentation for the ACL2 Theorem Prover
 ;
 ; ACL2 Version 8.6 -- A Computational Logic for Applicative Common Lisp
-; Copyright (C) 2024, Regents of the University of Texas
+; Copyright (C) 2025, Regents of the University of Texas
 ;
 ; This documentation was derived from the ACL2 system in October 2013, which
 ; was a descendant of ACL2 Version 1.9, Copyright (C) 1997 Computational Logic,
@@ -811,7 +811,7 @@
 (defxdoc about-acl2
   :parents (start-here)
   :short "General information About ACL2"
-  :long "<p>This is @(`(:raw (@ acl2-version))`), @(see copyright) (C) 2024,
+  :long "<p>This is @(`(:raw (@ acl2-version))`), @(see copyright) (C) 2025,
  Regents of the University of Texas, authored by Matt Kaufmann and J Strother
  Moore.</p>
 
@@ -6379,7 +6379,8 @@ and @(tsee include-book)"
   <p>We see that we can provoke a guard violation with @('strange')
   even though it is guard verified with a guard of @('T').  Furthermore,
   we get the error both in the ACL2 read-eval-print loop and in the raw
-  Lisp under ACL2.</p>
+  Lisp under ACL2.  (Be careful though about exiting the ACL2 loop; see @(see
+  q).)</p>
 
   <p>This might at first violate your understanding of the link between ACL2
   and Common Lisp.  Naively, a guard verified ACL2 function with a guard of
@@ -11453,8 +11454,9 @@ with any questions about building the community books.</p>")
 
  <p>It is actually allowed to put raw lisp forms in a @('.acl2') file
  (presumably preceded by @(':q') or @('(value :q)') and followed by @('(lp)')).
- But this is not recommended; we make no guarantees about certification
- performed any time after raw Lisp has been entered in the ACL2 session.</p>
+ But this is not recommended (see @(see q)); we make no guarantees about
+ certification performed any time after raw Lisp has been entered in the ACL2
+ session.</p>
 
  <p>5. Generally, the next step is to include the following line after the
  `@('include')' of @('Makefile-generic') (see the first step above).</p>
@@ -12570,11 +12572,10 @@ with any questions about building the community books.</p>")
  by executing non-ACL2 Common Lisp.  It is even possible to disrupt and render
  inaccurate the interrupted evaluation of a simple ACL2 expression.</p>
 
- <p>For ACL2 built on most host Common Lisps, you will see the string @('[RAW
- LISP]') in the @(see prompt) at a break, to emphasize that one is inside a
- break and hence should quit from the break.  For some host Common Lisps, the
- top-level prompt also contains the string @('[RAW LISP]').  See @(see prompt)
- for how to control printing of that string.</p>
+ <p>For ACL2 built on most host Common Lisps, you can expect to see a different
+ prompt at the break than you would see in the ACL2 read-eval-print loop.  See
+ @(see prompt) for how to change the raw Lisp prompt to emphasize that one is
+ in raw Lisp, and hence may wish to quit from the break.</p>
 
  <p>The most reliable way to return to the ACL2 top level is by executing the
  following command: @('(')@(tsee abort!)@(')').  Appropriate cleanup will then
@@ -19142,7 +19143,7 @@ subtree of X with T, without duplication.</p>
  <p>@(`(:raw (@ acl2-version))`) &mdash; A Computational Logic for Applicative
  Common Lisp</p>
 
- <p>Copyright (C) 2024, Regents of the University of Texas</p>
+ <p>Copyright (C) 2025, Regents of the University of Texas</p>
 
  <p>This version of ACL2 is a descendant of ACL2 Version 1.9, Copyright (C)
  1997 Computational Logic, Inc.  See the documentation topic NOTE-2-0.</p>
@@ -20386,11 +20387,12 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
  </dl>
 
  <p>Declarations in ACL2 may occur only where @('dcl') occurs in the following
- display (not including lambda objects, discussed later below):</p>
+ display (not including lambda objects, discussed later below, and not showing
+ documentation strings here, which are essentially ignored by ACL2)):</p>
 
  <ul>
- <li>@('(DEFUN name args doc-string dcl ... dcl body)')</li>
- <li>@('(DEFMACRO name args doc-string dcl ... dcl body)')</li>
+ <li>@('(DEFUN name args dcl ... dcl body)')</li>
+ <li>@('(DEFMACRO name args dcl ... dcl body)')</li>
  <li>@('(LET ((v1 t1) ...) dcl ... dcl body)')</li>
  <li>@('(MV-LET (v1 ...) term dcl ... dcl body)')</li>
  <li>@('(FLET ((name args dcl ... dcl body) ...))')</li>
@@ -22018,10 +22020,10 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
    (computed-hint-2 clause stable-under-simplificationp))
  })
 
- <p>The value returned by this function is added to the right of the
- @(':')@(tsee hints) argument of every @(tsee defthm) and @(tsee thm) command,
- and to hints provided to @(tsee defun)s as well (@(':hints'),
- @(':guard-hints'), and (for ACL2(r)) @(':std-hints')).</p>
+ <p>The value returned by this function is appended to the right of any
+ explicitly provided :[hints] argument of every @(tsee defthm), @(tsee thm),
+ and @(tsee defun) event, and similarly for the @(':guard-hints') argument of
+ @('defun'), and, for ACL2(r), the @(':std-hints') argument.</p>
 
  <p>See @(see set-default-hints) for a more general discussion.  Advanced users
  only: see @(see override-hints) for an advanced variant of default hints that
@@ -23086,7 +23088,8 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
 
  @({
   General Form:
-  (defexec fn (var1 ... varn) doc-string dcl ... dcl
+  (defexec fn (var1 ... varn)
+    dcl ... dcl ; optionally, also one documentation string, as for defun
     (mbe :LOGIC logic-body
          :EXEC  exec-body))
  })
@@ -23314,7 +23317,7 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
 
  @({
  General Form:
- (define-pc-macro cmd args doc-string dcl ... dcl body)
+ (define-pc-macro cmd args dcl ... dcl body)
  })
 
  <p>where @('cmd') is the name of the pc-macro that you want to define,
@@ -23935,7 +23938,9 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
   (one-of x 1 2 3)       ill-formed (guard violation)
 
   General Form:
-  (defmacro name macro-args doc-string dcl ... dcl body)
+  (defmacro name macro-args
+    dcl ... dcl ; optionally, also one documentation string; see below
+    body)
  })
 
  <p>where @('name') is a new symbolic name (see @(see name)), @('macro-args')
@@ -23944,11 +23949,13 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
  specified in a much more general way than is allowed by ACL2 @(tsee defun)
  @(see events); see @(see macro-args) for a description of keyword (@('&key'))
  and optional (@('&optional')) parameters as well as other so-called
- ``lambda-list keywords'', @('&rest') and @('&whole').  @('Doc-string'), if
- non-@('nil'), is an optional string that can provide documentation but is
- essentially ignored by ACL2.  Each @('dcl') is an optional declaration (see
- @(see declare)) except that the only @(tsee xargs) keyword permitted by
- @('defmacro') is @(':')@(tsee guard).</p>
+ ``lambda-list keywords'', @('&rest') and @('&whole').  Each @('dcl') is an
+ optional declaration (see @(see declare)) except that the only @(tsee xargs)
+ keyword permitted by @('defmacro') is @(':')@(tsee guard).</p>
+
+ <p>One documentation string may be included between the list of formal
+ parameters and the body, but it is essentially ignored by ACL2.  See @(see
+ documentation) for a discussion of documentation in ACL2.</p>
 
  <p>There are two restrictions on @('body') aside from it simply being a term
  in @('macro-args').  Both restrictions relate to ancestral uses of @(tsee
@@ -25431,7 +25438,8 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
  value of the theory expression @('(theory name)').</p>
 
  <p>The value returned is the length of the resulting theory.  For example, in
- the following, the theory associated with @(''FOO') has 54 @(see rune)s:</p>
+ the following, the theory associated with @(''FOO') has 60 @(see rune)s as of
+ ACL2 Version  8.6:</p>
 
  @({
   ACL2 !>(deftheory foo (union-theories '(binary-append)
@@ -25440,9 +25448,8 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
   Summary
   Form:  ( DEFTHEORY FOO ...)
   Rules: NIL
-  Warnings:  None
-  Time:  0.00 seconds (prove: 0.00, print: 0.00, other: 0.00)
-   54
+  Time:  0.01 seconds (prove: 0.00, print: 0.00, other: 0.01)
+   60
   ACL2 !>
  })
 
@@ -25933,7 +25940,9 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
         (* n (fact (1- n)))))
 
   General Form:
-  (defun fn (var1 ... varn) doc-string dcl ... dcl body),
+  (defun fn (var1 ... varn)
+    dcl ... dcl ; optionally, also one documentation string; see below
+    body)
  })
 
  <p>where @('fn') is the symbol you wish to define and is a new symbolic name
@@ -25950,13 +25959,12 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
  as @('&optional')) in the formals list of functions.  We do support some such
  keywords in macros and often you can achieve the desired syntax by defining a
  macro in addition to the general version of your function.  See @(see
- defmacro).  @('Doc-string'), if non-@('nil'), is an optional string that can
- provide documentation but is essentially ignored by ACL2.</p>
+ defmacro).</p>
 
- <p>The <i>declarations</i> (see @(see declare)), @('dcl'), are also optional.
- If more than one @('dcl') form appears, they are effectively grouped together
- as one.  Perhaps the most commonly used ACL2 specific declaration is of the
- form @('(declare (xargs :guard g :measure m))').  This declaration in the
+ <p>The <i>declarations</i> (see @(see declare)), @('dcl'), are optional.  If
+ more than one @('dcl') form appears, they are effectively grouped together as
+ one.  Perhaps the most commonly used ACL2 specific declaration is of the form
+ @('(declare (xargs :guard g :measure m))').  This declaration in the
  @('defun') of some function @('fn') has the effect of making the ``@(see
  guard)'' for @('fn') be the term @('g') and the ``measure'' be the term
  @('m').  The notion of ``measure'' is crucial to ACL2's definitional
@@ -25968,6 +25976,10 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
  supplied, then it must be a legal term.  Apart from these restrictions, the
  @(':measure') is ignored in @(':')@(tsee program) mode; see @(see
  defun-mode).</p>
+
+ <p>One documentation string may be included between the list of formal
+ parameters and the body, but it is essentially ignored by ACL2.  See @(see
+ documentation) for a discussion of documentation in ACL2.</p>
 
  <p>We now briefly discuss the ACL2 definitional principle, using the following
  definition form which is offered as a more or less generic example.</p>
@@ -26204,7 +26216,9 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
     (if (endp x) 0 (1+ (lng (cdr x)))))
 
   General Form:
-  (defun-inline fn (var1 ... varn) doc-string dcl ... dcl body)
+  (defun-inline fn (var1 ... varn)
+    dcl ... dcl ; optionally, also one documentation string; as for defun
+    body)
  })
 
  <p>satisfying the same requirements as in the General Form for @(tsee defun).
@@ -26215,9 +26229,8 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
  table) @(see events) are generated that allow the use of @('fn') in @(see
  theory) expressions to represent @('fn$inline') and that cause any
  untranslated (user-level) call of @('fn$inline') to be printed as the
- corresponding call of @('fn').  @('Doc-string'), if non-@('nil'), is an
- optional string that can provide documentation but is essentially ignored by
- ACL2.</p>
+ corresponding call of @('fn').  The documentation string is an optional string
+ that can provide documentation but is essentially ignored by ACL2.</p>
 
  <p>A form @('(defun-inline f ...)') actually defines a function named
  @('f$inline') and a corresponding macro named @('f') whose calls expand to
@@ -33566,11 +33579,12 @@ ld) and @(tsee include-book)"
   ACL2 !>:Q
  })
 
- <p>There is essentially no Common Lisp escape feature in the @(tsee lp) (but
- see @(see set-raw-mode)).  This is part of the price of purity.  To execute a
- form in Common Lisp as opposed to ACL2, exit @(tsee lp) with @(':')@(tsee q),
- submit the desired forms to the Common Lisp read-eval-print loop, and reenter
- ACL2 with @('(lp)').</p>")
+ <p>There is essentially no Common Lisp escape feature in the ACL2 loop (see
+ @(see lp)).  (A potentially unsound exception is raw-mode; see @(see
+ set-raw-mode).)  This is part of the price of purity.  To execute a form in
+ Common Lisp as opposed to ACL2, exit @(tsee lp) with @(':q'), submit the
+ desired forms to the Common Lisp read-eval-print loop, and reenter ACL2 with
+ @('(lp)').  WARNING: Doing so is potentially unsound; see @(see q).</p>")
 
 (defxdoc ev$
   :parents (apply$)
@@ -40270,13 +40284,14 @@ current fast alists."
   :short "Floating-point and ACL2"
   :long "<p>ACL2 supports computation that uses floating-point operations; see
  @(see df).  If you are using an older Lisp, an attempt to build ACL2 may fail
- with an error complaining that &ldquo;<tt>feature :ieee-floating-point is
- missing from *features*</tt>&rdquo;.  If you believe that your host Lisp
- properly supports IEEE floating-point operations even though that feature is
- missing (e.g., quite possibly with older versions of CCL), you can avoid that
- built-time error by setting environment variable @('ACL2_FP_OK') to any
- non-empty string.  You might want to do that in a script that invokes your
- Lisp.</p>")
+ with an error complaining that &ldquo;feature :ieee-floating-point is
+ missing&rdquo; [from the Lisp's @('*features*')].  <b>THIS ERROR INDICATES
+ THAT ACL2 MAY BE UNSOUND WHEN BUILT ON THAT LISP!</b> If however you believe
+ that your Lisp properly supports IEEE floating-point operations even though
+ that feature is missing (e.g., quite possibly with older versions of CCL), you
+ can avoid that build-time error by setting environment variable
+ @('ACL2_FP_OK') to any non-empty string.  You might want to do that in a
+ script that invokes your Lisp.</p>")
 
 (defxdoc free-variables
   :parents (rule-classes rewrite)
@@ -45732,7 +45747,7 @@ current fast alists."
  0.</p>
 
  <p>If you merely want to exit the ACL2 @(see command) loop, use @(':q')
- instead (see @(see q)).</p>
+ instead. (That can be risky; see @(see q)).</p>
 
  <p>We conclude with the following technical remark, to be ignored unless you
  are trying to do things in raw Lisp that involve quitting the session.  The
@@ -52287,7 +52302,7 @@ tables in the current Hons Space."
  more generally, the form it actually represents,
  @('(CONTINUE-FROM-ILLEGAL-STATE)'), which may need to be written as
  @('(ACL2::CONTINUE-FROM-ILLEGAL-STATE)') if the @(tsee current-package) is
- other than @('\"ACL2\"').  There is actually one exception: @(':q') is
+ other than @('\"ACL2\"').  There is actually one exception: @(':')@(tsee q) is
  accepted, to pop out of the current call of @(tsee ld).</p>
 
  <p>To get a bit more information from the error message displayed above, see
@@ -54473,7 +54488,7 @@ tables in the current Hons Space."
  call of a similar function whose second argument is a symbol.  Invoke @(':pe
  intern') to see the definition, or see @(see intern-in-package-of-symbol).</p>
 
- <p>To see why is @('intern') so restricted consider @('(intern \"X\" \"P\")').
+ <p>To see why @('intern') is so restricted consider @('(intern \"X\" \"P\")').
  In particular, is it a symbol and if so, what is its @(tsee
  symbol-package-name)?  One is tempted to say ``yes, it is a symbol in the
  package @('\"P\"').''  But if package @('\"P\"') has not yet been defined,
@@ -54856,13 +54871,13 @@ tables in the current Hons Space."
  <p>and you can pop out one level with @(':')@(tsee q) <see
  topic='ACL2____A_02Tiny_02Warning_02Sign'><icon src='res/tours/twarning.gif'/></see>
  (for ``quit'') or pop to the outermost ACL2 loop with @(':')@('abort!') <see
- topic='ACL2____A_02Tiny_02Warning_02Sign'><icon src='res/tours/twarning.gif'/></see>.
- If you are in the outermost call of the ACL2 interactive loop and you type
- @(':q'), you pop out into raw lisp.  The prompt there is generally different
- from the ACL2 prompt but that is outside our our control and varies from Lisp
- to Lisp.  We have arranged for many (but not all) Lisps to use a raw lisp
- prompt involving the string @('\"[RAW LISP]\"').  To get back into the ACL2
- interactive loop from raw lisp, evaluate @('(LP)').</p>
+ topic='ACL2____A_02Tiny_02Warning_02Sign'><icon
+ src='res/tours/twarning.gif'/></see>.  If you are in the outermost call of the
+ ACL2 interactive loop and you type @(':q'), you pop out into raw lisp, which
+ carries some risk; see @(see q).  The prompt in raw Lisp is generally
+ different from the ACL2 prompt but that is outside our our control and varies
+ from Lisp to Lisp.  See @(see prompt).  To get back into the ACL2 interactive
+ loop from raw lisp, evaluate @('(LP)').</p>
 
  <p>If you see a prompt that looks like an ACL2 prompt but has a number in
  front of it, e.g.,</p>
@@ -56876,8 +56891,8 @@ tables in the current Hons Space."
 
  <p>Tau reasoning is used by the prover as part of @('preprocess-clause'), one
  of the first proof techniques the system tries.  The tau system filters out
- ``obvious'' subgoals.  The tau system is only tried when subgoals first enter
- the waterfall and when they are stable under simplification.</p>
+ ``obvious'' subgoals.  The tau system is only tried when a goal first enters
+ the waterfall and when a goal is stable under simplification.</p>
 
  <p>(3) The tau system is ``benign'' in the sense that the only way it
  contributes to a proof is to eliminate (prove!) subgoals.  It does not
@@ -108010,6 +108025,42 @@ it."
 ; and later.  Thanks to Camm Maguire for the suggestion, and the explanation
 ; that its effect would generally be only to waste space in GCL 2.7.0.
 
+; Here is an example of the proof-builder soundness bug involving forcing.
+; These events were admitted before the bug was fixed.
+;
+;   (encapsulate
+;     (((p1 *) => *)
+;      ((p2 *) => *)
+;      ((f *) => *))
+;     (local (defun p1 (x) x))
+;     (local (defun f (x)
+;              x))
+;     (local (defun p2 (x)
+;              (equal (f x) x)))
+;     (defthm f-p2
+;       (implies (and (p1 x)
+;                     (force (p2 x)))
+;                (equal (f x) x)))
+;     (defthm f-not-p2
+;       (implies (and (p1 x)
+;                     (not (p2 x)))
+;                (not (equal (f x) x)))
+;       :hints (("Goal" :in-theory (disable f-p2))))
+;     )
+;   (defthm needs-p2-hyp
+;     (implies (p1 x)
+;              (equal (f x) x))
+;     :instructions (:promote
+;                    :s ; creates bad goal
+;                    :s))
+;   (defthm false
+;     nil
+;     :rule-classes nil
+;     :hints (("Goal" :use ((:functional-instance needs-p2-hyp
+;                                                 (f (lambda (x) (not x)))
+;                                                 (p1 (lambda (x) t))
+;                                                 (p2 (lambda (x) nil)))))))
+
   :parents (release-notes)
   :short "ACL2 Version  8.7 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -108040,6 +108091,10 @@ it."
  by adding suitable proclaiming in ACL2).</p>
 
  <h3>Bug Fixes</h3>
+
+ <p>Fixed a soundness bug in the @(see proof-builder) that could cause goals
+ from @(tsee force)d hypotheses to be created incorrectly.  (This bug has been
+ around for at least 10 years and probably for 30 years!)</p>
 
  <p>A Lisp error is now avoided when saving event-data (see @(see
  saving-event-data) and submitting certain ill-formed attempts at @(see
@@ -116473,9 +116528,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  the list of ACL2 source functions that have special raw-Lisp code.  It is
  important that these @(see program)-mode functions not be converted to @(see
  logic) mode.  Otherwise, one could arrange to prove a contradiction.  To see
- how, consider the following example, which shows how one might prove that a
- call of a program-only function, @('p-o'), returns two different values on the
- same input (an obvious contradiction).</p>
+ how, consider the following example, which takes advantage of an unsound use
+ of @(':')@(tsee q) to prove that a call of a program-only function, @('p-o'),
+ returns two different values on the same input (an obvious contradiction).</p>
 
  @({
  (defun p-o (x)
@@ -117947,17 +118002,21 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  ``modes.''  See @(see default-print-prompt) and see @(see ld-prompt) for
  details.</p>
 
- <p>The prompt during raw Lisp breaks is, with most Common Lisp
- implementations, adjusted by ACL2 to include the string @('\"[RAW LISP')\"],
- in order to reminder users not to submit ACL2 forms there; see @(see breaks).
- For Lisps that seem to use the same code for printing prompts at the top-level
- as in @(see breaks), the top-level prompt is similarly adjusted.  For Lisps
- with the above prompt adjustment, The following forms may be executed in raw
- Lisp (i.e., after typing @(':q')).</p>
+ <p>The prompt in raw Lisp, including @(see breaks) from the ACL2 loop, can be
+ adjusted by ACL2 to include the string @('\"[RAW LISP')\"], at least for most
+ Common Lisp implementations.  That change can help to remind users not to
+ submit ACL2 forms there.  That adjustment is made by executing the following
+ form in raw Lisp (for example, after typing @(':')@(tsee q)).</p>
 
  @({
-  (install-new-raw-prompt) ; install prompt with [RAW LISP] as described above
-  (install-old-raw-prompt) ; revert to original prompt from host Common Lisp
+ (install-new-raw-prompt)
+ })
+
+ <p>To return to printing the original Lisp prompt in raw lisp, evaluate the
+ following in raw Lisp.</p>
+
+ @({
+ (install-old-raw-prompt)
  })")
 
 (defxdoc proof-builder
@@ -119880,6 +119939,35 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  were when you exited with @(':q'), unless during your stay in Common Lisp you
  messed with the data structures representing the ACL2 @(see state) (including
  files, property lists, and single-threaded objects).</p>
+
+ <p>You may also issue the command @('(value :q)') to exit the ACL2 loop.  More
+ generally, if the result of evaluating a form in the ACL2 loop is the @(see
+ error-triple) @('(nil :q state)'), the ACL2 loop will be exited.</p>
+
+ <p>WARNING: The issuance of commands to raw Lisp may render your ACL2 session
+ unsound.  Furthermore, evaluation of forms after exiting the ACL2 loop with
+ @(':q') (or @('(value :q)'), etc.) is not guaranteed to agree with their
+ evaluation in the ACL2 loop.  Specifically, Common Lisp may read an expression
+ with the backquote character (@('`')) differently from how ACL2 reads the
+ expression.  (The technical reason, in Common Lisp parlance, is that ACL2
+ installs its own readtable in the ACL2 loop, which includes a custom backquote
+ reader.)  Results of evaluation may have surprising differences depending on
+ whether evaluation takes place in the ACL2 loop or in raw Lisp, as illustrated
+ by the following log produced using an ACL2 executable built on SBCL.</p>
+
+ @({
+ ACL2 !>(car (quote `(a b c)))
+ QUOTE
+ ACL2 !>:q
+
+ Exiting the ACL2 read-eval-print loop.  To re-enter, execute (LP).
+ * (car (quote `(a b c)))
+ SB-INT:QUASIQUOTE
+ *
+ })
+
+ <p>To minimize discrepancies (including that one) between ACL2 and raw Lisp,
+ use @(see raw-mode) instead of exiting the ACL2 loop.</p>
 
  <p>Unlike all other keyword commands, typing @(':q') is not equivalent to
  invoking the function @('q').  There is no function @('q').</p>")
@@ -122024,8 +122112,10 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  the angle brackets with parentheses and the comma with a dot, <tt>(1 . 2)</tt>.
  Thus, <tt>((1 . 2) . (3 . 4))</tt> is the pair containing the pair <tt>(1 . 2)</tt>
  in its left component and the pair <tt>(3 . 4)</tt> in its right.  In high
- school, you might have written this object as &lang;&lang;1, 2&rang;,&lang;3, 4&rang;&rang;.
- </p>
+ school, you might have written this object as &lang;&lang;1, 2&rang;,&lang;3,
+ 4&rang;&rang;.  Note that exactly one object must follow the dot; for example,
+ the notation <tt>((1 . 2) . 3 4)</tt> is illegal.  However, one or more
+ objects may precede the dot, as discussed below.</p>
 
  <p>
  In Lisp, pairs are called <i>conses</i>.  Non-conses are called <i>atoms</i>.
@@ -128504,23 +128594,23 @@ work on <tt>(q x)</tt>.</p>
   ACL2 !>:q
 
   Exiting the ACL2 read-eval-print loop.  To re-enter, execute (LP).
-  ? [RAW LISP] (macroexpand-1
-                '(RETURN-LAST 'WITH-GUARD-CHECKING1-RAW
-                               (CHK-WITH-GUARD-CHECKING-ARG :NONE)
-                               (CAR 3)))
+  ? (macroexpand-1
+     '(RETURN-LAST 'WITH-GUARD-CHECKING1-RAW
+                   (CHK-WITH-GUARD-CHECKING-ARG :NONE)
+                   (CAR 3)))
   (WITH-GUARD-CHECKING1-RAW (CHK-WITH-GUARD-CHECKING-ARG :NONE) (CAR 3))
   T
-  ? [RAW LISP] (pprint
-                (macroexpand-1
-                 '(WITH-GUARD-CHECKING1-RAW
-                   (CHK-WITH-GUARD-CHECKING-ARG :NONE)
-                   (CAR 3))))
+  ? (pprint
+     (macroexpand-1
+      '(WITH-GUARD-CHECKING1-RAW
+        (CHK-WITH-GUARD-CHECKING-ARG :NONE)
+        (CAR 3))))
 
   (LET ((ACL2_GLOBAL_ACL2::GUARD-CHECKING-ON
          (CHK-WITH-GUARD-CHECKING-ARG :NONE)))
     (DECLARE (SPECIAL ACL2_GLOBAL_ACL2::GUARD-CHECKING-ON))
     (CAR 3))
-  ? [RAW LISP]
+  ?
  })
 
  <p>The above raw Lisp code binds the state global variable
@@ -128733,13 +128823,13 @@ work on <tt>(q x)</tt>.</p>
   ACL2 !>:q
 
   Exiting the ACL2 read-eval-print loop.  To re-enter, execute (LP).
-  ? [RAW LISP] (macroexpand-1
-                '(RETURN-LAST 'WITH-PROFILING-RAW
-                               '(ASSOC-EQ FGETPROP REWRITE)
-                               (MINI-PROVEALL)))
+  ? (macroexpand-1
+     '(RETURN-LAST 'WITH-PROFILING-RAW
+                   '(ASSOC-EQ FGETPROP REWRITE)
+                   (MINI-PROVEALL)))
   (WITH-PROFILING-RAW '(ASSOC-EQ FGETPROP REWRITE) (MINI-PROVEALL))
   T
-  ? [RAW LISP]
+  ?
  })
 
  <p>To understand the macro @('with-profiling-raw') you could look at the
@@ -128795,7 +128885,8 @@ work on <tt>(q x)</tt>.</p>
  values.</p>
 
  @({
-  :q
+  (defttag t)
+  (set-raw-mode t)
   (defmacro my-time1-raw (val form)
     (declare (ignore val))
     `(let  ((start-time (get-internal-run-time))
@@ -128805,8 +128896,7 @@ work on <tt>(q x)</tt>.</p>
                (float (/ (- end-time start-time)
                          internal-time-units-per-second)))
        (values-list result)))
-  (lp)
-  (defttag t)
+  (set-raw-mode nil)
   (defmacro-last my-time1)
   (defmacro my-time (form)
     `(my-time1 nil ,form))
@@ -132283,8 +132373,8 @@ work on <tt>(q x)</tt>.</p>
  <p><b>Details</b>:</p>
 
  <p>(1) You must first exit the ACL2 read-eval-print loop, typically by
- executing @(':q'), before evaluating a @('save-exec') call; otherwise an error
- occurs.</p>
+ executing @(':')@(tsee q), before evaluating a @('save-exec') call; otherwise
+ an error occurs.</p>
 
  <p>(2) The image will be saved so that in the new image, the raw Lisp package
  and the package in the ACL2 read-eval-print loop (see @(see lp)) will be the
@@ -136764,7 +136854,7 @@ work on <tt>(q x)</tt>.</p>
 
  <p>Even without this problem it is important to enter the ACL2 loop (see @(see
  lp)), for example in order to set the @(tsee cbd) and (to get more technical)
- the readtable.</p>
+ the readtable.  See @(see q).</p>
 
  <p>ACL2 provides a ``raw mode'' for execution of raw Lisp forms.  In this
  mode, @(tsee include-book) reduces essentially to a Common Lisp @('load').
@@ -139712,7 +139802,7 @@ work on <tt>(q x)</tt>.</p>
  <li>There is no soundness guarantee for a session in which there is raw Lisp
  evaluation with side effects.  (ACL2 normally avoids putting the user into raw
  Lisp, but this can happen with an interrupt, the use of @(tsee break$), or
- explicitly leaving the top-level loop with @(':q').)  &ldquo;Side
+ explicitly leaving the top-level loop with @(':')@(tsee q).)  &ldquo;Side
  effects&rdquo; should be interpreted as generously as possible: this certainly
  includes redefining a function or assigning to a variable, but not merely
  evaluating an arithmetic expression, for example.</li>
@@ -140707,16 +140797,15 @@ work on <tt>(q x)</tt>.</p>
   this:</p>
 
  @({
- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- + ACL2 Version 8.6+ (a development snapshot based on ACL2 Version 8.6) +
- +   built November 6, 2024  16:13:03.                                  +
- +   (Git commit hash: e9790bdb14922c9a88aa23781b5d8bdf080fb05d)        +
- + Copyright (C) 2024, Regents of the University of Texas.              +
- + ACL2 comes with ABSOLUTELY NO WARRANTY.  This is free software and   +
- + you are welcome to redistribute it under certain conditions.  For    +
- + details, see the LICENSE file distributed with ACL2.                 +
- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
+  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  + ACL2 Version 8.6+ (a development snapshot based on ACL2 Version 8.6) +
+  +   built January 14, 2025  10:09:28.                                  +
+  +   (Git commit hash: 89b2701f59f8e561b17121cf0a25cb8d1910377f)        +
+  + Copyright (C) 2025, Regents of the University of Texas.              +
+  + ACL2 comes with ABSOLUTELY NO WARRANTY.  This is free software and   +
+  + you are welcome to redistribute it under certain conditions.  For    +
+  + details, see the LICENSE file distributed with ACL2.                 +
+  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  })
 
  <p>The third line of that banner can be modified by setting environment
@@ -140728,9 +140817,10 @@ work on <tt>(q x)</tt>.</p>
  @({
  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  + ACL2 Version 8.6+ (a development snapshot based on ACL2 Version 8.6) +
- +   built November 6, 2024  16:13:03.                                  +
- +   (Git commit hash: e9790bdb14922c9a88aa23781b5d8bdf080fb05d)        +
- + Copyright (C) 2024, Regents of the University of Texas.              +
+ +   built January 14, 2025  09:56:49.                                  +
+ +   (Note from the environment when this executable was saved:         +
+ +    This is my private executable.)                                   +
+ + Copyright (C) 2025, Regents of the University of Texas.              +
  + ACL2 comes with ABSOLUTELY NO WARRANTY.  This is free software and   +
  + you are welcome to redistribute it under certain conditions.  For    +
  + details, see the LICENSE file distributed with ACL2.                 +
@@ -148250,7 +148340,7 @@ work on <tt>(q x)</tt>.</p>
  may allow the Common Lisp compiler to avoid certain run-time checks.  When
  evaluating code directly in the top-level loop or in @(':')@(tsee logic)-mode
  functions that have not been @(see guard)-verified, @('THE') can perform
- run-type type checks.  See @(see declare) and @(see type-spec) for general,
+ run-time type checks.  See @(see declare) and @(see type-spec) for general,
  related background.</p>
 
  <p>General form:</p>

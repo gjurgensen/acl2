@@ -1623,7 +1623,7 @@ Subtopics
   (START-HERE)
   "General information About ACL2
 
-  This is ACL2 Version 8.6, [copyright] (C) 2024, Regents of the
+  This is ACL2 Version 8.6, [copyright] (C) 2025, Regents of the
   University of Texas, authored by Matt Kaufmann and J Strother
   Moore.
 
@@ -9145,7 +9145,8 @@ Guards and Guard Verification
   We see that we can provoke a guard violation with [47mstrange[0m even though
   it is guard verified with a guard of [47mT[0m.  Furthermore, we get the
   error both in the ACL2 read-eval-print loop and in the raw Lisp
-  under ACL2.
+  under ACL2.  (Be careful though about exiting the ACL2 loop; see
+  [q].)
 
   This might at first violate your understanding of the link between
   ACL2 and Common Lisp.  Naively, a guard verified ACL2 function with
@@ -14382,8 +14383,8 @@ Subtopics
 
       It is actually allowed to put raw lisp forms in a [47m.acl2[0m file
       (presumably preceded by [47m:q[0m or [47m(value :q)[0m and followed by [47m(lp)[0m).
-      But this is not recommended; we make no guarantees about
-      certification performed any time after raw Lisp has been
+      But this is not recommended (see [q]); we make no guarantees
+      about certification performed any time after raw Lisp has been
       entered in the ACL2 session.
 
       5. Generally, the next step is to include the following line after
@@ -15626,11 +15627,11 @@ Subtopics
   Common Lisp.  It is even possible to disrupt and render inaccurate
   the interrupted evaluation of a simple ACL2 expression.
 
-  For ACL2 built on most host Common Lisps, you will see the string
-  [47m[RAW LISP][0m in the [prompt] at a break, to emphasize that one is
-  inside a break and hence should quit from the break.  For some host
-  Common Lisps, the top-level prompt also contains the string [47m[RAW
-  LISP][0m.  See [prompt] for how to control printing of that string.
+  For ACL2 built on most host Common Lisps, you can expect to see a
+  different prompt at the break than you would see in the ACL2
+  read-eval-print loop.  See [prompt] for how to change the raw Lisp
+  prompt to emphasize that one is in raw Lisp, and hence may wish to
+  quit from the break.
 
   The most reliable way to return to the ACL2 top level is by executing
   the following command: [47m([0m[47m[abort!][0m[47m)[0m.  Appropriate cleanup will then
@@ -22579,7 +22580,7 @@ Subtopics
   ACL2 Version 8.6 --- A Computational Logic for Applicative Common
   Lisp
 
-  Copyright (C) 2024, Regents of the University of Texas
+  Copyright (C) 2025, Regents of the University of Texas
 
   This version of ACL2 is a descendant of ACL2 Version 1.9, Copyright
   (C) 1997 Computational Logic, Inc.  See the documentation topic
@@ -23803,11 +23804,13 @@ Usage
       information.
 
   Declarations in ACL2 may occur only where [47mdcl[0m occurs in the following
-  display (not including lambda objects, discussed later below):
+  display (not including lambda objects, discussed later below, and
+  not showing documentation strings here, which are essentially
+  ignored by ACL2)):
 
-    * [47m(DEFUN name args doc-string dcl ... dcl body)[0m
+    * [47m(DEFUN name args dcl ... dcl body)[0m
 
-    * [47m(DEFMACRO name args doc-string dcl ... dcl body)[0m
+    * [47m(DEFMACRO name args dcl ... dcl body)[0m
 
     * [47m(LET ((v1 t1) ...) dcl ... dcl body)[0m
 
@@ -25400,10 +25403,10 @@ Subtopics
     ((computed-hint-1 clause)
      (computed-hint-2 clause stable-under-simplificationp))
 
-  The value returned by this function is added to the right of the
-  [47m:[0m[47m[hints][0m argument of every [47m[defthm][0m and [47m[thm][0m command, and to hints
-  provided to [47m[defun][0ms as well ([47m:hints[0m, [47m:guard-hints[0m, and (for
-  ACL2(r)) [47m:std-hints[0m).
+  The value returned by this function is appended to the right of any
+  explicitly provided :[hints] argument of every [47m[defthm][0m, [47m[thm][0m, and
+  [47m[defun][0m event, and similarly for the [47m:guard-hints[0m argument of
+  [47mdefun[0m, and, for ACL2(r), the [47m:std-hints[0m argument.
 
   See [set-default-hints] for a more general discussion.  Advanced
   users only: see [override-hints] for an advanced variant of default
@@ -26455,7 +26458,8 @@ Subtopics
   the [47m:logic[0m part of any superior [47mmbe[0m call is completely ignored.
 
     General Form:
-    (defexec fn (var1 ... varn) doc-string dcl ... dcl
+    (defexec fn (var1 ... varn)
+      dcl ... dcl ; optionally, also one documentation string, as for defun
       (mbe :LOGIC logic-body
            :EXEC  exec-body))
 
@@ -26665,7 +26669,7 @@ Restrictions
   effect.
 
     General Form:
-    (define-pc-macro cmd args doc-string dcl ... dcl body)
+    (define-pc-macro cmd args dcl ... dcl body)
 
   where [47mcmd[0m is the name of the pc-macro that you want to define, [47margs[0m
   is its list of formal parameters.  [47mArgs[0m may include lambda-list
@@ -27315,7 +27319,9 @@ Subtopics
     (one-of x 1 2 3)       ill-formed (guard violation)
 
     General Form:
-    (defmacro name macro-args doc-string dcl ... dcl body)
+    (defmacro name macro-args
+      dcl ... dcl ; optionally, also one documentation string; see below
+      body)
 
   where [47mname[0m is a new symbolic name (see [name]), [47mmacro-args[0m specifies
   the formal parameters of the macro, and [47mbody[0m is a term whose only
@@ -27323,11 +27329,13 @@ Subtopics
   specified in a much more general way than is allowed by ACL2
   [47m[defun][0m [events]; see [macro-args] for a description of keyword
   ([47m&key[0m) and optional ([47m&optional[0m) parameters as well as other
-  so-called ``lambda-list keywords'', [47m&rest[0m and [47m&whole[0m.  [47mDoc-string[0m,
-  if non-[47mnil[0m, is an optional string that can provide documentation
-  but is essentially ignored by ACL2.  Each [47mdcl[0m is an optional
-  declaration (see [declare]) except that the only [47m[xargs][0m keyword
-  permitted by [47mdefmacro[0m is [47m:[0m[47m[guard][0m.
+  so-called ``lambda-list keywords'', [47m&rest[0m and [47m&whole[0m.  Each [47mdcl[0m is
+  an optional declaration (see [declare]) except that the only
+  [47m[xargs][0m keyword permitted by [47mdefmacro[0m is [47m:[0m[47m[guard][0m.
+
+  One documentation string may be included between the list of formal
+  parameters and the body, but it is essentially ignored by ACL2.
+  See [documentation] for a discussion of documentation in ACL2.
 
   There are two restrictions on [47mbody[0m aside from it simply being a term
   in [47mmacro-args[0m.  Both restrictions relate to ancestral uses of
@@ -28811,8 +28819,8 @@ Subtopics
   the theory expression [47m(theory name)[0m.
 
   The value returned is the length of the resulting theory.  For
-  example, in the following, the theory associated with [47m'FOO[0m has 54
-  [rune]s:
+  example, in the following, the theory associated with [47m'FOO[0m has 60
+  [rune]s as of ACL2 Version 8.6:
 
     ACL2 !>(deftheory foo (union-theories '(binary-append)
                                           (theory 'minimal-theory)))
@@ -28820,9 +28828,8 @@ Subtopics
     Summary
     Form:  ( DEFTHEORY FOO ...)
     Rules: NIL
-    Warnings:  None
-    Time:  0.00 seconds (prove: 0.00, print: 0.00, other: 0.00)
-     54
+    Time:  0.01 seconds (prove: 0.00, print: 0.00, other: 0.01)
+     60
     ACL2 !>
 
   Note that the theory being defined depends on the context.  For
@@ -29316,7 +29323,9 @@ Subtopics
           (* n (fact (1- n)))))
 
     General Form:
-    (defun fn (var1 ... varn) doc-string dcl ... dcl body),
+    (defun fn (var1 ... varn)
+      dcl ... dcl ; optionally, also one documentation string; see below
+      body)
 
   where [47mfn[0m is the symbol you wish to define and is a new symbolic name
   (see [name]), [47m(var1 ... varn)[0m is its list of formal parameters (see
@@ -29332,19 +29341,17 @@ Subtopics
   as [47m&optional[0m) in the formals list of functions.  We do support some
   such keywords in macros and often you can achieve the desired
   syntax by defining a macro in addition to the general version of
-  your function.  See [defmacro].  [47mDoc-string[0m, if non-[47mnil[0m, is an
-  optional string that can provide documentation but is essentially
-  ignored by ACL2.
+  your function.  See [defmacro].
 
-  The [3mdeclarations[0m (see [declare]), [47mdcl[0m, are also optional.  If more
-  than one [47mdcl[0m form appears, they are effectively grouped together as
-  one.  Perhaps the most commonly used ACL2 specific declaration is
-  of the form [47m(declare (xargs :guard g :measure m))[0m.  This
-  declaration in the [47mdefun[0m of some function [47mfn[0m has the effect of
-  making the ``[guard]'' for [47mfn[0m be the term [47mg[0m and the ``measure'' be
-  the term [47mm[0m.  The notion of ``measure'' is crucial to ACL2's
-  definitional principle.  The notion of ``guard'' is not, and is
-  discussed elsewhere; see [verify-guards] and see
+  The [3mdeclarations[0m (see [declare]), [47mdcl[0m, are optional.  If more than
+  one [47mdcl[0m form appears, they are effectively grouped together as one.
+  Perhaps the most commonly used ACL2 specific declaration is of the
+  form [47m(declare (xargs :guard g :measure m))[0m.  This declaration in
+  the [47mdefun[0m of some function [47mfn[0m has the effect of making the
+  ``[guard]'' for [47mfn[0m be the term [47mg[0m and the ``measure'' be the term [47mm[0m.
+  The notion of ``measure'' is crucial to ACL2's definitional
+  principle.  The notion of ``guard'' is not, and is discussed
+  elsewhere; see [verify-guards] and see
   [set-verify-guards-eagerness].  Note that a [47m:measure[0m is not allowed
   for a non-recursive definition unless it is part of a
   [47m[mutual-recursion][0m (exception: a measure of [47mnil[0m is treated as
@@ -29352,6 +29359,10 @@ Subtopics
   supplied, then it must be a legal term.  Apart from these
   restrictions, the [47m:measure[0m is ignored in [47m:[0m[47m[program][0m mode; see
   [defun-mode].
+
+  One documentation string may be included between the list of formal
+  parameters and the body, but it is essentially ignored by ACL2.
+  See [documentation] for a discussion of documentation in ACL2.
 
   We now briefly discuss the ACL2 definitional principle, using the
   following definition form which is offered as a more or less
@@ -29647,7 +29658,9 @@ Subtopics
       (if (endp x) 0 (1+ (lng (cdr x)))))
 
     General Form:
-    (defun-inline fn (var1 ... varn) doc-string dcl ... dcl body)
+    (defun-inline fn (var1 ... varn)
+      dcl ... dcl ; optionally, also one documentation string; as for defun
+      body)
 
   satisfying the same requirements as in the General Form for [47m[defun][0m.
   The effect is to define a macro [47mfn[0m and a function [47mfn$inline[0m (i.e.,
@@ -29657,8 +29670,8 @@ Subtopics
   [47m[table][0m [events] are generated that allow the use of [47mfn[0m in [theory]
   expressions to represent [47mfn$inline[0m and that cause any untranslated
   (user-level) call of [47mfn$inline[0m to be printed as the corresponding
-  call of [47mfn[0m.  [47mDoc-string[0m, if non-[47mnil[0m, is an optional string that can
-  provide documentation but is essentially ignored by ACL2.
+  call of [47mfn[0m.  The documentation string is an optional string that
+  can provide documentation but is essentially ignored by ACL2.
 
   A form [47m(defun-inline f ...)[0m actually defines a function named
   [47mf$inline[0m and a corresponding macro named [47mf[0m whose calls expand to
@@ -37118,11 +37131,13 @@ Subtopics
     Example:
     ACL2 !>:Q
 
-  There is essentially no Common Lisp escape feature in the [47m[lp][0m (but
-  see [set-raw-mode]).  This is part of the price of purity.  To
-  execute a form in Common Lisp as opposed to ACL2, exit [47m[lp][0m with
-  [47m:[0m[47m[q][0m, submit the desired forms to the Common Lisp read-eval-print
-  loop, and reenter ACL2 with [47m(lp)[0m.")
+  There is essentially no Common Lisp escape feature in the ACL2 loop
+  (see [lp]).  (A potentially unsound exception is raw-mode; see
+  [set-raw-mode].)  This is part of the price of purity.  To execute
+  a form in Common Lisp as opposed to ACL2, exit [47m[lp][0m with [47m:q[0m, submit
+  the desired forms to the Common Lisp read-eval-print loop, and
+  reenter ACL2 with [47m(lp)[0m.  WARNING: Doing so is potentially unsound;
+  see [q].")
  (EV$
   (APPLY$)
   "Evaluate a tame expression using [47mapply$[0m
@@ -43988,13 +44003,15 @@ Subtopics
 
   ACL2 supports computation that uses floating-point operations; see
   [df].  If you are using an older Lisp, an attempt to build ACL2 may
-  fail with an error complaining that ``[47mfeature :ieee-floating-point
-  is missing from *features*[0m''.  If you believe that your host Lisp
-  properly supports IEEE floating-point operations even though that
-  feature is missing (e.g., quite possibly with older versions of
-  CCL), you can avoid that built-time error by setting environment
-  variable [47mACL2_FP_OK[0m to any non-empty string.  You might want to do
-  that in a script that invokes your Lisp.")
+  fail with an error complaining that ``feature :ieee-floating-point
+  is missing'' [from the Lisp's [47m*features*[0m].  [31;1mTHIS ERROR INDICATES
+  THAT ACL2 MAY BE UNSOUND WHEN BUILT ON THAT LISP![0m If however you
+  believe that your Lisp properly supports IEEE floating-point
+  operations even though that feature is missing (e.g., quite
+  possibly with older versions of CCL), you can avoid that build-time
+  error by setting environment variable [47mACL2_FP_OK[0m to any non-empty
+  string.  You might want to do that in a script that invokes your
+  Lisp.")
  (FQUOTEP (POINTERS)
           "See [system-utilities].")
  (FREE-VARIABLES
@@ -49094,8 +49111,8 @@ Subtopics
   (Linux) exit status.  If it is not an integer, it will be treated
   as 0.
 
-  If you merely want to exit the ACL2 [command] loop, use [47m:q[0m instead
-  (see [q]).
+  If you merely want to exit the ACL2 [command] loop, use [47m:q[0m instead.
+  (That can be risky; see [q]).
 
   We conclude with the following technical remark, to be ignored unless
   you are trying to do things in raw Lisp that involve quitting the
@@ -55922,7 +55939,7 @@ Subtopics
   or more generally, the form it actually represents,
   [47m(CONTINUE-FROM-ILLEGAL-STATE)[0m, which may need to be written as
   [47m(ACL2::CONTINUE-FROM-ILLEGAL-STATE)[0m if the [47m[current-package][0m is
-  other than [47m\"ACL2\"[0m.  There is actually one exception: [47m:q[0m is
+  other than [47m\"ACL2\"[0m.  There is actually one exception: [47m:[0m[47m[q][0m is
   accepted, to pop out of the current call of [47m[ld][0m.
 
   To get a bit more information from the error message displayed above,
@@ -58129,7 +58146,7 @@ Subtopics
   Invoke [47m:pe intern[0m to see the definition, or see
   [intern-in-package-of-symbol].
 
-  To see why is [47mintern[0m so restricted consider [47m(intern \"X\" \"P\")[0m.  In
+  To see why [47mintern[0m is so restricted consider [47m(intern \"X\" \"P\")[0m.  In
   particular, is it a symbol and if so, what is its
   [47m[symbol-package-name][0m?  One is tempted to say ``yes, it is a symbol
   in the package [47m\"P\"[0m.'' But if package [47m\"P\"[0m has not yet been defined,
@@ -58490,11 +58507,11 @@ Subtopics
   [A_Tiny_Warning_Sign]) (for ``quit'') or pop to the outermost ACL2
   loop with [47m:[0m[47mabort![0m {ICON} (see [A_Tiny_Warning_Sign]).  If you are
   in the outermost call of the ACL2 interactive loop and you type [47m:q[0m,
-  you pop out into raw lisp.  The prompt there is generally different
-  from the ACL2 prompt but that is outside our our control and varies
-  from Lisp to Lisp.  We have arranged for many (but not all) Lisps
-  to use a raw lisp prompt involving the string [47m\"[RAW LISP]\"[0m.  To get
-  back into the ACL2 interactive loop from raw lisp, evaluate [47m(LP)[0m.
+  you pop out into raw lisp, which carries some risk; see [q].  The
+  prompt in raw Lisp is generally different from the ACL2 prompt but
+  that is outside our our control and varies from Lisp to Lisp.  See
+  [prompt].  To get back into the ACL2 interactive loop from raw
+  lisp, evaluate [47m(LP)[0m.
 
   If you see a prompt that looks like an ACL2 prompt but has a number
   in front of it, e.g.,
@@ -60440,7 +60457,7 @@ More help
   Tau reasoning is used by the prover as part of [47mpreprocess-clause[0m, one
   of the first proof techniques the system tries.  The tau system
   filters out ``obvious'' subgoals.  The tau system is only tried
-  when subgoals first enter the waterfall and when they are stable
+  when a goal first enters the waterfall and when a goal is stable
   under simplification.
 
   (3) The tau system is ``benign'' in the sense that the only way it
@@ -105301,6 +105318,10 @@ Heuristic and Efficiency Improvements
 
 Bug Fixes
 
+  Fixed a soundness bug in the [proof-builder] that could cause goals
+  from [47m[force][0md hypotheses to be created incorrectly.  (This bug has
+  been around for at least 10 years and probably for 30 years!)
+
   A Lisp error is now avoided when saving event-data (see
   [saving-event-data] and submitting certain ill-formed attempts at
   [events].  Thanks to Eric Smith for sending the following example.
@@ -116538,9 +116559,9 @@ Subtopics
   code.  It is important that these [program]-mode functions not be
   converted to [logic] mode.  Otherwise, one could arrange to prove a
   contradiction.  To see how, consider the following example, which
-  shows how one might prove that a call of a program-only function,
-  [47mp-o[0m, returns two different values on the same input (an obvious
-  contradiction).
+  takes advantage of an unsound use of [47m:[0m[47m[q][0m to prove that a call of a
+  program-only function, [47mp-o[0m, returns two different values on the
+  same input (an obvious contradiction).
 
     (defun p-o (x)
       (declare (xargs :guard t))
@@ -118155,17 +118176,19 @@ Subtopics
   ``modes.'' See [default-print-prompt] and see [ld-prompt] for
   details.
 
-  The prompt during raw Lisp breaks is, with most Common Lisp
-  implementations, adjusted by ACL2 to include the string [47m\"[RAW
-  LISP[0m\"], in order to reminder users not to submit ACL2 forms there;
-  see [breaks].  For Lisps that seem to use the same code for
-  printing prompts at the top-level as in [breaks], the top-level
-  prompt is similarly adjusted.  For Lisps with the above prompt
-  adjustment, The following forms may be executed in raw Lisp (i.e.,
-  after typing [47m:q[0m).
+  The prompt in raw Lisp, including [breaks] from the ACL2 loop, can be
+  adjusted by ACL2 to include the string [47m\"[RAW LISP[0m\"], at least for
+  most Common Lisp implementations.  That change can help to remind
+  users not to submit ACL2 forms there.  That adjustment is made by
+  executing the following form in raw Lisp (for example, after typing
+  [47m:[0m[47m[q][0m).
 
-    (install-new-raw-prompt) ; install prompt with [RAW LISP] as described above
-    (install-old-raw-prompt) ; revert to original prompt from host Common Lisp")
+    (install-new-raw-prompt)
+
+  To return to printing the original Lisp prompt in raw lisp, evaluate
+  the following in raw Lisp.
+
+    (install-old-raw-prompt)")
  (PROOF-BUILDER
   (ACL2 DEBUGGING)
   "An interactive tool for controlling ACL2's proof processes.
@@ -120489,6 +120512,35 @@ Subtopics
   your stay in Common Lisp you messed with the data structures
   representing the ACL2 [state] (including files, property lists, and
   single-threaded objects).
+
+  You may also issue the command [47m(value :q)[0m to exit the ACL2 loop.
+  More generally, if the result of evaluating a form in the ACL2 loop
+  is the [error-triple] [47m(nil :q state)[0m, the ACL2 loop will be exited.
+
+  WARNING: The issuance of commands to raw Lisp may render your ACL2
+  session unsound.  Furthermore, evaluation of forms after exiting
+  the ACL2 loop with [47m:q[0m (or [47m(value :q)[0m, etc.) is not guaranteed to
+  agree with their evaluation in the ACL2 loop.  Specifically, Common
+  Lisp may read an expression with the backquote character ([47m`[0m)
+  differently from how ACL2 reads the expression.  (The technical
+  reason, in Common Lisp parlance, is that ACL2 installs its own
+  readtable in the ACL2 loop, which includes a custom backquote
+  reader.)  Results of evaluation may have surprising differences
+  depending on whether evaluation takes place in the ACL2 loop or in
+  raw Lisp, as illustrated by the following log produced using an
+  ACL2 executable built on SBCL.
+
+    ACL2 !>(car (quote `(a b c)))
+    QUOTE
+    ACL2 !>:q
+
+    Exiting the ACL2 read-eval-print loop.  To re-enter, execute (LP).
+    * (car (quote `(a b c)))
+    SB-INT:QUASIQUOTE
+    *
+
+  To minimize discrepancies (including that one) between ACL2 and raw
+  Lisp, use [raw-mode] instead of exiting the ACL2 loop.
 
   Unlike all other keyword commands, typing [47m:q[0m is not equivalent to
   invoking the function [47mq[0m.  There is no function [47mq[0m.")
@@ -123391,7 +123443,10 @@ Subtopics
   brackets with parentheses and the comma with a dot, [47m(1 . 2)[0m.  Thus,
   [47m((1 . 2) . (3 . 4))[0m is the pair containing the pair [47m(1 . 2)[0m in its
   left component and the pair [47m(3 . 4)[0m in its right.  In high school,
-  you might have written this object as <<1, 2>,<3, 4>>.
+  you might have written this object as <<1, 2>,<3, 4>>.  Note that
+  exactly one object must follow the dot; for example, the notation
+  [47m((1 . 2) . 3 4)[0m is illegal.  However, one or more objects may
+  precede the dot, as discussed below.
 
   In Lisp, pairs are called [3mconses[0m.  Non-conses are called [3matoms[0m.  The
   left component is called the [3mcar[0m  and the right component is called
@@ -128480,23 +128535,23 @@ Subtopics
     ACL2 !>:q
 
     Exiting the ACL2 read-eval-print loop.  To re-enter, execute (LP).
-    ? [RAW LISP] (macroexpand-1
-                  '(RETURN-LAST 'WITH-GUARD-CHECKING1-RAW
-                                 (CHK-WITH-GUARD-CHECKING-ARG :NONE)
-                                 (CAR 3)))
+    ? (macroexpand-1
+       '(RETURN-LAST 'WITH-GUARD-CHECKING1-RAW
+                     (CHK-WITH-GUARD-CHECKING-ARG :NONE)
+                     (CAR 3)))
     (WITH-GUARD-CHECKING1-RAW (CHK-WITH-GUARD-CHECKING-ARG :NONE) (CAR 3))
     T
-    ? [RAW LISP] (pprint
-                  (macroexpand-1
-                   '(WITH-GUARD-CHECKING1-RAW
-                     (CHK-WITH-GUARD-CHECKING-ARG :NONE)
-                     (CAR 3))))
+    ? (pprint
+       (macroexpand-1
+        '(WITH-GUARD-CHECKING1-RAW
+          (CHK-WITH-GUARD-CHECKING-ARG :NONE)
+          (CAR 3))))
 
     (LET ((ACL2_GLOBAL_ACL2::GUARD-CHECKING-ON
            (CHK-WITH-GUARD-CHECKING-ARG :NONE)))
       (DECLARE (SPECIAL ACL2_GLOBAL_ACL2::GUARD-CHECKING-ON))
       (CAR 3))
-    ? [RAW LISP]
+    ?
 
   The above raw Lisp code binds the state global variable
   [47mguard-checking-on[0m to [47m:none[0m, as [47mchk-with-guard-checking-arg[0m is just
@@ -128701,13 +128756,13 @@ Subtopics
     ACL2 !>:q
 
     Exiting the ACL2 read-eval-print loop.  To re-enter, execute (LP).
-    ? [RAW LISP] (macroexpand-1
-                  '(RETURN-LAST 'WITH-PROFILING-RAW
-                                 '(ASSOC-EQ FGETPROP REWRITE)
-                                 (MINI-PROVEALL)))
+    ? (macroexpand-1
+       '(RETURN-LAST 'WITH-PROFILING-RAW
+                     '(ASSOC-EQ FGETPROP REWRITE)
+                     (MINI-PROVEALL)))
     (WITH-PROFILING-RAW '(ASSOC-EQ FGETPROP REWRITE) (MINI-PROVEALL))
     T
-    ? [RAW LISP]
+    ?
 
   To understand the macro [47mwith-profiling-raw[0m you could look at the
   community book loaded above: [47mbooks/misc/profiling-raw.lsp[0m.
@@ -128758,7 +128813,8 @@ Subtopics
   The following is correct, and illustrates care taken to return
   multiple values.
 
-    :q
+    (defttag t)
+    (set-raw-mode t)
     (defmacro my-time1-raw (val form)
       (declare (ignore val))
       `(let  ((start-time (get-internal-run-time))
@@ -128768,8 +128824,7 @@ Subtopics
                  (float (/ (- end-time start-time)
                            internal-time-units-per-second)))
          (values-list result)))
-    (lp)
-    (defttag t)
+    (set-raw-mode nil)
     (defmacro-last my-time1)
     (defmacro my-time (form)
       `(my-time1 nil ,form))
@@ -132283,7 +132338,7 @@ Subtopics
   [31;1mDetails[0m:
 
   (1) You must first exit the ACL2 read-eval-print loop, typically by
-  executing [47m:q[0m, before evaluating a [47msave-exec[0m call; otherwise an
+  executing [47m:[0m[47m[q][0m, before evaluating a [47msave-exec[0m call; otherwise an
   error occurs.
 
   (2) The image will be saved so that in the new image, the raw Lisp
@@ -136613,7 +136668,7 @@ Subtopics
 
   Even without this problem it is important to enter the ACL2 loop (see
   [lp]), for example in order to set the [47m[cbd][0m and (to get more
-  technical) the readtable.
+  technical) the readtable.  See [q].
 
   ACL2 provides a ``raw mode'' for execution of raw Lisp forms.  In
   this mode, [47m[include-book][0m reduces essentially to a Common Lisp
@@ -139432,7 +139487,7 @@ Constraints on the soundness guarantee
       Lisp evaluation with side effects.  (ACL2 normally avoids
       putting the user into raw Lisp, but this can happen with an
       interrupt, the use of [47m[break$][0m, or explicitly leaving the
-      top-level loop with [47m:q[0m.)  ``Side effects'' should be
+      top-level loop with [47m:[0m[47m[q][0m.)  ``Side effects'' should be
       interpreted as generously as possible: this certainly includes
       redefining a function or assigning to a variable, but not
       merely evaluating an arithmetic expression, for example.
@@ -140403,9 +140458,9 @@ Subtopics
 
     ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     + ACL2 Version 8.6+ (a development snapshot based on ACL2 Version 8.6) +
-    +   built November 6, 2024  16:13:03.                                  +
-    +   (Git commit hash: e9790bdb14922c9a88aa23781b5d8bdf080fb05d)        +
-    + Copyright (C) 2024, Regents of the University of Texas.              +
+    +   built January 14, 2025  10:09:28.                                  +
+    +   (Git commit hash: 89b2701f59f8e561b17121cf0a25cb8d1910377f)        +
+    + Copyright (C) 2025, Regents of the University of Texas.              +
     + ACL2 comes with ABSOLUTELY NO WARRANTY.  This is free software and   +
     + you are welcome to redistribute it under certain conditions.  For    +
     + details, see the LICENSE file distributed with ACL2.                 +
@@ -140419,9 +140474,10 @@ Subtopics
 
     ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     + ACL2 Version 8.6+ (a development snapshot based on ACL2 Version 8.6) +
-    +   built November 6, 2024  16:13:03.                                  +
-    +   (Git commit hash: e9790bdb14922c9a88aa23781b5d8bdf080fb05d)        +
-    + Copyright (C) 2024, Regents of the University of Texas.              +
+    +   built January 14, 2025  09:56:49.                                  +
+    +   (Note from the environment when this executable was saved:         +
+    +    This is my private executable.)                                   +
+    + Copyright (C) 2025, Regents of the University of Texas.              +
     + ACL2 comes with ABSOLUTELY NO WARRANTY.  This is free software and   +
     + you are welcome to redistribute it under certain conditions.  For    +
     + details, see the LICENSE file distributed with ACL2.                 +
@@ -148201,7 +148257,7 @@ Subtopics
   This information may allow the Common Lisp compiler to avoid
   certain run-time checks.  When evaluating code directly in the
   top-level loop or in [47m:[0m[47m[logic][0m-mode functions that have not been
-  [guard]-verified, [47mTHE[0m can perform run-type type checks.  See
+  [guard]-verified, [47mTHE[0m can perform run-time type checks.  See
   [declare] and [type-spec] for general, related background.
 
   General form:
