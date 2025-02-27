@@ -54550,14 +54550,15 @@ tables in the current Hons Space."
  <p>Intuitively, @('(intern-in-package-of-symbol x y)') creates a symbol with
  @(tsee symbol-name) @('x') @(see intern)ed in the package containing @('y').
  More precisely, suppose @('x') is a string, @('y') is a symbol with @(tsee
- symbol-package-name) pkg and that the @(tsee defpkg) event creating pkg had
- the list of symbols imports as the value of its second argument.  Then
- @('(intern-in-package-of-symbol x y)') returns a symbol, ans, the @(tsee
- symbol-name) of ans is @('x'), and the @(tsee symbol-package-name) of ans is
- pkg, unless @('x') is the @(tsee symbol-name) of some member of imports with
- @(tsee symbol-package-name) ipkg, in which case the @(tsee
- symbol-package-name) of ans is ipkg.  Because @(tsee defpkg) requires that
- there be no duplications among the @(tsee symbol-name)s of the imports,
+ symbol-package-name) @('pkg') and that the @(tsee defpkg) event creating
+ @('pkg') had the list of symbols @('imports') as the value of its second
+ argument.  Then @('(intern-in-package-of-symbol x y)') returns a symbol,
+ @('ans'), the @(tsee symbol-name) of @('ans') is @('x'), and the @(tsee
+ symbol-package-name) of @('ans') is @('pkg'), unless @('x') is the @(tsee
+ symbol-name) of some member of @('imports') with @(tsee symbol-package-name)
+ @('ipkg'), in which case the @(tsee symbol-package-name) of @('ans') is
+ @('ipkg').  Because @(tsee defpkg) requires that there be no duplications
+ among the @(tsee symbol-name)s of the imports,
  @('intern-in-package-of-symbol') is uniquely defined.</p>
 
  <p>For example, suppose @('\"MY-PKG\"') was created by</p>
