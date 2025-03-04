@@ -58201,13 +58201,13 @@ Subtopics
   Intuitively, [47m(intern-in-package-of-symbol x y)[0m creates a symbol with
   [47m[symbol-name][0m [47mx[0m [intern]ed in the package containing [47my[0m.  More
   precisely, suppose [47mx[0m is a string, [47my[0m is a symbol with
-  [47m[symbol-package-name][0m pkg and that the [47m[defpkg][0m event creating pkg
-  had the list of symbols imports as the value of its second
+  [47m[symbol-package-name][0m [47mpkg[0m and that the [47m[defpkg][0m event creating [47mpkg[0m
+  had the list of symbols [47mimports[0m as the value of its second
   argument.  Then [47m(intern-in-package-of-symbol x y)[0m returns a symbol,
-  ans, the [47m[symbol-name][0m of ans is [47mx[0m, and the [47m[symbol-package-name][0m
-  of ans is pkg, unless [47mx[0m is the [47m[symbol-name][0m of some member of
-  imports with [47m[symbol-package-name][0m ipkg, in which case the
-  [47m[symbol-package-name][0m of ans is ipkg.  Because [47m[defpkg][0m requires
+  [47mans[0m, the [47m[symbol-name][0m of [47mans[0m is [47mx[0m, and the [47m[symbol-package-name][0m
+  of [47mans[0m is [47mpkg[0m, unless [47mx[0m is the [47m[symbol-name][0m of some member of
+  [47mimports[0m with [47m[symbol-package-name][0m [47mipkg[0m, in which case the
+  [47m[symbol-package-name][0m of [47mans[0m is [47mipkg[0m.  Because [47m[defpkg][0m requires
   that there be no duplications among the [47m[symbol-name][0ms of the
   imports, [47mintern-in-package-of-symbol[0m is uniquely defined.
 
