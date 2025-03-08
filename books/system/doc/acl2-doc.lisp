@@ -108062,6 +108062,9 @@ it."
 ;                                                 (p1 (lambda (x) t))
 ;                                                 (p2 (lambda (x) nil)))))))
 
+; Updated for LispWorks 8.1 to avoid the problem that characters with codes 223
+; and 255 now upcase in that Lisp to characters with codes exceeding 255.
+
   :parents (release-notes)
   :short "ACL2 Version  8.7 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
