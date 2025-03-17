@@ -54300,10 +54300,10 @@ tables in the current Hons Space."
   :short "Test equality of two integers"
   :long "<p>@('(int= x y)') is logically equivalent to @('(equal x y)').</p>
 
- <p>Unlike @(tsee equal), @('int=') requires its arguments to be numbers (or
- else causes a @(see guard) violation; see @(see guard)).  Generally, @('int=')
- is executed more efficiently than @(tsee equal) or @(tsee =) on
- integers.</p>
+ <p>Unlike @(tsee equal), @('int=') requires its arguments to be integers (or
+ else causes a @(see guard) violation; see @(see guard)).  @('Int=') is
+ intended to execute more efficiently on integers than @(tsee equal) or @(tsee
+ =), though this may not be true for all host Lisps.</p>
 
  @(def int=)")
 
