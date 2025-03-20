@@ -57905,9 +57905,10 @@ Subtopics
 
   [47m(int= x y)[0m is logically equivalent to [47m(equal x y)[0m.
 
-  Unlike [47m[equal][0m, [47mint=[0m requires its arguments to be numbers (or else
-  causes a [guard] violation; see [guard]).  Generally, [47mint=[0m is
-  executed more efficiently than [47m[equal][0m or [47m[=][0m on integers.
+  Unlike [47m[equal][0m, [47mint=[0m requires its arguments to be integers (or else
+  causes a [guard] violation; see [guard]).  [47mInt=[0m is intended to
+  execute more efficiently on integers than [47m[equal][0m or [47m[=][0m, though
+  this may not be true for all host Lisps.
 
   [31;1mMacro: [0m<int=>
 
