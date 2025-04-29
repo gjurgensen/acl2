@@ -107321,7 +107321,7 @@ it."
  between that book's @(see certificate) file and its compiled file.  Thanks to
  Sol Swords for requesting this enhancement.  This lack of duplication also
  applies to any such @('defconst') event in a book that is in the scope of a
- @(tsee progn) or @(tsee encapsulate) event when there is at one
+ @(tsee progn) or @(tsee encapsulate) event when there is at most one
  @('make-event') call in that scope; similarly for such @('defconst') events
  within calls of @(tsee skip-proofs), @(tsee with-output), @(tsee
  with-guard-checking), or @(tsee with-prover-step-limit).</p>
