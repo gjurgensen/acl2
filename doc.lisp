@@ -104709,8 +104709,8 @@ Heuristic and Efficiency Improvements
   Thanks to Sol Swords for requesting this enhancement.  This lack of
   duplication also applies to any such [47mdefconst[0m event in a book that
   is in the scope of a [47m[progn][0m or [47m[encapsulate][0m event when there is
-  at one [47mmake-event[0m call in that scope; similarly for such [47mdefconst[0m
-  events within calls of [47m[skip-proofs][0m, [47m[with-output][0m,
+  at most one [47mmake-event[0m call in that scope; similarly for such
+  [47mdefconst[0m events within calls of [47m[skip-proofs][0m, [47m[with-output][0m,
   [47m[with-guard-checking][0m, or [47m[with-prover-step-limit][0m.
 
   Each new stobj was being created twice at [47m[include-book][0m time, once
