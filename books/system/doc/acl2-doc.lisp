@@ -132786,7 +132786,7 @@ work on <tt>(q x)</tt>.</p>
  <ol>
 
  <li>Download an SBCL binary from
- <tt><a href='https://www.sbcl.org'>https://www.sbcl.org/platform-table.html</a></tt>.
+ <tt><a href='https://www.sbcl.org/platform-table.html'>https://www.sbcl.org/platform-table.html</a></tt>.
  That page contains a table
  with  combinations of operating systems and hardware architectures,
  from which you have to pick the one that applies to you.
@@ -132832,7 +132832,7 @@ work on <tt>(q x)</tt>.</p>
  This time macOS should not block its execution.</li>
 
  <li>Download the SBCL source from
- <tt><a href='https://www.sbcl.org'>https://www.sbcl.org/platform-table.html</a></tt>,
+ <tt><a href='https://www.sbcl.org/platform-table.html'>https://www.sbcl.org/platform-table.html</a></tt>,
  the same page with the table of binaries.
  There should be one link to the sources, above the table of binaries.
  The downloaded file will have a name like @('sbcl-2.3.9-source.tar.bz2').</li>
