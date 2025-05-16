@@ -132726,14 +132726,14 @@ Further information
 
    1. Download an SBCL binary from
       [47m{https://www.sbcl.org/platform-table.html |
-      https://www.sbcl.org}[0m.  That page contains a table with
-      combinations of operating systems and hardware architectures,
-      from which you have to pick the one that applies to you.  Note
-      that you need an SBCL binary in order to compile from source
-      (see below).  The file downloaded from the table will have a
-      name like [47msbcl-2.1.2-arm64-darwin-binary.tar.bz2[0m, where the
-      [47marm64-darwin[0m part depends on the chosen combination of
-      operating system and hardware architecture.
+      https://www.sbcl.org/platform-table.html}[0m.  That page contains
+      a table with combinations of operating systems and hardware
+      architectures, from which you have to pick the one that applies
+      to you.  Note that you need an SBCL binary in order to compile
+      from source (see below).  The file downloaded from the table
+      will have a name like [47msbcl-2.1.2-arm64-darwin-binary.tar.bz2[0m,
+      where the [47marm64-darwin[0m part depends on the chosen combination
+      of operating system and hardware architecture.
 
    2. Untar the file in a directory of your choice, which will create a
       subdirectory with a name like [47msbcl-2.1.2-arm64-darwin[0m,
@@ -132774,10 +132774,10 @@ Further information
 
    6. Download the SBCL source from
       [47m{https://www.sbcl.org/platform-table.html |
-      https://www.sbcl.org}[0m, the same page with the table of
-      binaries.  There should be one link to the sources, above the
-      table of binaries.  The downloaded file will have a name like
-      [47msbcl-2.3.9-source.tar.bz2[0m.
+      https://www.sbcl.org/platform-table.html}[0m, the same page with
+      the table of binaries.  There should be one link to the
+      sources, above the table of binaries.  The downloaded file will
+      have a name like [47msbcl-2.3.9-source.tar.bz2[0m.
 
    7. Untar the file in a directory of your choice, which will create a
       subdirectory with a name like [47msbcl-2.3.9[0m.
