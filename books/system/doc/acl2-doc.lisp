@@ -108122,6 +108122,10 @@ it."
  been fixed: the stobj is now created by the @(':EXEC') of the attachment's
  creator.</p>
 
+ <p>Fixed a bug in @(tsee trans*) when its use encounters a call of @(tsee
+ make-event) with the @(':on-behalf-of') keyword.  Thanks to Grant Jurgensen
+ for reporting this bug using a simple example.</p>
+
  <h3>Changes at the System Level</h3>
 
  <p>Modifications have been made that allow ACL2 to be hosted on GCL Version

@@ -105343,6 +105343,10 @@ Bug Fixes
   bug has been fixed: the stobj is now created by the [47m:EXEC[0m of the
   attachment's creator.
 
+  Fixed a bug in [47m[trans*][0m when its use encounters a call of
+  [47m[make-event][0m with the [47m:on-behalf-of[0m keyword.  Thanks to Grant
+  Jurgensen for reporting this bug using a simple example.
+
 
 Changes at the System Level
 
