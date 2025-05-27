@@ -105306,6 +105306,13 @@ Changes to Existing Features
 
 New Features
 
+  The new function symbol [47mstrict-table-guard[0m returns its single
+  argument unchanged, but has a special meaning when a [table]'s
+  [47m:guard[0m is a call of that function symbol.  In that case, a term
+  supplied for updating the table --- that is, for the [47m:put[0m and
+  [47m:clear[0m operations --- must have no free variables, even though
+  variables [47mWORLD[0m and [47mENS[0m are normally permitted.  See [table].
+
 
 Heuristic and Efficiency Improvements
 
@@ -105346,6 +105353,11 @@ Bug Fixes
   Fixed a bug in [47m[trans*][0m when its use encounters a call of
   [47m[make-event][0m with the [47m:on-behalf-of[0m keyword.  Thanks to Grant
   Jurgensen for reporting this bug using a simple example.
+
+  According to the documentation for [47m[table][0m, the variable [47mENS[0m is
+  allowed in both the key and value expressions when updating the
+  table, that is, using the [47m:put[0m and [47m:clear[0m operations.  However, [47mENS[0m
+  was not being allowed in the key expression.  That has been fixed.
 
 
 Changes at the System Level
@@ -145623,13 +145635,14 @@ Subtopics
 
   where [47mtable-name[0m is a symbol that is the name of a (possibly new)
   table; [47mkey-term[0m and [47mvalue-term[0m, if present, are arbitrary terms
-  involving (at most) the variables [47mWORLD[0m and [47mENS[0m; [47mop[0m, if present, is
-  one of the table operations below; and [47mterm[0m, if present, is a term.
-  [47mTable[0m returns an ACL2 [error-triple].  The effect of [47mtable[0m on
-  [47m[state][0m depends on [47mop[0m and how many arguments are presented.  Some
-  invocations actually have no effect on the ACL2 [world] and hence
-  an invocation of [47mtable[0m is not always an ``event''.  We explain
-  below, after giving some background information.
+  involving (at most) the variables [47mWORLD[0m and [47mENS[0m with exceptions
+  noted below; [47mop[0m, if present, is one of the table operations below;
+  and [47mterm[0m, if present, is a term.  [47mTable[0m returns an ACL2
+  [error-triple].  The effect of [47mtable[0m on [47m[state][0m depends on [47mop[0m and
+  how many arguments are presented.  Some invocations actually have
+  no effect on the ACL2 [world] and hence an invocation of [47mtable[0m is
+  not always an ``event''.  We explain below, after giving some
+  background information.
 
   [31;1mImportant Note:[0m The [47mtable[0m forms above are calls of a macro that
   expands to involve the special variable [47m[state][0m.  This will prevent
@@ -145712,11 +145725,14 @@ Subtopics
   is passed as a formal parameter to many built-in functions; for
   example, see [system-utilities] for a description of built-in
   utilities [47menabled-numep[0m and [47menabled-runep[0m.)  However, in the
-  special case that the table in question is named
-  [47m[ACL2-defaults-table][0m, the [47mkey[0m and [47mvalue[0m terms may not contain any
-  variables.  Essentially, the keys and values used in [events]
-  setting the [47m[ACL2-defaults-table][0m must be explicitly given
-  constants.  See [ACL2-defaults-table].
+  following two special cases, the [47mkey[0m and [47mvalue[0m terms may not
+  contain any variables: when the table is named
+  [47m[ACL2-defaults-table][0m; or when the table's [47m:guard[0m is a call of the
+  unary function [47mstrict-table-guard[0m, which returns its argument
+  unchanged but indicates this restriction on variables for
+  specifying keys and values.  Essentially, the keys and values used
+  in [events] setting such tables must be explicitly given constants.
+  See [ACL2-defaults-table].
 
     (table name key-term nil :get)          ; long form
     (table name key-term)                   ; short form
