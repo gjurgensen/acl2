@@ -132802,9 +132802,10 @@ Further information
 
           sh make.sh --without-immobile-space --without-immobile-code --without-compact-instance-header
 
-      These options prevents certain possible errors.  The compilation
-      process prints a lot of stuff on the screen, and should
-      succeed.
+      You might also need option [47m--with-sb-thread[0m; this has been necessary
+      on a machine running FreeBSD.  These options prevent certain
+      possible errors.  The compilation process prints a lot of stuff
+      on the screen, and should succeed.
 
    9. The final part of the screen output will suggest to run the tests,
       via:
@@ -132886,6 +132887,9 @@ Further information
 
           cd sbcl-2.2.10
           sh make.sh --without-immobile-space --without-immobile-code --without-compact-instance-header
+
+      You might also need option [47m--with-sb-thread[0m; this has been necessary
+      on a machine running FreeBSD.
 
    5. Create a script file in a directory that is on your path (or, if you
       are updating your sbcl, just replace your current sbcl script;

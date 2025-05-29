@@ -132857,8 +132857,12 @@ work on <tt>(q x)</tt>.</p>
  which will create a subdirectory with a name like @('sbcl-2.3.9').</li>
 
  <li>Change to that subdirectory, and compile SBCL via:
+
  @({sh make.sh --without-immobile-space --without-immobile-code --without-compact-instance-header})
- These options prevents certain possible errors.
+
+ You might also need option @('--with-sb-thread'); this has been necessary on a
+ machine running FreeBSD.
+ These options prevent certain possible errors.
  The compilation process prints a lot of stuff on the screen,
  and should succeed.</li>
 
@@ -133022,7 +133026,10 @@ work on <tt>(q x)</tt>.</p>
  @({
  cd sbcl-2.2.10
  sh make.sh --without-immobile-space --without-immobile-code --without-compact-instance-header
- })</li>
+ })
+
+ You might also need option @('--with-sb-thread'); this has been necessary on a
+ machine running FreeBSD.</li>
 
  <li>Create a script file in a directory that is on your path (or, if you are
  updating your sbcl, just replace your current sbcl script; you can find its
