@@ -108101,6 +108101,24 @@ it."
  Thanks to Stas Boukarev for enhancing SBCL to support this improvement (made
  by adding suitable proclaiming in ACL2).</p>
 
+ <p>Avoided a potential quadratic blowup in @(see guard) generation by
+ improving how guard obligations are simplified.  Specifically, improved the
+ simplification of ground subterms so that @('(if x y y)') can simplify to
+ @('y'); other uses in ACL2 of ground subterm simplification similarly benefit.
+ Thanks to Eric Smith for sending the following example, which now generates a
+ simpler guard proof obligation.</p>
+
+ @({
+ (defun foo (x y)
+   (declare (xargs :guard t))
+   (let ((x (+ 1 x)))
+     (case x
+       (1 (natp x))
+       (2 (consp x))
+       (3 (rationalp x))
+       (otherwise (+ x y)))))
+ })
+
  <h3>Bug Fixes</h3>
 
  <p>Fixed a soundness bug in the @(see proof-builder) that could cause goals
