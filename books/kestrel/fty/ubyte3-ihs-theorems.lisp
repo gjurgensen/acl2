@@ -10,10 +10,10 @@
 
 (in-package "ACL2")
 
-(include-book "ubyte8")
+(include-book "ubyte3")
 
 (include-book "defbyte-ihs-theorems")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(fty::defbyte-ihs-theorems ubyte8)
+(fty::defbyte-ihs-theorems ubyte3)
