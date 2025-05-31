@@ -105323,6 +105323,23 @@ Heuristic and Efficiency Improvements
   SBCL to support this improvement (made by adding suitable
   proclaiming in ACL2).
 
+  Avoided a potential quadratic blowup in [guard] generation by
+  improving how guard obligations are simplified.  Specifically,
+  improved the simplification of ground subterms so that [47m(if x y y)[0m
+  can simplify to [47my[0m; other uses in ACL2 of ground subterm
+  simplification similarly benefit.  Thanks to Eric Smith for sending
+  the following example, which now generates a simpler guard proof
+  obligation.
+
+    (defun foo (x y)
+      (declare (xargs :guard t))
+      (let ((x (+ 1 x)))
+        (case x
+          (1 (natp x))
+          (2 (consp x))
+          (3 (rationalp x))
+          (otherwise (+ x y)))))
+
 
 Bug Fixes
 
