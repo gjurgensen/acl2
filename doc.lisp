@@ -105306,6 +105306,13 @@ Changes to Existing Features
 
 New Features
 
+  The new function symbol [47mstrict-table-guard[0m returns its single
+  argument unchanged, but has a special meaning when a [table]'s
+  [47m:guard[0m is a call of that function symbol.  In that case, a term
+  supplied for updating the table --- that is, for the [47m:put[0m and
+  [47m:clear[0m operations --- must have no free variables, even though
+  variables [47mWORLD[0m and [47mENS[0m are normally permitted.  See [table].
+
 
 Heuristic and Efficiency Improvements
 
@@ -105315,6 +105322,23 @@ Heuristic and Efficiency Improvements
   after mid-October, 2024.  Thanks to Stas Boukarev for enhancing
   SBCL to support this improvement (made by adding suitable
   proclaiming in ACL2).
+
+  Avoided a potential quadratic blowup in [guard] generation by
+  improving how guard obligations are simplified.  Specifically,
+  improved the simplification of ground subterms so that [47m(if x y y)[0m
+  can simplify to [47my[0m; other uses in ACL2 of ground subterm
+  simplification similarly benefit.  Thanks to Eric Smith for sending
+  the following example, which now generates a simpler guard proof
+  obligation.
+
+    (defun foo (x y)
+      (declare (xargs :guard t))
+      (let ((x (+ 1 x)))
+        (case x
+          (1 (natp x))
+          (2 (consp x))
+          (3 (rationalp x))
+          (otherwise (+ x y)))))
 
 
 Bug Fixes
@@ -105342,6 +105366,15 @@ Bug Fixes
   [defabsstobj]), even when that stobj was given an attachment.  This
   bug has been fixed: the stobj is now created by the [47m:EXEC[0m of the
   attachment's creator.
+
+  Fixed a bug in [47m[trans*][0m when its use encounters a call of
+  [47m[make-event][0m with the [47m:on-behalf-of[0m keyword.  Thanks to Grant
+  Jurgensen for reporting this bug using a simple example.
+
+  According to the documentation for [47m[table][0m, the variable [47mENS[0m is
+  allowed in both the key and value expressions when updating the
+  table, that is, using the [47m:put[0m and [47m:clear[0m operations.  However, [47mENS[0m
+  was not being allowed in the key expression.  That has been fixed.
 
 
 Changes at the System Level
@@ -132726,14 +132759,14 @@ Further information
 
    1. Download an SBCL binary from
       [47m{https://www.sbcl.org/platform-table.html |
-      https://www.sbcl.org}[0m.  That page contains a table with
-      combinations of operating systems and hardware architectures,
-      from which you have to pick the one that applies to you.  Note
-      that you need an SBCL binary in order to compile from source
-      (see below).  The file downloaded from the table will have a
-      name like [47msbcl-2.1.2-arm64-darwin-binary.tar.bz2[0m, where the
-      [47marm64-darwin[0m part depends on the chosen combination of
-      operating system and hardware architecture.
+      https://www.sbcl.org/platform-table.html}[0m.  That page contains
+      a table with combinations of operating systems and hardware
+      architectures, from which you have to pick the one that applies
+      to you.  Note that you need an SBCL binary in order to compile
+      from source (see below).  The file downloaded from the table
+      will have a name like [47msbcl-2.1.2-arm64-darwin-binary.tar.bz2[0m,
+      where the [47marm64-darwin[0m part depends on the chosen combination
+      of operating system and hardware architecture.
 
    2. Untar the file in a directory of your choice, which will create a
       subdirectory with a name like [47msbcl-2.1.2-arm64-darwin[0m,
@@ -132774,10 +132807,10 @@ Further information
 
    6. Download the SBCL source from
       [47m{https://www.sbcl.org/platform-table.html |
-      https://www.sbcl.org}[0m, the same page with the table of
-      binaries.  There should be one link to the sources, above the
-      table of binaries.  The downloaded file will have a name like
-      [47msbcl-2.3.9-source.tar.bz2[0m.
+      https://www.sbcl.org/platform-table.html}[0m, the same page with
+      the table of binaries.  There should be one link to the
+      sources, above the table of binaries.  The downloaded file will
+      have a name like [47msbcl-2.3.9-source.tar.bz2[0m.
 
    7. Untar the file in a directory of your choice, which will create a
       subdirectory with a name like [47msbcl-2.3.9[0m.
@@ -132786,9 +132819,10 @@ Further information
 
           sh make.sh --without-immobile-space --without-immobile-code --without-compact-instance-header
 
-      These options prevents certain possible errors.  The compilation
-      process prints a lot of stuff on the screen, and should
-      succeed.
+      You might also need option [47m--with-sb-thread[0m; this has been necessary
+      on a machine running FreeBSD.  These options prevent certain
+      possible errors.  The compilation process prints a lot of stuff
+      on the screen, and should succeed.
 
    9. The final part of the screen output will suggest to run the tests,
       via:
@@ -132870,6 +132904,9 @@ Further information
 
           cd sbcl-2.2.10
           sh make.sh --without-immobile-space --without-immobile-code --without-compact-instance-header
+
+      You might also need option [47m--with-sb-thread[0m; this has been necessary
+      on a machine running FreeBSD.
 
    5. Create a script file in a directory that is on your path (or, if you
       are updating your sbcl, just replace your current sbcl script;
@@ -145619,13 +145656,14 @@ Subtopics
 
   where [47mtable-name[0m is a symbol that is the name of a (possibly new)
   table; [47mkey-term[0m and [47mvalue-term[0m, if present, are arbitrary terms
-  involving (at most) the variables [47mWORLD[0m and [47mENS[0m; [47mop[0m, if present, is
-  one of the table operations below; and [47mterm[0m, if present, is a term.
-  [47mTable[0m returns an ACL2 [error-triple].  The effect of [47mtable[0m on
-  [47m[state][0m depends on [47mop[0m and how many arguments are presented.  Some
-  invocations actually have no effect on the ACL2 [world] and hence
-  an invocation of [47mtable[0m is not always an ``event''.  We explain
-  below, after giving some background information.
+  involving (at most) the variables [47mWORLD[0m and [47mENS[0m with exceptions
+  noted below; [47mop[0m, if present, is one of the table operations below;
+  and [47mterm[0m, if present, is a term.  [47mTable[0m returns an ACL2
+  [error-triple].  The effect of [47mtable[0m on [47m[state][0m depends on [47mop[0m and
+  how many arguments are presented.  Some invocations actually have
+  no effect on the ACL2 [world] and hence an invocation of [47mtable[0m is
+  not always an ``event''.  We explain below, after giving some
+  background information.
 
   [31;1mImportant Note:[0m The [47mtable[0m forms above are calls of a macro that
   expands to involve the special variable [47m[state][0m.  This will prevent
@@ -145708,11 +145746,14 @@ Subtopics
   is passed as a formal parameter to many built-in functions; for
   example, see [system-utilities] for a description of built-in
   utilities [47menabled-numep[0m and [47menabled-runep[0m.)  However, in the
-  special case that the table in question is named
-  [47m[ACL2-defaults-table][0m, the [47mkey[0m and [47mvalue[0m terms may not contain any
-  variables.  Essentially, the keys and values used in [events]
-  setting the [47m[ACL2-defaults-table][0m must be explicitly given
-  constants.  See [ACL2-defaults-table].
+  following two special cases, the [47mkey[0m and [47mvalue[0m terms may not
+  contain any variables: when the table is named
+  [47m[ACL2-defaults-table][0m; or when the table's [47m:guard[0m is a call of the
+  unary function [47mstrict-table-guard[0m, which returns its argument
+  unchanged but indicates this restriction on variables for
+  specifying keys and values.  Essentially, the keys and values used
+  in [events] setting such tables must be explicitly given constants.
+  See [ACL2-defaults-table].
 
     (table name key-term nil :get)          ; long form
     (table name key-term)                   ; short form

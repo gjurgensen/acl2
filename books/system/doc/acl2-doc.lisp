@@ -108086,6 +108086,13 @@ it."
 
  <h3>New Features</h3>
 
+ <p>The new function symbol @('strict-table-guard') returns its single argument
+ unchanged, but has a special meaning when a @(see table)'s @(':guard') is a
+ call of that function symbol.  In that case, a term supplied for updating the
+ table &mdash; that is, for the @(':put') and @(':clear') operations &mdash;
+ must have no free variables, even though variables @('WORLD') and @('ENS') are
+ normally permitted.  See @(see table).</p>
+
  <h3>Heuristic and Efficiency Improvements</h3>
 
  <p>Applications that use functions with floating-point inputs or outputs (see
@@ -108093,6 +108100,24 @@ it."
  after SBCL Version 2.9 and SBCL github versions after mid-October, 2024.
  Thanks to Stas Boukarev for enhancing SBCL to support this improvement (made
  by adding suitable proclaiming in ACL2).</p>
+
+ <p>Avoided a potential quadratic blowup in @(see guard) generation by
+ improving how guard obligations are simplified.  Specifically, improved the
+ simplification of ground subterms so that @('(if x y y)') can simplify to
+ @('y'); other uses in ACL2 of ground subterm simplification similarly benefit.
+ Thanks to Eric Smith for sending the following example, which now generates a
+ simpler guard proof obligation.</p>
+
+ @({
+ (defun foo (x y)
+   (declare (xargs :guard t))
+   (let ((x (+ 1 x)))
+     (case x
+       (1 (natp x))
+       (2 (consp x))
+       (3 (rationalp x))
+       (otherwise (+ x y)))))
+ })
 
  <h3>Bug Fixes</h3>
 
@@ -108121,6 +108146,15 @@ it."
  defabsstobj)), even when that stobj was given an attachment.  This bug has
  been fixed: the stobj is now created by the @(':EXEC') of the attachment's
  creator.</p>
+
+ <p>Fixed a bug in @(tsee trans*) when its use encounters a call of @(tsee
+ make-event) with the @(':on-behalf-of') keyword.  Thanks to Grant Jurgensen
+ for reporting this bug using a simple example.</p>
+
+ <p>According to the documentation for @(tsee table), the variable @('ENS') is
+ allowed in both the key and value expressions when updating the table, that
+ is, using the @(':put') and @(':clear') operations.  However, @('ENS') was not
+ being allowed in the key expression.  That has been fixed.</p>
 
  <h3>Changes at the System Level</h3>
 
@@ -132786,7 +132820,7 @@ work on <tt>(q x)</tt>.</p>
  <ol>
 
  <li>Download an SBCL binary from
- <tt><a href='https://www.sbcl.org'>https://www.sbcl.org/platform-table.html</a></tt>.
+ <tt><a href='https://www.sbcl.org/platform-table.html'>https://www.sbcl.org/platform-table.html</a></tt>.
  That page contains a table
  with  combinations of operating systems and hardware architectures,
  from which you have to pick the one that applies to you.
@@ -132832,7 +132866,7 @@ work on <tt>(q x)</tt>.</p>
  This time macOS should not block its execution.</li>
 
  <li>Download the SBCL source from
- <tt><a href='https://www.sbcl.org'>https://www.sbcl.org/platform-table.html</a></tt>,
+ <tt><a href='https://www.sbcl.org/platform-table.html'>https://www.sbcl.org/platform-table.html</a></tt>,
  the same page with the table of binaries.
  There should be one link to the sources, above the table of binaries.
  The downloaded file will have a name like @('sbcl-2.3.9-source.tar.bz2').</li>
@@ -132841,8 +132875,12 @@ work on <tt>(q x)</tt>.</p>
  which will create a subdirectory with a name like @('sbcl-2.3.9').</li>
 
  <li>Change to that subdirectory, and compile SBCL via:
+
  @({sh make.sh --without-immobile-space --without-immobile-code --without-compact-instance-header})
- These options prevents certain possible errors.
+
+ You might also need option @('--with-sb-thread'); this has been necessary on a
+ machine running FreeBSD.
+ These options prevent certain possible errors.
  The compilation process prints a lot of stuff on the screen,
  and should succeed.</li>
 
@@ -133006,7 +133044,10 @@ work on <tt>(q x)</tt>.</p>
  @({
  cd sbcl-2.2.10
  sh make.sh --without-immobile-space --without-immobile-code --without-compact-instance-header
- })</li>
+ })
+
+ You might also need option @('--with-sb-thread'); this has been necessary on a
+ machine running FreeBSD.</li>
 
  <li>Create a script file in a directory that is on your path (or, if you are
  updating your sbcl, just replace your current sbcl script; you can find its
@@ -145766,13 +145807,14 @@ work on <tt>(q x)</tt>.</p>
 
  <p>where @('table-name') is a symbol that is the name of a (possibly new)
  table; @('key-term') and @('value-term'), if present, are arbitrary terms
- involving (at most) the variables @('WORLD') and @('ENS'); @('op'), if
- present, is one of the table operations below; and @('term'), if present, is a
- term.  @('Table') returns an ACL2 @(see error-triple).  The effect of
- @('table') on @(tsee state) depends on @('op') and how many arguments are
- presented.  Some invocations actually have no effect on the ACL2 @(see world)
- and hence an invocation of @('table') is not always an ``event''.  We explain
- below, after giving some background information.</p>
+ involving (at most) the variables @('WORLD') and @('ENS') with exceptions
+ noted below; @('op'), if present, is one of the table operations below; and
+ @('term'), if present, is a term.  @('Table') returns an ACL2 @(see
+ error-triple).  The effect of @('table') on @(tsee state) depends on @('op')
+ and how many arguments are presented.  Some invocations actually have no
+ effect on the ACL2 @(see world) and hence an invocation of @('table') is not
+ always an ``event''.  We explain below, after giving some background
+ information.</p>
 
  <p><b>Important Note:</b> The @('table') forms above are calls of a macro that
  expands to involve the special variable @(tsee state).  This will prevent you
@@ -145855,11 +145897,14 @@ work on <tt>(q x)</tt>.</p>
  structure representing the current theory.  (The enabled structure is passed
  as a formal parameter to many built-in functions; for example, see @(see
  system-utilities) for a description of built-in utilities @('enabled-numep')
- and @('enabled-runep').)  However, in the special case that the table in
- question is named @(tsee acl2-defaults-table), the @('key') and @('value')
- terms may not contain any variables.  Essentially, the keys and values used in
- @(see events) setting the @(tsee acl2-defaults-table) must be explicitly given
- constants.  See @(see acl2-defaults-table).</p>
+ and @('enabled-runep').)  However, in the following two special cases, the
+ @('key') and @('value') terms may not contain any variables: when the table is
+ named @(tsee acl2-defaults-table); or when the table's @(':guard') is a call
+ of the unary function @('strict-table-guard'), which returns its argument
+ unchanged but indicates this restriction on variables for specifying keys and
+ values.  Essentially, the keys and values used in @(see events) setting such
+ tables must be explicitly given constants.  See @(see
+ acl2-defaults-table).</p>
 
  @({
   (table name key-term nil :get)          ; long form
