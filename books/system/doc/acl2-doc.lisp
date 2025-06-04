@@ -1662,7 +1662,7 @@
   :parents (top)
   :short "ACL2 documentation (system only, not including the community books)"
   :long "<p>This is the ACL2 documentation.  For the ACL2+Books Manual, which
-  that includes both the ACL2 documentation and the ACL2 @(see
+  includes both the ACL2 documentation and the ACL2 @(see
   community-books), see the @(`(:raw (combined-manual-ref))`).</p>")
 
 (defxdoc |ACL2 Characters|
