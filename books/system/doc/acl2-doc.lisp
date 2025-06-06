@@ -1661,8 +1661,8 @@
 (defxdoc acl2
   :parents (top)
   :short "ACL2 documentation (system only, not including the community books)"
-  :long "<p>This is the ACL2 documentation.  For the ACL2+Books Manual, which
-  that includes both the ACL2 documentation and the ACL2 @(see
+  :long "<p>This is the documentation for the ACL2 system.  For the ACL2+Books
+  Manual, which documents both the ACL2 system and the ACL2 @(see
   community-books), see the @(`(:raw (combined-manual-ref))`).</p>")
 
 (defxdoc |ACL2 Characters|
