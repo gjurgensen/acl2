@@ -2732,8 +2732,8 @@ Subtopics
   NIL
   "ACL2 documentation (system only, not including the community books)
 
-  This is the ACL2 documentation.  For the ACL2+Books Manual, which
-  that includes both the ACL2 documentation and the ACL2
+  This is the documentation for the ACL2 system.  For the ACL2+Books
+  Manual, which documents both the ACL2 system and the ACL2
   [community-books], see the {ACL2+Books Manual |
   http://www.cs.utexas.edu/users/moore/acl2/v8-6/combined-manual/index.html}.
 
