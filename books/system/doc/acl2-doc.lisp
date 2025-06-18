@@ -1661,8 +1661,8 @@
 (defxdoc acl2
   :parents (top)
   :short "ACL2 documentation (system only, not including the community books)"
-  :long "<p>This is the ACL2 documentation.  For the ACL2+Books Manual, which
-  that includes both the ACL2 documentation and the ACL2 @(see
+  :long "<p>This is the documentation for the ACL2 system.  For the ACL2+Books
+  Manual, which documents both the ACL2 system and the ACL2 @(see
   community-books), see the @(`(:raw (combined-manual-ref))`).</p>")
 
 (defxdoc |ACL2 Characters|
@@ -72561,8 +72561,9 @@ it."
 
 (defxdoc measure
 
-; This topic is appropriately redefined by (define measure ...) in
-; books/kestrel/utilities/system/world-queries.lisp:
+; This topic is appropriately shadowed in the ACL2+books manual by
+; (define measure ...) in
+; books/kestrel/utilities/system/world-queries.lisp.
 
   :parents (xargs)
   :short "Declare a measure for a @(tsee defun)"
@@ -160852,8 +160853,9 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
 
 (defxdoc well-founded-relation
 
-; This topic is appropriately redefined by (define well-founded-relation ...)
-; in books/kestrel/utilities/system/world-queries.lisp.
+; This topic is appropriately shadowed in the ACL2+books manual by
+; (define well-founded-relation ...)  in
+; books/kestrel/utilities/system/world-queries.lisp.
 
   :parents (rule-classes)
   :short "Show that a relation is well-founded on a set"
@@ -171972,7 +171974,13 @@ expand function call at the current subterm, without simplifying"
 (defpointer reset-print-control print-control)
 (defpointer restrict hints t)
 (defpointer rewrite-cache set-rw-cache-state)
-(defpointer ruler-extenders rulers)
+(defpointer ruler-extenders
+
+; This topic is appropriately shadowed in the ACL2+books manual by
+; (define ruler-extenders in
+; books/std/system/ruler-extenders.lisp.
+
+  rulers)
 (defpointer ruler rulers)
 (defpointer runes-diff saving-event-data)
 (defpointer rw-cache set-rw-cache-state)
