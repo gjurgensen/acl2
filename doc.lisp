@@ -2773,6 +2773,9 @@ Subtopics
   [Macros]
       Macros allow you to extend the syntax of ACL2.
 
+  [Mailing-lists]
+      Mailing lists for ACL2 users
+
   [Miscellaneous]
       A miscellany of documented functions and concepts (often cited in
       more accessible [documentation])
@@ -5699,7 +5702,10 @@ Subtopics
       Some basic hints for using ACL2
 
   [Tips]
-      Some hints for using the ACL2 prover")
+      Some hints for using the ACL2 prover
+
+  [Tours]
+      The Tours")
  (ACL2-UNWIND-PROTECT (POINTERS)
                       "See [system-utilities].")
  (ACL2-USER
@@ -57991,8 +57997,7 @@ Subtopics
   Here we list just a few of the industrially-relevant results obtained
   with ACL2.  Reading the list may help you decide you want to learn
   how to use ACL2.  If you do decide you want to learn more, we
-  recommend that you take The Tours (see [The_Tours]) after you leave
-  this page.
+  recommend that you take the [tours] after you leave this page.
 
   ACL2 was used at [31;1mMotorola Government Systems[0m to certify several
   microcode programs for the [31;1mMotorola CAP digital signal processor[0m,
@@ -74020,6 +74025,43 @@ Subtopics
 
     * A reasonable model for [47m(magic-ev-fncall 'fn (list a1 a2 ...) state h
       aokp)[0m is [47m(ec-call (fn a1 a2 ...))[0m.")
+ (MAILING-LISTS
+  (ACL2)
+  "Mailing lists for ACL2 users
+
+  There are the following mailing lists for ACL2 users.  You can post
+  messages to these lists only if you are a member, but anyone can
+  view the archives.
+
+      * [31;1macl2 list[0m: General ACL2 list for users and others interested in ACL2
+
+          * To post: [47m{acl2@utlists.utexas.edu | mailto:acl2@utlists.utexas.edu}[0m
+
+          * To subscribe, unsubscribe, or view archives:
+            [47m{https://utlists.utexas.edu/sympa/info/acl2 |
+            https://utlists.utexas.edu/sympa/info/acl2}[0m
+
+      * [31;1macl2-help list[0m: ACL2 help list, for questions about using ACL2(recommended for new users)
+
+          * To post: [47m{acl2-help@utlists.utexas.edu |
+            mailto:acl2-help@utlists.utexas.edu}[0m
+
+          * To subscribe, unsubscribe, or view archives:
+            [47m{https://utlists.utexas.edu/sympa/info/acl2-help |
+            https://utlists.utexas.edu/sympa/info/acl2-help}[0m
+
+      * [31;1macl2-books list[0m: Mailing list for discussion of cutting-edge
+        developments in ACL2 and the ACL2 Community Books
+
+          * To post: [47m{acl2-books@googlegroups.com |
+            mailto:acl2-books@googlegroups.com}[0m
+
+          * To subscribe, unsubscribe, or view archives:
+            [47m{https://groups.google.com/forum/#!forum/acl2-books |
+            https://groups.google.com/forum/#!forum/acl2-books}[0m
+
+  Finally, please report bugs in ACL2 to {Matt Kaufmann |
+  mailto:kaufmann@cs.utexas.edu}.")
  (MAKE
   (DEFREC ACL2-BUILT-INS)
   "Constructor macro for [defrec] structures.
@@ -105340,6 +105382,18 @@ Heuristic and Efficiency Improvements
           (3 (rationalp x))
           (otherwise (+ x y)))))
 
+  Sped up [47m[include-book][0m by significantly reducing time in translating
+  calls of [47m[with-output][0m and some other macros (for some technical
+  details see ACL2 source function [47mmacroexpand1*-cmp[0m and in creatiion
+  of the so-called post-alist in a [certificate] (for relevant code,
+  which shows the use of [fast-alists], see ACL2 source function
+  [47maccumulate-post-alist[0m.)  For examples showing reduction by about
+  1/3 in include-book time, see the comment ``Here are sample time
+  reports (...)  for include-book speedups due to...'' in the form
+  [47m(defxdoc note-8-7 ...)[0m in [community-book]
+  [47mbooks/system/doc/acl2-doc.lisp[0m.  Thanks to Eric Smith for sending
+  an example book for which to speed up [47m[include-book][0m.
+
 
 Bug Fixes
 
@@ -105393,6 +105447,22 @@ Changes at the System Level
   [47mbooks/system/doc/acl2-doc.lisp[0m.  Thanks to Camm Maguire for his
   help with this project, including (but by no means limited to) his
   contribution of a new sbits implementation.
+
+  The ACL2-only manual is no longer advertised on the ACL2 home page.
+  The ACL2+Books manual is favored both because it does not have the
+  broken links found in the ACL2-only manual and because the
+  ACL2+Books manual is helpful for informing new users about the
+  libraries provided by the [community-books].  Thanks to Eric Smith
+  for encouraging this change.  Note that the ACL2-only manual will
+  continue to be built in directory [47mdoc/manual/[0m when certifying
+  [47mdoc/top.lisp[0m.  (This is not to be confused with [47mbooks/doc/manual/[0m,
+  where the ACL2+Books manual is built.)
+
+  Replaced information about mailing lists in the installation
+  instructions using a link to a corresponding, new documentation
+  topic, [mailing-lists].  So now, the community can make suitable
+  updates to that page.  Thanks to Eric Smith for suggesting this
+  change.
 
 
 EMACS Support
@@ -110744,7 +110814,7 @@ Subtopics
   node just visited.  If you wish to look at the pages below, we
   strongly recommend that you do so via a HTML-based Web browser.
   Indeed, you should simply visit ACL2's Home Page and take one of
-  the Tours.
+  the [Tours].
 
   Generally, the topics listed above will not be of use to the ACL2
   user.
@@ -110935,6 +111005,9 @@ Subtopics
   [Symbolic_Execution_of_Models]
       Symbolic Execution of Models
 
+  [Tours]
+      The Tours
+
   [The_Admission_of_App]
       The Admission of App
 
@@ -111052,14 +111125,8 @@ Subtopics
   [The_Time_Taken_to_do_the_Associativity_of_App_Proof]
       The Time Taken to do the Associativity of App Proof
 
-  [The_Tours]
-      The Tours
-
   [The_WARNING_about_the_Trivial_Consequence]
       The WARNING about the Trivial Consequence
-
-  [Undocumented_Topic]
-      Undocumented Topic
 
   [Using_the_Associativity_of_App_to_Prove_a_Trivial_Consequence]
       Using the Associativity of App to Prove a Trivial Consequence
@@ -114147,6 +114214,9 @@ Subtopics
 
   [Typespec-check]
       See [meta-extract].
+
+  [The_Tours]
+      See [tours].
 
   [Unary-df-]
       See [df].
@@ -140302,12 +140372,11 @@ Subtopics
       to obtain and build ACL2, copyright and license material,
       mailing lists, connection with GitHub, and so on.
 
-    * [31;1mOverviews at a high level[0m may be found in {The Tours |
-      https://www.cs.utexas.edu/users/moore/acl2/v8-6/combined-manual/index.html?topic=ACL2____The_02Tours}.
-      The paper [3m{Industrial Proofs with ACL2 |
-      https://www.cs.utexas.edu/users/moore/publications/how-to-prove-thms/intro-to-acl2.pdf}[0m
-      was written in the 1990s but is still useful for providing a
-      brief overview of what can be done with ACL2.
+    * See [tours] for [31;1moverviews at a high level[0m.  Also see the paper
+      [3m{Industrial Proofs with ACL2 |
+      https://www.cs.utexas.edu/users/moore/publications/how-to-prove-thms/intro-to-acl2.pdf}[0m,
+      which was written in the 1990s but is still useful for
+      providing a brief overview of what can be done with ACL2.
 
     * [31;1mTutorial Introductions[0m at various levels are available at the
       [ACL2-tutorial] documentation topic and especially its
@@ -149957,49 +150026,7 @@ Subtopics
   Basically, this proof flashes across your screen before you can read
   it; you see the [31;1mQ.E.D.[0m and don't bother to scroll back to read it.
   You have more important things to do than read successful proofs.")
- (THE_TOURS
-  (PAGES_WRITTEN_ESPECIALLY_FOR_THE_TOURS)
-  "The Tours
-
-  ACL2 is a very large, multipurpose system.  You can use it as a
-  programming language, a specification language, a modeling
-  language, a formal mathematical logic, or a semi-automatic theorem
-  prover, just to name its most common uses.  It has been used on a
-  number of industrial applications (see [INTERESTING-APPLICATIONS]).
-  If you're uncertain as to whether your project is appropriate for
-  ACL2 we urge you to look over this list or contact the ACL2
-  developers.
-
-  This home page includes all of ACL2's online documentation, which is
-  quite extensive (over 4 megabytes).  To help ease your introduction
-  to ACL2, we have built two tours through this documentation.
-
-  If you are familiar with at least some of the industrial applications
-  (see [INTERESTING-APPLICATIONS]) of ACL2, then you will understand
-  the distance between the simple examples we talk about in these
-  tours and the kinds of things ACL2 users do with the system.
-
-  Newcomers to ACL2 should first take the ``Flying Tour.'' Then, if you
-  want to know more, take the ``Walking Tour.'' On your first
-  reading, follow the two Tours linearly, clicking only on the icon
-  of the Tour you're on.  Beware of other links, which might jump you
-  from one tour to the other or into the ACL2 User's Manual!  Once
-  you've had a coherent overview of the system, you might quickly
-  repeat both Tours to see if there are unvisited links you're
-  interested in, using your browser's Back Button to return to your
-  starting points.
-
-  If after all this you want to learn how to use the theorem prover
-  (!), see [introduction-to-the-theorem-prover].
-
-  To start a tour, click on the appropriate icon below.
-
-  {IMAGE} (see [A_Flying_Tour_of_ACL2]) {IMAGE} (see
-  [A_Walking_Tour_of_ACL2])
-
-  If you take the tours in a text-based format (such as using the :DOC
-  command in Emacs), they will probably be unsatisfying because we
-  use gif files and assume you can navigate ``back.''")
+ (THE_TOURS (POINTERS) "See [tours].")
  (THE_WARNING_ABOUT_THE_TRIVIAL_CONSEQUENCE
   (PAGES_WRITTEN_ESPECIALLY_FOR_THE_TOURS)
   "The WARNING about the Trivial Consequence
@@ -151235,6 +151262,49 @@ Subtopics
     ***********************************************")
  (TOP-LEVEL-LOOP (POINTERS)
                  "See [guarantees-of-the-top-level-loop].")
+ (TOURS
+  (PAGES_WRITTEN_ESPECIALLY_FOR_THE_TOURS ACL2-TUTORIAL)
+  "The Tours
+
+  ACL2 is a very large, multipurpose system.  You can use it as a
+  programming language, a specification language, a modeling
+  language, a formal mathematical logic, or a semi-automatic theorem
+  prover, just to name its most common uses.  It has been used on a
+  number of industrial applications (see [INTERESTING-APPLICATIONS]).
+  If you're uncertain as to whether your project is appropriate for
+  ACL2 we urge you to look over this list or contact the ACL2
+  developers.
+
+  This home page includes all of ACL2's online documentation, which is
+  quite extensive (over 4 megabytes).  To help ease your introduction
+  to ACL2, we have built two tours through this documentation.
+
+  If you are familiar with at least some of the industrial applications
+  (see [INTERESTING-APPLICATIONS]) of ACL2, then you will understand
+  the distance between the simple examples we talk about in these
+  tours and the kinds of things ACL2 users do with the system.
+
+  Newcomers to ACL2 should first take the ``Flying Tour.'' Then, if you
+  want to know more, take the ``Walking Tour.'' On your first
+  reading, follow the two Tours linearly, clicking only on the icon
+  of the Tour you're on.  Beware of other links, which might jump you
+  from one tour to the other or into the ACL2 User's Manual!  Once
+  you've had a coherent overview of the system, you might quickly
+  repeat both Tours to see if there are unvisited links you're
+  interested in, using your browser's Back Button to return to your
+  starting points.
+
+  If after all this you want to learn how to use the theorem prover
+  (!), see [introduction-to-the-theorem-prover].
+
+  To start a tour, click on the appropriate icon below.
+
+  {IMAGE} (see [A_Flying_Tour_of_ACL2]) {IMAGE} (see
+  [A_Walking_Tour_of_ACL2])
+
+  If you take the tours in a text-based format (such as using the :DOC
+  command in Emacs), they will probably be unsatisfying because we
+  use gif files and assume you can navigate ``back.''")
  (TRACE
   (DEBUGGING)
   "Tracing functions in ACL2
@@ -155694,11 +155764,6 @@ Subtopics
 
   [Ubu?]
       Undo [command]s, with queries as appropriate")
- (UNDOCUMENTED_TOPIC
-      (PAGES_WRITTEN_ESPECIALLY_FOR_THE_TOURS)
-      "Undocumented Topic
-
-  This topic has not yet been documented.  Sorry")
  (UNDOING (POINTERS) "See [undo].")
  (UNION$
   (LISTS ACL2-BUILT-INS)
