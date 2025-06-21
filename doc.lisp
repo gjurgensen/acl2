@@ -105382,6 +105382,18 @@ Heuristic and Efficiency Improvements
           (3 (rationalp x))
           (otherwise (+ x y)))))
 
+  Sped up [47m[include-book][0m by significantly reducing time in translating
+  calls of [47m[with-output][0m and some other macros (for some technical
+  details see ACL2 source function [47mmacroexpand1*-cmp[0m and in creatiion
+  of the so-called post-alist in a [certificate] (for relevant code,
+  which shows the use of [fast-alists], see ACL2 source function
+  [47maccumulate-post-alist[0m.)  For examples showing reduction by about
+  1/3 in include-book time, see the comment ``Here are sample time
+  reports (...)  for include-book speedups due to...'' in the form
+  [47m(defxdoc note-8-7 ...)[0m in [community-book]
+  [47mbooks/system/doc/acl2-doc.lisp[0m.  Thanks to Eric Smith for sending
+  an example book for which to speed up [47m[include-book][0m.
+
 
 Bug Fixes
 
