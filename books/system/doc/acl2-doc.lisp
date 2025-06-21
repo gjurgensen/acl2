@@ -108107,6 +108107,37 @@ it."
 ; Updated for LispWorks 8.1 to avoid the problem that characters with codes 223
 ; and 255 now upcase in that Lisp to characters with codes exceeding 255.
 
+; Here are sample time reports (comparing "old" ACL2 github version 8e35120326
+; and the "new" one just after it), for include-book speedups due to
+; improvements in macroexpand1*-cmp and accumulate-post-alist.
+
+;   (time$ (include-book "kestrel/axe/x86/tester" :dir :system))
+;   Reduction: 37% realtime, 39% runtime
+;   ;;; old
+;   ; 35.89 seconds realtime, 33.26 seconds runtime
+;   ; (4,548,816,704 bytes allocated).
+;   ;;; new
+;   ; 22.56 seconds realtime, 20.13 seconds runtime
+;   ; (3,340,802,400 bytes allocated).
+;
+;   (time$ (include-book "centaur/svl/top" :dir :system))
+;   Reduction: 26% realtime, 27% runtime
+;   ;;; old
+;   ; 14.00 seconds realtime, 13.39 seconds runtime
+;   ; (2,363,215,152 bytes allocated).
+;   ;;; new
+;   ; 10.32 seconds realtime, 9.73 seconds runtime
+;   ; (1,714,776,240 bytes allocated).
+;
+;   (time$ (include-book "projects/x86isa/top" :dir :system))
+;   Reduction: 35% realtime, 36% runtime
+;   ;;; old
+;   ; 20.68 seconds realtime, 20.01 seconds runtime
+;   ; (3,349,641,616 bytes allocated).
+;   ;;; new
+;   ; 13.47 seconds realtime, 12.75 seconds runtime
+;   ; (2,355,093,488 bytes allocated).
+
   :parents (release-notes)
   :short "ACL2 Version  8.7 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -108160,6 +108191,18 @@ it."
        (3 (rationalp x))
        (otherwise (+ x y)))))
  })
+
+ <p>Sped up @(tsee include-book) by significantly reducing time in translating
+ calls of @(tsee with-output) and some other macros (for some technical details
+ see ACL2 source function @('macroexpand1*-cmp') and in creatiion of the
+ so-called post-alist in a @(see certificate) (for relevant code, which shows
+ the use of @(see fast-alists), see ACL2 source function
+ @('accumulate-post-alist').)  For examples showing reduction by about 1/3 in
+ include-book time, see the comment &ldquo;Here are sample time reports (...)
+ for include-book speedups due to...&rdquo; in the form @('(defxdoc note-8-7
+ ...)') in @(see community-book) @('books/system/doc/acl2-doc.lisp').  Thanks
+ to Eric Smith for sending an example book for which to speed up @(tsee
+ include-book).</p>
 
  <h3>Bug Fixes</h3>
 
