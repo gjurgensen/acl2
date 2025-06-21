@@ -54356,8 +54356,8 @@ tables in the current Hons Space."
 
  <p>Here we list just a few of the industrially-relevant results obtained with
  ACL2.  Reading the list may help you decide you want to learn how to use ACL2.
- If you do decide you want to learn more, we recommend that you take <see
- topic='@(url |The Tours|)'>The Tours</see> after you leave this page.</p>
+ If you do decide you want to learn more, we recommend that you take the @(see
+ tours) after you leave this page.</p>
 
  <p>ACL2 was used at <b>Motorola Government Systems</b> to certify several
  microcode programs for the <b>Motorola CAP digital signal processor</b>,
@@ -70189,6 +70189,47 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
  aokp)') is @('(ec-call (fn a1 a2 ...))').</li>
 
  </ul>")
+
+(defxdoc mailing-lists
+  :parents (acl2)
+  :short "Mailing lists for ACL2 users"
+  :long "<p>There are the following mailing lists for ACL2 users.  You can
+ post messages to these lists only if you are a member, but anyone can view the
+ archives.
+
+ <ul>
+ <li><b>acl2 list</b>: General ACL2 list for users and others interested in ACL2
+   <ul>
+     <li>To post: <tt><a href='mailto:acl2@utlists.utexas.edu'>acl2@utlists.utexas.edu</a></tt></li>
+     <li>To subscribe, unsubscribe, or view archives:
+       <tt><a href='https://utlists.utexas.edu/sympa/info/acl2'>https://utlists.utexas.edu/sympa/info/acl2</a></tt></li>
+   </ul>
+ </li>
+
+ <li><b>acl2-help list</b>: ACL2 help list, for questions about using
+   ACL2 <font color='red'>(recommended for new users)</font>
+   <ul>
+     <li>To post: <tt><a href='mailto:acl2-help@utlists.utexas.edu'>acl2-help@utlists.utexas.edu</a></tt></li>
+     <li>To subscribe, unsubscribe, or view archives:
+       <tt><a href='https://utlists.utexas.edu/sympa/info/acl2-help'>https://utlists.utexas.edu/sympa/info/acl2-help</a></tt></li>
+   </ul>
+ </li>
+
+ <li><b>acl2-books list</b>: Mailing list for discussion of
+ cutting-edge developments in ACL2 and the ACL2 Community Books
+   <ul>
+     <li>To post: <tt><a
+ href='mailto:acl2-books@googlegroups.com'>acl2-books@googlegroups.com</a></tt></li>
+     <li>To subscribe, unsubscribe, or view archives:
+       <tt><a href='https://groups.google.com/forum/#!forum/acl2-books'>https://groups.google.com/forum/#!forum/acl2-books</a></tt></li>
+   </ul>
+ </li>
+
+ </ul></p>
+
+ <p>Finally, please report bugs in ACL2 to
+ <a href='mailto:kaufmann@cs.utexas.edu'>Matt Kaufmann</a>.</p>")
+
 
 (defxdoc make
   :parents (defrec acl2-built-ins)
@@ -108173,6 +108214,21 @@ it."
  this project, including (but by no means limited to) his contribution of a new
  sbits implementation.</p>
 
+ <p>The ACL2-only manual is no longer advertised on the ACL2 home page.  The
+ ACL2+Books manual is favored both because it does not have the broken links
+ found in the ACL2-only manual and because the ACL2+Books manual is helpful for
+ informing new users about the libraries provided by the @(see
+ community-books).  Thanks to Eric Smith for encouraging this change.  Note
+ that the ACL2-only manual will continue to be built in directory
+ @('doc/manual/') when certifying @('doc/top.lisp').  (This is not to be
+ confused with @('books/doc/manual/'), where the ACL2+Books manual is
+ built.)</p>
+
+ <p>Replaced information about mailing lists in the installation instructions
+ using a link to a corresponding, new documentation topic, @(see
+ mailing-lists).  So now, the community can make suitable updates to that page.
+ Thanks to Eric Smith for suggesting this change.</p>
+
  <h3>EMACS Support</h3>
 
  <h3>Experimental Versions</h3>
@@ -119907,7 +119963,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  support for displaying gif files or for going ``back'' to a node just visited.
  If you wish to look at the pages below, we strongly recommend that you do so
  via a HTML-based Web browser.  Indeed, you should simply visit ACL2's Home
- Page and take one of the Tours.</p>
+ Page and take one of the @(see Tours).</p>
 
  <p>Generally, the topics listed above will not be of use to the ACL2
  user.</p>")
@@ -140628,13 +140684,11 @@ work on <tt>(q x)</tt>.</p>
  information</b></color> such as how to obtain and build ACL2, copyright and
  license material, mailing lists, connection with GitHub, and so on.</li>
 
- <li><color rgb='#0090f0'><b>Overviews at a high level</b></color> may be found
-   in <a
-   href='https://www.cs.utexas.edu/users/moore/acl2/v8-6/combined-manual/index.html?topic=ACL2____The_02Tours'>The
-   Tours</a>.  The paper <i><a
-   href='https://www.cs.utexas.edu/users/moore/publications/how-to-prove-thms/intro-to-acl2.pdf'>Industrial
-   Proofs with ACL2</a></i> was written in the 1990s but is still useful for
-   providing a brief overview of what can be done with ACL2.</li>
+ <li>See @(see tours) for <color rgb='#0090f0'><b>overviews at a high
+ level</b></color>.  Also see the paper <i><a
+ href='https://www.cs.utexas.edu/users/moore/publications/how-to-prove-thms/intro-to-acl2.pdf'>Industrial
+ Proofs with ACL2</a></i>, which was written in the 1990s but is still useful
+ for providing a brief overview of what can be done with ACL2.</li>
 
  <li><color rgb='#0090f0'><b>Tutorial Introductions</b></color> at various
  levels are available at the @(see acl2-tutorial) documentation topic and
@@ -155346,8 +155400,28 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  you see the <b>Q.E.D.</b> and don't bother to scroll back to read it.  You
  have more important things to do than read successful proofs.</p>")
 
-(defxdoc |The Tours|
+(defxdoc |The WARNING about the Trivial Consequence|
   :parents (|Pages Written Especially for the Tours|)
+  :short "The WARNING about the Trivial Consequence"
+  :long "<p>This <b>Warning</b> alerts us to the fact that when treated as a
+ <b>rewrite</b> rule, the new rule @('TRIVIAL-CONSEQUENCE'), rewrites terms of
+ the same form as a rule we have already proved, namely
+ @('ASSOCIATIVITY-OF-APP').</p>
+
+ <p>When you see this warning you should <b>think about your rules</b>!</p>
+
+ <p>In the current case, it would be a good idea <b>not</b> to make
+ @('TRIVIAL-CONSEQUENCE') a rule at all.  We could do this with @(':')@(tsee
+ rule-classes) <see topic='ACL2____A_02Tiny_02Warning_02Sign'><icon
+ src='res/tours/twarning.gif'/></see> nil.</p>
+
+ <p>ACL2 proceeds to try to prove the theorem, even though it printed some
+ warnings.  The basic assumption in ACL2 is that the <b>user</b> <b>understands
+ what he or she is doing</b> but may need a little reminding just to manage a
+ complicated set of facts.</p>")
+
+(defxdoc tours
+  :parents (|Pages Written Especially for the Tours| acl2-tutorial)
   :short "The Tours"
   :long "<p>ACL2 is a very large, multipurpose system.  You can use it as a
  programming language, a specification language, a modeling language, a formal
@@ -155387,26 +155461,6 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  <p>If you take the tours in a text-based format (such as using the :DOC
  command in Emacs), they will probably be unsatisfying because we use gif files
  and assume you can navigate ``back.''</p>")
-
-(defxdoc |The WARNING about the Trivial Consequence|
-  :parents (|Pages Written Especially for the Tours|)
-  :short "The WARNING about the Trivial Consequence"
-  :long "<p>This <b>Warning</b> alerts us to the fact that when treated as a
- <b>rewrite</b> rule, the new rule @('TRIVIAL-CONSEQUENCE'), rewrites terms of
- the same form as a rule we have already proved, namely
- @('ASSOCIATIVITY-OF-APP').</p>
-
- <p>When you see this warning you should <b>think about your rules</b>!</p>
-
- <p>In the current case, it would be a good idea <b>not</b> to make
- @('TRIVIAL-CONSEQUENCE') a rule at all.  We could do this with @(':')@(tsee
- rule-classes) <see topic='ACL2____A_02Tiny_02Warning_02Sign'><icon
- src='res/tours/twarning.gif'/></see> nil.</p>
-
- <p>ACL2 proceeds to try to prove the theorem, even though it printed some
- warnings.  The basic assumption in ACL2 is that the <b>user</b> <b>understands
- what he or she is doing</b> but may need a little reminding just to manage a
- complicated set of facts.</p>")
 
 (defxdoc u
   :parents (history undo)
@@ -158377,11 +158431,6 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  computation is still called once for each number in Step 2, but is no longer
  called during Step 3.  Similarly, the @(tsee include-book) no longer shows any
  calls of the expensive computation.</p>")
-
-(defxdoc |Undocumented Topic|
-  :parents (|Pages Written Especially for the Tours|)
-  :short "Undocumented Topic"
-  :long "<p>This topic has not yet been documented.  Sorry</p>")
 
 (defxdoc |Using the Associativity of App to Prove a Trivial Consequence|
   :parents (|Pages Written Especially for the Tours|)
@@ -172154,6 +172203,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer floating-point df)
 (defpointer from-df df)
 (defpointer rize df)
+(defpointer |The Tours| tours)
 (defpointer to-df df)
 (defpointer to-dfp df)
 (defpointer unary-df- df)
