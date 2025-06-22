@@ -108263,8 +108263,9 @@ it."
  informing new users about the libraries provided by the @(see
  community-books).  Thanks to Eric Smith for encouraging this change.  Note
  that the ACL2-only manual will continue to be built in directory
- @('doc/manual/') when certifying @('doc/top.lisp').  (This is not to be
- confused with @('books/doc/manual/'), where the ACL2+Books manual is
+ @('doc/manual/') when certifying
+ @('books/system/doc/acl2-manual.lisp').  (Directory @('doc/manual/') is not to
+ be confused with @('books/doc/manual/'), where the ACL2+Books manual is
  built.)</p>
 
  <p>Replaced information about mailing lists in the installation instructions

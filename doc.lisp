@@ -105455,8 +105455,9 @@ Changes at the System Level
   libraries provided by the [community-books].  Thanks to Eric Smith
   for encouraging this change.  Note that the ACL2-only manual will
   continue to be built in directory [47mdoc/manual/[0m when certifying
-  [47mdoc/top.lisp[0m.  (This is not to be confused with [47mbooks/doc/manual/[0m,
-  where the ACL2+Books manual is built.)
+  [47mbooks/system/doc/acl2-manual.lisp[0m.  (Directory [47mdoc/manual/[0m is not
+  to be confused with [47mbooks/doc/manual/[0m, where the ACL2+Books manual
+  is built.)
 
   Replaced information about mailing lists in the installation
   instructions using a link to a corresponding, new documentation
