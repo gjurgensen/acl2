@@ -45220,15 +45220,15 @@ current fast alists."
  contains the ``bleeding edge'' ACL2 source code and @(see community-books),
  available between ACL2 <see topic=\"ACL2____RELEASE-NOTES\">releases</see>.</p>
 
- <p>Here we provide minimal instructions for working
-with the ACL2 GitHub repo.  Many git tutorials are available elsewhere on the
-web.</p>
+ <p>Here we provide minimal instructions for working with the ACL2 GitHub
+ repo.  Many git tutorials are available elsewhere on the web (e.g., <a
+ href='https://docs.github.com/en/get-started'>at GitHub</a>).</p>
 
  <h2>For non-contributors (to use ACL2 without contributing changes):</h2>
 
  <p>Start by obtaining the ACL2 GitHub repository (this command makes a
-directory called @('acl2') that contains the current contents of the
-@('master') branch):</p>
+ directory called @('acl2') that contains the current contents of the
+ @('master') branch):</p>
 
  @({
  git clone https://github.com/acl2/acl2
@@ -45242,7 +45242,7 @@ directory called @('acl2') that contains the current contents of the
  })
 
  <p>Once you have ACL2, you will probably want to certify some books (see
-@(see books-certification)).</p>
+ @(see books-certification)).</p>
 
  <h2>For infrequent contributors:</h2>
 
