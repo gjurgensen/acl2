@@ -45214,27 +45214,35 @@ current fast alists."
 
 (defxdoc git-quick-start
   :parents (about-acl2)
-  :short "Git quick start guide"
-  :long "<p>Each of the two topics @(see github-commit-code-using-push) and
- @(see github-commit-code-using-pull-requests) presents a minimal guide to
- using the Github repository for ACL2+Books.  That <a
- href='https://github.com/acl2/acl2'>repository</a> exists on the web and
+  :short "Git quick start guide."
+  :long "<p>The
+ <a href='https://github.com/acl2/acl2'>ACL2 GitHub repository</a>
  contains the ``bleeding edge'' ACL2 source code and @(see community-books),
- available between ACL2 releases (see @(see release-notes)).  Those who are
- familiar with older version control systems, or perhaps with no version
- control systems, might find this guide to be helpful.  For additional
- information, including the use of branches and links to more information about
- git, see <a href='https://github.com/acl2/acl2/wiki/ACL2-repo-git-tips'>the
- wiki page for git tips</a>, @(see books-certification), and the Internet in
- general.  However, both of the above-mentioned guides are intended to be
- sufficient for you to obtain the latest ACL2 source code and community-books,
- and optionally, for you to contribute to the @(see community-books).</p>
+ available between ACL2 <see topic=\"ACL2____RELEASE-NOTES\">releases</see>.</p>
 
- <p>Select the guide that is right for you based upon the headings below.</p>
+ <p>Here we provide minimal instructions for working
+with the ACL2 GitHub repo.  Many git tutorials are available elsewhere on the
+web.</p>
 
- <h2>For non-contributors:</h2>
+ <h2>For non-contributors (to use ACL2 without contributing changes):</h2>
 
- See sections (A) and (B) in @(see github-commit-code-using-push).
+ <p>Start by obtaining the ACL2 GitHub repository (this command makes a
+directory called @('acl2') that contains the current contents of the
+@('master') branch):</p>
+
+ @({
+ git clone https://github.com/acl2/acl2
+ })
+
+ <p>Later, to update your copy to get the latest changes:</p>
+
+ @({
+ cd acl2
+ git pull
+ })
+
+ <p>Once you have ACL2, you will probably want to certify some books (see
+@(see books-certification)).</p>
 
  <h2>For infrequent contributors:</h2>
 
