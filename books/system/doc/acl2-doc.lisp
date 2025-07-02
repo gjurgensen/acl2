@@ -62028,6 +62028,70 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
   :parents (programming)
   :short "Lists of objects, the classic Lisp data structure.")
 
+(defxdoc live-stobj-in-proof
+  :parents (raw-lisp-error)
+  :short "Error messages about &ldquo;live&rdquo; @(see stobj)s during proofs"
+  :long "<p>It is possible to see an error like the following.  (This error is
+ probably very rare, and perhaps can only occur during a proof.)</p>
+
+ @({
+ ***********************************************
+ ************ ABORTING from raw Lisp ***********
+ ********** (see :DOC raw-lisp-error) **********
+ Error:  A live stobj (for stobj ST) was unexpectedly encountered
+         when evaluating a call of the function, ST-INIT.
+         See :DOC live-stobj-in-proof.
+ ***********************************************
+ })
+
+ <p>The solution is generally to @(see disable) the @(see
+ executable-counterpart) of the offending function, as suggested by the example
+ below (essentially provided by Sol Swords).  As of this writing (in July,
+ 2025), the only way to get an unexpected &ldquo;live&rdquo; @(see stobj) is by
+ the use of @(tsee swap-stobjs), as illustrated below.</p>
+
+ <p>First introduce a pair of congruent @(see stobj)s.</p>
+
+ @({
+ (defstobj st (fld))
+ (defstobj st1 (fld1) :congruent-to st)
+ })
+
+ <p>Now define a function that &ldquo;initializes&rdquo; the stobj @('st') by
+ creating a new stobj @('st1') and swapping the two (see @(see
+ swap-stobjs)).</p>
+
+ @({
+ (defun st-init (st)
+   (declare (xargs :stobjs (st)))
+   (with-local-stobj st1
+     (mv-let (st1 st)
+       (swap-stobjs st1 st)
+       st)))
+ })
+
+ <p>The following proof attempt causes the error message displayed above.</p>
+
+ @({
+ (thm (not (equal (st-init '(1)) '(nil))))
+ })
+
+ <p>In fact, that formula is not a theorem!  Through Version  8.6, ACL2
+ mistakenly proved this theorem by evaluating the indicated call of
+ @('st-init') to obtain an actual Lisp array, because of how ACL2 handles @(see
+ stobj)s in Lisp.  But now ACL2 produces the error displayed above.</p>
+
+ <p>The error is avoided if we @(see disable) the @(see executable-counterpart)
+ of the offending function mentioned in the error message, @('st-init').
+ Indeed, the following theorem, which contradicts the false claim above and
+ disables the offending executable-counterpart, shows that the logical value of
+ @('(st-init '(1))') is indeed @(''(nil)').</p>
+
+ @({
+ (thm (equal (st-init '(1)) '(nil))
+      :hints((\"Goal\" :in-theory (disable (:e st-init)))))
+ })")
+
 (defxdoc local
   :parents (events)
   :short "Hiding an event in an encapsulation or book"
@@ -108218,6 +108282,11 @@ it."
  from @(tsee force)d hypotheses to be created incorrectly.  (This bug has been
  around for at least 10 years and probably for 30 years!)</p>
 
+ <p>Fixed a soundness bug based on the use of @(tsee swap-stobjs) on two @(see
+ stobj)s of which one is &ldquo;live&rdquo;.  See @(see live-stobj-in-proof).
+ Thanks to Sol Swords for reporting this bug, including an example and analysis
+ of possible fixes in his report.</p>
+
  <p>A Lisp error is now avoided when saving event-data (see @(see
  saving-event-data) and submitting certain ill-formed attempts at @(see
  events).  Thanks to Eric Smith for sending the following example.</p>
@@ -121452,6 +121521,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <li>Reader errors (for examples see @(see reader) and see @(see
  set-iprint))</li>
+
+ <li>Certain errors during proofs (for an example see @(see
+ live-stobj-in-proof)</li>
 
  </ul>")
 
