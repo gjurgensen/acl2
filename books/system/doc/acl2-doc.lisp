@@ -51752,7 +51752,7 @@ tables in the current Hons Space."
  target the ``testing'' branch or similar (<i>not</i> the ``master''
  branch).</p>
 
- <h3>Checking the build</h3>
+ <h3>Checking the Build</h3>
 
  <p>You should run a regression build to ensure that your code changes did not
  break the build. To do so, run the following @('make') command in the
@@ -51767,6 +51767,13 @@ tables in the current Hons Space."
  number to align with your system. See @(see books-certification) for an
  extended discussion on community book certification.)</p>
 
+ <p>A successful regression build is a good indicator, but it may not tell the
+ whole story. Be careful to avoid introducing code which may build on your
+ local machine but fail in other environments. E.g., via dependence on
+ environment variables or absolute pathnames, use of external tools without an
+ appropriate <see topic='@(url build::cert_param)'>cert_param</see>, short
+ timeouts which may fail on slower machines, etc.</p>
+
  <h3>Best Code Practices</h3>
 
  <p>See @(see best-practices) for recommended code practices.</p>
@@ -51777,7 +51784,7 @@ tables in the current Hons Space."
  Community Books' release notes &mdash; i.e., the appropriate @(see
  release-notes-books) XDOC topic in @('books/doc/relnotes.lisp').</p>
 
- <h3>``Off-limits'' Source Files</h3>
+ <h3>``Off-Limits'' Source Files</h3>
 
  <p>The community is invited to submit code contributions to the <see
  topic='@(url community-books)'>Community Books</see>. Source files outside of
@@ -51804,7 +51811,10 @@ tables in the current Hons Space."
    <li>Eric Smith (@('eric.smith@kestrel.edu'))</li>
    <li>David Rager (@('ragerdl@gmail.com'))</li>
    <li>Sol Swords (@('sswords@gmail.com'))</li>
- </ul>")
+ </ul>
+
+ <p>See also the @(see community) topic for other ways to connect with the ACL2
+ community.</p>")
 
 (defxdoc |How To Find Out about ACL2 Functions|
   :parents (|Pages Written Especially for the Tours|)
