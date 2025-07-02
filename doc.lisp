@@ -1658,7 +1658,7 @@ Subtopics
       ACL2 copyright, license, sponsorship
 
   [Git-quick-start]
-      Git quick start guide
+      Git quick start guide.
 
   [Operational-semantics]
       Modeling State Machines
@@ -48639,30 +48639,32 @@ Conclusion
                   "See [ACL2-tutorial].")
  (GIT-QUICK-START
   (ABOUT-ACL2)
-  "Git quick start guide
+  "Git quick start guide.
 
-  Each of the two topics [github-commit-code-using-push] and
-  [github-commit-code-using-pull-requests] presents a minimal guide
-  to using the Github repository for ACL2+Books.  That {repository |
-  https://github.com/acl2/acl2} exists on the web and contains the
-  ``bleeding edge'' ACL2 source code and [community-books], available
-  between ACL2 releases (see [release-notes]).  Those who are
-  familiar with older version control systems, or perhaps with no
-  version control systems, might find this guide to be helpful.  For
-  additional information, including the use of branches and links to
-  more information about git, see {the wiki page for git tips |
-  https://github.com/acl2/acl2/wiki/ACL2-repo-git-tips},
-  [books-certification], and the Internet in general.  However, both
-  of the above-mentioned guides are intended to be sufficient for you
-  to obtain the latest ACL2 source code and community-books, and
-  optionally, for you to contribute to the [community-books].
+  The {ACL2 GitHub repository | https://github.com/acl2/acl2} contains
+  the ``bleeding edge'' ACL2 source code and [community-books],
+  available between ACL2 releases (see [RELEASE-NOTES]).
 
-  Select the guide that is right for you based upon the headings below.
+  Here we provide minimal instructions for working with the ACL2 GitHub
+  repo.  Many git tutorials are available elsewhere on the web (e.g.,
+  {at GitHub | https://docs.github.com/en/get-started}).
 
 
-For non-contributors:
+For non-contributors (to use ACL2 without contributing changes):
 
-See sections (A) and (B) in [github-commit-code-using-push].
+  Start by obtaining the ACL2 GitHub repository (this command makes a
+  directory called [47macl2[0m that contains the current contents of the
+  [47mmaster[0m branch):
+
+    git clone https://github.com/acl2/acl2
+
+  Later, to update your copy to get the latest changes:
+
+    cd acl2
+    git pull
+
+  Once you have ACL2, you will probably want to certify some books (see
+  [books-certification]).
 
 
 For infrequent contributors:
@@ -66278,6 +66280,59 @@ Subtopics
 
   [Update-nth]
       Modify a list by putting the given value at the given position")
+ (LIVE-STOBJ-IN-PROOF
+  (RAW-LISP-ERROR)
+  "Error messages about ``live'' [stobj]s during proofs
+
+  It is possible to see an error like the following.  (This error is
+  probably very rare, and perhaps can only occur during a proof.)
+
+    ***********************************************
+    ************ ABORTING from raw Lisp ***********
+    ********** (see :DOC raw-lisp-error) **********
+    Error:  A live stobj (for stobj ST) was unexpectedly encountered
+            when evaluating a call of the function, ST-INIT.
+            See :DOC live-stobj-in-proof.
+    ***********************************************
+
+  The solution is generally to [disable] the [executable-counterpart]
+  of the offending function, as suggested by the example below
+  (essentially provided by Sol Swords).  As of this writing (in July,
+  2025), the only way to get an unexpected ``live'' [stobj] is by the
+  use of [47m[swap-stobjs][0m, as illustrated below.
+
+  First introduce a pair of congruent [stobj]s.
+
+    (defstobj st (fld))
+    (defstobj st1 (fld1) :congruent-to st)
+
+  Now define a function that ``initializes'' the stobj [47mst[0m by creating a
+  new stobj [47mst1[0m and swapping the two (see [swap-stobjs]).
+
+    (defun st-init (st)
+      (declare (xargs :stobjs (st)))
+      (with-local-stobj st1
+        (mv-let (st1 st)
+          (swap-stobjs st1 st)
+          st)))
+
+  The following proof attempt causes the error message displayed above.
+
+    (thm (not (equal (st-init '(1)) '(nil))))
+
+  In fact, that formula is not a theorem!  Through Version 8.6, ACL2
+  mistakenly proved this theorem by evaluating the indicated call of
+  [47mst-init[0m to obtain an actual Lisp array, because of how ACL2 handles
+  [stobj]s in Lisp.  But now ACL2 produces the error displayed above.
+
+  The error is avoided if we [disable] the [executable-counterpart] of
+  the offending function mentioned in the error message, [47mst-init[0m.
+  Indeed, the following theorem, which contradicts the false claim
+  above and disables the offending executable-counterpart, shows that
+  the logical value of [47m(st-init '(1))[0m is indeed [47m'(nil)[0m.
+
+    (thm (equal (st-init '(1)) '(nil))
+         :hints((\"Goal\" :in-theory (disable (:e st-init)))))")
  (LOCAL
   (EVENTS)
   "Hiding an event in an encapsulation or book
@@ -105401,6 +105456,11 @@ Bug Fixes
   from [47m[force][0md hypotheses to be created incorrectly.  (This bug has
   been around for at least 10 years and probably for 30 years!)
 
+  Fixed a soundness bug based on the use of [47m[swap-stobjs][0m on two
+  [stobj]s of which one is ``live''.  See [live-stobj-in-proof].
+  Thanks to Sol Swords for reporting this bug, including an example
+  and analysis of possible fixes in his report.
+
   A Lisp error is now avoided when saving event-data (see
   [saving-event-data] and submitting certain ill-formed attempts at
   [events].  Thanks to Eric Smith for sending the following example.
@@ -125336,7 +125396,16 @@ Recursion and Induction Table of Contents
 
     * [47m[Defattach][0m using argument [47m:skip-checks t[0m
 
-    * Reader errors (for examples see [reader] and see [set-iprint])")
+    * Reader errors (for examples see [reader] and see [set-iprint])
+
+    * Certain errors during proofs (for an example see
+      [live-stobj-in-proof]
+
+
+Subtopics
+
+  [Live-stobj-in-proof]
+      Error messages about ``live'' [stobj]s during proofs")
  (RAW-MODE (POINTERS)
            "See [set-raw-mode].")
  (READ-ACL2-ORACLE
