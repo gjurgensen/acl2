@@ -45346,7 +45346,7 @@ current fast alists."
  fgrep -a '**' make-regression.log
  })</li>
 
- <li>If there were failures, then go back to Step 1 above to make appropriate
+ <li>If there were failures, then go back to Step 3 above to make appropriate
  changes and re-test.</li>
 
  <li>Commit your changes.  The following command will commit your changes
@@ -45472,7 +45472,7 @@ current fast alists."
  fgrep -a '**' make-regression.log
  })</li>
 
- <li>If there were failures, then go back to Step 1 above to make appropriate
+ <li>If there were failures, then go back to Step 3 above to make appropriate
  changes and re-test.</li>
 
  <li>Commit your changes.  The following command will commit your changes
