@@ -1660,6 +1660,9 @@ Subtopics
   [Git-quick-start]
       Git quick start guide.
 
+  [How-to-contribute]
+      Guide to contributing code to ACL2.
+
   [Operational-semantics]
       Modeling State Machines
 
@@ -55390,6 +55393,88 @@ Subtopics
   in the top-level loop, you can use [47mhons-wash![0m, which does not check
   for parallelism violations.  However, [47mhons-wash![0m requires a trust
   tag; see [defttag].")
+ (HOW-TO-CONTRIBUTE
+  (ABOUT-ACL2)
+  "Guide to contributing code to ACL2.
+
+  The main way to contribute code to ACL2 is to open a pull request
+  (PR) to the public {GitHub repository |
+  https://github.com/acl2/acl2}. This will involve first creating a
+  personal fork of the repository. Then, once you've committed your
+  changes and tested the build, you may open the PR to merge your
+  changes into the ACL2 repository. PRs should target the ``testing''
+  branch or similar ([3mnot[0m the ``master'' branch).
+
+
+Checking the Build
+
+  You should run a regression build to ensure that your code changes
+  did not break the build. To do so, run the following [47mmake[0m command
+  in the ``books'' directory:
+
+    make -j 8 regression
+
+  (Note: the [47m-j 8[0m option in the above command is only illustrative. It
+  instructs [47mmake[0m to use 8 hardware threads. You may use a higher or
+  lower number to align with your system. See [books-certification]
+  for an extended discussion on community book certification.)
+
+  A successful regression build is a good indicator, but it may not
+  tell the whole story. Be careful to avoid introducing code which
+  may build on your local machine but fail in other environments.
+  E.g., via dependence on environment variables or absolute
+  pathnames, use of external tools without an appropriate
+  [build::cert_param], short timeouts which may fail on slower
+  machines, etc.
+
+
+Best Code Practices
+
+  See best-practices for recommended code practices.
+
+
+Update the Release Notes
+
+  Consider adding some high-level information about your changes to the
+  Community Books' release notes --- i.e., the appropriate
+  [release-notes-books] XDOC topic in [47mbooks/doc/relnotes.lisp[0m.
+
+
+``Off-Limits'' Source Files
+
+  The community is invited to submit code contributions to the
+  Community Books (see [COMMUNITY-BOOKS]). Source files outside of
+  the ``books'' directory should not be modified, except by system
+  maintainers. For those interested in development of the ACL2 core
+  system, see the [developers-guide].
+
+
+Resources for Git/GitHub
+
+  For those new to Git (the version control system) or GitHub (the
+  platform on which the ACL2 Git repository is hosted), see
+  [git-quick-start].
+
+
+Frequent Contributors
+
+  Frequent contributors may request to join the {GitHub project |
+  https://github.com/acl2/acl2}. Such contributors may push directly
+  to various testing branches without opening a PR (although it is
+  still good practice to open a PR when modifying a widely used book
+  or one primarily authored by someone else).
+
+  To request to join the project, please send email to one of the
+  following individuals.
+
+    * Eric Smith ([47meric.smith@kestrel.edu[0m)
+
+    * David Rager ([47mragerdl@gmail.com[0m)
+
+    * Sol Swords ([47msswords@gmail.com[0m)
+
+  See also the community topic for other ways to connect with the ACL2
+  community.")
  (HOW_LONG_DOES_IT_TAKE_TO_BECOME_AN_EFFECTIVE_USER{Q}
   (PAGES_WRITTEN_ESPECIALLY_FOR_THE_TOURS)
   "How Long Does It Take to Become an Effective User?
