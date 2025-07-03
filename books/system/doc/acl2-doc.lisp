@@ -45355,6 +45355,16 @@ current fast alists."
  <li>If there were failures, then go back to Step 1 above to make appropriate
  changes and re-test.</li>
 
+ <li>Commit your changes.  The following command will commit your changes
+ locally. The @('-m ...') option is a log message whose first line should be a
+ summary of your changes and other lines may give more details.  You are
+ welcome to replace the @('-m ...') option by @('-F <filename>'), where
+ @('<filename>') is the name of a file that contains your log message.</p>
+
+ @({
+ git commit -a -m '<some message, with descriptive first line>'
+ })</li>
+
  </ol>
 
  <h3>Update, and Iterate If Necessary</h3>
@@ -45367,16 +45377,6 @@ current fast alists."
  })
 
  <blockquote>
-
- <p>The merge may fail if there have been remote updates, that is updates in
- the repository on the web.  In that case, commit your changes locally and then
- try the merge again.  You might want to use the @('-F') option instead of
- @('-m'); see the next section for more on those options.</p>
-
- @({
- git commit -a -m '<some message, with descriptive first line>'
- git merge remotes/origin/master
- })
 
  <p>If the second command prompts you for a message, the empty message should
  suffice as a reasonable default.  (In emacs, if vi tries to come up, just type
@@ -45391,14 +45391,9 @@ current fast alists."
 
  <h3>Contribute Your Changes</h3>
 
- <p>The following commands will update the github repository on the web.  The
- @('-m ...') option is a log message whose first line should be a summary of
- your changes and other lines may give more details.  You are welcome to
- replace the @('-m ...') option by @('-F <filename>'), where @('<filename>') is
- the name of a file that contains your log message.</p>
+ <p>The following command will update the github repository on the web.</p>
 
  @({
-  git commit -a -m '<some message, with descriptive first line>'
   git push origin testing
  })")
 
@@ -45499,6 +45494,16 @@ current fast alists."
  <li>If there were failures, then go back to Step 1 above to make appropriate
  changes and re-test.</li>
 
+ <li>Commit your changes.  The following command will commit your changes
+ locally. The @('-m ...') option is a log message whose first line should be a
+ summary of your changes and other lines may give more details.  You are
+ welcome to replace the @('-m ...') option by @('-F <filename>'), where
+ @('<filename>') is the name of a file that contains your log message.</p>
+
+ @({
+ git commit -a -m '<some message, with descriptive first line>'
+ })</li>
+
  </ol>
 
  <h3>Update, and Iterate If Necessary</h3>
@@ -45511,16 +45516,6 @@ current fast alists."
  })
 
  <blockquote>
-
- <p>The merge may fail if there have been remote updates, that is updates in
- the repository on the web.  In that case, commit your changes locally and then
- try the merge again.  You might want to use the @('-F') option instead of
- @('-m'); see the next section for more on those options.</p>
-
- @({
- git commit -a -m '<some message, with descriptive first line>'
- git merge remotes/upstream/master
- })
 
  <p>If the second command (the @('git merge')) prompts you for a message, the
  empty message should suffice as a reasonable default (in emacs &mdash; if vi
@@ -45535,14 +45530,9 @@ current fast alists."
 
  <h3>Contribute Your Changes</h3>
 
- <p>The following commands will update your github repository on the web.  The
- @('-m ...') option is a log message whose first line should be a summary of
- your changes and other lines may give more details.  You are welcome to
- replace the @('-m ...') option by @('-F <filename>'), where @('<filename>') is
- the name of a file that contains your log message.</p>
+ <p>The following command will update your github repository on the web.</p>
 
  @({
-  git commit -a -m '<some message, with descriptive first line>'
   git push
  })
 
