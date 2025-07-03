@@ -45325,7 +45325,7 @@ current fast alists."
  <li>Build an executable.
 
  @({
- time nice make LISP=<your_lisp>
+ time nice make update LISP=<your_lisp>
  })</li>
 
  <li>Make book changes.  If you are creating any new books, tell git that you
@@ -45396,9 +45396,8 @@ current fast alists."
 
  <p>You can now go on to the next step (Contribute Your Changes).  But ideally:
  If the output indicates that anything has changed, then go back to ``Change
- and Test'' above.  Of course, you can skip the build if no ACL2 sources have
- changed, and you can skip making book changes if you are still happy with your
- changes.</p>
+ and Test'' above.  Of course, you can skip making book changes if you are
+ still happy with your changes.</p>
 
  <h3>Contribute Your Changes</h3>
 
@@ -45476,7 +45475,7 @@ current fast alists."
  <li>Build an executable.
 
  @({
- time nice make LISP=<your_lisp>
+ time nice make update LISP=<your_lisp>
  })</li>
 
  <li>Make book changes.  If you are creating any new books, tell git that you
@@ -45547,9 +45546,8 @@ current fast alists."
 
  <p>You can now go on to the next step (Contribute Your Changes).  But ideally:
  If the output indicates that anything has changed, then go back to ``Change
- and Test'' above.  Of course, you can skip the build if no ACL2 sources have
- changed, and you can skip making book changes if you are still happy with your
- changes.</p>
+ and Test'' above.  Of course, you can skip making book changes if you are
+ still happy with your changes.</p>
 
  <h3>Contribute Your Changes</h3>
 
