@@ -45290,7 +45290,7 @@ current fast alists."
 
  @({
  git fetch --all
- git merge remotes/origin/master
+ git merge -m \"Merge.\" remotes/origin/master
  })
 
  <h2>(C) CONTRIBUTING (optional)</h2>
@@ -45319,7 +45319,7 @@ current fast alists."
 
  @({
  git fetch --all
- git merge remotes/origin/master
+ git merge -m \"Merge.\" remotes/origin/master
  })</li>
 
  <li>Build an executable.
@@ -45354,7 +45354,7 @@ current fast alists."
  changed or new files. The @('-m ...') option is a log message whose first line
  should be a summary of your changes and other lines may give more details.
  You are welcome to replace the @('-m ...') option by @('-F <filename>'), where
- @('<filename>') is the name of a file that contains your log message.</p>
+ @('<filename>') is the name of a file that contains your log message.
 
  @({
  git commit -a -m '<some message, with descriptive first line>'
@@ -45368,16 +45368,8 @@ current fast alists."
 
  @({
  git fetch --all
- git merge remotes/origin/master
+ git merge -m \"Merge.\" remotes/origin/master
  })
-
- <blockquote>
-
- <p>If the second command prompts you for a message, the empty message should
- suffice as a reasonable default.  (In emacs, if vi tries to come up, just type
- @(':q') and @('<RETURN>').</p>
-
- </blockquote>
 
  <p>You can now go on to the next step (Contribute Your Changes).  But ideally:
  If the output indicates that anything has changed, then go back to ``Change
@@ -45436,7 +45428,7 @@ current fast alists."
 
  @({
  git fetch --all
- git merge remotes/upstream/master
+ git merge -m \"Merge.\" remotes/upstream/master
  })
 
  <h2>(C) CONTRIBUTING</h2>
@@ -45449,7 +45441,7 @@ current fast alists."
 
  @({
  git fetch --all
- git merge remotes/upstream/master
+ git merge -m \"Merge.\" remotes/upstream/master
  })</li>
 
  <li>Build an executable.
@@ -45488,7 +45480,7 @@ current fast alists."
  changed or new files. The @('-m ...') option is a log message whose first line
  should be a summary of your changes and other lines may give more details.
  You are welcome to replace the @('-m ...') option by @('-F <filename>'), where
- @('<filename>') is the name of a file that contains your log message.</p>
+ @('<filename>') is the name of a file that contains your log message.
 
  @({
  git commit -a -m '<some message, with descriptive first line>'
@@ -45502,16 +45494,8 @@ current fast alists."
 
  @({
  git fetch --all
- git merge remotes/upstream/master
+ git merge -m \"Merge.\" remotes/upstream/master
  })
-
- <blockquote>
-
- <p>If the second command (the @('git merge')) prompts you for a message, the
- empty message should suffice as a reasonable default (in emacs &mdash; if vi
- tries to come up, just type @(':q') and @('<RETURN>').</p>
-
- </blockquote>
 
  <p>You can now go on to the next step (Contribute Your Changes).  But ideally:
  If the output indicates that anything has changed, then go back to ``Change
