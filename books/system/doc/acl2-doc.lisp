@@ -45376,7 +45376,11 @@ current fast alists."
 
  <p>This will cause your changes to be merged into the @('testing') branch.
  From there, they will be automatically merged into @('master') if the automated
- regression testing system successfully tests them.</p>")
+ regression testing system successfully tests them.</p>
+
+ <p>Note: If you are changing someone else's files, or would like someone to
+ review your changes, you might consider making a pull request instead of
+ pushing directly.</p>")
 
 (defxdoc github-commit-code-using-pull-requests
   :parents (git-quick-start)
