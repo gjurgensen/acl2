@@ -45265,14 +45265,13 @@ current fast alists."
 
  <h2>(A) GETTING STARTED</h2>
 
- <p>Start by obtaining an up-to-date copy of the web-based github repository.
- Here, we show how to put it into into a directory called <tt>ACL2</tt> (but
- name it whatever you like).</p>
+ <p>Start by obtaining an up-to-date copy of the web-based github
+ repository (this command makes a directory called @('acl2') that contains the
+ current contents of the @('master') branch).</p>
 
  @({
- mkdir ACL2
- cd ACL2
- git clone https://github.com/acl2/acl2 .
+ git clone https://github.com/acl2/acl2
+ cd acl2
  })
 
  <h2>(B) UPDATING</h2>
