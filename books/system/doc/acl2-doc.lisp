@@ -45314,7 +45314,7 @@ current fast alists."
  <li>Build an executable.
 
  @({
- nice make update LISP=<your_lisp>
+ make update LISP=<your_lisp>
  })</li>
 
  <li>Make book changes.  See the guidelines in the @(see how-to-contribute) topic
@@ -45323,7 +45323,7 @@ current fast alists."
  <li>Run a regression.
 
  @({
- (nice make -j 8 regression) >& make-regression.log
+ (make -j 8 regression) >& make-regression.log
  })
 
  Note that the @('-j 8') option specifies the use of 8 hardware threads; feel
@@ -45458,7 +45458,7 @@ current fast alists."
  <li>Build an executable.
 
  @({
- nice make update LISP=<your_lisp>
+ make update LISP=<your_lisp>
  })</li>
 
  <li>Make book changes.  See the guidelines in the @(see how-to-contribute) topic
@@ -45467,7 +45467,7 @@ current fast alists."
  <li>Run a regression.
 
  @({
- (nice make -j 8 regression) >& make-regression.log
+ (make -j 8 regression) >& make-regression.log
  })
 
  Note that the @('-j 8') option specifies the use of 8 hardware threads; feel
