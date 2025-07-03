@@ -45257,19 +45257,11 @@ current fast alists."
 (defxdoc github-commit-code-using-push
   :parents (git-quick-start)
   :short "How to commit code to the books using direct push access"
-  :long "<p>This guide is written for two groups of people:</p>
-
- <ul>
-
- <li>Users of the ACL2 System and Books who do not plan to contribute to the
- books, and</li>
-
- <li>Contributors who commit to the repository on a monthly or weekly basis.
- In this case, a contributor will typically begin with the @(see
- github-commit-code-using-pull-requests) method, and after they are familiar
- with the process and community, they will move to this method.</li>
-
- </ul>
+  :long "<p>This guide is written for contributors who commit to the repository
+  on a monthly or weekly basis.  In this case, a contributor will typically
+  begin with the @(see github-commit-code-using-pull-requests) method, and after
+  they are familiar with the process and community, they will move to this
+  method.</p>
 
  <h2>(A) GETTING STARTED</h2>
 
@@ -45293,7 +45285,7 @@ current fast alists."
  git merge -m \"Merge.\" remotes/origin/master
  })
 
- <h2>(C) CONTRIBUTING (optional)</h2>
+ <h2>(C) CONTRIBUTING</h2>
 
  <p>To join the <a href='https://github.com/acl2/acl2/'>github project</a>,
  please send email to one of the following individuals.</p>
