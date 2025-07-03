@@ -45309,7 +45309,7 @@ current fast alists."
 
  <ol>
 
- <li>Update as in (B) above:
+ <li>Before beginning your edits, update, as in (B) above:
 
  @({
  git fetch --all
@@ -45329,7 +45329,11 @@ current fast alists."
 
  @({
  (time nice make -j 8 regression) >& make-regression.log
- })</li>
+ })
+
+ Note that the @('-j 8') option specifies the use of 8 hardware threads; feel
+ free to omit it or use a more suitable number (especially if your computer has
+ other than 8 hardware threads).</li>
 
  <li>Look for failures, as indicated by @('**') in the log.
 
@@ -45426,7 +45430,7 @@ current fast alists."
 
  <h2>(B) UPDATING</h2>
 
- <p>The following commands will update your local repository to match the latest
+ <p>The following commands will update your directory to match the latest
  contents of the main ACL2 repository on GitHub.</p>
 
  @({
@@ -45464,7 +45468,7 @@ current fast alists."
 
  Note that the @('-j 8') option specifies the use of 8 hardware threads; feel
  free to omit it or use a more suitable number (especially if your computer has
- other than 8 hardware threads). </li>
+ other than 8 hardware threads).</li>
 
  <li>Look for failures, as indicated by @('**') in the log.
 
