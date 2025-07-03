@@ -45325,7 +45325,7 @@ current fast alists."
  <li>Build an executable.
 
  @({
- (time nice make LISP=<your_lisp>) >& make.log
+ time nice make LISP=<your_lisp>
  })</li>
 
  <li>Make book changes.  If you are creating any new books, tell git that you
@@ -45476,7 +45476,7 @@ current fast alists."
  <li>Build an executable.
 
  @({
- (time nice make LISP=<your_lisp>) >& make.log
+ time nice make LISP=<your_lisp>
  })</li>
 
  <li>Make book changes.  If you are creating any new books, tell git that you
