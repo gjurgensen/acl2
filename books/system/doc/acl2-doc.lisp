@@ -45525,12 +45525,8 @@ current fast alists."
 
  <li>Click @('Create pull request').</li>
 
- <li>Put some explanation about what's in the changes in the comments section.
- It's helpful if you quote (possibly abbreviated) versions of your commit log
- messages here, as that way the descriptions are easily read when clicking on
- the Community Repository @('commits') tab, which goes to <a
- href=\"https://github.com/acl2/acl2/commits/master\">
- https://github.com/acl2/acl2/commits/master</a>.</li>
+ <li>Put a description of your changes in the comments section.
+ You may want to quote text from your commit log messages.</li>
 
  <li>Click @('Create pull request').</li>
 
