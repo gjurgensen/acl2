@@ -51749,6 +51749,81 @@ tables in the current Hons Space."
  <p><see topic='@(url |Other Requirements|)'><img
  src='res/tours/flying.gif'></img></see></p>")
 
+(defxdoc how-to-contribute
+  :parents (about-acl2)
+  :short "Guide to contributing code to ACL2."
+  :long "<p>The main way to contribute code to ACL2 is to open a pull request
+ (PR) to the public <a href='https://github.com/acl2/acl2'>GitHub
+ repository</a>. This will involve first creating a personal fork of the
+ repository. Then, once you've committed your changes and tested the build, you
+ may open the PR to merge your changes into the ACL2 repository. PRs should
+ target the ``testing'' branch or similar (<i>not</i> the ``master''
+ branch).</p>
+
+ <h3>Checking the Build</h3>
+
+ <p>You should run a regression build to ensure that your code changes did not
+ break the build. To do so, run the following @('make') command in the
+ ``books'' directory:</p>
+
+ @({
+   make -j 8 regression
+ })
+
+ <p>(Note: the @('-j 8') option in the above command is only illustrative. It
+ instructs @('make') to use 8 hardware threads. You may use a higher or lower
+ number to align with your system. See @(see books-certification) for an
+ extended discussion on community book certification.)</p>
+
+ <p>A successful regression build is a good indicator, but it may not tell the
+ whole story. Be careful to avoid introducing code which may build on your
+ local machine but fail in other environments. E.g., via dependence on
+ environment variables or absolute pathnames, use of external tools without an
+ appropriate <see topic='@(url build::cert_param)'>cert_param</see>, short
+ timeouts which may fail on slower machines, etc.</p>
+
+ <h3>Best Code Practices</h3>
+
+ <p>See @(see best-practices) for recommended code practices.</p>
+
+ <h3>Update the Release Notes</h3>
+
+ <p>Consider adding some high-level information about your changes to the
+ Community Books' release notes &mdash; i.e., the appropriate @(see
+ release-notes-books) XDOC topic in @('books/doc/relnotes.lisp').</p>
+
+ <h3>``Off-Limits'' Source Files</h3>
+
+ <p>The community is invited to submit code contributions to the <see
+ topic='@(url community-books)'>Community Books</see>. Source files outside of
+ the ``books'' directory should not be modified, except by system
+ maintainers. For those interested in development of the ACL2 core system, see
+ the @(see developers-guide).</p>
+
+ <h3>Resources for Git/GitHub</h3>
+
+ <p>For those new to Git (the version control system) or GitHub (the platform
+ on which the ACL2 Git repository is hosted), see @(see git-quick-start).</p>
+
+ <h3>Frequent Contributors</h3>
+
+ <p>Frequent contributors may request to join the <a
+ href='https://github.com/acl2/acl2'>GitHub project</a>. Such contributors may
+ push directly to various testing branches without opening a PR (although it is
+ still good practice to open a PR when modifying a widely used book or one
+ primarily authored by someone else).</p>
+
+ <p>To request to join the project, please send email to one of the following
+ individuals.</p>
+ <ul>
+   <li>Eric Smith (@('eric.smith@kestrel.edu'))</li>
+   <li>David Rager (@('ragerdl@gmail.com'))</li>
+   <li>Sol Swords (@('sswords@gmail.com'))</li>
+ </ul>
+
+ <p>See also the @(see community) topic for other ways to connect with the ACL2
+ community.</p>")
+
 (defxdoc |How To Find Out about ACL2 Functions|
   :parents (|Pages Written Especially for the Tours|)
   :short "How To Find Out about ACL2 Functions"
