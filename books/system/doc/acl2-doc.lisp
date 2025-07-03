@@ -45280,7 +45280,7 @@ current fast alists."
  <h2>(B) UPDATING</h2>
 
  <p>The following commands will update your directory to match the latest
- contents of the GitHub repository (on the web).</p>
+ contents of the main ACL2 repository on GitHub.</p>
 
  @({
  git fetch --all
@@ -45374,7 +45374,7 @@ current fast alists."
 
  <h3>Contribute Your Changes</h3>
 
- <p>The following command will update the GitHub repository on the web.</p>
+ <p>The following command will update the main ACL2 repository on GitHub.</p>
 
  @({
   git push origin testing
@@ -45416,7 +45416,7 @@ current fast alists."
  cd acl2
  })</li>
 
- <li>Add the Community ACL2 repository as a git remote:
+ <li>Add the main ACL2 repository as a git remote:
 
  @({
  git remote add upstream https://github.com/acl2/acl2
@@ -45427,7 +45427,7 @@ current fast alists."
  <h2>(B) UPDATING</h2>
 
  <p>The following commands will update your local repository to match the latest
- contents of the ACL2 Community GitHub repository (on the web).</p>
+ contents of the main ACL2 repository on GitHub.</p>
 
  @({
  git fetch --all
@@ -45509,19 +45509,19 @@ current fast alists."
 
  <h3>Contribute Your Changes</h3>
 
- <p>The following command will update your GitHub repository on the web.</p>
+ <p>The following command will update your fork on GitHub.</p>
 
  @({
   git push
  })
 
  You now need to create a <i>pull request</i>, where you request that changes
- from your GitHub repository be accepted into the Community ACL2 repository.
+ from your fork be accepted into the main ACL2 repository.
  To achieve this:
 
  <ol>
 
- <li>Goto @('https://github.com/<your-github-username>/acl2').</li>
+ <li>Go to @('https://github.com/<your-github-username>/acl2').</li>
 
  <li>Click the @('New pull request') button (you can search for it with your
  browser).</li>
@@ -45537,7 +45537,7 @@ current fast alists."
  <li>Click @('Create pull request').</li>
 
  </ol>
- At this point, the Community ACL2 repository maintainers will be notified,
+ At this point, the main ACL2 repository maintainers will be notified,
  check that things seem to be in order, and then either request modifications
  or adopt your changes.")
 
