@@ -45339,16 +45339,31 @@ current fast alists."
  <li>If there were failures, then go back to Step 3 above to make appropriate
  changes and re-test.</li>
 
- <li>Commit your changes.  The following command will commit your changes
- locally. The @('-a') option tells git to automatically add to the commit any
- changed or new files. The @('-m ...') option is a log message whose first line
- should be a summary of your changes and other lines may give more details.
- You are welcome to replace the @('-m ...') option by @('-F <filename>'), where
- @('<filename>') is the name of a file that contains your log message.
+ <li>Commit your changes.  First do @('git status') to see the list of all
+ new/changed files:
 
  @({
- git commit -a -m '<some message, with descriptive first line>'
- })</li>
+ git status
+ })
+
+ Ensure that none of the reported additions/changes was unintentional.  Next,
+ do @('git add') to add each file you want to commit (normally, everything
+ reported by @('git status'), to match what was tested in the regression above):
+
+ @({
+ git add <file1> <file2> ...
+ })
+
+ Now commit your changes locally:
+
+ @({
+ git commit -m '<some message, with descriptive first line>'
+ })
+
+ The @('-m ...')  option is a log message, where the first line is a summary
+ of your changes and additional lines give more details.  You can replace
+ the @('-m ...') option by @('-F <filename>'), where @('<filename>') is the
+ name of a file that contains your log message.</li>
 
  <li>Merge in remote changes, if any, by updating again as in (B) above.
 
@@ -45468,16 +45483,31 @@ current fast alists."
  <li>If there were failures, then go back to Step 3 above to make appropriate
  changes and re-test.</li>
 
- <li>Commit your changes.  The following command will commit your changes
- locally. The @('-a') option tells git to automatically add to the commit any
- changed or new files. The @('-m ...') option is a log message whose first line
- should be a summary of your changes and other lines may give more details.
- You are welcome to replace the @('-m ...') option by @('-F <filename>'), where
- @('<filename>') is the name of a file that contains your log message.
+ <li>Commit your changes.  First do @('git status') to see the list of all
+ new/changed files:
 
  @({
- git commit -a -m '<some message, with descriptive first line>'
- })</li>
+ git status
+ })
+
+ Ensure that none of the reported additions/changes was unintentional.  Next,
+ do @('git add') to add each file you want to commit (normally, everything
+ reported by @('git status'), to match what was tested in the regression above):
+
+ @({
+ git add <file1> <file2> ...
+ })
+
+ Now commit your changes locally:
+
+ @({
+ git commit -m '<some message, with descriptive first line>'
+ })
+
+ The @('-m ...')  option is a log message, where the first line is a summary
+ of your changes and additional lines give more details.  You can replace
+ the @('-m ...') option by @('-F <filename>'), where @('<filename>') is the
+ name of a file that contains your log message.</li>
 
  <li>Merge in remote changes, if any, by updating again as in (B) above.
 
