@@ -45394,9 +45394,9 @@ current fast alists."
  <p> If you do not plan to commit your own changes, see @(see git-quick-start)
  instead.</p>
 
- A nice result of using pull requests is that all changes will be peer-reviewed
+ <p>A nice result of using pull requests is that all changes will be peer-reviewed
  before being committed.  Also, we sometimes call this method the <i>Fork and
- Pull</i> method.
+ Pull</i> method.</p>
 
  <h2>(A) GETTING STARTED</h2>
 
