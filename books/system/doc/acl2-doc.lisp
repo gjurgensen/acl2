@@ -45320,11 +45320,8 @@ current fast alists."
  time nice make update LISP=<your_lisp>
  })</li>
 
- <li>Make book changes.
-
- Also, consider adding some high-level information about your changes to the
- Community Books' release notes &mdash; i.e., the appropriate @(see
- release-notes-books) XDOC topic in @('books/doc/relnotes.lisp').</li>
+ <li>Make book changes.  See the guidelines in the @(see how-to-contribute) topic
+  (e.g., about updating the book release notes).</li>
 
  <li>Run a regression.
 
@@ -45447,11 +45444,8 @@ current fast alists."
  time nice make update LISP=<your_lisp>
  })</li>
 
- <li>Make book changes.
-
- Also, consider adding some high-level information about your changes to the
- Community Books' release notes &mdash; i.e., the appropriate @(see
- release-notes-books) XDOC topic in @('books/doc/relnotes.lisp').</li>
+ <li>Make book changes.  See the guidelines in the @(see how-to-contribute) topic
+  (e.g., about updating the book release notes).</li>
 
  <li>Run a regression.
 
