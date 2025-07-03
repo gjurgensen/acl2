@@ -45214,27 +45214,35 @@ current fast alists."
 
 (defxdoc git-quick-start
   :parents (about-acl2)
-  :short "Git quick start guide"
-  :long "<p>Each of the two topics @(see github-commit-code-using-push) and
- @(see github-commit-code-using-pull-requests) presents a minimal guide to
- using the Github repository for ACL2+Books.  That <a
- href='https://github.com/acl2/acl2'>repository</a> exists on the web and
+  :short "Git quick start guide."
+  :long "<p>The
+ <a href='https://github.com/acl2/acl2'>ACL2 GitHub repository</a>
  contains the ``bleeding edge'' ACL2 source code and @(see community-books),
- available between ACL2 releases (see @(see release-notes)).  Those who are
- familiar with older version control systems, or perhaps with no version
- control systems, might find this guide to be helpful.  For additional
- information, including the use of branches and links to more information about
- git, see <a href='https://github.com/acl2/acl2/wiki/ACL2-repo-git-tips'>the
- wiki page for git tips</a>, @(see books-certification), and the Internet in
- general.  However, both of the above-mentioned guides are intended to be
- sufficient for you to obtain the latest ACL2 source code and community-books,
- and optionally, for you to contribute to the @(see community-books).</p>
+ available between ACL2 <see topic=\"ACL2____RELEASE-NOTES\">releases</see>.</p>
 
- <p>Select the guide that is right for you based upon the headings below.</p>
+ <p>Here we provide minimal instructions for working with the ACL2 GitHub
+ repo.  Many git tutorials are available elsewhere on the web (e.g., <a
+ href='https://docs.github.com/en/get-started'>at GitHub</a>).</p>
 
- <h2>For non-contributors:</h2>
+ <h2>For non-contributors (to use ACL2 without contributing changes):</h2>
 
- See sections (A) and (B) in @(see github-commit-code-using-push).
+ <p>Start by obtaining the ACL2 GitHub repository (this command makes a
+ directory called @('acl2') that contains the current contents of the
+ @('master') branch):</p>
+
+ @({
+ git clone https://github.com/acl2/acl2
+ })
+
+ <p>Later, to update your copy to get the latest changes:</p>
+
+ @({
+ cd acl2
+ git pull
+ })
+
+ <p>Once you have ACL2, you will probably want to certify some books (see
+ @(see books-certification)).</p>
 
  <h2>For infrequent contributors:</h2>
 
@@ -51740,6 +51748,81 @@ tables in the current Hons Space."
 
  <p><see topic='@(url |Other Requirements|)'><img
  src='res/tours/flying.gif'></img></see></p>")
+
+(defxdoc how-to-contribute
+  :parents (about-acl2)
+  :short "Guide to contributing code to ACL2."
+  :long "<p>The main way to contribute code to ACL2 is to open a pull request
+ (PR) to the public <a href='https://github.com/acl2/acl2'>GitHub
+ repository</a>. This will involve first creating a personal fork of the
+ repository. Then, once you've committed your changes and tested the build, you
+ may open the PR to merge your changes into the ACL2 repository. PRs should
+ target the ``testing'' branch or similar (<i>not</i> the ``master''
+ branch).</p>
+
+ <h3>Checking the Build</h3>
+
+ <p>You should run a regression build to ensure that your code changes did not
+ break the build. To do so, run the following @('make') command in the
+ ``books'' directory:</p>
+
+ @({
+   make -j 8 regression
+ })
+
+ <p>(Note: the @('-j 8') option in the above command is only illustrative. It
+ instructs @('make') to use 8 hardware threads. You may use a higher or lower
+ number to align with your system. See @(see books-certification) for an
+ extended discussion on community book certification.)</p>
+
+ <p>A successful regression build is a good indicator, but it may not tell the
+ whole story. Be careful to avoid introducing code which may build on your
+ local machine but fail in other environments. E.g., via dependence on
+ environment variables or absolute pathnames, use of external tools without an
+ appropriate <see topic='@(url build::cert_param)'>cert_param</see>, short
+ timeouts which may fail on slower machines, etc.</p>
+
+ <h3>Best Code Practices</h3>
+
+ <p>See @(see best-practices) for recommended code practices.</p>
+
+ <h3>Update the Release Notes</h3>
+
+ <p>Consider adding some high-level information about your changes to the
+ Community Books' release notes &mdash; i.e., the appropriate @(see
+ release-notes-books) XDOC topic in @('books/doc/relnotes.lisp').</p>
+
+ <h3>``Off-Limits'' Source Files</h3>
+
+ <p>The community is invited to submit code contributions to the <see
+ topic='@(url community-books)'>Community Books</see>. Source files outside of
+ the ``books'' directory should not be modified, except by system
+ maintainers. For those interested in development of the ACL2 core system, see
+ the @(see developers-guide).</p>
+
+ <h3>Resources for Git/GitHub</h3>
+
+ <p>For those new to Git (the version control system) or GitHub (the platform
+ on which the ACL2 Git repository is hosted), see @(see git-quick-start).</p>
+
+ <h3>Frequent Contributors</h3>
+
+ <p>Frequent contributors may request to join the <a
+ href='https://github.com/acl2/acl2'>GitHub project</a>. Such contributors may
+ push directly to various testing branches without opening a PR (although it is
+ still good practice to open a PR when modifying a widely used book or one
+ primarily authored by someone else).</p>
+
+ <p>To request to join the project, please send email to one of the following
+ individuals.</p>
+ <ul>
+   <li>Eric Smith (@('eric.smith@kestrel.edu'))</li>
+   <li>David Rager (@('ragerdl@gmail.com'))</li>
+   <li>Sol Swords (@('sswords@gmail.com'))</li>
+ </ul>
+
+ <p>See also the @(see community) topic for other ways to connect with the ACL2
+ community.</p>")
 
 (defxdoc |How To Find Out about ACL2 Functions|
   :parents (|Pages Written Especially for the Tours|)
@@ -62019,6 +62102,70 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
 (defxdoc lists
   :parents (programming)
   :short "Lists of objects, the classic Lisp data structure.")
+
+(defxdoc live-stobj-in-proof
+  :parents (raw-lisp-error)
+  :short "Error messages about &ldquo;live&rdquo; @(see stobj)s during proofs"
+  :long "<p>It is possible to see an error like the following.  (This error is
+ probably very rare, and perhaps can only occur during a proof.)</p>
+
+ @({
+ ***********************************************
+ ************ ABORTING from raw Lisp ***********
+ ********** (see :DOC raw-lisp-error) **********
+ Error:  A live stobj (for stobj ST) was unexpectedly encountered
+         when evaluating a call of the function, ST-INIT.
+         See :DOC live-stobj-in-proof.
+ ***********************************************
+ })
+
+ <p>The solution is generally to @(see disable) the @(see
+ executable-counterpart) of the offending function, as suggested by the example
+ below (essentially provided by Sol Swords).  As of this writing (in July,
+ 2025), the only way to get an unexpected &ldquo;live&rdquo; @(see stobj) is by
+ the use of @(tsee swap-stobjs), as illustrated below.</p>
+
+ <p>First introduce a pair of congruent @(see stobj)s.</p>
+
+ @({
+ (defstobj st (fld))
+ (defstobj st1 (fld1) :congruent-to st)
+ })
+
+ <p>Now define a function that &ldquo;initializes&rdquo; the stobj @('st') by
+ creating a new stobj @('st1') and swapping the two (see @(see
+ swap-stobjs)).</p>
+
+ @({
+ (defun st-init (st)
+   (declare (xargs :stobjs (st)))
+   (with-local-stobj st1
+     (mv-let (st1 st)
+       (swap-stobjs st1 st)
+       st)))
+ })
+
+ <p>The following proof attempt causes the error message displayed above.</p>
+
+ @({
+ (thm (not (equal (st-init '(1)) '(nil))))
+ })
+
+ <p>In fact, that formula is not a theorem!  Through Version  8.6, ACL2
+ mistakenly proved this theorem by evaluating the indicated call of
+ @('st-init') to obtain an actual Lisp array, because of how ACL2 handles @(see
+ stobj)s in Lisp.  But now ACL2 produces the error displayed above.</p>
+
+ <p>The error is avoided if we @(see disable) the @(see executable-counterpart)
+ of the offending function mentioned in the error message, @('st-init').
+ Indeed, the following theorem, which contradicts the false claim above and
+ disables the offending executable-counterpart, shows that the logical value of
+ @('(st-init '(1))') is indeed @(''(nil)').</p>
+
+ @({
+ (thm (equal (st-init '(1)) '(nil))
+      :hints((\"Goal\" :in-theory (disable (:e st-init)))))
+ })")
 
 (defxdoc local
   :parents (events)
@@ -108210,6 +108357,11 @@ it."
  from @(tsee force)d hypotheses to be created incorrectly.  (This bug has been
  around for at least 10 years and probably for 30 years!)</p>
 
+ <p>Fixed a soundness bug based on the use of @(tsee swap-stobjs) on two @(see
+ stobj)s of which one is &ldquo;live&rdquo;.  See @(see live-stobj-in-proof).
+ Thanks to Sol Swords for reporting this bug, including an example and analysis
+ of possible fixes in his report.</p>
+
  <p>A Lisp error is now avoided when saving event-data (see @(see
  saving-event-data) and submitting certain ill-formed attempts at @(see
  events).  Thanks to Eric Smith for sending the following example.</p>
@@ -121444,6 +121596,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <li>Reader errors (for examples see @(see reader) and see @(see
  set-iprint))</li>
+
+ <li>Certain errors during proofs (for an example see @(see
+ live-stobj-in-proof)</li>
 
  </ul>")
 
