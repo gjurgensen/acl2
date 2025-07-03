@@ -45257,11 +45257,14 @@ current fast alists."
 (defxdoc github-commit-code-using-push
   :parents (git-quick-start)
   :short "How to commit code to the books using direct push access."
-  :long "<p>This guide is written for contributors who commit to the repository
-  on a monthly or weekly basis.  In this case, a contributor will typically
-  begin with the @(see github-commit-code-using-pull-requests) method, and after
-  they are familiar with the process and community, they will move to this
-  method.</p>
+  :long "<p>This guide is for contributors who commit to the repository
+  often (e.g., monthly or weekly).  Such contributors will typically
+  begin with the @(see github-commit-code-using-pull-requests) method, and
+  after they are familiar with the process and community, will switch to
+  this method.</p>
+
+ <p> If you do not plan to commit your own changes, see @(see git-quick-start)
+ instead.</p>
 
  <h2>(A) GETTING STARTED</h2>
 
@@ -45384,9 +45387,12 @@ current fast alists."
 (defxdoc github-commit-code-using-pull-requests
   :parents (git-quick-start)
   :short "How to commit code to the books using pull requests."
-  :long "<p>This guide is written for contributors who will probably only
- commit to the repository a few times a year. If you find yourself committing
- more often, you should see @(see github-commit-code-using-push).</p>
+  :long "<p>This guide is for contributors who will commit to the repository
+  rarely (e.g., a few times a year). If you find yourself committing more often,
+  see @(see github-commit-code-using-push).</p>
+
+ <p> If you do not plan to commit your own changes, see @(see git-quick-start)
+ instead.</p>
 
  A nice result of using pull requests is that all changes will be peer-reviewed
  before being committed.  Also, we sometimes call this method the <i>Fork and
