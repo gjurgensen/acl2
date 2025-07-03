@@ -45375,7 +45375,11 @@ current fast alists."
 
  @({
   git push origin testing
- })")
+ })
+
+ <p>This will cause your changes to be merged into the @('testing') branch.
+ From there, they will be automatically merged into @('master') if the automated
+ regression testing system successfully tests them.</p>")
 
 (defxdoc github-commit-code-using-pull-requests
   :parents (git-quick-start)
@@ -45532,7 +45536,8 @@ current fast alists."
 
  </ol>
  At this point, the Community ACL2 repository maintainers will be notified,
- check that things seem to be in order, and then adopt your changes.")
+ check that things seem to be in order, and then either request modifications
+ or adopt your changes.")
 
 (defxdoc goal-spec
   :parents (hints output-controls)
