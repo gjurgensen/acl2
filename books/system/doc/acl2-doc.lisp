@@ -45292,7 +45292,7 @@ current fast alists."
 
  <ul>
 
- <li>Jared Davis (@('jared.c.davis@gmail.com'))</li>
+ <li>Eric Smith (@('eric.smith@kestrel.edu'))</li>
 
  <li>David Rager (@('ragerdl@gmail.com'))</li>
 
