@@ -45309,12 +45309,7 @@ current fast alists."
 
  <ol>
 
- <li>Before beginning your edits, update, as in (B) above:
-
- @({
- git fetch --all
- git merge -m \"Merge.\" remotes/origin/master
- })</li>
+ <li>Before beginning your edits, update, as in (B) above.</li>
 
  <li>Build an executable.
 
@@ -45355,12 +45350,7 @@ current fast alists."
  git commit -a -m '<some message, with descriptive first line>'
  })</li>
 
- <li>Merge in remote changes, if any, by updating again as in (B) above:
-
- @({
- git fetch --all
- git merge -m \"Merge.\" remotes/origin/master
- })
+ <li>Merge in remote changes, if any, by updating again as in (B) above.
 
  If the merge changed anything, go back to Step 4 above to ensure that your
  changes are compatible with the remote changes you just obtained.  If the
@@ -45444,12 +45434,7 @@ current fast alists."
 
  <ol>
 
- <li>Before beginning your edits, update, as in (B) above:
-
- @({
- git fetch --all
- git merge -m \"Merge.\" remotes/upstream/master
- })</li>
+ <li>Before beginning your edits, update, as in (B) above.</li>
 
  <li>Build an executable.
 
@@ -45490,12 +45475,7 @@ current fast alists."
  git commit -a -m '<some message, with descriptive first line>'
  })</li>
 
- <li>Merge in remote changes, if any, by updating again as in (B) above:
-
- @({
- git fetch --all
- git merge -m \"Merge.\" remotes/upstream/master
- })
+ <li>Merge in remote changes, if any, by updating again as in (B) above.
 
  If the merge changed anything, go back to Step 4 above to ensure that your
  changes are compatible with the remote changes you just obtained.  If the
