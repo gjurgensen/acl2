@@ -45328,13 +45328,7 @@ current fast alists."
  time nice make update LISP=<your_lisp>
  })</li>
 
- <li>Make book changes.  If you are creating any new books, tell git that you
- intend to add them (but the repository on the web won't change until the last
- step below is executed).
-
- @({
- git add file1 file2 ...
- })
+ <li>Make book changes.
 
  Also, consider adding some high-level information about your changes to the
  Community Books' release notes &mdash; i.e., the appropriate @(see
@@ -45356,9 +45350,10 @@ current fast alists."
  changes and re-test.</li>
 
  <li>Commit your changes.  The following command will commit your changes
- locally. The @('-m ...') option is a log message whose first line should be a
- summary of your changes and other lines may give more details.  You are
- welcome to replace the @('-m ...') option by @('-F <filename>'), where
+ locally. The @('-a') option tells git to automatically add to the commit any
+ changed or new files. The @('-m ...') option is a log message whose first line
+ should be a summary of your changes and other lines may give more details.
+ You are welcome to replace the @('-m ...') option by @('-F <filename>'), where
  @('<filename>') is the name of a file that contains your log message.</p>
 
  @({
@@ -45463,13 +45458,7 @@ current fast alists."
  time nice make update LISP=<your_lisp>
  })</li>
 
- <li>Make book changes.  If you are creating any new books, tell git that you
- intend to add them (but the local repository on the web won't change until the
- @('commit') step below is executed).
-
- @({
- git add file1 file2 ...
- })
+ <li>Make book changes.
 
  Also, consider adding some high-level information about your changes to the
  Community Books' release notes &mdash; i.e., the appropriate @(see
@@ -45495,9 +45484,10 @@ current fast alists."
  changes and re-test.</li>
 
  <li>Commit your changes.  The following command will commit your changes
- locally. The @('-m ...') option is a log message whose first line should be a
- summary of your changes and other lines may give more details.  You are
- welcome to replace the @('-m ...') option by @('-F <filename>'), where
+ locally. The @('-a') option tells git to automatically add to the commit any
+ changed or new files. The @('-m ...') option is a log message whose first line
+ should be a summary of your changes and other lines may give more details.
+ You are welcome to replace the @('-m ...') option by @('-F <filename>'), where
  @('<filename>') is the name of a file that contains your log message.</p>
 
  @({
