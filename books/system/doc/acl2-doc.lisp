@@ -45343,7 +45343,7 @@ current fast alists."
  <li>Run a regression.
 
  @({
- (time nice make -j 8 regression-fresh) >& make-regression.log
+ (time nice make -j 8 regression) >& make-regression.log
  })</li>
 
  <li>Look for failures, as indicated by @('**') in the log.
@@ -45353,17 +45353,7 @@ current fast alists."
  })</li>
 
  <li>If there were failures, then go back to Step 1 above to make appropriate
- changes and re-test, but you can replace the '@('make')' step by replacing
- @('regression-fresh') with @('regression'), since '@('make')' is clever enough
- to avoid recertifying more than is necessary.  For example:
-
- @({
- (time nice make -j 8 regression) >& make-regression-finish-1.log
- })
-
- Note that the @('-j 8') option specifies the use of 8 hardware threads; feel
- free to omit it or use a more suitable number (especially if your computer has
- other than 8 hardware threads).</li>
+ changes and re-test.</li>
 
  </ol>
 
@@ -45493,7 +45483,7 @@ current fast alists."
  <li>Run a regression.
 
  @({
- (time nice make -j 8 regression-fresh) >& make-regression.log
+ (time nice make -j 8 regression) >& make-regression.log
  })
 
  Note that the @('-j 8') option specifies the use of 8 hardware threads; feel
@@ -45507,13 +45497,7 @@ current fast alists."
  })</li>
 
  <li>If there were failures, then go back to Step 1 above to make appropriate
- changes and re-test, but you can replace the '@('make')' step by replacing
- @('regression-fresh') with @('regression'), since '@('make')' is clever enough
- to avoid recertifying more than is necessary.  For example:
-
- @({
- (time nice make -j 8 regression) >& make-regression-finish-1.log
- })</li>
+ changes and re-test.</li>
 
  </ol>
 
