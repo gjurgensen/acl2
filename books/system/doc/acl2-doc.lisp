@@ -45256,7 +45256,7 @@ current fast alists."
 
 (defxdoc github-commit-code-using-push
   :parents (git-quick-start)
-  :short "How to commit code to the books using direct push access"
+  :short "How to commit code to the books using direct push access."
   :long "<p>This guide is written for contributors who commit to the repository
   on a monthly or weekly basis.  In this case, a contributor will typically
   begin with the @(see github-commit-code-using-pull-requests) method, and after
@@ -45265,7 +45265,7 @@ current fast alists."
 
  <h2>(A) GETTING STARTED</h2>
 
- <p>Start by obtaining an up-to-date copy of the web-based github
+ <p>Start by obtaining an up-to-date copy of the web-based GitHub
  repository (this command makes a directory called @('acl2') that contains the
  current contents of the @('master') branch).</p>
 
@@ -45277,7 +45277,7 @@ current fast alists."
  <h2>(B) UPDATING</h2>
 
  <p>The following commands will update your directory to match the latest
- contents of the github repository (on the web).</p>
+ contents of the GitHub repository (on the web).</p>
 
  @({
  git fetch --all
@@ -45286,7 +45286,7 @@ current fast alists."
 
  <h2>(C) CONTRIBUTING</h2>
 
- <p>To join the <a href='https://github.com/acl2/acl2/'>github project</a>,
+ <p>To join the <a href='https://github.com/acl2/acl2/'>GitHub project</a>,
  please send email to one of the following individuals.</p>
 
  <ul>
@@ -45371,7 +45371,7 @@ current fast alists."
 
  <h3>Contribute Your Changes</h3>
 
- <p>The following command will update the github repository on the web.</p>
+ <p>The following command will update the GitHub repository on the web.</p>
 
  @({
   git push origin testing
@@ -45379,7 +45379,7 @@ current fast alists."
 
 (defxdoc github-commit-code-using-pull-requests
   :parents (git-quick-start)
-  :short "How to commit code to the books using pull requests"
+  :short "How to commit code to the books using pull requests."
   :long "<p>This guide is written for contributors who will probably only
  commit to the repository a few times a year. If you find yourself committing
  more often, you should see @(see github-commit-code-using-push).</p>
@@ -45395,10 +45395,10 @@ current fast alists."
  <li>Go to <a
   href=\"https://github.com/acl2/acl2\">https://github.com/acl2/acl2</a> and
   click on the @('fork') button on the top-right.  Fork the repository into
-  your github space.  This will create a new repository at
+  your GitHub space.  This will create a new repository at
   @('https://github.com/<your-github-username>/acl2').</li>
 
- <li>In your working space on your computer, create a @('clone') of your github
+ <li>In your working space on your computer, create a @('clone') of your GitHub
   repository and @('cd') into it:
 
  @({
@@ -45417,7 +45417,7 @@ current fast alists."
  <h2>(B) UPDATING</h2>
 
  <p>The following commands will update your local repository to match the latest
- contents of the ACL2 Community github repository (on the web).</p>
+ contents of the ACL2 Community GitHub repository (on the web).</p>
 
  @({
  git fetch --all
@@ -45499,14 +45499,14 @@ current fast alists."
 
  <h3>Contribute Your Changes</h3>
 
- <p>The following command will update your github repository on the web.</p>
+ <p>The following command will update your GitHub repository on the web.</p>
 
  @({
   git push
  })
 
  You now need to create a <i>pull request</i>, where you request that changes
- from your github repository be accepted into the Community ACL2 repository.
+ from your GitHub repository be accepted into the Community ACL2 repository.
  To achieve this:
 
  <ol>
