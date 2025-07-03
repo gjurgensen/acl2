@@ -45360,21 +45360,26 @@ current fast alists."
  git commit -a -m '<some message, with descriptive first line>'
  })</li>
 
- </ol>
-
- <h3>Update, and Iterate If Necessary</h3>
-
- <p>Update again as in (B) above:</p>
+ <li>Merge in remote changes, if any, by updating again as in (B) above:
 
  @({
  git fetch --all
  git merge -m \"Merge.\" remotes/origin/master
  })
 
- <p>You can now go on to the next step (Contribute Your Changes).  But ideally:
- If the output indicates that anything has changed, then go back to ``Change
- and Test'' above.  Of course, you can skip making book changes if you are
- still happy with your changes.</p>
+ If the merge changed anything, go back to Step 4 above to ensure that your
+ changes are compatible with the remote changes you just obtained.  If the
+ merge did not change anything, continue to the next step (Contribute Your
+ Changes).
+
+ In rare cases, you may get a merge conflict (concurrent changes to the same
+ files), in which case you will need to resolve the conflict by editing files
+ and committing them (see the @('git commit') command above in Step 7).  Then
+ go back to Step 4 above to test that everything is working.
+
+ </li>
+
+ </ol>
 
  <h3>Contribute Your Changes</h3>
 
@@ -45486,21 +45491,26 @@ current fast alists."
  git commit -a -m '<some message, with descriptive first line>'
  })</li>
 
- </ol>
-
- <h3>Update, and Iterate If Necessary</h3>
-
- <p>Update again as in (B) above:</p>
+ <li>Merge in remote changes, if any, by updating again as in (B) above:
 
  @({
  git fetch --all
  git merge -m \"Merge.\" remotes/upstream/master
  })
 
- <p>You can now go on to the next step (Contribute Your Changes).  But ideally:
- If the output indicates that anything has changed, then go back to ``Change
- and Test'' above.  Of course, you can skip making book changes if you are
- still happy with your changes.</p>
+ If the merge changed anything, go back to Step 4 above to ensure that your
+ changes are compatible with the remote changes you just obtained.  If the
+ merge did not change anything, continue to the next step (Contribute Your
+ Changes).
+
+ In rare cases, you may get a merge conflict (concurrent changes to the same
+ files), in which case you will need to resolve the conflict by editing files
+ and committing them (see the @('git commit') command above in Step 7).  Then
+ go back to Step 4 above to test that everything is working.
+
+ </li>
+
+ </ol>
 
  <h3>Contribute Your Changes</h3>
 
