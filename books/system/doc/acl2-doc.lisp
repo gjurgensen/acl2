@@ -45302,7 +45302,7 @@ current fast alists."
  <p>After you have joined the project, you can proceed as follows when you are
  ready to contribute.</p>
 
- <h3>Change and Test</h3>
+ <h3>Make Changes and Test Them</h3>
 
  <ol>
 
@@ -45426,7 +45426,7 @@ current fast alists."
 
  <h2>(C) CONTRIBUTING</h2>
 
- <h3>Change and Test</h3>
+ <h3>Make Changes and Test Them</h3>
 
  <ol>
 
