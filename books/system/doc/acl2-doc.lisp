@@ -131761,10 +131761,10 @@ work on <tt>(q x)</tt>.</p>
  </ol>
 
  <p>To see the ruler-extenders of an existing function symbol, @('fn'), in a
- logical @(see world), @('wrld'), evaluate @('(ruler-extenders 'fn wrld)')
+ logical @(see world), @('wrld'), evaluate @('(get-ruler-extenders 'fn wrld)')
  after @('(include-book
- \"kestrel/utilities/system/world-queries\" :dir :system)').  For example,
- evaluation of @('(ruler-extenders 'fn (w state))') provides the
+ \"std/system/ger-ruler-extenders\" :dir :system)').  For example,
+ evaluation of @('(get-ruler-extenders 'fn (w state))') provides the
  ruler-extenders of @('fn') in the current logical world.</p>
 
  <p>Below we describe the notion of ruler-extenders in detail, as well as how
