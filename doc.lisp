@@ -23618,7 +23618,7 @@ Subtopics
   [47m(:executable-counterpart tau-system)[0m) or change the legacy hints to
   use the new subgoal names.")
  (DEBUGGING
-  (TOP ACL2)
+  (ACL2)
   "Tools for debugging failed or slow proofs, or misbehaving functions.
 
 
@@ -58218,7 +58218,7 @@ Subtopics
   Also, see the presentations in each of the {ACL2 Workshops |
   http://www.cs.utexas.edu/users/moore/acl2/workshops.html}.")
  (INTERFACING-TOOLS
-  (TOP ACL2)
+  (ACL2)
   "Libraries and tools for doing basic file i/o (see [STD/IO]), using
   raw Common Lisp libraries (see [QUICKLISP]), working with the
   operating system (see [OSLIB]), and interfacing with other programs
@@ -76556,9 +76556,9 @@ Subtopics
   "Declare a measure for a [47m[defun][0m
 
   See [xargs] for discussion of how to use the [47m:measure[0m keyword to
-  specify a measure for a definition.  A related utility, [47mmeasure[0m,
-  may be found in the [community-books], file
-  [47mkestrel/utilities/system/world-queries.lisp[0m.
+  specify a measure for a definition.  A related utility,
+  [47mget-measure[0m, may be found in the [community-books], file
+  [47mstd/system/get-measure.lisp[0m.
 
 
 Subtopics
@@ -131827,11 +131827,10 @@ Subtopics
       help.  See [induction-coarse-v-fine-grained].
 
   To see the ruler-extenders of an existing function symbol, [47mfn[0m, in a
-  logical [world], [47mwrld[0m, evaluate [47m(ruler-extenders 'fn wrld)[0m after
-  [47m(include-book \"kestrel/utilities/system/world-queries\" :dir
-  :system)[0m.  For example, evaluation of [47m(ruler-extenders 'fn (w
-  state))[0m provides the ruler-extenders of [47mfn[0m in the current logical
-  world.
+  logical [world], [47mwrld[0m, evaluate [47m(get-ruler-extenders 'fn wrld)[0m
+  after [47m(include-book \"std/system/get-ruler-extenders\" :dir :system)[0m.
+  For example, evaluation of [47m(get-ruler-extenders 'fn (w state))[0m
+  provides the ruler-extenders of [47mfn[0m in the current logical world.
 
   Below we describe the notion of ruler-extenders in detail, as well as
   how to set its default using [47mset-ruler-extenders[0m.
@@ -160792,9 +160791,9 @@ The Differences Between Well-Formed and Merely Tame Lambda Objects
   "Show that a relation is well-founded on a set
 
   See [well-founded-relation-rule] for discussion of well-founded
-  relations in ACL2.  A related utility, [47mwell-founded-relation[0m, may
-  be found in the [community-books], file
-  [47mkestrel/utilities/system/world-queries.lisp[0m.")
+  relations in ACL2.  A related utility, [47mget-well-founded-relation[0m,
+  may be found in the [community-books], file
+  [47mstd/system/get-well-founded-relation.lisp[0m.")
  (WELL-FOUNDED-RELATION-RULE
   (RULE-CLASSES)
   "Show that a relation is well-founded on a set

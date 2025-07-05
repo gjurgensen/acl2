@@ -72775,8 +72775,8 @@ it."
   :short "Declare a measure for a @(tsee defun)"
   :long "<p>See @(see xargs) for discussion of how to use the @(':measure')
  keyword to specify a measure for a definition.  A related utility,
- @('measure'), may be found in the @(see community-books), file
- @('kestrel/utilities/system/world-queries.lisp').</p>")
+ @('get-measure'), may be found in the @(see community-books), file
+ @('std/system/get-measure.lisp').</p>")
 
 (defxdoc measure-debug
   :parents (measure debugging)
@@ -108303,6 +108303,9 @@ it."
 ;   ; 13.47 seconds realtime, 12.75 seconds runtime
 ;   ; (2,355,093,488 bytes allocated).
 
+; Avoid including TOP as a parent when using :DOC at the terminal, as had been
+; the case for topics DEBUGGING and INTERFACING-TOOLS.
+
   :parents (release-notes)
   :short "ACL2 Version  8.7 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -131763,7 +131766,7 @@ work on <tt>(q x)</tt>.</p>
  <p>To see the ruler-extenders of an existing function symbol, @('fn'), in a
  logical @(see world), @('wrld'), evaluate @('(get-ruler-extenders 'fn wrld)')
  after @('(include-book
- \"std/system/ger-ruler-extenders\" :dir :system)').  For example,
+ \"std/system/get-ruler-extenders\" :dir :system)').  For example,
  evaluation of @('(get-ruler-extenders 'fn (w state))') provides the
  ruler-extenders of @('fn') in the current logical world.</p>
 
@@ -161137,8 +161140,8 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   :short "Show that a relation is well-founded on a set"
   :long "<p>See @(see well-founded-relation-rule) for discussion of
  well-founded relations in ACL2.  A related utility,
- @('well-founded-relation'), may be found in the @(see community-books), file
- @('kestrel/utilities/system/world-queries.lisp').</p>")
+ @('get-well-founded-relation'), may be found in the @(see community-books), file
+ @('std/system/get-well-founded-relation.lisp').</p>")
 
 (defxdoc well-founded-relation-rule
   :parents (rule-classes)
