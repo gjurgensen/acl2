@@ -5093,18 +5093,18 @@ and @(tsee include-book)"
   induction schemes.  However, one of these is flawed and so we are
   left with one viable candidate.
 
-  We will induct according to a scheme suggested by (LEN X), but
-  modified to accommodate (MY-APP X Y).  If we let (:P X Y) denote *1
-  above then the induction scheme we'll use is
+  We will induct according to a scheme suggested by (LEN X), while
+  accommodating (MY-APP X Y).
+
+  These suggestions were produced using the :induction rules LEN and
+  MY-APP. If we let (:P X Y) denote *1 above then the induction scheme
+  we'll use is
   (AND (IMPLIES (NOT (CONSP X)) (:P X Y))
        (IMPLIES (AND (CONSP X) (:P (CDR X) Y))
                 (:P X Y))).
-  This induction is justified by the same argument used to admit LEN,
-  namely, the measure (ACL2-COUNT X) is decreasing according to the
-  relation O< (which is known to be well-founded on the domain
-  recognized by O-P).  When applied to the goal at hand the
-  above induction scheme produces the following two nontautological
-  subgoals.
+  This induction is justified by the same argument used to admit LEN.
+  When applied to the goal at hand the above induction scheme produces
+  two nontautological subgoals.
 
   Subgoal *1/2
   (IMPLIES (NOT (CONSP X))
@@ -45256,51 +45256,45 @@ current fast alists."
 
 (defxdoc github-commit-code-using-push
   :parents (git-quick-start)
-  :short "How to commit code to the books using direct push access"
-  :long "<p>This guide is written for two groups of people:</p>
+  :short "How to commit code to the books using direct push access."
+  :long "<p>This guide is for contributors who commit to the repository
+  often (e.g., monthly or weekly).  Such contributors will typically
+  begin with the @(see github-commit-code-using-pull-requests) method, and
+  after they are familiar with the process and community, will switch to
+  this method.</p>
 
- <ul>
-
- <li>Users of the ACL2 System and Books who do not plan to contribute to the
- books, and</li>
-
- <li>Contributors who commit to the repository on a monthly or weekly basis.
- In this case, a contributor will typically begin with the @(see
- github-commit-code-using-pull-requests) method, and after they are familiar
- with the process and community, they will move to this method.</li>
-
- </ul>
+ <p> If you do not plan to commit your own changes, see @(see git-quick-start)
+ instead.</p>
 
  <h2>(A) GETTING STARTED</h2>
 
- <p>Start by obtaining an up-to-date copy of the web-based github repository.
- Here, we show how to put it into into a directory called <tt>ACL2</tt> (but
- name it whatever you like).</p>
+ <p>Start by obtaining an up-to-date copy of the web-based GitHub
+ repository (this command makes a directory called @('acl2') that contains the
+ current contents of the @('master') branch).</p>
 
  @({
- mkdir ACL2
- cd ACL2
- git clone https://github.com/acl2/acl2 .
+ git clone https://github.com/acl2/acl2
+ cd acl2
  })
 
  <h2>(B) UPDATING</h2>
 
  <p>The following commands will update your directory to match the latest
- contents of the github repository (on the web).</p>
+ contents of the main ACL2 repository on GitHub.</p>
 
  @({
  git fetch --all
- git merge remotes/origin/master
+ git merge -m \"Merge.\" remotes/origin/master
  })
 
- <h2>(C) CONTRIBUTING (optional)</h2>
+ <h2>(C) CONTRIBUTING</h2>
 
- <p>To join the <a href='https://github.com/acl2/acl2/'>github project</a>,
+ <p>To join the <a href='https://github.com/acl2/acl2/'>GitHub project</a>,
  please send email to one of the following individuals.</p>
 
  <ul>
 
- <li>Jared Davis (@('jared.c.davis@gmail.com'))</li>
+ <li>Eric Smith (@('eric.smith@kestrel.edu'))</li>
 
  <li>David Rager (@('ragerdl@gmail.com'))</li>
 
@@ -45311,40 +45305,30 @@ current fast alists."
  <p>After you have joined the project, you can proceed as follows when you are
  ready to contribute.</p>
 
- <h3>Change and Test</h3>
+ <h3>Make Changes and Test Them</h3>
 
  <ol>
 
- <li>Update as in (B) above:
-
- @({
- git fetch --all
- git merge remotes/origin/master
- })</li>
+ <li>Before beginning your edits, update, as in (B) above.</li>
 
  <li>Build an executable.
 
  @({
- (time nice make LISP=<your_lisp>) >& make.log
+ make update LISP=<your_lisp>
  })</li>
 
- <li>Make book changes.  If you are creating any new books, tell git that you
- intend to add them (but the repository on the web won't change until the last
- step below is executed).
-
- @({
- git add file1 file2 ...
- })
-
- Also, consider adding some high-level information about your changes to the
- Community Books' release notes &mdash; i.e., the appropriate @(see
- release-notes-books) XDOC topic in @('books/doc/relnotes.lisp').</li>
+ <li>Make book changes.  See the guidelines in the @(see how-to-contribute) topic
+  (e.g., about updating the book release notes).</li>
 
  <li>Run a regression.
 
  @({
- (time nice make -j 8 regression-fresh) >& make-regression.log
- })</li>
+ (make -j 8 regression) >& make-regression.log
+ })
+
+ Note that the @('-j 8') option specifies the use of 8 hardware threads; feel
+ free to omit it or use a more suitable number (especially if your computer has
+ other than 8 hardware threads).</li>
 
  <li>Look for failures, as indicated by @('**') in the log.
 
@@ -45352,77 +45336,80 @@ current fast alists."
  fgrep -a '**' make-regression.log
  })</li>
 
- <li>If there were failures, then go back to Step 1 above to make appropriate
- changes and re-test, but you can replace the '@('make')' step by replacing
- @('regression-fresh') with @('regression'), since '@('make')' is clever enough
- to avoid recertifying more than is necessary.  For example:
+ <li>If there were failures, then go back to Step 3 above to make appropriate
+ changes and re-test.</li>
+
+ <li>Commit your changes.  First do @('git status') to see the list of all
+ new/changed files:
 
  @({
- (time nice make -j 8 regression) >& make-regression-finish-1.log
+ git status
  })
 
- Note that the @('-j 8') option specifies the use of 8 hardware threads; feel
- free to omit it or use a more suitable number (especially if your computer has
- other than 8 hardware threads).</li>
+ Ensure that none of the reported additions/changes was unintentional.  Next,
+ do @('git add') to add each file you want to commit (normally, everything
+ reported by @('git status'), to match what was tested in the regression above):
+
+ @({
+ git add <file1> <file2> ...
+ })
+
+ Now commit your changes locally:
+
+ @({
+ git commit -m '<some message, with descriptive first line>'
+ })
+
+ The @('-m ...')  option is a log message, where the first line is a summary
+ of your changes and additional lines give more details.  You can replace
+ the @('-m ...') option by @('-F <filename>'), where @('<filename>') is the
+ name of a file that contains your log message.</li>
+
+ <li>Merge in remote changes, if any, by updating again as in (B) above.
+
+ If the merge changed anything, go back to Step 4 above to ensure that your
+ changes are compatible with the remote changes you just obtained.  If the
+ merge did not change anything, continue to the next step (Contribute Your
+ Changes).
+
+ In rare cases, you may get a merge conflict (concurrent changes to the same
+ files), in which case you will need to resolve the conflict by editing files
+ and committing them (see the @('git commit') command above in Step 7).  Then
+ go back to Step 4 above to test that everything is working.
+
+ </li>
 
  </ol>
 
- <h3>Update, and Iterate If Necessary</h3>
-
- <p>Update again as in (B) above:</p>
-
- @({
- git fetch --all
- git merge remotes/origin/master
- })
-
- <blockquote>
-
- <p>The merge may fail if there have been remote updates, that is updates in
- the repository on the web.  In that case, commit your changes locally and then
- try the merge again.  You might want to use the @('-F') option instead of
- @('-m'); see the next section for more on those options.</p>
-
- @({
- git commit -a -m '<some message, with descriptive first line>'
- git merge remotes/origin/master
- })
-
- <p>If the second command prompts you for a message, the empty message should
- suffice as a reasonable default.  (In emacs, if vi tries to come up, just type
- @(':q') and @('<RETURN>').</p>
-
- </blockquote>
-
- <p>You can now go on to the next step (Contribute Your Changes).  But ideally:
- If the output indicates that anything has changed, then go back to ``Change
- and Test'' above.  Of course, you can skip the build if no ACL2 sources have
- changed, and you can skip making book changes if you are still happy with your
- changes.</p>
-
  <h3>Contribute Your Changes</h3>
 
- <p>The following commands will update the github repository on the web.  The
- @('-m ...') option is a log message whose first line should be a summary of
- your changes and other lines may give more details.  You are welcome to
- replace the @('-m ...') option by @('-F <filename>'), where @('<filename>') is
- the name of a file that contains your log message.</p>
+ <p>The following command will update the main ACL2 repository on GitHub.</p>
 
  @({
-  git commit -a -m '<some message, with descriptive first line>'
   git push origin testing
- })")
+ })
+
+ <p>This will cause your changes to be merged into the @('testing') branch.
+ From there, they will be automatically merged into @('master') if the automated
+ regression testing system successfully tests them.</p>
+
+ <p>Note: If you are changing someone else's files, or would like someone to
+ review your changes, you might consider making a pull request instead of
+ pushing directly.</p>")
 
 (defxdoc github-commit-code-using-pull-requests
   :parents (git-quick-start)
-  :short "How to commit code to the books using pull requests"
-  :long "<p>This guide is written for contributors who will probably only
- commit to the repository a few times a year. If you find yourself committing
- more often, you should see @(see github-commit-code-using-push).</p>
+  :short "How to commit code to the books using pull requests."
+  :long "<p>This guide is for contributors who will commit to the repository
+  rarely (e.g., a few times a year). If you find yourself committing more often,
+  see @(see github-commit-code-using-push).</p>
 
- A nice result of using pull requests is that all changes will be peer-reviewed
+ <p> If you do not plan to commit your own changes, see @(see git-quick-start)
+ instead.</p>
+
+ <p>A nice result of using pull requests is that all changes will be peer-reviewed
  before being committed.  Also, we sometimes call this method the <i>Fork and
- Pull</i> method.
+ Pull</i> method.</p>
 
  <h2>(A) GETTING STARTED</h2>
 
@@ -45431,10 +45418,10 @@ current fast alists."
  <li>Go to <a
   href=\"https://github.com/acl2/acl2\">https://github.com/acl2/acl2</a> and
   click on the @('fork') button on the top-right.  Fork the repository into
-  your github space.  This will create a new repository at
+  your GitHub space.  This will create a new repository at
   @('https://github.com/<your-github-username>/acl2').</li>
 
- <li>In your working space on your computer, create a @('clone') of your github
+ <li>In your working space on your computer, create a @('clone') of your GitHub
   repository and @('cd') into it:
 
  @({
@@ -45442,7 +45429,7 @@ current fast alists."
  cd acl2
  })</li>
 
- <li>Add the Community ACL2 repository as a git remote:
+ <li>Add the main ACL2 repository as a git remote:
 
  @({
  git remote add upstream https://github.com/acl2/acl2
@@ -45452,54 +45439,40 @@ current fast alists."
 
  <h2>(B) UPDATING</h2>
 
- <p>The following commands will update your local repository to match the latest
- contents of the ACL2 Community github repository (on the web).</p>
+ <p>The following commands will update your directory to match the latest
+ contents of the main ACL2 repository on GitHub.</p>
 
  @({
  git fetch --all
- git merge remotes/upstream/master
+ git merge -m \"Merge.\" remotes/upstream/master
  })
 
  <h2>(C) CONTRIBUTING</h2>
 
- <h3>Change and Test</h3>
+ <h3>Make Changes and Test Them</h3>
 
  <ol>
 
- <li>Before beginning your edits, update, as in (B) above:
-
- @({
- git fetch --all
- git merge remotes/upstream/master
- })</li>
+ <li>Before beginning your edits, update, as in (B) above.</li>
 
  <li>Build an executable.
 
  @({
- (time nice make LISP=<your_lisp>) >& make.log
+ make update LISP=<your_lisp>
  })</li>
 
- <li>Make book changes.  If you are creating any new books, tell git that you
- intend to add them (but the local repository on the web won't change until the
- @('commit') step below is executed).
-
- @({
- git add file1 file2 ...
- })
-
- Also, consider adding some high-level information about your changes to the
- Community Books' release notes &mdash; i.e., the appropriate @(see
- release-notes-books) XDOC topic in @('books/doc/relnotes.lisp').</li>
+ <li>Make book changes.  See the guidelines in the @(see how-to-contribute) topic
+  (e.g., about updating the book release notes).</li>
 
  <li>Run a regression.
 
  @({
- (time nice make -j 8 regression-fresh) >& make-regression.log
+ (make -j 8 regression) >& make-regression.log
  })
 
  Note that the @('-j 8') option specifies the use of 8 hardware threads; feel
  free to omit it or use a more suitable number (especially if your computer has
- other than 8 hardware threads). </li>
+ other than 8 hardware threads).</li>
 
  <li>Look for failures, as indicated by @('**') in the log.
 
@@ -45507,70 +45480,66 @@ current fast alists."
  fgrep -a '**' make-regression.log
  })</li>
 
- <li>If there were failures, then go back to Step 1 above to make appropriate
- changes and re-test, but you can replace the '@('make')' step by replacing
- @('regression-fresh') with @('regression'), since '@('make')' is clever enough
- to avoid recertifying more than is necessary.  For example:
+ <li>If there were failures, then go back to Step 3 above to make appropriate
+ changes and re-test.</li>
+
+ <li>Commit your changes.  First do @('git status') to see the list of all
+ new/changed files:
 
  @({
- (time nice make -j 8 regression) >& make-regression-finish-1.log
- })</li>
+ git status
+ })
+
+ Ensure that none of the reported additions/changes was unintentional.  Next,
+ do @('git add') to add each file you want to commit (normally, everything
+ reported by @('git status'), to match what was tested in the regression above):
+
+ @({
+ git add <file1> <file2> ...
+ })
+
+ Now commit your changes locally:
+
+ @({
+ git commit -m '<some message, with descriptive first line>'
+ })
+
+ The @('-m ...')  option is a log message, where the first line is a summary
+ of your changes and additional lines give more details.  You can replace
+ the @('-m ...') option by @('-F <filename>'), where @('<filename>') is the
+ name of a file that contains your log message.</li>
+
+ <li>Merge in remote changes, if any, by updating again as in (B) above.
+
+ If the merge changed anything, go back to Step 4 above to ensure that your
+ changes are compatible with the remote changes you just obtained.  If the
+ merge did not change anything, continue to the next step (Contribute Your
+ Changes).
+
+ In rare cases, you may get a merge conflict (concurrent changes to the same
+ files), in which case you will need to resolve the conflict by editing files
+ and committing them (see the @('git commit') command above in Step 7).  Then
+ go back to Step 4 above to test that everything is working.
+
+ </li>
 
  </ol>
 
- <h3>Update, and Iterate If Necessary</h3>
-
- <p>Update again as in (B) above:</p>
-
- @({
- git fetch --all
- git merge remotes/upstream/master
- })
-
- <blockquote>
-
- <p>The merge may fail if there have been remote updates, that is updates in
- the repository on the web.  In that case, commit your changes locally and then
- try the merge again.  You might want to use the @('-F') option instead of
- @('-m'); see the next section for more on those options.</p>
-
- @({
- git commit -a -m '<some message, with descriptive first line>'
- git merge remotes/upstream/master
- })
-
- <p>If the second command (the @('git merge')) prompts you for a message, the
- empty message should suffice as a reasonable default (in emacs &mdash; if vi
- tries to come up, just type @(':q') and @('<RETURN>').</p>
-
- </blockquote>
-
- <p>You can now go on to the next step (Contribute Your Changes).  But ideally:
- If the output indicates that anything has changed, then go back to ``Change
- and Test'' above.  Of course, you can skip the build if no ACL2 sources have
- changed, and you can skip making book changes if you are still happy with your
- changes.</p>
-
  <h3>Contribute Your Changes</h3>
 
- <p>The following commands will update your github repository on the web.  The
- @('-m ...') option is a log message whose first line should be a summary of
- your changes and other lines may give more details.  You are welcome to
- replace the @('-m ...') option by @('-F <filename>'), where @('<filename>') is
- the name of a file that contains your log message.</p>
+ <p>The following command will update your fork on GitHub.</p>
 
  @({
-  git commit -a -m '<some message, with descriptive first line>'
   git push
  })
 
  You now need to create a <i>pull request</i>, where you request that changes
- from your github repository be accepted into the Community ACL2 repository.
+ from your fork be accepted into the main ACL2 repository.
  To achieve this:
 
  <ol>
 
- <li>Goto @('https://github.com/<your-github-username>/acl2').</li>
+ <li>Go to @('https://github.com/<your-github-username>/acl2').</li>
 
  <li>Click the @('New pull request') button (you can search for it with your
  browser).</li>
@@ -45580,18 +45549,15 @@ current fast alists."
 
  <li>Click @('Create pull request').</li>
 
- <li>Put some explanation about what's in the changes in the comments section.
- It's helpful if you quote (possibly abbreviated) versions of your commit log
- messages here, as that way the descriptions are easily read when clicking on
- the Community Repository @('commits') tab, which goes to <a
- href=\"https://github.com/acl2/acl2/commits/master\">
- https://github.com/acl2/acl2/commits/master</a>.</li>
+ <li>Put a description of your changes in the comments section.
+ You may want to quote text from your commit log messages.</li>
 
  <li>Click @('Create pull request').</li>
 
  </ol>
- At this point, the Community ACL2 repository maintainers will be notified,
- check that things seem to be in order, and then adopt your changes.")
+ At this point, the main ACL2 repository maintainers will be notified,
+ check that things seem to be in order, and then either request modifications
+ or adopt your changes.")
 
 (defxdoc goal-spec
   :parents (hints output-controls)
@@ -49722,7 +49688,7 @@ current fast alists."
           :in-theory (set-difference-theories
                        (current-theory :here)
                        '(assoc))
-          :induct (and (nth n a) (nth n b))
+          :induct (list (nth n a) (nth n b))
           :use ((:instance assoc-of-append
                            (x a) (y b) (z c))
                 (:functional-instance
@@ -50357,10 +50323,28 @@ current fast alists."
  be created and chosen.  E.g., the @(':induct') hint</p>
 
  @({
-   (and (nth i a) (nth j a))
+   (list (nth i a) (nth j a))
  })
 
  <p>suggests simultaneous @(see induction) on @('i'), @('j'), and @('a').</p>
+
+ <p>When the selected induction scheme is suggested by just one term the
+ induction is announced with a message like ``@('We will induct according to a
+ scheme suggested by')'' the term in question. But if several terms are
+ involved in the suggestion, either because they suggested the same scheme or
+ because their suggestions were merged with others to form the selected scheme,
+ the announcement includes the phrase ``@('while accommodating')'' the other
+ terms.  Furthermore, as noted in @(see induction-heuristics), the induction
+ mechanism communicates to the simplifier, passing to it the list of all the
+ terms being accommodated.  The simplifier preferentially expands those terms
+ during the subsequent proof attempt.</p>
+
+ <p>Thus, if the prover automatically selects an induction that accommodates
+ terms besides the one suggesting and justifying the induction, and you want to
+ give an @(':induct') hint that causes the same behavior, your hint should
+ include the term suggesting the induction and all of the accommodated terms.
+ We typically do this with a hint like @(':induct (list term0 term1
+ ... termk)').</p>
 
  <p>If both an @(':induct') and a @(':do-not-induct') hint are supplied for a
  given goal then the indicated @(see induction) is applied to the goal and the
@@ -72757,8 +72741,8 @@ it."
   :short "Declare a measure for a @(tsee defun)"
   :long "<p>See @(see xargs) for discussion of how to use the @(':measure')
  keyword to specify a measure for a definition.  A related utility,
- @('measure'), may be found in the @(see community-books), file
- @('kestrel/utilities/system/world-queries.lisp').</p>")
+ @('get-measure'), may be found in the @(see community-books), file
+ @('std/system/get-measure.lisp').</p>")
 
 (defxdoc measure-debug
   :parents (measure debugging)
@@ -108285,6 +108269,9 @@ it."
 ;   ; 13.47 seconds realtime, 12.75 seconds runtime
 ;   ; (2,355,093,488 bytes allocated).
 
+; Avoid including TOP as a parent when using :DOC at the terminal, as had been
+; the case for topics DEBUGGING and INTERFACING-TOOLS.
+
   :parents (release-notes)
   :short "ACL2 Version  8.7 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -108303,6 +108290,16 @@ it."
  since ACL2 8.6, including the build system.</p>
 
  <h3>Changes to Existing Features</h3>
+
+ <p>The output generated by the induction routine has been slightly changed.
+ Now, if term @('t0') suggested the induction scheme but other terms, @('t1'),
+ ... @('tk'), either suggested the same scheme or schemes that merged with
+ @('t0')'s to create the selected scheme, the induction output includes the
+ sentence ``@('We will induct according to a scheme suggested by t0, while
+ accommodating t1, ..., tk')''.  The terms mentioned are all preferentially
+ expanded by the simplifier when they arise in the subgoals produced by that
+ induction.  The fact that the terms are preferentially expanded is not new.
+ What's new is that ACL2 now lists all the accommodated terms.</p>
 
  <h3>New Features</h3>
 
@@ -131733,10 +131730,10 @@ work on <tt>(q x)</tt>.</p>
  </ol>
 
  <p>To see the ruler-extenders of an existing function symbol, @('fn'), in a
- logical @(see world), @('wrld'), evaluate @('(ruler-extenders 'fn wrld)')
+ logical @(see world), @('wrld'), evaluate @('(get-ruler-extenders 'fn wrld)')
  after @('(include-book
- \"kestrel/utilities/system/world-queries\" :dir :system)').  For example,
- evaluation of @('(ruler-extenders 'fn (w state))') provides the
+ \"std/system/get-ruler-extenders\" :dir :system)').  For example,
+ evaluation of @('(get-ruler-extenders 'fn (w state))') provides the
  ruler-extenders of @('fn') in the current logical world.</p>
 
  <p>Below we describe the notion of ruler-extenders in detail, as well as how
@@ -161109,8 +161106,8 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   :short "Show that a relation is well-founded on a set"
   :long "<p>See @(see well-founded-relation-rule) for discussion of
  well-founded relations in ACL2.  A related utility,
- @('well-founded-relation'), may be found in the @(see community-books), file
- @('kestrel/utilities/system/world-queries.lisp').</p>")
+ @('get-well-founded-relation'), may be found in the @(see community-books), file
+ @('std/system/get-well-founded-relation.lisp').</p>")
 
 (defxdoc well-founded-relation-rule
   :parents (rule-classes)
