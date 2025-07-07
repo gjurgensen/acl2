@@ -48685,79 +48685,70 @@ For those contributing on a monthly or weekly basis, see
 Subtopics
 
   [Github-commit-code-using-pull-requests]
-      How to commit code to the books using pull requests
+      How to commit code to the books using pull requests.
 
   [Github-commit-code-using-push]
-      How to commit code to the books using direct push access")
+      How to commit code to the books using direct push access.")
  (GITHUB-COMMIT-CODE-USING-PULL-REQUESTS
   (GIT-QUICK-START)
-  "How to commit code to the books using pull requests
+  "How to commit code to the books using pull requests.
 
-  This guide is written for contributors who will probably only commit
-  to the repository a few times a year. If you find yourself
-  committing more often, you should see
-  [github-commit-code-using-push].
+  This guide is for contributors who will commit to the repository
+  rarely (e.g., a few times a year). If you find yourself committing
+  more often, see [github-commit-code-using-push].
 
-A nice result of using pull requests is that all changes will be
-peer-reviewed before being committed.  Also, we sometimes call this
-method the [3mFork and Pull[0m method.
+  If you do not plan to commit your own changes, see [git-quick-start]
+  instead.
+
+  A nice result of using pull requests is that all changes will be
+  peer-reviewed before being committed.  Also, we sometimes call this
+  method the [3mFork and Pull[0m method.
 
 
 (A) GETTING STARTED
 
    1. Go to {https://github.com/acl2/acl2 | https://github.com/acl2/acl2}
       and click on the [47mfork[0m button on the top-right.  Fork the
-      repository into your github space.  This will create a new
+      repository into your GitHub space.  This will create a new
       repository at [47mhttps://github.com/<your-github-username>/acl2[0m.
 
-   2. In your working space on your computer, create a [47mclone[0m of your github
+   2. In your working space on your computer, create a [47mclone[0m of your GitHub
       repository and [47mcd[0m into it:
 
           git clone https://github.com/<your-github-username>/acl2
           cd acl2
 
-   3. Add the Community ACL2 repository as a git remote:
+   3. Add the main ACL2 repository as a git remote:
 
           git remote add upstream https://github.com/acl2/acl2
 
 
 (B) UPDATING
 
-  The following commands will update your local repository to match the
-  latest contents of the ACL2 Community github repository (on the
-  web).
+  The following commands will update your directory to match the latest
+  contents of the main ACL2 repository on GitHub.
 
     git fetch --all
-    git merge remotes/upstream/master
+    git merge -m \"Merge.\" remotes/upstream/master
 
 
 (C) CONTRIBUTING
 
 
-Change and Test
+Make Changes and Test Them
 
-   1. Before beginning your edits, update, as in (B) above:
-
-          git fetch --all
-          git merge remotes/upstream/master
+   1. Before beginning your edits, update, as in (B) above.
 
    2. Build an executable.
 
-          (time nice make LISP=<your_lisp>) >& make.log
+          make update LISP=<your_lisp>
 
-   3. Make book changes.  If you are creating any new books, tell git that
-      you intend to add them (but the local repository on the web
-      won't change until the [47mcommit[0m step below is executed).
-
-          git add file1 file2 ...
-
-      Also, consider adding some high-level information about your changes
-      to the Community Books' release notes --- i.e., the appropriate
-      [release-notes-books] XDOC topic in [47mbooks/doc/relnotes.lisp[0m.
+   3. Make book changes.  See the guidelines in the [how-to-contribute]
+      topic (e.g., about updating the book release notes).
 
    4. Run a regression.
 
-          (time nice make -j 8 regression-fresh) >& make-regression.log
+          (make -j 8 regression) >& make-regression.log
 
       Note that the [47m-j 8[0m option specifies the use of 8 hardware threads;
       feel free to omit it or use a more suitable number (especially
@@ -48767,58 +48758,54 @@ Change and Test
 
           fgrep -a '**' make-regression.log
 
-   6. If there were failures, then go back to Step 1 above to make
-      appropriate changes and re-test, but you can replace the '[47mmake[0m'
-      step by replacing [47mregression-fresh[0m with [47mregression[0m, since
-      '[47mmake[0m' is clever enough to avoid recertifying more than is
-      necessary.  For example:
+   6. If there were failures, then go back to Step 3 above to make
+      appropriate changes and re-test.
 
-          (time nice make -j 8 regression) >& make-regression-finish-1.log
+   7. Commit your changes.  First do [47mgit status[0m to see the list of all
+      new/changed files:
 
+          git status
 
-Update, and Iterate If Necessary
+      Ensure that none of the reported additions/changes was
+      unintentional.  Next, do [47mgit add[0m to add each file you want to
+      commit (normally, everything reported by [47mgit status[0m, to match
+      what was tested in the regression above):
 
-  Update again as in (B) above:
+          git add <file1> <file2> ...
 
-    git fetch --all
-    git merge remotes/upstream/master
+      Now commit your changes locally:
 
-      The merge may fail if there have been remote updates, that is updates
-      in the repository on the web.  In that case, commit your
-      changes locally and then try the merge again.  You might want
-      to use the [47m-F[0m option instead of [47m-m[0m; see the next section for
-      more on those options.
+          git commit -m '<some message, with descriptive first line>'
 
-        git commit -a -m '<some message, with descriptive first line>'
-        git merge remotes/upstream/master
+      The [47m-m ...[0m option is a log message, where the first line is a
+      summary of your changes and additional lines give more details.
+      You can replace the [47m-m ...[0m option by [47m-F <filename>[0m, where
+      [47m<filename>[0m is the name of a file that contains your log
+      message.
 
-      If the second command (the [47mgit merge[0m) prompts you for a message, the
-      empty message should suffice as a reasonable default (in emacs
-      --- if vi tries to come up, just type [47m:q[0m and [47m<RETURN>[0m.
-
-  You can now go on to the next step (Contribute Your Changes).  But
-  ideally: If the output indicates that anything has changed, then go
-  back to ``Change and Test'' above.  Of course, you can skip the
-  build if no ACL2 sources have changed, and you can skip making book
-  changes if you are still happy with your changes.
+   8. Merge in remote changes, if any, by updating again as in (B) above.
+      If the merge changed anything, go back to Step 4 above to
+      ensure that your changes are compatible with the remote changes
+      you just obtained.  If the merge did not change anything,
+      continue to the next step (Contribute Your Changes).  In rare
+      cases, you may get a merge conflict (concurrent changes to the
+      same files), in which case you will need to resolve the
+      conflict by editing files and committing them (see the [47mgit
+      commit[0m command above in Step 7).  Then go back to Step 4 above
+      to test that everything is working.
 
 
 Contribute Your Changes
 
-  The following commands will update your github repository on the web.
-  The [47m-m ...[0m option is a log message whose first line should be a
-  summary of your changes and other lines may give more details.  You
-  are welcome to replace the [47m-m ...[0m option by [47m-F <filename>[0m, where
-  [47m<filename>[0m is the name of a file that contains your log message.
+  The following command will update your fork on GitHub.
 
-    git commit -a -m '<some message, with descriptive first line>'
     git push
 
 You now need to create a [3mpull request[0m, where you request that
-changes from your github repository be accepted into the Community
-ACL2 repository.  To achieve this:
+changes from your fork be accepted into the main ACL2 repository.  To
+achieve this:
 
-   1. Goto [47mhttps://github.com/<your-github-username>/acl2[0m.
+   1. Go to [47mhttps://github.com/<your-github-username>/acl2[0m.
 
    2. Click the [47mNew pull request[0m button (you can search for it with your
       browser).
@@ -48828,61 +48815,53 @@ ACL2 repository.  To achieve this:
 
    4. Click [47mCreate pull request[0m.
 
-   5. Put some explanation about what's in the changes in the comments
-      section.  It's helpful if you quote (possibly abbreviated)
-      versions of your commit log messages here, as that way the
-      descriptions are easily read when clicking on the Community
-      Repository [47mcommits[0m tab, which goes to {
-      https://github.com/acl2/acl2/commits/master |
-      https://github.com/acl2/acl2/commits/master}.
+   5. Put a description of your changes in the comments section.  You may
+      want to quote text from your commit log messages.
 
    6. Click [47mCreate pull request[0m.
 
-At this point, the Community ACL2 repository maintainers will be
-notified, check that things seem to be in order, and then adopt your
-changes.")
+At this point, the main ACL2 repository maintainers will be
+notified, check that things seem to be in order, and then either
+request modifications or adopt your changes.")
  (GITHUB-COMMIT-CODE-USING-PUSH
   (GIT-QUICK-START)
-  "How to commit code to the books using direct push access
+  "How to commit code to the books using direct push access.
 
-  This guide is written for two groups of people:
+  This guide is for contributors who commit to the repository often
+  (e.g., monthly or weekly).  Such contributors will typically begin
+  with the [github-commit-code-using-pull-requests] method, and after
+  they are familiar with the process and community, will switch to
+  this method.
 
-    * Users of the ACL2 System and Books who do not plan to contribute to
-      the books, and
-
-    * Contributors who commit to the repository on a monthly or weekly
-      basis.  In this case, a contributor will typically begin with
-      the [github-commit-code-using-pull-requests] method, and after
-      they are familiar with the process and community, they will
-      move to this method.
+  If you do not plan to commit your own changes, see [git-quick-start]
+  instead.
 
 
 (A) GETTING STARTED
 
-  Start by obtaining an up-to-date copy of the web-based github
-  repository.  Here, we show how to put it into into a directory
-  called [47mACL2[0m (but name it whatever you like).
+  Start by obtaining an up-to-date copy of the web-based GitHub
+  repository (this command makes a directory called [47macl2[0m that
+  contains the current contents of the [47mmaster[0m branch).
 
-    mkdir ACL2
-    cd ACL2
-    git clone https://github.com/acl2/acl2 .
+    git clone https://github.com/acl2/acl2
+    cd acl2
 
 
 (B) UPDATING
 
   The following commands will update your directory to match the latest
-  contents of the github repository (on the web).
+  contents of the main ACL2 repository on GitHub.
 
     git fetch --all
-    git merge remotes/origin/master
+    git merge -m \"Merge.\" remotes/origin/master
 
 
-(C) CONTRIBUTING (optional)
+(C) CONTRIBUTING
 
-  To join the {github project | https://github.com/acl2/acl2/}, please
+  To join the {GitHub project | https://github.com/acl2/acl2/}, please
   send email to one of the following individuals.
 
-    * Jared Davis ([47mjared.c.davis@gmail.com[0m)
+    * Eric Smith ([47meric.smith@kestrel.edu[0m)
 
     * David Rager ([47mragerdl@gmail.com[0m)
 
@@ -48892,85 +48871,79 @@ changes.")
   you are ready to contribute.
 
 
-Change and Test
+Make Changes and Test Them
 
-   1. Update as in (B) above:
-
-          git fetch --all
-          git merge remotes/origin/master
+   1. Before beginning your edits, update, as in (B) above.
 
    2. Build an executable.
 
-          (time nice make LISP=<your_lisp>) >& make.log
+          make update LISP=<your_lisp>
 
-   3. Make book changes.  If you are creating any new books, tell git that
-      you intend to add them (but the repository on the web won't
-      change until the last step below is executed).
-
-          git add file1 file2 ...
-
-      Also, consider adding some high-level information about your changes
-      to the Community Books' release notes --- i.e., the appropriate
-      [release-notes-books] XDOC topic in [47mbooks/doc/relnotes.lisp[0m.
+   3. Make book changes.  See the guidelines in the [how-to-contribute]
+      topic (e.g., about updating the book release notes).
 
    4. Run a regression.
 
-          (time nice make -j 8 regression-fresh) >& make-regression.log
-
-   5. Look for failures, as indicated by [47m**[0m in the log.
-
-          fgrep -a '**' make-regression.log
-
-   6. If there were failures, then go back to Step 1 above to make
-      appropriate changes and re-test, but you can replace the '[47mmake[0m'
-      step by replacing [47mregression-fresh[0m with [47mregression[0m, since
-      '[47mmake[0m' is clever enough to avoid recertifying more than is
-      necessary.  For example:
-
-          (time nice make -j 8 regression) >& make-regression-finish-1.log
+          (make -j 8 regression) >& make-regression.log
 
       Note that the [47m-j 8[0m option specifies the use of 8 hardware threads;
       feel free to omit it or use a more suitable number (especially
       if your computer has other than 8 hardware threads).
 
+   5. Look for failures, as indicated by [47m**[0m in the log.
 
-Update, and Iterate If Necessary
+          fgrep -a '**' make-regression.log
 
-  Update again as in (B) above:
+   6. If there were failures, then go back to Step 3 above to make
+      appropriate changes and re-test.
 
-    git fetch --all
-    git merge remotes/origin/master
+   7. Commit your changes.  First do [47mgit status[0m to see the list of all
+      new/changed files:
 
-      The merge may fail if there have been remote updates, that is updates
-      in the repository on the web.  In that case, commit your
-      changes locally and then try the merge again.  You might want
-      to use the [47m-F[0m option instead of [47m-m[0m; see the next section for
-      more on those options.
+          git status
 
-        git commit -a -m '<some message, with descriptive first line>'
-        git merge remotes/origin/master
+      Ensure that none of the reported additions/changes was
+      unintentional.  Next, do [47mgit add[0m to add each file you want to
+      commit (normally, everything reported by [47mgit status[0m, to match
+      what was tested in the regression above):
 
-      If the second command prompts you for a message, the empty message
-      should suffice as a reasonable default.  (In emacs, if vi tries
-      to come up, just type [47m:q[0m and [47m<RETURN>[0m.
+          git add <file1> <file2> ...
 
-  You can now go on to the next step (Contribute Your Changes).  But
-  ideally: If the output indicates that anything has changed, then go
-  back to ``Change and Test'' above.  Of course, you can skip the
-  build if no ACL2 sources have changed, and you can skip making book
-  changes if you are still happy with your changes.
+      Now commit your changes locally:
+
+          git commit -m '<some message, with descriptive first line>'
+
+      The [47m-m ...[0m option is a log message, where the first line is a
+      summary of your changes and additional lines give more details.
+      You can replace the [47m-m ...[0m option by [47m-F <filename>[0m, where
+      [47m<filename>[0m is the name of a file that contains your log
+      message.
+
+   8. Merge in remote changes, if any, by updating again as in (B) above.
+      If the merge changed anything, go back to Step 4 above to
+      ensure that your changes are compatible with the remote changes
+      you just obtained.  If the merge did not change anything,
+      continue to the next step (Contribute Your Changes).  In rare
+      cases, you may get a merge conflict (concurrent changes to the
+      same files), in which case you will need to resolve the
+      conflict by editing files and committing them (see the [47mgit
+      commit[0m command above in Step 7).  Then go back to Step 4 above
+      to test that everything is working.
 
 
 Contribute Your Changes
 
-  The following commands will update the github repository on the web.
-  The [47m-m ...[0m option is a log message whose first line should be a
-  summary of your changes and other lines may give more details.  You
-  are welcome to replace the [47m-m ...[0m option by [47m-F <filename>[0m, where
-  [47m<filename>[0m is the name of a file that contains your log message.
+  The following command will update the main ACL2 repository on GitHub.
 
-    git commit -a -m '<some message, with descriptive first line>'
-    git push origin testing")
+    git push origin testing
+
+  This will cause your changes to be merged into the [47mtesting[0m branch.
+  From there, they will be automatically merged into [47mmaster[0m if the
+  automated regression testing system successfully tests them.
+
+  Note: If you are changing someone else's files, or would like someone
+  to review your changes, you might consider making a pull request
+  instead of pushing directly.")
  (GOAL-SPEC
   (HINTS OUTPUT-CONTROLS)
   "To indicate where a hint is to be used
