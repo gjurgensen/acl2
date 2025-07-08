@@ -1619,12 +1619,12 @@
  suggestions from the community for improvements that we ultimately
  implemented.</p>
 
- <p>We also thank the contributors to the ACL2 workshops for some suggested
- improvements and for the extensive collection of publicly distributed
- benchmark problems.  And we thank participants at the ACL2 seminar at the
- University of Texas for useful feedback.  More generally, we thank the ACL2
- community for feedback, contributed @(see books) (see @(see community-books)),
- and their interest in the ACL2 project.</p>
+ <p>We also thank the contributors to the ACL2 @(see workshops) for some
+ suggested improvements and for the extensive collection of publicly
+ distributed benchmark problems.  And we thank participants at the ACL2 seminar
+ at the University of Texas for useful feedback.  More generally, we thank the
+ ACL2 community for feedback, contributed @(see books) (see @(see
+ community-books)), and their interest in the ACL2 project.</p>
 
  <p><i>Regarding the documentation:</i></p>
 
@@ -11112,9 +11112,8 @@ way to split up large ACL2 developments into separate modules."
  particular, is useful in case you encounter problems to report.</p>
 
  <p>If you fetched the community books using git, then you will have a
- directories such @('books/workshops/') that is not necessary for certifying
- the most widely-included books.  You can certify just such books as
- follows.</p>
+ directory such @('books/workshops/') that is not necessary for certifying the
+ most widely-included books.  You can certify just such books as follows.</p>
 
  @({
   (time nice make basic) >& make-basic.log
@@ -54936,8 +54935,7 @@ tables in the current Hons Space."
  <p>These are but a few of the interesting projects carried out with ACL2.
  Many of the authors mentioned above have versions of the papers on their web
  pages.  Also see @(see publications) and see the presentations in each of the
- <a href='http://www.cs.utexas.edu/users/moore/acl2/workshops.html'>ACL2
- Workshops</a>.</p>")
+ ACL2 @(csee Workshops).</p>")
 
 (defxdoc interfacing-tools
   :parents (top
@@ -141425,10 +141423,8 @@ work on <tt>(q x)</tt>.</p>
  have used ACL2.</li>
 
  <li>See @(see publications) for links to many books and papers.  You can also
- follow links starting at the <a
- href='https://www.cs.utexas.edu/users/moore/acl2/workshops.html'>ACL2
- Workshops page</a> to see programs, talks, and papers presented at ACL2
- Workshops (25 and counting as of 2022).</li>
+ see @(see workshops) for programs, talks, and papers presented at the numerous
+ ACL2 Workshops.</li>
 
  <li>The <a href='https://github.com/acl2/acl2/tree/master/books'>Community
  Books</a> is a repository of many projects, processed virtually continuously
@@ -147174,9 +147170,8 @@ work on <tt>(q x)</tt>.</p>
 
  </ul>
 
- <p>Note that many talks are also available from the <a
- href='http://www.cs.utexas.edu/users/moore/acl2/workshops.html'>ACL2
- Workshops</a> pages and on the <a
+ <p>Note that many talks are also available from the ACL2 @(csee Workshops)
+ pages and on the <a
  href='http://www.cs.utexas.edu/users/moore/acl2/seminar/'>University of Texas
  ACL2 Seminar page</a>.</p>
  ")
@@ -172781,6 +172776,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer by hints t)
 (defpointer cases hints t)
 (defpointer ccl-updates ccl-installation) ; ccl-updates is the traditional name
+(defpointer certifiable certify-book)
 (defpointer certify-book-failure certify-book-debug)
 (defpointer certifying-books books-certification)
 (defpointer check-invariant-risk set-check-invariant-risk)

@@ -14073,7 +14073,7 @@ Subtopics
   particular, is useful in case you encounter problems to report.
 
   If you fetched the community books using git, then you will have a
-  directories such [47mbooks/workshops/[0m that is not necessary for
+  directory such [47mbooks/workshops/[0m that is not necessary for
   certifying the most widely-included books.  You can certify just
   such books as follows.
 
@@ -17656,6 +17656,8 @@ configure-ccl.lisp
                   1))
               (t (- (nonnegative-integer-quotient (- n)
                                                   d))))))")
+ (CERTIFIABLE (POINTERS)
+              "See [certify-book].")
  (CERTIFICATE
   (BOOKS-TOUR)
   "A file specifying validity of a given book
@@ -58590,8 +58592,7 @@ Subtopics
   These are but a few of the interesting projects carried out with
   ACL2.  Many of the authors mentioned above have versions of the
   papers on their web pages.  Also see publications and see the
-  presentations in each of the {ACL2 Workshops |
-  http://www.cs.utexas.edu/users/moore/acl2/workshops.html}.")
+  presentations in each of the ACL2 Workshops.")
  (INTERFACING-TOOLS
   (ACL2)
   "Libraries and tools for doing basic file i/o (see [STD/IO]), using
@@ -113635,6 +113636,9 @@ Subtopics
   [Ccl-updates]
       See [ccl-installation].
 
+  [Certifiable]
+      See [certify-book].
+
   [Certify-book-failure]
       See [certify-book-debug].
 
@@ -141037,10 +141041,8 @@ Subtopics
           have used ACL2.
 
         * See publications for links to many books and papers.  You can also
-          follow links starting at the {ACL2 Workshops page |
-          https://www.cs.utexas.edu/users/moore/acl2/workshops.html}
-          to see programs, talks, and papers presented at ACL2
-          Workshops (25 and counting as of 2022).
+          see workshops for programs, talks, and papers presented at
+          the numerous ACL2 Workshops.
 
         * The {Community Books |
           https://github.com/acl2/acl2/tree/master/books} is a
@@ -146957,9 +146959,8 @@ Subtopics
       annotated list of links to several talks about the use of ACL2
       for hardware specification and verification.
 
-  Note that many talks are also available from the {ACL2 Workshops |
-  http://www.cs.utexas.edu/users/moore/acl2/workshops.html} pages and
-  on the {University of Texas ACL2 Seminar page |
+  Note that many talks are also available from the ACL2 Workshops pages
+  and on the {University of Texas ACL2 Seminar page |
   http://www.cs.utexas.edu/users/moore/acl2/seminar/}.")
  (TAME
   (APPLY$)
