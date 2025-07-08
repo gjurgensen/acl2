@@ -15602,9 +15602,6 @@ Subtopics
   [Why-brr]
       An explanation of why ACL2 has an explicit [47m[brr][0m mode
 
-  [Windows-installation]
-      Installing ACL2 on Windows
-
   [With-brr-data]
       Finding the source of a term in prover output")
  (BREAKS
@@ -48787,14 +48784,6 @@ Conclusion
                                     (cons world-alist 'nil)))))))")
  (GETTING-STARTED (POINTERS)
                   "See [ACL2-tutorial].")
- (GIT-COMMIT-HASH
-  (INSTALLATION-DETAILS)
-  "The current git commit hash
-
-  Here we note that the following git commit hash for Version 8.6 of
-  {ACL2 on github | https://github.com/acl2/acl2}.
-
-4fd2eb6bbb3e6a4c66dcbc8aa179272a7a21d51b")
  (GIT-QUICK-START
   (ABOUT-ACL2)
   "Git quick start guide.
@@ -57880,7 +57869,10 @@ Subtopics
       Running ACL2 without building an executable image
 
   [Summary-of-ACL2-system-distribution]
-      Summary of ACL2 system distribution")
+      Summary of ACL2 system distribution
+
+  [Windows-installation]
+      Installing ACL2 on Windows")
  (INSTRUCTIONS
   (PROOF-BUILDER)
   "Instructions to the interactive proof-builder
@@ -162015,7 +162007,7 @@ Concluding Remark
   to do [47m:[0m[47m[brr][0m [47mnil[0m in the external state when the next opportunity
   arises.")
  (WINDOWS-INSTALLATION
-  (BREAK-REWRITE)
+  (INSTALLATION-SUPPORT)
   "Installing ACL2 on Windows
 
   Windows users will probably want to do one of the following to

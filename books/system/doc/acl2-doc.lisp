@@ -10760,7 +10760,7 @@ way to split up large ACL2 developments into separate modules."
   :parents (community-books)
   :short "Instructions for certifying the ACL2 @(see community-books)."
 
-   :long "<p>The <see topic='@(url community-books)'>Community Books</see>
+  :long "<p>The <see topic='@(url community-books)'>Community Books</see>
  provides a @('make') system, which is recommended for certifying a specified
  subset of those books from the @('books/') directory of your ACL2 distribution.
  Alternate instructions are however available for certifying from the top-level
@@ -45369,16 +45369,6 @@ current fast alists."
  world-name.</p>
 
  @(def getpropc)")
-
-(defxdoc git-commit-hash
-  :parents (installation-details)
-  :short "The current git commit hash"
-  :long "<p>Here we note that the following git commit hash for Version  8.6 of
- <a href='https://github.com/acl2/acl2'>ACL2 on github</a>.</p>
-
- <pre>
- 4fd2eb6bbb3e6a4c66dcbc8aa179272a7a21d51b
- </pre>")
 
 (defxdoc git-quick-start
   :parents (about-acl2)
@@ -162310,7 +162300,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  when the next opportunity arises.</p>")
 
 (defxdoc windows-installation
-  :parents (break-rewrite)
+  :parents (installation-support)
   :short "Installing ACL2 on Windows"
   :long "<p>Windows users will probably want to do one of the following to
  install and run ACL2 on their systems.  Thanks to David Rager for his help
