@@ -54195,7 +54195,7 @@ tables in the current Hons Space."
 
  This will create a script in the current directory for running ACL2.  The
  script is named @('saved_acl2').<br/> <b>Note:</b> You will need Gnu make
- (preferably newer than Version 3.8.2).</li>
+ (preferably newer than Version 3.82).</li>
 
  <li>Certify some books, for example with
 

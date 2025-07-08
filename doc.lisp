@@ -57823,7 +57823,7 @@ Steel Bank Common Lisp (SBCL)
 
       This will create a script in the current directory for running ACL2.
       The script is named [47msaved_acl2[0m.
-      [31;1mNote:[0m You will need Gnu make (preferably newer than Version 3.8.2).
+      [31;1mNote:[0m You will need Gnu make (preferably newer than Version 3.82).
 
    4. Certify some books, for example with
 
