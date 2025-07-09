@@ -11336,8 +11336,8 @@ way to split up large ACL2 developments into separate modules."
 
  <p>We assume here a familiarity with Unix/Linux `make'.  We also assume that
  you are using GNU `make' rather than some other flavor of `make'.  And
- finally, we assume, as is typically the case by following the standard
- installation instructions, that you install the ACL2 community books in the
+ finally, we assume, as is typically the case by following the standard @(see
+ installation) instructions, that you install the ACL2 community books in the
  @('books/') subdirectory of your ACL2 distribution.  We will refer below to
  that directory as @('BOOKS').</p>
 
@@ -30796,7 +30796,6 @@ ld) and @(tsee include-book)"
 ;   "ACL2+Books Manual" near the top
 ; - doc/home-page.lisp
 ; - emacs/acl2-doc.el and books/emacs/acl2-doc.el
-; - installation/*.html
 ; - At UT, /u/www/users/moore/publications/, in particular, hyper-card.html.
 ; - README.md
 
@@ -108822,8 +108821,8 @@ it."
  be confused with @('books/doc/manual/'), where the ACL2+Books manual is
  built.)</p>
 
- <p>Replaced information about mailing lists in the installation instructions
- using a link to a corresponding, new documentation topic, @(see
+ <p>Replaced information about mailing lists in the @(see installation)
+ instructions using a link to a corresponding, new documentation topic, @(see
  mailing-lists).  So now, the community can make suitable updates to that page.
  Thanks to Eric Smith for suggesting this change.</p>
 
@@ -112159,19 +112158,16 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   })
 
   <p>As with Nqthm, to explore ACL2 source files or prover input files we
-  recommend that you perform the first step of the installation instructions
-  found under the <a
-  href='https://www.cs.utexas.edu/~moore/acl2/current/HTML/installation/installation.html'>&ldquo;Obtaining,
-  Installing, and License&rdquo;</a> link of the ACL2 homepage above.  That
-  first step downloads a gzipped tar file of the latest sources and input
-  scripts (but not prover output) to a directory of your choosing.  The
-  filenames suffixed with @('.lisp') at the top-level of that directory
-  constitute the ACL2 source code.  The ACL2 regression suite consists of
-  thousands of files called &ldquo;@(see books)&rdquo; and are available under
-  the @('books/') subdirectory.  So, for example, you'll find a toy model of
-  the JVM at @('books/models/jvm/m1/m1.lisp').  If you want to see proofs you
-  must build ACL2 on your machine and run a full regression as described in the
-  installation instructions.</p>
+  recommend that see @(see installation) and follow the instructions there.
+  That includes placing a copy of the latest sources and input scripts (but not
+  prover output) in a directory on your computer.  The filenames suffixed with
+  @('.lisp') at the top-level of that directory constitute the ACL2 source
+  code.  The ACL2 regression suite consists of thousands of files called
+  &ldquo;@(see books)&rdquo; and are available under the @('books/')
+  subdirectory.  So, for example, you'll find a toy model of the JVM at
+  @('books/models/jvm/m1/m1.lisp').  If you want to see proofs you must build
+  ACL2 on your machine and run a full regression as described in the
+  @(see installation) instructions.</p>
 
   <h3>Quick Index to Related Topics</h3>
   <ul>
@@ -144616,10 +144612,10 @@ work on <tt>(q x)</tt>.</p>
  <p>See @(see installation-summary) for how to obtain a gzipped tarfile that
  contains both the ACL2 sources and community books.  Below we describe the
  ACL2 distribution only (without the community books).  Its files are available
- by exploring the @(`(:raw (acl2-url-ref \"v8-6/distrib/\" \"distrib/\"))`)
+ by exploring the @(`(:raw (acl2-url-ref \"distrib/\" \"distrib/\"))`)
  directory on the ACL2 website or by obtaining a gzipped tarfile,
  @(`(:raw (acl2-url-ref \"distrib/acl2.tar.gz\" \"acl2.tar.gz\"))`), which
- extracts to the contents of @(`(:raw (acl2-url-ref \"v8-6/distrib/\"
+ extracts to the contents of @(`(:raw (acl2-url-ref \"distrib/\"
  \"distrib/acl2-sources/\"))`) directory, which in turn contains the ACL2
  source files as well as the following
  (and a few others not mentioned here).</p>
@@ -144632,24 +144628,23 @@ work on <tt>(q x)</tt>.</p>
  bin/          ; Contains an executable script, bin/acl2, which invokes ACL2
  doc/          ; ACL2 documentation
  emacs/        ; Some helpful emacs utilities
- installation/ ; Installation instructions (start with installation.html)
  })
 
  <p>Also available are the following.</p>
 
  <ul>
 
- <li>@(`(:raw (acl2-url-ref \"v8-6/distrib/acl2-customization-files/\" \"ACL2
+ <li>@(`(:raw (acl2-url-ref \"distrib/acl2-customization-files/\" \"ACL2
  customization files\"))`): These @(see acl2-customization) files can be useful
  for certifying books (see @(see certify-book)), for example with ACL2(p) (see
  @(see parallelism)).</li>
 
- <li>@(`(:raw (acl2-url-ref \"v8-6/distrib/images/\" \"images/\"))`): Some
- gzip'd tar'd executables; see @(`(:raw (acl2-url-ref
- \"v8-6/distrib/images/Readme.html\" \"images/Readme.html\"))`)</li>
+ <li>@(`(:raw (acl2-url-ref \"distrib/images/\" \"images/\"))`): Some gzip'd
+ tar'd executables; see @(`(:raw (acl2-url-ref \"distrib/images/Readme.html\"
+ \"images/Readme.html\"))`)</li>
 
- <li>@(`(:raw (acl2-url-ref \"v8-6/distrib/split/\" \"split/\"))`): The result
- of splitting up @('acl2.tar.gz')</li>
+ <li>@(`(:raw (acl2-url-ref \"distrib/split/\" \"split/\"))`): The result of
+ splitting up @('acl2.tar.gz')</li>
 
  </ul>
 

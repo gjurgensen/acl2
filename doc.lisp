@@ -14279,9 +14279,9 @@ Subtopics
   We assume here a familiarity with Unix/Linux `make'.  We also assume
   that you are using GNU `make' rather than some other flavor of
   `make'.  And finally, we assume, as is typically the case by
-  following the standard installation instructions, that you install
-  the ACL2 community books in the [47mbooks/[0m subdirectory of your ACL2
-  distribution.  We will refer below to that directory as [47mBOOKS[0m.
+  following the standard [installation] instructions, that you
+  install the ACL2 community books in the [47mbooks/[0m subdirectory of your
+  ACL2 distribution.  We will refer below to that directory as [47mBOOKS[0m.
 
   In summary: to use `make' to certify [books] under a given directory,
   you may create a simple Makefile in that directory (as explained
@@ -106000,7 +106000,7 @@ Changes at the System Level
   to be confused with [47mbooks/doc/manual/[0m, where the ACL2+Books manual
   is built.)
 
-  Replaced information about mailing lists in the installation
+  Replaced information about mailing lists in the [installation]
   instructions using a link to a corresponding, new documentation
   topic, [mailing-lists].  So now, the community can make suitable
   updates to that page.  Thanks to Eric Smith for suggesting this
@@ -110170,20 +110170,17 @@ Subtopics
     https://github.com/acl2/acl2
 
   As with Nqthm, to explore ACL2 source files or prover input files we
-  recommend that you perform the first step of the installation
-  instructions found under the {``Obtaining, Installing, and
-  License'' |
-  https://www.cs.utexas.edu/~moore/acl2/current/HTML/installation/installation.html}
-  link of the ACL2 homepage above.  That first step downloads a
-  gzipped tar file of the latest sources and input scripts (but not
-  prover output) to a directory of your choosing.  The filenames
-  suffixed with [47m.lisp[0m at the top-level of that directory constitute
-  the ACL2 source code.  The ACL2 regression suite consists of
-  thousands of files called ``[books]'' and are available under the
-  [47mbooks/[0m subdirectory.  So, for example, you'll find a toy model of
-  the JVM at [47mbooks/models/jvm/m1/m1.lisp[0m.  If you want to see proofs
-  you must build ACL2 on your machine and run a full regression as
-  described in the installation instructions.
+  recommend that see [installation] and follow the instructions
+  there.  That includes placing a copy of the latest sources and
+  input scripts (but not prover output) in a directory on your
+  computer.  The filenames suffixed with [47m.lisp[0m at the top-level of
+  that directory constitute the ACL2 source code.  The ACL2
+  regression suite consists of thousands of files called ``[books]''
+  and are available under the [47mbooks/[0m subdirectory.  So, for example,
+  you'll find a toy model of the JVM at [47mbooks/models/jvm/m1/m1.lisp[0m.
+  If you want to see proofs you must build ACL2 on your machine and
+  run a full regression as described in the [installation]
+  instructions.
 
 
 Quick Index to Related Topics
@@ -144446,12 +144443,12 @@ Subtopics
   contains both the ACL2 sources and community books.  Below we
   describe the ACL2 distribution only (without the community books).
   Its files are available by exploring the {distrib/ |
-  https://www.cs.utexas.edu/users/moore/acl2/v8-6/v8-6/distrib/}
-  directory on the ACL2 website or by obtaining a gzipped tarfile,
-  {acl2.tar.gz |
+  https://www.cs.utexas.edu/users/moore/acl2/v8-6/distrib/} directory
+  on the ACL2 website or by obtaining a gzipped tarfile, {acl2.tar.gz
+  |
   https://www.cs.utexas.edu/users/moore/acl2/v8-6/distrib/acl2.tar.gz},
   which extracts to the contents of {distrib/acl2-sources/ |
-  https://www.cs.utexas.edu/users/moore/acl2/v8-6/v8-6/distrib/}
+  https://www.cs.utexas.edu/users/moore/acl2/v8-6/distrib/}
   directory, which in turn contains the ACL2 source files as well as
   the following (and a few others not mentioned here).
 
@@ -144462,23 +144459,22 @@ Subtopics
     bin/          ; Contains an executable script, bin/acl2, which invokes ACL2
     doc/          ; ACL2 documentation
     emacs/        ; Some helpful emacs utilities
-    installation/ ; Installation instructions (start with installation.html)
 
   Also available are the following.
 
     * {ACL2 customization files |
-      https://www.cs.utexas.edu/users/moore/acl2/v8-6/v8-6/distrib/acl2-customization-files/}:
+      https://www.cs.utexas.edu/users/moore/acl2/v8-6/distrib/acl2-customization-files/}:
       These [ACL2-customization] files can be useful for certifying
       books (see [certify-book]), for example with ACL2(p) (see
       [parallelism]).
 
     * {images/ |
-      https://www.cs.utexas.edu/users/moore/acl2/v8-6/v8-6/distrib/images/}:
+      https://www.cs.utexas.edu/users/moore/acl2/v8-6/distrib/images/}:
       Some gzip'd tar'd executables; see {images/Readme.html |
-      https://www.cs.utexas.edu/users/moore/acl2/v8-6/v8-6/distrib/images/Readme.html}
+      https://www.cs.utexas.edu/users/moore/acl2/v8-6/distrib/images/Readme.html}
 
     * {split/ |
-      https://www.cs.utexas.edu/users/moore/acl2/v8-6/v8-6/distrib/split/}:
+      https://www.cs.utexas.edu/users/moore/acl2/v8-6/distrib/split/}:
       The result of splitting up [47macl2.tar.gz[0m
 
 
