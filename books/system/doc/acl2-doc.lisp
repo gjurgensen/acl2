@@ -51938,7 +51938,12 @@ tables in the current Hons Space."
  <p>The community is invited to submit code contributions to the <see
  topic='@(url community-books)'>Community Books</see>. Source files outside of
  the ``books'' directory should not be modified, except by system
- maintainers. For those interested in development of the ACL2 core system, see
+ maintainers.</p>
+
+ <p>Suggestions for system changes should be emailed to
+ <a href="mailto:kaufmann@cs.utexas.edu">Matt Kaufmann</a>.</p>
+
+ <p>For those interested in development of the ACL2 core system, see
  the @(see developers-guide).</p>
 
  <h3>Resources for Git/GitHub</h3>
