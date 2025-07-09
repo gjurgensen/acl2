@@ -112158,7 +112158,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   })
 
   <p>As with Nqthm, to explore ACL2 source files or prover input files we
-  recommend that see @(see installation) and follow the instructions there.
+  recommend that you see @(see installation) and follow the instructions there.
   That includes placing a copy of the latest sources and input scripts (but not
   prover output) in a directory on your computer.  The filenames suffixed with
   @('.lisp') at the top-level of that directory constitute the ACL2 source
