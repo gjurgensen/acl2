@@ -51941,7 +51941,7 @@ tables in the current Hons Space."
  maintainers.</p>
 
  <p>Suggestions for system changes should be emailed to
- <a href="mailto:kaufmann@cs.utexas.edu">Matt Kaufmann</a>.</p>
+ <a href='mailto:kaufmann@cs.utexas.edu'>Matt Kaufmann</a>.</p>
 
  <p>For those interested in development of the ACL2 core system, see
  the @(see developers-guide).</p>
