@@ -2734,31 +2734,19 @@ Subtopics
   logo (which for example appears on the ACL2 home page), based on an
   original design created in the 1990s by Computational Logic, Inc.")
  (ACL2
-  NIL
-  "ACL2 documentation (system only, not including the community books)
+  (TOP)
+  "ACL2 system documentation
 
-  This is the documentation for the ACL2 system.  For the ACL2+Books
-  Manual, which documents both the ACL2 system and the ACL2
-  [community-books], see the {ACL2+Books Manual |
-  https://www.cs.utexas.edu/users/moore/acl2/v8-6/combined-manual/index.html}.
+  Those topics that pertain to the ACL2 system belong under this node
+  of the [documentation].  See [top] for the top node of this manual,
+  under which may be found many topics pertaining to the
+  [community-books].
 
 
 Subtopics
 
   [Bdd]
       Ordered binary decision diagrams with rewriting
-
-  [Books]
-      [3mBooks[0m are files of ACL2 [events]---they are the main way to split up
-      large ACL2 developments into separate modules.
-
-  [Debugging]
-      Tools for debugging failed or slow proofs, or misbehaving functions.
-
-  [Documentation]
-      Information about options for downloading and viewing the ACL2
-      documentation, contributing documentation, and the available
-      tools for documenting your own books.
 
   [Events]
       Functions that extend the logic
@@ -2771,12 +2759,6 @@ Subtopics
 
   [Installation]
       Installation Guide
-
-  [Interfacing-tools]
-      Libraries and tools for doing basic file i/o (see [STD/IO]), using
-      raw Common Lisp libraries (see [QUICKLISP]), working with the
-      operating system (see [OSLIB]), and interfacing with other
-      programs (see [BRIDGE]).
 
   [Macros]
       Macros allow you to extend the syntax of ACL2.
@@ -11570,7 +11552,7 @@ Subtopics
   [Xor]
       Logical ``exclusive or''")
  (BDD
-  (ACL2)
+  (ACL2 BOOLEAN-REASONING PROOF-AUTOMATION)
   "Ordered binary decision diagrams with rewriting
 
   Note.  The ACL2 bdd capability has been essentially superseded by GL;
@@ -13634,7 +13616,7 @@ Subtopics
     make regression-fresh \\
     ACL2_CUSTOMIZATION={DIR}/acl2-customization-files/bookdata.lisp")
  (BOOKS
-  (ACL2)
+  (TOP)
   "[3mBooks[0m are files of ACL2 [events]---they are the main way to split up
   large ACL2 developments into separate modules.
 
@@ -15705,6 +15687,7 @@ Subtopics
        (build::cert_param \"[books]/build/doc.lisp\")
        (cgen \"[books]/acl2s/cgen/top.lisp\")
        (checkpoint-list \"[books]/kestrel/utilities/checkpoints-doc.lisp\")
+       (community \"[books]/doc/more-topics.lisp\")
        (consideration \"[books]/hints/consider-hint.lisp\")
        (build::custom-certify-book-commands \"[books]/build/doc.lisp\")
        (std::defaggregate \"[books]/std/util/defaggregate.lisp\")
@@ -19921,8 +19904,8 @@ Subtopics
   (BOOKS)
   "Libraries of ACL2 [books] developed by the ACL2 community.
 
-  ACL2 [books] are files of ACL2 [events] like definitions and
-  theorems.
+  This topic discusses ACL2 [books], which are files of ACL2 [events]
+  like definitions and theorems.  See also [community].
 
   The ACL2 [31;1mCommunity Books[0m are the canonical set of open-source books
   for ACL2, developed since the early 1990s by members of the ACL2
@@ -23761,7 +23744,7 @@ Subtopics
   [47m(:executable-counterpart tau-system)[0m) or change the legacy hints to
   use the new subgoal names.")
  (DEBUGGING
-  (ACL2)
+  (TOP)
   "Tools for debugging failed or slow proofs, or misbehaving functions.
 
 
@@ -34314,7 +34297,7 @@ Subtopics
   HERE][0m[4m[31;1m[3m Bold italics underlined[0m[4m[31;1m Bold underlined.[0m[4m Underlined[0m Normal
   text")
  (DOCUMENTATION
-  (ACL2)
+  (TOP)
   "Information about options for downloading and viewing the ACL2
   documentation, contributing documentation, and the available tools
   for documenting your own books.
@@ -55611,8 +55594,8 @@ Frequent Contributors
 
     * Sol Swords ([47msswords@gmail.com[0m)
 
-  See also the community topic for other ways to connect with the ACL2
-  community.")
+  See also the [community] topic for other ways to connect with the
+  ACL2 community.")
  (HOW_LONG_DOES_IT_TAKE_TO_BECOME_AN_EFFECTIVE_USER{Q}
   (PAGES_WRITTEN_ESPECIALLY_FOR_THE_TOURS)
   "How Long Does It Take to Become an Effective User?
@@ -58586,7 +58569,7 @@ Subtopics
   papers on their web pages.  Also see publications and see the
   presentations in each of the ACL2 Workshops.")
  (INTERFACING-TOOLS
-  (ACL2)
+  (TOP)
   "Libraries and tools for doing basic file i/o (see [STD/IO]), using
   raw Common Lisp libraries (see [QUICKLISP]), working with the
   operating system (see [OSLIB]), and interfacing with other programs
@@ -105994,11 +105977,18 @@ Changes at the System Level
   broken links found in the ACL2-only manual and because the
   ACL2+Books manual is helpful for informing new users about the
   libraries provided by the [community-books].  Thanks to Eric Smith
-  for encouraging this change.  Note that the ACL2-only manual will
+  for encouraging this change.  Note that the ACL2-only manual may
   continue to be built in directory [47mdoc/manual/[0m when certifying
   [47mbooks/system/doc/acl2-manual.lisp[0m.  (Directory [47mdoc/manual/[0m is not
   to be confused with [47mbooks/doc/manual/[0m, where the ACL2+Books manual
   is built.)
+
+  For the built-in [47m:[0m[47m[doc][0m command at the terminal: changed the top
+  topic of that ``acl2-only'' manual from [47mACL2[0m to [47mTOP[0m.  The
+  structures of the documentation trees for that version of the
+  manual and the usual ACL2+Books manual are now consistent.  Thanks
+  to Eric Smith for suggesting that those two manual structures be
+  consistent.
 
   Replaced information about mailing lists in the [installation]
   instructions using a link to a corresponding, new documentation
@@ -110170,7 +110160,7 @@ Subtopics
     https://github.com/acl2/acl2
 
   As with Nqthm, to explore ACL2 source files or prover input files we
-  recommend that see [installation] and follow the instructions
+  recommend that you see [installation] and follow the instructions
   there.  That includes placing a copy of the latest sources and
   input scripts (but not prover output) in a directory on your
   computer.  The filenames suffixed with [47m.lisp[0m at the top-level of
@@ -122558,10 +122548,10 @@ Annotated Bibliography
       the ACL2 <<[Community-Books]>>, contains thousands of verified
       files created by the ACL2 user community containing definitions
       and theorems.  If you scan down to the [31;1mSubtopics[0m section of the
-      <<top>> node of the manual you will find a list of many topics
-      for which certified <<[books]>> are available.  To take just
-      one example from that top-level list of Subtopics, scroll down
-      to Hardware Verification.  In that Subtopic you find
+      <<[top]>> node of the manual you will find a list of many
+      topics for which certified <<[books]>> are available.  To take
+      just one example from that top-level list of Subtopics, scroll
+      down to Hardware Verification.  In that Subtopic you find
       directories dealing with symbolic simulation, register transfer
       logic (including tools for reasoning about floating point
       implementations), a Verilog translator, an x86 ISA model, and
@@ -151861,6 +151851,38 @@ Subtopics
   [47matomic-macro[0m, in any package), or else there is no change.")
  (TOO-MANY-IFS (POINTERS)
                "See [efficiency].")
+ (TOP
+  NIL
+  "ACL2 documentation (system only, not including the community books)
+
+  This is the documentation for the ACL2 system.  For the ACL2+Books
+  Manual, which documents both the ACL2 system and the ACL2
+  [community-books], see the {ACL2+Books Manual |
+  https://www.cs.utexas.edu/users/moore/acl2/v8-6/combined-manual/index.html}.
+
+
+Subtopics
+
+  [ACL2]
+      ACL2 system documentation
+
+  [Books]
+      [3mBooks[0m are files of ACL2 [events]---they are the main way to split up
+      large ACL2 developments into separate modules.
+
+  [Debugging]
+      Tools for debugging failed or slow proofs, or misbehaving functions.
+
+  [Documentation]
+      Information about options for downloading and viewing the ACL2
+      documentation, contributing documentation, and the available
+      tools for documenting your own books.
+
+  [Interfacing-tools]
+      Libraries and tools for doing basic file i/o (see [STD/IO]), using
+      raw Common Lisp libraries (see [QUICKLISP]), working with the
+      operating system (see [OSLIB]), and interfacing with other
+      programs (see [BRIDGE]).")
  (TOP-LEVEL
   (MISCELLANEOUS)
   "Evaluate a top-level form as a function body
