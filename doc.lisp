@@ -55566,8 +55566,13 @@ Update the Release Notes
   The community is invited to submit code contributions to the
   Community Books (see [COMMUNITY-BOOKS]). Source files outside of
   the ``books'' directory should not be modified, except by system
-  maintainers. For those interested in development of the ACL2 core
-  system, see the [developers-guide].
+  maintainers.
+
+  Suggestions for system changes should be emailed to {Matt Kaufmann |
+  mailto:kaufmann@cs.utexas.edu}.
+
+  For those interested in development of the ACL2 core system, see the
+  [developers-guide].
 
 
 Resources for Git/GitHub
