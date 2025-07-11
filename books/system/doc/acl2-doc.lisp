@@ -80,6 +80,7 @@
     (BUILD::CERT_PARAM "[books]/build/doc.lisp")
     (CGEN "[books]/acl2s/cgen/top.lisp")
     (CHECKPOINT-LIST "[books]/kestrel/utilities/checkpoints-doc.lisp")
+    (COMMUNITY "[books]/doc/more-topics.lisp")
     (CONSIDERATION "[books]/hints/consider-hint.lisp")
     (BUILD::CUSTOM-CERTIFY-BOOK-COMMANDS "[books]/build/doc.lisp")
     (STD::DEFAGGREGATE "[books]/std/util/defaggregate.lisp")
@@ -188,14 +189,20 @@
 ; who are looking at an older version of ACL2 will see the corresponding
 ; ACL2+Books Manual at this link.
 
-  "http://www.cs.utexas.edu/users/moore/acl2/v8-6/")
+  "https://www.cs.utexas.edu/users/moore/acl2/v8-6/")
 
-(defconst *installation-url*
+(defun acl2-url-ref (path s)
 
 ; Warning: This event appears identically in acl2-doc.lisp and
 ; acl2-doc-wrap.lisp.  If you change one, then change the other the same way!
 
-  (concatenate 'string *acl2-url* "HTML/installation/installation.html"))
+  (concatenate
+   'string
+   "<a href='"
+   (concatenate 'string *acl2-url* path)
+   "'>"
+   s
+   "</a>"))
 
 (defun combined-manual-ref ()
 
@@ -219,7 +226,7 @@
                                   (stringp url))
                               (stringp title))))
   (concatenate 'string
-               "<a href='http://www.lispworks.com/documentation/HyperSpec/"
+               "<a href='https://www.lispworks.com/documentation/HyperSpec/"
                (or url "")
                "'>" title "</a>"))
 
@@ -816,11 +823,13 @@
  Moore.</p>
 
  <p>See the <a href='http://www.cs.utexas.edu/users/moore/acl2/'>ACL2 home
- page</a> for additional information including tutorials, installation
- instructions, mailing lists, related publications, ACL2 workshops and
- seminars, acknowledgments, and other ACL2 releases.</p>
+ page</a> for additional information including tutorials, @(see installation)
+ instructions, <see topic='@(url mailing-lists)'> mailing lists</see>. related
+ @(see publications), ACL2 workshops and seminars, @(see acknowledgments), and
+ other ACL2 releases.</p>
 
- <p>See @(see documentation) for how to access the ACL2 User's Manual.</p>
+ <p>See @(see documentation) for how to access the ACL2+Books User's
+ Manual.</p>
 
  <p>For statistics on ACL2 code size, see file @('doc/acl2-code-size.txt').</p>")
 
@@ -1611,12 +1620,12 @@
  suggestions from the community for improvements that we ultimately
  implemented.</p>
 
- <p>We also thank the contributors to the ACL2 workshops for some suggested
- improvements and for the extensive collection of publicly distributed
- benchmark problems.  And we thank participants at the ACL2 seminar at the
- University of Texas for useful feedback.  More generally, we thank the ACL2
- community for feedback, contributed @(see books) (see @(see community-books)),
- and their interest in the ACL2 project.</p>
+ <p>We also thank the contributors to the ACL2 @(see workshops) for some
+ suggested improvements and for the extensive collection of publicly
+ distributed benchmark problems.  And we thank participants at the ACL2 seminar
+ at the University of Texas for useful feedback.  More generally, we thank the
+ ACL2 community for feedback, contributed @(see books) (see @(see
+ community-books)), and their interest in the ACL2 project.</p>
 
  <p><i>Regarding the documentation:</i></p>
 
@@ -1660,10 +1669,11 @@
 
 (defxdoc acl2
   :parents (top)
-  :short "ACL2 documentation (system only, not including the community books)"
-  :long "<p>This is the documentation for the ACL2 system.  For the ACL2+Books
-  Manual, which documents both the ACL2 system and the ACL2 @(see
-  community-books), see the @(`(:raw (combined-manual-ref))`).</p>")
+  :short "ACL2 system documentation"
+  :long "<p>Those topics that pertain to the ACL2 system belong under this node
+ of the @(see documentation).  See @(see top) for the top node of this manual,
+ under which may be found many topics pertaining to the @(see
+ community-books).</p>")
 
 (defxdoc |ACL2 Characters|
   :parents (|Pages Written Especially for the Tours|)
@@ -2937,7 +2947,7 @@
           \"books/system/doc/rendered-doc-combined.lsp\")
   'TOP
   \"ACL2+Books Manual\"
-  \"http://www.cs.utexas.edu/users/moore/acl2/manuals/current/rendered-doc-combined.lsp.gz\"
+  \"https://www.cs.utexas.edu/users/moore/acl2/manuals/current/rendered-doc-combined.lsp.gz\"
   (concat *acl2-sources-dir* \"TAGS-acl2-doc\")
   (concat *acl2-sources-dir* \"TAGS\"))
 
@@ -3097,7 +3107,7 @@
  You can build this file yourself, as described below but you may prefer to
  download it: for example, when you start ACL2-Doc, you may be given the option
  of downloading <a
- href='http://www.cs.utexas.edu/users/moore/acl2/manuals/current/rendered-doc-combined.lsp.gz'>a
+ href='https://www.cs.utexas.edu/users/moore/acl2/manuals/current/rendered-doc-combined.lsp.gz'>a
  tarball for the latest ``bleeding edge'' copy</a> and extracting into
  directory @('system/doc/') of your community books directory.  Indeed, the
  system will do all this for you if you answer @('y') to that query.
@@ -3327,7 +3337,7 @@
  through this material.</li>
 
  <li>The book <a
- href='http://www.cs.utexas.edu/users/moore/publications/acl2-books/car/index.html'>Computer-Aided
+ href='https://www.cs.utexas.edu/users/moore/publications/acl2-books/car/index.html'>Computer-Aided
  Reasoning: An Approach</a> is worth a careful read, as you work exercises and
  learn @(see the-method).</li>
 
@@ -3353,7 +3363,7 @@
 
  <p>Note that ACL2 has a very supportive user network.  See the link to
  ``Mailing Lists'' on the <a
- href='http://www.cs.utexas.edu/users/moore/acl2'>ACL2 home page</a>.</p>
+ href='https://www.cs.utexas.edu/users/moore/acl2'>ACL2 home page</a>.</p>
 
  <p>The topics listed below are a hodge podge, developed over time.  Although
  some of these are not mentioned above, you might find some to be useful as
@@ -5093,18 +5103,18 @@ and @(tsee include-book)"
   induction schemes.  However, one of these is flawed and so we are
   left with one viable candidate.
 
-  We will induct according to a scheme suggested by (LEN X), but
-  modified to accommodate (MY-APP X Y).  If we let (:P X Y) denote *1
-  above then the induction scheme we'll use is
+  We will induct according to a scheme suggested by (LEN X), while
+  accommodating (MY-APP X Y).
+
+  These suggestions were produced using the :induction rules LEN and
+  MY-APP. If we let (:P X Y) denote *1 above then the induction scheme
+  we'll use is
   (AND (IMPLIES (NOT (CONSP X)) (:P X Y))
        (IMPLIES (AND (CONSP X) (:P (CDR X) Y))
                 (:P X Y))).
-  This induction is justified by the same argument used to admit LEN,
-  namely, the measure (ACL2-COUNT X) is decreasing according to the
-  relation O< (which is known to be well-founded on the domain
-  recognized by O-P).  When applied to the goal at hand the
-  above induction scheme produces the following two nontautological
-  subgoals.
+  This induction is justified by the same argument used to admit LEN.
+  When applied to the goal at hand the above induction scheme produces
+  two nontautological subgoals.
 
   Subgoal *1/2
   (IMPLIES (NOT (CONSP X))
@@ -5301,7 +5311,7 @@ and @(tsee include-book)"
  @('books/demos/'), and its subdirectories.</p>
 
  <p>The web page <a
- href='http://www.cs.utexas.edu/users/moore/publications/tutorial/rev3.html'>Brief
+ href='https://www.cs.utexas.edu/users/moore/publications/tutorial/rev3.html'>Brief
  ACL2 Tutorial</a> contains a script that illustrates how it feels to use The
  Method to prove an unusual list reverse function correct.  The screen shots of
  ACL2's proof output are outdated &mdash; in the version shown, ACL2 does not
@@ -5309,7 +5319,7 @@ and @(tsee include-book)"
  discussion and the behavior of the user.</p>
 
  <p>See <a
- href='http://www.cs.utexas.edu/users/moore/acl2/contrib/POLISHING-PROOFS-TUTORIAL.html'>Polishing
+ href='https://www.cs.utexas.edu/users/moore/acl2/contrib/POLISHING-PROOFS-TUTORIAL.html'>Polishing
  Proofs Tutorial</a> for a tutorial on becoming successful at approaching a
  formalization and proof problem in ACL2.  That tutorial, written by Shilpi
  Goel and Sandip Ray, has two parts: it illustrates how to guide the theorem
@@ -5318,17 +5328,17 @@ and @(tsee include-book)"
  books)).</p>
 
  <p>The <a
- href='http://www.cs.utexas.edu/users/moore/publications/tutorial/kaufmann-TPHOLs08/index.html'>ACL2
+ href='https://www.cs.utexas.edu/users/moore/publications/tutorial/kaufmann-TPHOLs08/index.html'>ACL2
  Demo Given at TPHOLs 2008</a> by Matt Kaufmann includes scripts and a gzipped
  tar file containing the entire contents of the demos.</p>
 
  <p>The <a
- href='http://www.cs.utexas.edu/users/moore/publications/tutorial/sort-equivalence'>sort
+ href='https://www.cs.utexas.edu/users/moore/publications/tutorial/sort-equivalence'>sort
  equivalence demo</a> is a collection of scripts illustrating both high-level
  strategy and lower-level tactics dealing with the functional equivalence of
  various list sorting algorithms.  Start with the @('README') on that
  directory.  There is also a <a
- href='http://www.cs.utexas.edu/users/moore/publications/tutorial/sort-equivalence.tgz'>gzipped
+ href='https://www.cs.utexas.edu/users/moore/publications/tutorial/sort-equivalence.tgz'>gzipped
  tar file</a> with all of these scripts.</p>
 
  <p>When you feel you have read enough examples, you might want to try the
@@ -5378,7 +5388,7 @@ and @(tsee include-book)"
   :short "Apply a badged function or tame lambda to arguments"
 
   :long "<p>We recommend that you read the paper <a
-  href='http://www.cs.utexas.edu/users/kaufmann/papers/apply/index.html'>``Limited
+  href='https://www.cs.utexas.edu/users/kaufmann/papers/apply/index.html'>``Limited
   Second-Order Functionality in a First-Order Setting''</a> by Matt Kaufmann
   and J Strother Moore for both motivation and foundational details.  You might
   also read @(see introduction-to-apply$)!</p>
@@ -6093,7 +6103,7 @@ and @(tsee include-book)"
   needn't worry about this.  <i>There is a model of @('apply$') and all of its
   scions that makes every warrant issued by @('defwarrant') valid.</i> The
   proof of this is sketched in <a
-  href='http://www.cs.utexas.edu/users/kaufmann/papers/apply/index.html'>``Limited
+  href='https://www.cs.utexas.edu/users/kaufmann/papers/apply/index.html'>``Limited
   Second-Order Functionality in a First-Order Setting''</a> by Matt Kaufmann
   and J Strother Moore and fully fleshed out in the comment titled <tt>Essay on
   Admitting a Model for Apply$ and the Functions that Use It</tt> in the ACL2
@@ -7942,11 +7952,11 @@ and @(tsee include-book)"
   :long "<p><see topic='@(url |What Is ACL2(Q)|)'><img
  src='res/tours/flying.gif'></img></see></p>
 
- <p>The <a href='http://www.cs.utexas.edu/users/moore/acl2/'>ACL2 Home Page</a>
+ <p>The <a href='https://www.cs.utexas.edu/users/moore/acl2/'>ACL2 Home Page</a>
  on the web contains links to demos, publications, mailing lists, installation
- instructions, and more &mdash; and, especially, to the extensive <a
- href=\"https://www.cs.utexas.edu/users/moore/acl2/v8-6/acl2-doc.html#User's-Manual\">online
- documentation</a> for ACL2 and its libraries, known as ``books''.</p>
+ instructions, and more &mdash; and, especially, to the
+ @(`(:raw (combined-manual-ref))`), which provides online documentation for
+ ACL2 and its libraries, known as ``books''.</p>
 
  <p>For example, to use the online documentation to find out about @(see
  rewrite) <see topic='ACL2____A_02Tiny_02Warning_02Sign'><icon
@@ -8380,7 +8390,7 @@ and @(tsee include-book)"
   :short "Variant of quotation introducing templates for data structures"
   :long "<p>ACL2 supports the backquote (@('`')) construct of Common Lisp.  See
  any Common Lisp documentation for details, for example, its <a
- href='http://www.lispworks.com/documentation/HyperSpec/Body/02_df.htm'>discussion
+ href='https://www.lispworks.com/documentation/HyperSpec/Body/02_df.htm'>discussion
  in the Common Lisp HyperSpec</a>.  Here we give only a brief introduction.</p>
 
  <p>Together with the use of comma (@(',')) and comma-atsign (@(',@')),
@@ -8579,7 +8589,12 @@ and @(tsee include-book)"
  constructs like @(see mv), and so forth.")
 
 (defxdoc bdd
-  :parents (acl2)
+
+; Note that topics boolean-reasoning and proof-automation do not exist in the
+; acl2-only manual.  This doesn't cause a problem; if it becomes one, we could
+; add them to :DOC broken-link-table.
+
+  :parents (acl2 boolean-reasoning proof-automation)
   :short "Ordered binary decision diagrams with rewriting"
   :long "<p>Note.  The ACL2 bdd capability has been essentially superseded by
  GL; see @(see gl).</p>
@@ -9329,13 +9344,6 @@ and @(tsee include-book)"
  })
 
  <p>See @(see if*) for another example.</p>")
-
-(defxdoc bibliography
-  :parents (about-acl2)
-  :short "Reports about ACL2"
-  :long "<p>The ACL2 home page includes a <a
-  href='http://www.cs.utexas.edu/users/moore/publications/acl2-papers.html'>list
-  of notes and reports about ACL2</a>.</p>")
 
 (defxdoc binary-*
   :parents (* acl2-built-ins)
@@ -10703,15 +10711,14 @@ and @(tsee include-book)"
  })")
 
 (defxdoc books
-  :parents (acl2)
+  :parents (top)
   :short "<i>Books</i> are files of ACL2 @(see events)&mdash;they are the main
 way to split up large ACL2 developments into separate modules."
 
   :long "<p>This @(see documentation) topic is about ACL2 <a
  href='https://en.wikipedia.org/wiki/Source_code'>source code</a> files.
- However, there are also <a
- href='http://www.cs.utexas.edu/users/moore/publications/acl2-papers.html#Books'>traditional,
- paper books</a> published about ACL2 and its applications.</p>
+ However, there are also books published about ACL2 and its applications; see
+ @(see pubs::pubs-books).</p>
 
  <p>You will almost surely want to organize your own ACL2 work into books.
  They facilitate reuse, allow you to reload proofs more quickly, allow you to
@@ -10761,290 +10768,290 @@ way to split up large ACL2 developments into separate modules."
   :short "Instructions for certifying the ACL2 @(see community-books)."
 
   :long "<p>The <see topic='@(url community-books)'>Community Books</see>
-provides a @('make') system, which is recommended for certifying a specified
-subset of those books from the @('books/') directory of your ACL2 distribution.
-Alternate instructions are however available for certifying from the top-level
-directory (see @(see books-certification-alt)).</p>
-
-<p>Below are instructions for certifying various sets of books.  They all have
-the following form in common.  Note: If there is a suitable @('\"acl2\"')
-executable on your Unix @('PATH') &mdash; for example, if the @('bin')
-subdirectory of the main ACL2 directory is on your @('PATH'), so that
-@('bin/acl2') may be your executable &mdash; then you can omit
-@('\"ACL2=...\"') below.</p>
-
-@({
-cd /path/to/acl2-sources/books
-make ACL2=/path/to/acl2-sources/saved_acl2 ...
-})
-
-<p>For example, the section ``A Full Build'', below, says to do the following
-if you would like to make a change to the @(see community-books) (where the
-@('-j') argument is optional).</p>
-
-@({
-    $ cd /path/to/acl2-sources/books
-    $ make ACL2=/path/to/acl2-sources/saved_acl2 -j 2 all
-})
-
-<p>Success is indicated by a Linux exit status of 0.  Equivalently, there
-should be no failures in the log.  Failures may be found by searching for
-@('**'); for example, if output is redirected to a log file
-@('make-regression.log'), then the following should provide no output.</p>
-
-@({
-fgrep -a '**' make-regression.log
-})
-
-<p>Unusual books that create output in the log file should not produce the
-string @('**') except upon failure.</p>
-
-<p>By default, @('make') commands for certifying books take advantage of files
-@('*@useless-runes.lsp').  See @(see useless-runes).</p>
-
-<h3>Prerequisites</h3>
-
-<p>We assume that you have already downloaded and installed ACL2 as per the <a
-href=\"@(`(:raw *installation-url*)`)\">ACL2 installation instructions</a> on
-the ACL2 home page.</p>
-
-<p>We assume you know the path to your ACL2 executable.  Typically this is a
-script named @('saved_acl2') in your @('acl2-sources') directory.</p>
-
-<p>We assume the ACL2 @(see community-books) are installed in the @('books/')
-subdirectory of your ACL2 distribution, as is the case when you have followed
-the ACL2 installation instructions above.</p>
-
-<p>The instructions below are suitable for ACL2 and all of its experimental
-extensions, e.g., ACL2(p) and ACL2(r).</p>
-
-<p>It may be preferable to avoid being logged in as root, since developers do
-not test as root and at least one community book
-(@('books/oslib/tests/copy.lisp')) has failed to certify when logged in as
-root.</p>
-
-<h3>A Basic Build</h3>
-
-<p>Before ACL2 Version 6.4, building the Community Books could take several
-hours.  Now, the default @('make') target in @('books/GNUmakefile'), called
-@('basic'), is much faster &mdash; it excludes many books and certifies only
-books listed below, which tend to be widely used.  <b>WARNING</b>: the
-@('basic') target of @('books/GNUmakefile') is insufficient for validating
-changes that will go into the @(see community-books); for that, use the
-@('all') target.</p>
+ provides a @('make') system, which is recommended for certifying a specified
+ subset of those books from the @('books/') directory of your ACL2 distribution.
+ Alternate instructions are however available for certifying from the top-level
+ directory (see @(see books-certification-alt)).</p>
+
+ <p>Below are instructions for certifying various sets of books.  They all have
+ the following form in common.  Note: If there is a suitable @('\"acl2\"')
+ executable on your Unix @('PATH') &mdash; for example, if the @('bin')
+ subdirectory of the main ACL2 directory is on your @('PATH'), so that
+ @('bin/acl2') may be your executable &mdash; then you can omit
+ @('\"ACL2=...\"') below.</p>
+
+ @({
+ cd /path/to/acl2-sources/books
+ make ACL2=/path/to/acl2-sources/saved_acl2 ...
+ })
+
+ <p>For example, the section ``A Full Build'', below, says to do the following
+ if you would like to make a change to the @(see community-books) (where the
+ @('-j') argument is optional).</p>
+
+ @({
+     $ cd /path/to/acl2-sources/books
+     $ make ACL2=/path/to/acl2-sources/saved_acl2 -j 2 all
+ })
+
+ <p>Success is indicated by a Linux exit status of 0.  Equivalently, there
+ should be no failures in the log.  Failures may be found by searching for
+ @('**'); for example, if output is redirected to a log file
+ @('make-regression.log'), then the following should provide no output.</p>
+
+ @({
+ fgrep -a '**' make-regression.log
+ })
+
+ <p>Unusual books that create output in the log file should not produce the
+ string @('**') except upon failure.</p>
+
+ <p>By default, @('make') commands for certifying books take advantage of files
+ @('*@useless-runes.lsp').  See @(see useless-runes).</p>
+
+ <h3>Prerequisites</h3>
+
+ <p>We assume that you have already downloaded and installed ACL2 as per the
+ ACL2 installation instructions, which you can access from the ACL2 home page,
+ or see @(see installation).</p>
+
+ <p>We assume you know the path to your ACL2 executable.  Typically this is a
+ script named @('saved_acl2') in your @('acl2-sources') directory.</p>
+
+ <p>We assume the ACL2 @(see community-books) are installed in the @('books/')
+ subdirectory of your ACL2 distribution, as is the case when you have followed
+ the ACL2 @(see installation) instructions.</p>
+
+ <p>The instructions below are suitable for ACL2 and all of its experimental
+ extensions, e.g., ACL2(p) and ACL2(r).</p>
+
+ <p>It may be preferable to avoid being logged in as root, since developers do
+ not test as root and at least one community book
+ (@('books/oslib/tests/copy.lisp')) has failed to certify when logged in as
+ root.</p>
+
+ <h3>A Basic Build</h3>
+
+ <p>Before ACL2 Version 6.4, building the Community Books could take several
+ hours.  Now, the default @('make') target in @('books/GNUmakefile'), called
+ @('basic'), is much faster &mdash; it excludes many books and certifies only
+ books listed below, which tend to be widely used.  <b>WARNING</b>: the
+ @('basic') target of @('books/GNUmakefile') is insufficient for validating
+ changes that will go into the @(see community-books); for that, use the
+ @('all') target.</p>
 
-<ul>
-<li>arithmetic</li>
-<li>arithmetic-3</li>
-<li>arithmetic-5</li>
-<li>@(see ihs)</li>
-<li>misc</li>
-<li>tools (mostly)</li>
-<li>@(see std)</li>
-<li>@(see xdoc) (in part)</li>
-<li>data-structures</li>
-</ul>
-
-<p>To certify these books, you should be able to run @('make') as follows.  The
-@('-j 2') part of this command is suitable for a computer with two cores.  If
-you have, e.g., a quad-core computer, you should probably use @('-j 4')
-instead, and so on.</p>
+ <ul>
+ <li>arithmetic</li>
+ <li>arithmetic-3</li>
+ <li>arithmetic-5</li>
+ <li>@(see ihs)</li>
+ <li>misc</li>
+ <li>tools (mostly)</li>
+ <li>@(see std)</li>
+ <li>@(see xdoc) (in part)</li>
+ <li>data-structures</li>
+ </ul>
+
+ <p>To certify these books, you should be able to run @('make') as follows.  The
+ @('-j 2') part of this command is suitable for a computer with two cores.  If
+ you have, e.g., a quad-core computer, you should probably use @('-j 4')
+ instead, and so on.</p>
 
-@({
-    $ cd /path/to/acl2-sources/books
-    $ make ACL2=/path/to/acl2-sources/saved_acl2 -j 2 basic
-})
-
-<p>If you configure your @('PATH') so that you can launch ACL2 by typing
-@('acl2'), then you may omit the @('ACL2=...') part.</p>
+ @({
+     $ cd /path/to/acl2-sources/books
+     $ make ACL2=/path/to/acl2-sources/saved_acl2 -j 2 basic
+ })
+
+ <p>If you configure your @('PATH') so that you can launch ACL2 by typing
+ @('acl2'), then you may omit the @('ACL2=...') part.</p>
 
 
-<h3>Certifying Additional Books</h3>
+ <h3>Certifying Additional Books</h3>
 
-<p>We expect that most ACL2 users will want to certify at least the @('basic')
-books described above.  But what if you also need other books?  One option is
-to do a full build (see below).  But it is usually <b>much faster</b> to simply
-tell @('make') to build the books you actually want to use.</p>
+ <p>We expect that most ACL2 users will want to certify at least the @('basic')
+ books described above.  But what if you also need other books?  One option is
+ to do a full build (see below).  But it is usually <b>much faster</b> to simply
+ tell @('make') to build the books you actually want to use.</p>
 
-<p>There are @('make') targets corresponding to most directory names.  For
-instance, to build the books under @('coi') and @('rtl') and @('cgen'), you can
-run:</p>
+ <p>There are @('make') targets corresponding to most directory names.  For
+ instance, to build the books under @('coi') and @('rtl') and @('cgen'), you can
+ run:</p>
 
-@({
-    $ cd /path/to/acl2-sources/books
-    $ make ACL2=/path/to/acl2-sources/saved_acl2 coi rtl cgen -j 2
-})
+ @({
+     $ cd /path/to/acl2-sources/books
+     $ make ACL2=/path/to/acl2-sources/saved_acl2 coi rtl cgen -j 2
+ })
 
-<p>For finer grained control, you can name individual books.  This works
-particularly well for libraries that have @('top') books.  For instance, if you
-want the @('rtl/rel9') library, you could run:</p>
+ <p>For finer grained control, you can name individual books.  This works
+ particularly well for libraries that have @('top') books.  For instance, if you
+ want the @('rtl/rel9') library, you could run:</p>
 
-@({
-    $ cd /path/to/acl2-sources/books
-    $ make ACL2=/path/to/acl2-sources/saved_acl2 rtl/rel9/lib/top.cert -j 2
-})
+ @({
+     $ cd /path/to/acl2-sources/books
+     $ make ACL2=/path/to/acl2-sources/saved_acl2 rtl/rel9/lib/top.cert -j 2
+ })
 
 
-<h3>Books that Require ACL2 Extensions</h3>
+ <h3>Books that Require ACL2 Extensions</h3>
 
-<p>Some books require experimental extensions to ACL2, such as ACL2(p) (see
-@(see parallelism)) or ACL2(r) (see @(see real)).  Other books require certain
-additional software.</p>
+ <p>Some books require experimental extensions to ACL2, such as ACL2(p) (see
+ @(see parallelism)) or ACL2(r) (see @(see real)).  Other books require certain
+ additional software.</p>
 
-<p>The build system will automatically determine which kind of ACL2 you are
-running (ACL2, ACL2(p), or ACL2(r)) and, based on this, may prevent
-incompatible books from being certified.  The output of @('make') should
-explain which books are being excluded and why.</p>
+ <p>The build system will automatically determine which kind of ACL2 you are
+ running (ACL2, ACL2(p), or ACL2(r)) and, based on this, may prevent
+ incompatible books from being certified.  The output of @('make') should
+ explain which books are being excluded and why.</p>
 
-<p>These kinds of book requirements are controlled by special @(see
-build::cert_param) comments.</p>
+ <p>These kinds of book requirements are controlled by special @(see
+ build::cert_param) comments.</p>
 
 
-<h3>Books that Require Quicklisp</h3>
+ <h3>Books that Require Quicklisp</h3>
 
-<p>Some books, especially @(see interfacing-tools) like @(see oslib) and the
-ACL2 @(see bridge), require certain Common Lisp libraries.</p>
+ <p>Some books, especially @(see interfacing-tools) like @(see oslib) and the
+ ACL2 @(see bridge), require certain Common Lisp libraries.</p>
 
-<p>These libraries are now bundled with ACL2 via @(see quicklisp), so you
-should not need to download anything extra to use them.  They are enabled by
-default for all host Lisps except GCL, but you can avoid books that depend on
-Quicklisp libraries by setting @('USE_QUICKLISP=0') in your
-@('make') command.</p>
+ <p>These libraries are now bundled with ACL2 via @(see quicklisp), so you
+ should not need to download anything extra to use them.  They are enabled by
+ default for all host Lisps except GCL, but you can avoid books that depend on
+ Quicklisp libraries by setting @('USE_QUICKLISP=0') in your
+ @('make') command.</p>
 
-<p>Using Quicklisp should definitely work if the host Lisp is CCL or SBCL.
-(Note however that certification of @(see books) that use
-Quicklisp may require @('openssl') to be installed if it is not already
-on your system.)
-There is some chance it will work with Allegro CL, LispWorks, and CMUCL.  It
-will almost certainly <b>not</b> work for GCL (at least as of 2018).</p>
+ <p>Using Quicklisp should definitely work if the host Lisp is CCL or SBCL.
+ (Note however that certification of @(see books) that use
+ Quicklisp may require @('openssl') to be installed if it is not already
+ on your system.)
+ There is some chance it will work with Allegro CL, LispWorks, and CMUCL.  It
+ will almost certainly <b>not</b> work for GCL (at least as of 2018).</p>
 
 
-<h3>Books that Require Additional Software</h3>
+ <h3>Books that Require Additional Software</h3>
 
-<p>Some other books based on @(see satlink) and @(see gl) require a SAT solver,
-typically Glucose, to be installed; see @(see satlink::sat-solver-options) for
-installation options.  The build system should automatically determine if
-Glucose is installed on your system, and will avoid trying to certify these
-books unless Glucose is present.</p>
+ <p>Some other books based on @(see satlink) and @(see gl) require a SAT solver,
+ typically Glucose, to be installed; see @(see satlink::sat-solver-options) for
+ installation options.  The build system should automatically determine if
+ Glucose is installed on your system, and will avoid trying to certify these
+ books unless Glucose is present.</p>
 
 
-<h3>Building the manual</h3>
+ <h3>Building the manual</h3>
 
-<p>If you just want to get a copy of the ACL2+Books manual for local viewing,
-you probably <b>don't need to build it yourself</b> because you can just <a
-href='download/'>download</a> a copy.  If for some reason you do want to build
-the manual yourself, you should be able to do so as follows, provided you have
-installed glucose.  (That requirement might be eliminated in the future.)</p>
+ <p>If you just want to get a copy of the ACL2+Books manual for local viewing,
+ you probably <b>don't need to build it yourself</b> because you can just <a
+ href='download/'>download</a> a copy.  If for some reason you do want to build
+ the manual yourself, you should be able to do so as follows, provided you have
+ installed glucose.  (That requirement might be eliminated in the future.)</p>
 
-@({
-    $ cd /path/to/acl2-sources/books
-    $ make manual -j 4
-})
+ @({
+     $ cd /path/to/acl2-sources/books
+     $ make manual -j 4
+ })
 
-<p>Building the manual should work on at least CCL and SBCL on Linux and Mac OS
-X.  It <b>may not work</b> for some other OS/Lisp combinations.  In particular,
-building the manual requires some features from @(see oslib) and @(see
-quicklisp) that may not be available on some other Lisps.</p>
+ <p>Building the manual should work on at least CCL and SBCL on Linux and Mac OS
+ X.  It <b>may not work</b> for some other OS/Lisp combinations.  In particular,
+ building the manual requires some features from @(see oslib) and @(see
+ quicklisp) that may not be available on some other Lisps.</p>
 
-<p>The resulting web-based manual may be found in:</p>
+ <p>The resulting web-based manual may be found in:</p>
 
-@({
-    acl2-sources/books/doc/manual/index.html
-})
+ @({
+     acl2-sources/books/doc/manual/index.html
+ })
 
-<p>See also @(see acl2::acl2-doc) for details about how to build your own
-Emacs-based manual, and @(see xdoc::save) for general information about how to
-build and distribute custom XDOC manuals, e.g., manuals that additionally
-include your own unreleased books.</p>
+ <p>See also @(see acl2::acl2-doc) for details about how to build your own
+ Emacs-based manual, and @(see xdoc::save) for general information about how to
+ build and distribute custom XDOC manuals, e.g., manuals that additionally
+ include your own unreleased books.</p>
 
 
-<h3>A Full Build</h3>
+ <h3>A Full Build</h3>
 
-<p>Building all of the books can take hours and is <b>usually unnecessary</b>.
-That said, it is easy to do: just run @('make all'), for example as follows.
-(But as noted above, you may omit @('\"ACL2=...\"') if a suitable executable
-named @('acl2') is on your Unix @('PATH'), such as @('bin/acl2').)</p>
+ <p>Building all of the books can take hours and is <b>usually unnecessary</b>.
+ That said, it is easy to do: just run @('make all'), for example as follows.
+ (But as noted above, you may omit @('\"ACL2=...\"') if a suitable executable
+ named @('acl2') is on your Unix @('PATH'), such as @('bin/acl2').)</p>
 
-@({
-    $ cd /path/to/acl2-sources/books
-    $ make ACL2=/path/to/acl2-sources/saved_acl2 -j 2 all
-})
+ @({
+     $ cd /path/to/acl2-sources/books
+     $ make ACL2=/path/to/acl2-sources/saved_acl2 -j 2 all
+ })
 
-<p>This includes a few books that are quite slow to certify.  You can
-exclude those by replacing ``@('all')'' by ``@('regression')'' in the
-command above.</p>
+ <p>This includes a few books that are quite slow to certify.  You can
+ exclude those by replacing ``@('all')'' by ``@('regression')'' in the
+ command above.</p>
 
 
-<h3>Cleaning Up</h3>
+ <h3>Cleaning Up</h3>
 
-<p>If you want to delete generated files, you can run @('make clean') to remove
-certificates, compiled files, and build logs.</p>
+ <p>If you want to delete generated files, you can run @('make clean') to remove
+ certificates, compiled files, and build logs.</p>
 
-<p>If you just want to remove the files in a particular subdirectory (and its
-subdirectories), you can go into that directory and then run the
-@('build/clean.pl') script.  This will delete, starting from your current
-directory, recursively, all certificates, logs, compiled files, etc.</p>
+ <p>If you just want to remove the files in a particular subdirectory (and its
+ subdirectories), you can go into that directory and then run the
+ @('build/clean.pl') script.  This will delete, starting from your current
+ directory, recursively, all certificates, logs, compiled files, etc.</p>
 
-<p>Note that @('make clean') doesn't remove some files, e.g., @(see xdoc)
-manuals.  To remove everything, try @('make moreclean').</p>
+ <p>Note that @('make clean') doesn't remove some files, e.g., @(see xdoc)
+ manuals.  To remove everything, try @('make moreclean').</p>
 
 
-<h3>Debugging Failed Certifications</h3>
+ <h3>Debugging Failed Certifications</h3>
 
-<p>If a book fails to certify, you may want to try certifying it in an
-interactive session.  The most reliable way to do this is to replicate the
-environment and commands that the build system used.  This information can be
-found at the top of the @('[bookname].cert.out') file.  For instance:</p>
+ <p>If a book fails to certify, you may want to try certifying it in an
+ interactive session.  The most reliable way to do this is to replicate the
+ environment and commands that the build system used.  This information can be
+ found at the top of the @('[bookname].cert.out') file.  For instance:</p>
 
-@({
-    ;; foo.cert.out
-    -*- Mode: auto-revert -*-
-    ...
-    Environment variables:
-    ACL2_CUSTOMIZATION=NONE                 ;; <-- first configure your
-    ACL2_SYSTEM_BOOKS=/path/to/acl2/books   ;;     environment to match
-    ACL2=/path/to/saved_acl2                ;;     these settings
-    ...
-    Temp lisp file:
-    (acl2::value :q)                 ;; <--- then submit these commands to
-    (acl2::in-package \"ACL2\")      ;;      $ACL2 to debug the failure
-    ...                              ;;      interactively
-    --- End temp lisp file ---
-})
+ @({
+     ;; foo.cert.out
+     -*- Mode: auto-revert -*-
+     ...
+     Environment variables:
+     ACL2_CUSTOMIZATION=NONE                 ;; <-- first configure your
+     ACL2_SYSTEM_BOOKS=/path/to/acl2/books   ;;     environment to match
+     ACL2=/path/to/saved_acl2                ;;     these settings
+     ...
+     Temp lisp file:
+     (acl2::value :q)                 ;; <--- then submit these commands to
+     (acl2::in-package \"ACL2\")      ;;      $ACL2 to debug the failure
+     ...                              ;;      interactively
+     --- End temp lisp file ---
+ })
 
-<p>Some other notes/tips:</p>
+ <p>Some other notes/tips:</p>
 
-<ul>
+ <ul>
 
-<li>Make sure the ACL2 image you run is the same as the one listed as ACL2 in
-those environment variables!</li>
+ <li>Make sure the ACL2 image you run is the same as the one listed as ACL2 in
+ those environment variables!</li>
 
-<li>You may wish to set the environment variables for only the duration of your
-ACL2 session by using the \"env\" command.</li>
+ <li>You may wish to set the environment variables for only the duration of your
+ ACL2 session by using the \"env\" command.</li>
 
-<li>You may wish to edit some of the commands for better debugging purposes;
-e.g. you may modify the @(see set-inhibit-output-lst) command, or insert a
-@(see set-debugger-enable) command, etc.</li>
+ <li>You may wish to edit some of the commands for better debugging purposes;
+ e.g. you may modify the @(see set-inhibit-output-lst) command, or insert a
+ @(see set-debugger-enable) command, etc.</li>
 
-<li>If you don't want your session to exit after a successful certification,
-replace the last form @('(er-progn (time$ (certify-book ...') with just the
-@('(time$ (certify-book ...))') part.</li>
+ <li>If you don't want your session to exit after a successful certification,
+ replace the last form @('(er-progn (time$ (certify-book ...') with just the
+ @('(time$ (certify-book ...))') part.</li>
 
-</ul>
+ </ul>
 
 
-<h3>Further Resources</h3>
+ <h3>Further Resources</h3>
 
-<p>The build system is largely based on @(see BUILD::cert.pl).  There is
-considerable documentation about @('cert.pl'), and we highly recommend using it
-to manage your own ACL2 projects.</p>
+ <p>The build system is largely based on @(see BUILD::cert.pl).  There is
+ considerable documentation about @('cert.pl'), and we highly recommend using it
+ to manage your own ACL2 projects.</p>
 
-<p>The main build script is @('books/GNUmakefile').  There are many comments at
-the start of this file, and you can also inspect it to see what targets are
-available.</p>
+ <p>The main build script is @('books/GNUmakefile').  There are many comments at
+ the start of this file, and you can also inspect it to see what targets are
+ available.</p>
 
-<p>Please feel absolutely free to contact the @(see acl2-help) mailing list
-with any questions about building the community books.</p>")
+ <p>Please feel absolutely free to contact the @(see acl2-help) mailing list
+ with any questions about building the community books.</p>")
 
 (defxdoc books-certification-alt
   :parents (books-certification)
@@ -11062,11 +11069,10 @@ with any questions about building the community books.</p>")
  community books, for more about ``Credits and History'', and for additional
  technical details not covered in this topic.</p>
 
- <p>For more information about installing ACL2, see the <a href=\"@(`(:raw
- *installation-url*)`)\">ACL2 installation instructions</a>.  For information
- about so-called ``classic ACL2 `make'-based certification'', which provides
- support for certifying directories of books but may disappear in a future ACL2
- release, see @(see books-certification-classic).</p>
+ <p>For more information about installing ACL2, see @(see installation).  For
+ information about so-called ``classic ACL2 `make'-based certification'', which
+ provides support for certifying directories of books but may disappear in a
+ future ACL2 release, see @(see books-certification-classic).</p>
 
  <p><b>The Basics</b></p>
 
@@ -11081,7 +11087,7 @@ with any questions about building the community books.</p>")
 
   <li>The ACL2 @(see community-books) are installed in the @('books/')
  subdirectory of your ACL2 distribution, as is the case when you have followed
- the standard installation instructions.</li> </ul>
+ the standard @(see installation) instructions.</li> </ul>
 
  <box><p>Note: All commands shown below are issued in the top-level (ACL2
  sources) directory of your ACL2 distribution.</p></box>
@@ -11113,9 +11119,8 @@ with any questions about building the community books.</p>")
  particular, is useful in case you encounter problems to report.</p>
 
  <p>If you fetched the community books using git, then you will have a
- directories such @('books/workshops/') that is not necessary for certifying
- the most widely-included books.  You can certify just such books as
- follows.</p>
+ directory such @('books/workshops/') that is not necessary for certifying the
+ most widely-included books.  You can certify just such books as follows.</p>
 
  @({
   (time nice make basic) >& make-basic.log
@@ -11338,8 +11343,8 @@ with any questions about building the community books.</p>")
 
  <p>We assume here a familiarity with Unix/Linux `make'.  We also assume that
  you are using GNU `make' rather than some other flavor of `make'.  And
- finally, we assume, as is typically the case by following the standard
- installation instructions, that you install the ACL2 community books in the
+ finally, we assume, as is typically the case by following the standard @(see
+ installation) instructions, that you install the ACL2 community books in the
  @('books/') subdirectory of your ACL2 distribution.  We will refer below to
  that directory as @('BOOKS').</p>
 
@@ -13064,9 +13069,7 @@ with any questions about building the community books.</p>")
   :parents (about-acl2)
   :short "How to build an ACL2 executable"
   :long "<p>This topic summarizes steps for building an ACL2 executable.  For
- more details see the <a
- href='https://www.cs.utexas.edu/users/moore/acl2/current/HTML/installation/installation.html'>ACL2
- installation page</a>.</p>
+ more details, see @(see installation).</p>
 
  <p>To build an ACL2 executable, submit the following command while standing in
  the main ACL2 directory, where @('<my-lisp>') invokes your Lisp
@@ -13957,7 +13960,16 @@ with any questions about building the community books.</p>")
 
  <p>One of the links listed above should generally suffice.  But if you
  would like additional information on CCL installation and implementation, see
- @(see ccl-installation-extra).</p>")
+ @(see ccl-installation-extra).</p>
+
+ <p>Note that ACL2's @(see hons-enabled) features are optimized for 64-bit CCL.
+ Some large developments may even fail with 32-bit CCL; so for CCL, the 64-bit
+ version is preferred.  To check if your CCL is a 64-bit CCL, evaluate the
+ following expression in your CCL; the result should be @('YES').</p>
+
+ @({
+ #+x86_64 'yes #-x86_64 'no
+ })")
 
 (defxdoc ccl-installation-extra
   :parents (ccl-installation)
@@ -16646,8 +16658,8 @@ with any questions about building the community books.</p>")
   :parents (books)
   :short "Libraries of ACL2 @(see books) developed by the ACL2 community."
 
-  :long "<p>ACL2 @(see books) are files of ACL2 @(see events) like definitions
- and theorems.</p>
+  :long "<p>This topic discusses ACL2 @(see books), which are files of ACL2
+ @(see events) like definitions and theorems.  See also @(see community).</p>
 
  <p>The ACL2 <b>Community Books</b> are the canonical set of open-source books
  for ACL2, developed since the early 1990s by members of the ACL2 community.
@@ -19133,12 +19145,11 @@ subtree of X with T, without duplication.</p>
 
 (defxdoc copyright
   :parents (about-acl2)
-  :short "ACL2 copyright, license, sponsorship"
-  :long "<p>This topic provides information about copyright, license,
- authorship, and sponsorship of the ACL2 system.  For information about
- copyright and authorship of @(see documentation), see @(see
- documentation-copyright), which notes that there are many documentation
- authors.</p>
+  :short "ACL2 copyright, license, authorship"
+  :long "<p>This topic provides information about copyright, license, and
+ authorship of the ACL2 system.  For information about copyright and authorship
+ of @(see documentation), see @(see documentation-copyright), which notes that
+ there are many documentation authors.</p>
 
  <p>@(`(:raw (@ acl2-version))`) &mdash; A Computational Logic for Applicative
  Common Lisp</p>
@@ -19311,6 +19322,159 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
  <p>@('Cpu-core-count') has the following logical definition.</p>
 
  @(def cpu-core-count)")
+
+(defxdoc creating-executable
+  :parents (installation-support)
+  :short "Creating or obtaining an executable image"
+  :long "<p>This topic may be avoided by reading the <see topic='@(url
+  installation-summary)'>installation summary</see>, which is intended to be
+  self-contained.</p>
+
+ <p>After obtaining the ACL2 sources, the next step is to produce an executable
+ image.  Proceed according to one of the four sections below, and after reading
+ that section, continue by reading the topic, see @(see using-acl2).</p>
+
+ <ul>
+
+ <li>Pre-built images</li>
+
+ <li>Building an executable image on a Unix-like system</li>
+
+ <li>Building an executable image on other than a Unix-like system</li>
+
+ <li>Observations on building an executable image on a Windows system</li>
+
+ </ul>
+
+ <h3>Pre-built images</h3>
+
+ <p>@(`(:raw (acl2-url-ref \"distrib/images/Readme.html\" \"This website\"))`)
+ contains links to ACL2 executables and packages.  Each @('-md5sum') file was
+ created using @('md5sum').  We may add additional links from time to time.</p>
+
+ <p>See also @(see pre-built-binary-distributions).</p>
+
+ <h3>Building an executable image on a Unix-like system</h3>
+
+ <p>We assume you have obtained ACL2, described in @(see obtaining-acl2), but
+ you have not obtained a pre-built image.  Change to the directory containing
+ the ACL2 sources and execute the command</p>
+
+ @({
+ make LISP=<your_lisp>
+ })
+
+ <p>where @('<your_lisp>') is the command to run your local Common Lisp.
+ By default, if no @('LISP=<your_lisp>') is specified, then @('LISP=ccl') is
+ used, which presumably invokes CCL (see @(see installation-requirements)).</p>
+
+ <p>This will create executable @('saved_acl2') in the current directory.</p>
+
+ <p>The time taken to carry out this process depends on the host Lisp and the
+ host processor but may well be under a minute.  The size of the resulting
+ binary image is dependent on which Lisp was used, but it may be on the order
+ of a couple hundred megabytes or so.</p>
+
+ <p>This @('make') command works for the supported host Common Lisp
+ implementations; see @(see installation-requirements), on systems we have
+ tested.  If this @('make') command does not work for you, see the instructions
+ below for &ldquo;Building an executable image on other than a Unix-like
+ system&rdquo;.</p>
+
+ <h3>Building an executable image on other than a Unix-like system</h3>
+
+ <p>It may be best to use this option only if you are using a Common Lisp on
+ which you cannot save an image (e.g., a trial version of a commercial
+ lisp).</p>
+
+ <p>Next we describe how to create a binary image containing ACL2 without using
+ the `@('make')' utility.  If you cannot save an image, perhaps because you are
+ using a trial version of your Common Lisp, then you may not be able to save an
+ image.  In that case, see @(see running-acl2-without-executable).</p>
+
+ <p>Your Common Lisp should be one of those listed in @(see
+ installation-requirements).  Stand in the directory where you have downloaded
+ ACL2.</p>
+
+ <ol>
+
+ <li>Remove file @('nsaved_acl2') if it exists.</li>
+
+ <li>Start up Common Lisp and submit the following sequence of commands.
+
+ @({
+ (load \"init.lisp\")
+ (in-package \"ACL2\")
+ (compile-acl2) ; essentially a no-op if the Lisp is CCL or SBCL
+ })
+
+ The commands above may, depending on the host Lisp, compile the ACL2 sources
+ and create compiled object files in the current directory.  (But they should
+ be run even for Lisps that do not compile the ACL2 sources.)  Below, we assume
+ that saved images have extension @('.core'); but this will depend on your host
+ Lisp and operating system.</li>
+
+ <li>Now exit your Common Lisp.  Make sure you are in the directory where you
+ ran the commands displayed above.  Start your Common Lisp and run the
+ following commands to <i>initialize</i> ACL2.
+
+ @({
+ (load \"init.lisp\")
+ (in-package \"ACL2\")
+ (save-acl2 (quote (initialize-acl2)) \"saved_acl2\")
+ })
+
+ This will load ACL2 source files (possibly compiled) into Lisp and then
+ bootstrap ACL2 by reading and processing the source files, concluding by
+ saving an image.  Exit Lisp now.  Subsequent steps will put the image in the
+ right place.</li>
+
+ <li>Remove @('osaved_acl2') if it exists.</li>
+
+ <li><b>IF</b> @('saved_acl2') and @('saved_acl2.core') both exist <b>THEN</b>:
+ <ul>
+      <li>move @('saved_acl2.core') to @('osaved_acl2.core')</li>
+      <li>move @('saved_acl2') to @('osaved_acl2')
+          and edit @('osaved_acl2'), changing @('saved_acl2.core')
+          (at end of line) to @('osaved_acl2.core')</li>
+ </ul>
+      <b>ELSE IF</b> @('saved_acl2') exists <b>THEN</b>:
+ <ul>
+      <li>move @('saved_acl2') to @('osaved_acl2')</li>
+ </ul>
+ </li>
+
+ <li>Move @('nsaved_acl2') to @('saved_acl2') .</li>
+
+ <li>Move @('nsaved_acl2.core') to @('saved_acl2.core') .</li>
+
+ <li>Make sure @('saved_acl2') is executable.  For Windows
+ this involves two mini-steps:
+
+ <ul>
+
+ <li>Remove the @('\"$@\"') from the @('saved_acl2') script (because Windows
+ may not understand @('\"$@\"')).  Consequently, any arguments you pass to ACL2
+ via the command line will be ignored.</li>
+
+ <li>Rename @('saved_acl2') to @('saved_acl2.bat'), for
+ example by executing the following command.
+ @({
+ rename saved_acl2 saved_acl2.bat
+ })</li>
+
+ </ul>
+ </li>
+ </ol>
+
+ <h3>Observations on building an executable image on a Windows system</h3>
+
+ <p>You may be able to avoid this section by downloading a pre-built binary
+ distribution; see @(see pre-built-binary-distributions), and also see
+ &ldquo;Pre-built images&rdquo; above.</p>
+
+ <p>Otherwise, see @(see windows-installation) for information on installing
+ ACL2 on Windows systems.</p>")
 
 (defxdoc ctx
   :parents (errors)
@@ -20275,12 +20439,7 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
  tau-system)')) or change the legacy hints to use the new subgoal names.</p>")
 
 (defxdoc debugging
-  :parents (top
-
-; Including acl2 as a parent so that all ACL2 system topics can be found under
-; the graph rooted at the acl2 node.
-
-            acl2)
+  :parents (top)
   :short "Tools for debugging failed or slow proofs, or misbehaving
  functions.")
 
@@ -30639,11 +30798,10 @@ ld) and @(tsee include-book)"
 ;   "ACL2+Books Manual" near the top
 ; - doc/home-page.lisp
 ; - emacs/acl2-doc.el and books/emacs/acl2-doc.el
-; - installation/*.html
 ; - At UT, /u/www/users/moore/publications/, in particular, hyper-card.html.
-; - books/Readme.html
+; - README.md
 
-  :parents (acl2)
+  :parents (top)
   :short "Information about options for downloading and viewing the ACL2
  documentation, contributing documentation, and the available tools for
  documenting your own books."
@@ -30684,12 +30842,10 @@ ld) and @(tsee include-book)"
  often handy, but note that it won't show you any documentation for books that
  you haven't loaded yet!</p>
 
- <p>Separately from the ACL2+Books Manual, the <u>ACL2 User's Manual</u> is
- distributed with ACL2.  This is much like the ACL2+Books Manual but it does
- not include documentation from the books.  A web-based copy is included with
- the ACL2 distribution in directory @('doc/manual/'), and you can easily get to
- it by opening file @('doc/home-page.html') in your browser.</p>
-
+ <p>When you type @(':DOC <topic>') at the terminal for a given @('<topic>'),
+ ACL2 responds with documentation for that topic.  Unless you include books
+ that incorporate additional documentation, @('<topic>') must be documentation
+ that is provided with the ACL2 system (not the @(see community-books)).</p>
 
  <h3>Documenting Your Books</h3>
 
@@ -30764,10 +30920,12 @@ ld) and @(tsee include-book)"
  ACL2 User's Manual with documentation obtained from the @(see
  community-books).</p>
 
- <p>The ACL2 User's Manual is copyrighted under the terms of the @('LICENSE')
- file distributed with ACL2.  Its original authors are the ACL2 authors, but it
- is now defined in an ACL2 community book, @('books/system/doc/acl2-doc.lisp'),
- so that members of the ACL2 community may contribute to it.</p>
+ <p>The ACL2 User's Manual is the basis for using the @(':')@(tsee DOC) command
+ at the terminal when ACL2 starts up.  Its source in the ACL2 @(see
+ community-books) as file @('books/system/doc/acl2-doc.lisp').  Members of the
+ ACL2 community contribute to it, although its original authors are the ACL2
+ authors.  It is copyrighted under the terms of the @('LICENSE') file
+ distributed with ACL2.</p>
 
  <p>The ACL2+Books Manual is a mechanically generated mashup derived from both
  the ACL2 User's Manual and the @(see community-books).  The ACL2+Books Manual
@@ -35155,7 +35313,7 @@ ld) and @(tsee include-book)"
   @('(explain-giant-lambda-object)'), which will tell you more about the
   excessively large @('lambda') object.  The current value of
   @('(lambda-object-count-max-val)') is 200,000.  For reference, the largest
-  function definition in the ACL2 sources (as of Version 8.6) is the @(tsee
+  function definition in the ACL2 sources (as of Version  8.6) is the @(tsee
   mutual-recursion) event defining @('rewrite') and its 51 mutually recursive
   subfunctions.  The total number of conses in that clique is 14,656.</p>
 
@@ -35280,7 +35438,7 @@ ld) and @(tsee include-book)"
   @('*system*').  The @('lambda') object is quite small.</p>
 
   <p>For what it is worth, the largest single object in the ACL2 image (as of
-  Version 8.6) is the value of @('(w state)'), the logical world.  Upon
+  Version  8.6) is the value of @('(w state)'), the logical world.  Upon
   starting the system @('(w state)') contains 128,784 elements, but contains
   multiple pointers to shared substructures (e.g., to tails of itself).  The
   total number of conses is on the order of @('(expt 10 655)') when counted
@@ -41880,7 +42038,7 @@ current fast alists."
 
  <p><b>Q</b>. Where are the books referenced by <b>:dir :system</b> on my
  machine?  <b>A</b>. If your ACL2 is installed on the directory
- <i>dir</i>@('/acl2-sources') and you follow the standard installation
+ <i>dir</i>@('/acl2-sources') and you follow the standard @(see installation)
  instructions, then the books are typically the files under the directory
  <i>dir</i>@('/acl2-sources/books/').</p>
 
@@ -42258,14 +42416,15 @@ current fast alists."
  })
 
  <p>which loads into ACL2 all the rules in one of the so-called ACL2
- ``community books''.  (<i>Books</i> are certified files of definitions,
- lemmas, etc., usually prepared by other ACL2 users and explicitly shared with
- the community.  The ACL2 installation instructions suggest downloading the
- community books.)  The book \"top-with-meta\" is the most elementary and most
- widely used arithmetic book.  Other community books include
- \"arithmetic-5/top\" and various hardware and floating-point arithmetic books;
- if including \"arithmetic/top-with-meta\" isn't sufficient, you could try
- @('(include-book \"arithmetic-5/top\" :dir :system)').</p>
+ ``community books'' (see @(see community-books)).  (<i>Books</i> are certified
+ files of definitions, lemmas, etc., usually prepared by other ACL2 users and
+ explicitly shared with the community.  The ACL2 @(see installation)
+ instructions suggest downloading the community books.)  The book
+ \"top-with-meta\" is the most elementary and most widely used arithmetic book.
+ Other community books include \"arithmetic-5/top\" and various hardware and
+ floating-point arithmetic books; if including \"arithmetic/top-with-meta\"
+ isn't sufficient, you could try @('(include-book
+ \"arithmetic-5/top\" :dir :system)').</p>
 
  <p><b>Rules Concluding with Arithmetic Inequalities</b>: If you are tempted to
  create a rewrite rule with an arithmetic inequality as its conclusion or
@@ -42682,9 +42841,9 @@ current fast alists."
 (defxdoc gcl
   :parents (miscellaneous)
   :short "Tips on building and using ACL2 based on Gnu Common Lisp"
-  :long "<p>See the installation instructions for basic information about
- building ACL2 on top of GCL, including information about where to fetch GCL.
- Here, we provide some tips that may be useful.</p>
+  :long "<p>See the @(see installation) instructions for basic information
+ about building ACL2 on top of GCL, including information about where to fetch
+ GCL.  Here, we provide some tips that may be useful.</p>
 
  <p>1. You can place forms to evaluate at start-up into file @('init.lsp') in
  the directory where you are starting ACL2 (GCL), or into file
@@ -43129,8 +43288,8 @@ current fast alists."
   composed of ``frames,'' most of which describe calls of the rewriter but some
   of which are calls of other system functions (like the @(tsee
   linear-arithmetic) procedure) that orchestrate other calls to the rewriter.
-  As of Version 8.6, each frame of the @(':path') that describes the attempt to
-  apply a particular rewrite rule will display the name of the equivalence
+  As of Version  8.6, each frame of the @(':path') that describes the attempt
+  to apply a particular rewrite rule will display the name of the equivalence
   relation used by the rule (unless that name is @('equal')).  Every frame
   describing a call of the rewriter includes the geneqv to be maintained as the
   target is rewritten (unless the geneqv is @('nil') which denotes the
@@ -43468,9 +43627,9 @@ current fast alists."
  those instructions make clear, to run ACL2 you'll need a Common Lisp
  implementation.  The instructions name several suitable ones.</p>
 
- <p>In addition to the installation instructions, the Home Page has a wealth of
- documentation.  You should visit &ldquo;The User's Manuals&rdquo;.  There
- you'll see several versions of the manual, depending on whether you want
+ <p>In addition to the @(see installation) instructions, the Home Page has a
+ wealth of documentation.  You should visit &ldquo;The User's Manuals&rdquo;.
+ There you'll see several versions of the manual, depending on whether you want
  information about utilities developed by users.  But we recommend that
  newcomers just look at the basic &ldquo;ACL2 User's Manual&rdquo;.  Explore it
  briefly just so you know how to find more information.  For example, type
@@ -45214,27 +45373,35 @@ current fast alists."
 
 (defxdoc git-quick-start
   :parents (about-acl2)
-  :short "Git quick start guide"
-  :long "<p>Each of the two topics @(see github-commit-code-using-push) and
- @(see github-commit-code-using-pull-requests) presents a minimal guide to
- using the Github repository for ACL2+Books.  That <a
- href='https://github.com/acl2/acl2'>repository</a> exists on the web and
+  :short "Git quick start guide."
+  :long "<p>The
+ <a href='https://github.com/acl2/acl2'>ACL2 GitHub repository</a>
  contains the ``bleeding edge'' ACL2 source code and @(see community-books),
- available between ACL2 releases (see @(see release-notes)).  Those who are
- familiar with older version control systems, or perhaps with no version
- control systems, might find this guide to be helpful.  For additional
- information, including the use of branches and links to more information about
- git, see <a href='https://github.com/acl2/acl2/wiki/ACL2-repo-git-tips'>the
- wiki page for git tips</a>, @(see books-certification), and the Internet in
- general.  However, both of the above-mentioned guides are intended to be
- sufficient for you to obtain the latest ACL2 source code and community-books,
- and optionally, for you to contribute to the @(see community-books).</p>
+ available between ACL2 <see topic=\"ACL2____RELEASE-NOTES\">releases</see>.</p>
 
- <p>Select the guide that is right for you based upon the headings below.</p>
+ <p>Here we provide minimal instructions for working with the ACL2 GitHub
+ repo.  Many git tutorials are available elsewhere on the web (e.g., <a
+ href='https://docs.github.com/en/get-started'>at GitHub</a>).</p>
 
- <h2>For non-contributors:</h2>
+ <h2>For non-contributors (to use ACL2 without contributing changes):</h2>
 
- See sections (A) and (B) in @(see github-commit-code-using-push).
+ <p>Start by obtaining the ACL2 GitHub repository (this command makes a
+ directory called @('acl2') that contains the current contents of the
+ @('master') branch):</p>
+
+ @({
+ git clone https://github.com/acl2/acl2
+ })
+
+ <p>Later, to update your copy to get the latest changes:</p>
+
+ @({
+ cd acl2
+ git pull
+ })
+
+ <p>Once you have ACL2, you will probably want to certify some books (see
+ @(see books-certification)).</p>
 
  <h2>For infrequent contributors:</h2>
 
@@ -45248,51 +45415,45 @@ current fast alists."
 
 (defxdoc github-commit-code-using-push
   :parents (git-quick-start)
-  :short "How to commit code to the books using direct push access"
-  :long "<p>This guide is written for two groups of people:</p>
+  :short "How to commit code to the books using direct push access."
+  :long "<p>This guide is for contributors who commit to the repository
+  often (e.g., monthly or weekly).  Such contributors will typically
+  begin with the @(see github-commit-code-using-pull-requests) method, and
+  after they are familiar with the process and community, will switch to
+  this method.</p>
 
- <ul>
-
- <li>Users of the ACL2 System and Books who do not plan to contribute to the
- books, and</li>
-
- <li>Contributors who commit to the repository on a monthly or weekly basis.
- In this case, a contributor will typically begin with the @(see
- github-commit-code-using-pull-requests) method, and after they are familiar
- with the process and community, they will move to this method.</li>
-
- </ul>
+ <p> If you do not plan to commit your own changes, see @(see git-quick-start)
+ instead.</p>
 
  <h2>(A) GETTING STARTED</h2>
 
- <p>Start by obtaining an up-to-date copy of the web-based github repository.
- Here, we show how to put it into into a directory called <tt>ACL2</tt> (but
- name it whatever you like).</p>
+ <p>Start by obtaining an up-to-date copy of the web-based GitHub
+ repository (this command makes a directory called @('acl2') that contains the
+ current contents of the @('master') branch).</p>
 
  @({
- mkdir ACL2
- cd ACL2
- git clone https://github.com/acl2/acl2 .
+ git clone https://github.com/acl2/acl2
+ cd acl2
  })
 
  <h2>(B) UPDATING</h2>
 
  <p>The following commands will update your directory to match the latest
- contents of the github repository (on the web).</p>
+ contents of the main ACL2 repository on GitHub.</p>
 
  @({
  git fetch --all
- git merge remotes/origin/master
+ git merge -m \"Merge.\" remotes/origin/master
  })
 
- <h2>(C) CONTRIBUTING (optional)</h2>
+ <h2>(C) CONTRIBUTING</h2>
 
- <p>To join the <a href='https://github.com/acl2/acl2/'>github project</a>,
+ <p>To join the <a href='https://github.com/acl2/acl2/'>GitHub project</a>,
  please send email to one of the following individuals.</p>
 
  <ul>
 
- <li>Jared Davis (@('jared.c.davis@gmail.com'))</li>
+ <li>Eric Smith (@('eric.smith@kestrel.edu'))</li>
 
  <li>David Rager (@('ragerdl@gmail.com'))</li>
 
@@ -45303,40 +45464,30 @@ current fast alists."
  <p>After you have joined the project, you can proceed as follows when you are
  ready to contribute.</p>
 
- <h3>Change and Test</h3>
+ <h3>Make Changes and Test Them</h3>
 
  <ol>
 
- <li>Update as in (B) above:
-
- @({
- git fetch --all
- git merge remotes/origin/master
- })</li>
+ <li>Before beginning your edits, update, as in (B) above.</li>
 
  <li>Build an executable.
 
  @({
- (time nice make LISP=<your_lisp>) >& make.log
+ make update LISP=<your_lisp>
  })</li>
 
- <li>Make book changes.  If you are creating any new books, tell git that you
- intend to add them (but the repository on the web won't change until the last
- step below is executed).
-
- @({
- git add file1 file2 ...
- })
-
- Also, consider adding some high-level information about your changes to the
- Community Books' release notes &mdash; i.e., the appropriate @(see
- release-notes-books) XDOC topic in @('books/doc/relnotes.lisp').</li>
+ <li>Make book changes.  See the guidelines in the @(see how-to-contribute) topic
+  (e.g., about updating the book release notes).</li>
 
  <li>Run a regression.
 
  @({
- (time nice make -j 8 regression-fresh) >& make-regression.log
- })</li>
+ (make -j 8 regression) >& make-regression.log
+ })
+
+ Note that the @('-j 8') option specifies the use of 8 hardware threads; feel
+ free to omit it or use a more suitable number (especially if your computer has
+ other than 8 hardware threads).</li>
 
  <li>Look for failures, as indicated by @('**') in the log.
 
@@ -45344,77 +45495,80 @@ current fast alists."
  fgrep -a '**' make-regression.log
  })</li>
 
- <li>If there were failures, then go back to Step 1 above to make appropriate
- changes and re-test, but you can replace the '@('make')' step by replacing
- @('regression-fresh') with @('regression'), since '@('make')' is clever enough
- to avoid recertifying more than is necessary.  For example:
+ <li>If there were failures, then go back to Step 3 above to make appropriate
+ changes and re-test.</li>
+
+ <li>Commit your changes.  First do @('git status') to see the list of all
+ new/changed files:
 
  @({
- (time nice make -j 8 regression) >& make-regression-finish-1.log
+ git status
  })
 
- Note that the @('-j 8') option specifies the use of 8 hardware threads; feel
- free to omit it or use a more suitable number (especially if your computer has
- other than 8 hardware threads).</li>
+ Ensure that none of the reported additions/changes was unintentional.  Next,
+ do @('git add') to add each file you want to commit (normally, everything
+ reported by @('git status'), to match what was tested in the regression above):
+
+ @({
+ git add <file1> <file2> ...
+ })
+
+ Now commit your changes locally:
+
+ @({
+ git commit -m '<some message, with descriptive first line>'
+ })
+
+ The @('-m ...')  option is a log message, where the first line is a summary
+ of your changes and additional lines give more details.  You can replace
+ the @('-m ...') option by @('-F <filename>'), where @('<filename>') is the
+ name of a file that contains your log message.</li>
+
+ <li>Merge in remote changes, if any, by updating again as in (B) above.
+
+ If the merge changed anything, go back to Step 4 above to ensure that your
+ changes are compatible with the remote changes you just obtained.  If the
+ merge did not change anything, continue to the next step (Contribute Your
+ Changes).
+
+ In rare cases, you may get a merge conflict (concurrent changes to the same
+ files), in which case you will need to resolve the conflict by editing files
+ and committing them (see the @('git commit') command above in Step 7).  Then
+ go back to Step 4 above to test that everything is working.
+
+ </li>
 
  </ol>
 
- <h3>Update, and Iterate If Necessary</h3>
-
- <p>Update again as in (B) above:</p>
-
- @({
- git fetch --all
- git merge remotes/origin/master
- })
-
- <blockquote>
-
- <p>The merge may fail if there have been remote updates, that is updates in
- the repository on the web.  In that case, commit your changes locally and then
- try the merge again.  You might want to use the @('-F') option instead of
- @('-m'); see the next section for more on those options.</p>
-
- @({
- git commit -a -m '<some message, with descriptive first line>'
- git merge remotes/origin/master
- })
-
- <p>If the second command prompts you for a message, the empty message should
- suffice as a reasonable default.  (In emacs, if vi tries to come up, just type
- @(':q') and @('<RETURN>').</p>
-
- </blockquote>
-
- <p>You can now go on to the next step (Contribute Your Changes).  But ideally:
- If the output indicates that anything has changed, then go back to ``Change
- and Test'' above.  Of course, you can skip the build if no ACL2 sources have
- changed, and you can skip making book changes if you are still happy with your
- changes.</p>
-
  <h3>Contribute Your Changes</h3>
 
- <p>The following commands will update the github repository on the web.  The
- @('-m ...') option is a log message whose first line should be a summary of
- your changes and other lines may give more details.  You are welcome to
- replace the @('-m ...') option by @('-F <filename>'), where @('<filename>') is
- the name of a file that contains your log message.</p>
+ <p>The following command will update the main ACL2 repository on GitHub.</p>
 
  @({
-  git commit -a -m '<some message, with descriptive first line>'
   git push origin testing
- })")
+ })
+
+ <p>This will cause your changes to be merged into the @('testing') branch.
+ From there, they will be automatically merged into @('master') if the automated
+ regression testing system successfully tests them.</p>
+
+ <p>Note: If you are changing someone else's files, or would like someone to
+ review your changes, you might consider making a pull request instead of
+ pushing directly.</p>")
 
 (defxdoc github-commit-code-using-pull-requests
   :parents (git-quick-start)
-  :short "How to commit code to the books using pull requests"
-  :long "<p>This guide is written for contributors who will probably only
- commit to the repository a few times a year. If you find yourself committing
- more often, you should see @(see github-commit-code-using-push).</p>
+  :short "How to commit code to the books using pull requests."
+  :long "<p>This guide is for contributors who will commit to the repository
+  rarely (e.g., a few times a year). If you find yourself committing more often,
+  see @(see github-commit-code-using-push).</p>
 
- A nice result of using pull requests is that all changes will be peer-reviewed
+ <p> If you do not plan to commit your own changes, see @(see git-quick-start)
+ instead.</p>
+
+ <p>A nice result of using pull requests is that all changes will be peer-reviewed
  before being committed.  Also, we sometimes call this method the <i>Fork and
- Pull</i> method.
+ Pull</i> method.</p>
 
  <h2>(A) GETTING STARTED</h2>
 
@@ -45423,10 +45577,10 @@ current fast alists."
  <li>Go to <a
   href=\"https://github.com/acl2/acl2\">https://github.com/acl2/acl2</a> and
   click on the @('fork') button on the top-right.  Fork the repository into
-  your github space.  This will create a new repository at
+  your GitHub space.  This will create a new repository at
   @('https://github.com/<your-github-username>/acl2').</li>
 
- <li>In your working space on your computer, create a @('clone') of your github
+ <li>In your working space on your computer, create a @('clone') of your GitHub
   repository and @('cd') into it:
 
  @({
@@ -45434,7 +45588,7 @@ current fast alists."
  cd acl2
  })</li>
 
- <li>Add the Community ACL2 repository as a git remote:
+ <li>Add the main ACL2 repository as a git remote:
 
  @({
  git remote add upstream https://github.com/acl2/acl2
@@ -45444,54 +45598,40 @@ current fast alists."
 
  <h2>(B) UPDATING</h2>
 
- <p>The following commands will update your local repository to match the latest
- contents of the ACL2 Community github repository (on the web).</p>
+ <p>The following commands will update your directory to match the latest
+ contents of the main ACL2 repository on GitHub.</p>
 
  @({
  git fetch --all
- git merge remotes/upstream/master
+ git merge -m \"Merge.\" remotes/upstream/master
  })
 
  <h2>(C) CONTRIBUTING</h2>
 
- <h3>Change and Test</h3>
+ <h3>Make Changes and Test Them</h3>
 
  <ol>
 
- <li>Before beginning your edits, update, as in (B) above:
-
- @({
- git fetch --all
- git merge remotes/upstream/master
- })</li>
+ <li>Before beginning your edits, update, as in (B) above.</li>
 
  <li>Build an executable.
 
  @({
- (time nice make LISP=<your_lisp>) >& make.log
+ make update LISP=<your_lisp>
  })</li>
 
- <li>Make book changes.  If you are creating any new books, tell git that you
- intend to add them (but the local repository on the web won't change until the
- @('commit') step below is executed).
-
- @({
- git add file1 file2 ...
- })
-
- Also, consider adding some high-level information about your changes to the
- Community Books' release notes &mdash; i.e., the appropriate @(see
- release-notes-books) XDOC topic in @('books/doc/relnotes.lisp').</li>
+ <li>Make book changes.  See the guidelines in the @(see how-to-contribute) topic
+  (e.g., about updating the book release notes).</li>
 
  <li>Run a regression.
 
  @({
- (time nice make -j 8 regression-fresh) >& make-regression.log
+ (make -j 8 regression) >& make-regression.log
  })
 
  Note that the @('-j 8') option specifies the use of 8 hardware threads; feel
  free to omit it or use a more suitable number (especially if your computer has
- other than 8 hardware threads). </li>
+ other than 8 hardware threads).</li>
 
  <li>Look for failures, as indicated by @('**') in the log.
 
@@ -45499,70 +45639,66 @@ current fast alists."
  fgrep -a '**' make-regression.log
  })</li>
 
- <li>If there were failures, then go back to Step 1 above to make appropriate
- changes and re-test, but you can replace the '@('make')' step by replacing
- @('regression-fresh') with @('regression'), since '@('make')' is clever enough
- to avoid recertifying more than is necessary.  For example:
+ <li>If there were failures, then go back to Step 3 above to make appropriate
+ changes and re-test.</li>
+
+ <li>Commit your changes.  First do @('git status') to see the list of all
+ new/changed files:
 
  @({
- (time nice make -j 8 regression) >& make-regression-finish-1.log
- })</li>
+ git status
+ })
+
+ Ensure that none of the reported additions/changes was unintentional.  Next,
+ do @('git add') to add each file you want to commit (normally, everything
+ reported by @('git status'), to match what was tested in the regression above):
+
+ @({
+ git add <file1> <file2> ...
+ })
+
+ Now commit your changes locally:
+
+ @({
+ git commit -m '<some message, with descriptive first line>'
+ })
+
+ The @('-m ...')  option is a log message, where the first line is a summary
+ of your changes and additional lines give more details.  You can replace
+ the @('-m ...') option by @('-F <filename>'), where @('<filename>') is the
+ name of a file that contains your log message.</li>
+
+ <li>Merge in remote changes, if any, by updating again as in (B) above.
+
+ If the merge changed anything, go back to Step 4 above to ensure that your
+ changes are compatible with the remote changes you just obtained.  If the
+ merge did not change anything, continue to the next step (Contribute Your
+ Changes).
+
+ In rare cases, you may get a merge conflict (concurrent changes to the same
+ files), in which case you will need to resolve the conflict by editing files
+ and committing them (see the @('git commit') command above in Step 7).  Then
+ go back to Step 4 above to test that everything is working.
+
+ </li>
 
  </ol>
 
- <h3>Update, and Iterate If Necessary</h3>
-
- <p>Update again as in (B) above:</p>
-
- @({
- git fetch --all
- git merge remotes/upstream/master
- })
-
- <blockquote>
-
- <p>The merge may fail if there have been remote updates, that is updates in
- the repository on the web.  In that case, commit your changes locally and then
- try the merge again.  You might want to use the @('-F') option instead of
- @('-m'); see the next section for more on those options.</p>
-
- @({
- git commit -a -m '<some message, with descriptive first line>'
- git merge remotes/upstream/master
- })
-
- <p>If the second command (the @('git merge')) prompts you for a message, the
- empty message should suffice as a reasonable default (in emacs &mdash; if vi
- tries to come up, just type @(':q') and @('<RETURN>').</p>
-
- </blockquote>
-
- <p>You can now go on to the next step (Contribute Your Changes).  But ideally:
- If the output indicates that anything has changed, then go back to ``Change
- and Test'' above.  Of course, you can skip the build if no ACL2 sources have
- changed, and you can skip making book changes if you are still happy with your
- changes.</p>
-
  <h3>Contribute Your Changes</h3>
 
- <p>The following commands will update your github repository on the web.  The
- @('-m ...') option is a log message whose first line should be a summary of
- your changes and other lines may give more details.  You are welcome to
- replace the @('-m ...') option by @('-F <filename>'), where @('<filename>') is
- the name of a file that contains your log message.</p>
+ <p>The following command will update your fork on GitHub.</p>
 
  @({
-  git commit -a -m '<some message, with descriptive first line>'
   git push
  })
 
  You now need to create a <i>pull request</i>, where you request that changes
- from your github repository be accepted into the Community ACL2 repository.
+ from your fork be accepted into the main ACL2 repository.
  To achieve this:
 
  <ol>
 
- <li>Goto @('https://github.com/<your-github-username>/acl2').</li>
+ <li>Go to @('https://github.com/<your-github-username>/acl2').</li>
 
  <li>Click the @('New pull request') button (you can search for it with your
  browser).</li>
@@ -45572,18 +45708,15 @@ current fast alists."
 
  <li>Click @('Create pull request').</li>
 
- <li>Put some explanation about what's in the changes in the comments section.
- It's helpful if you quote (possibly abbreviated) versions of your commit log
- messages here, as that way the descriptions are easily read when clicking on
- the Community Repository @('commits') tab, which goes to <a
- href=\"https://github.com/acl2/acl2/commits/master\">
- https://github.com/acl2/acl2/commits/master</a>.</li>
+ <li>Put a description of your changes in the comments section.
+ You may want to quote text from your commit log messages.</li>
 
  <li>Click @('Create pull request').</li>
 
  </ol>
- At this point, the Community ACL2 repository maintainers will be notified,
- check that things seem to be in order, and then adopt your changes.")
+ At this point, the main ACL2 repository maintainers will be notified,
+ check that things seem to be in order, and then either request modifications
+ or adopt your changes.")
 
 (defxdoc goal-spec
   :parents (hints output-controls)
@@ -49714,7 +49847,7 @@ current fast alists."
           :in-theory (set-difference-theories
                        (current-theory :here)
                        '(assoc))
-          :induct (and (nth n a) (nth n b))
+          :induct (list (nth n a) (nth n b))
           :use ((:instance assoc-of-append
                            (x a) (y b) (z c))
                 (:functional-instance
@@ -50349,10 +50482,28 @@ current fast alists."
  be created and chosen.  E.g., the @(':induct') hint</p>
 
  @({
-   (and (nth i a) (nth j a))
+   (list (nth i a) (nth j a))
  })
 
  <p>suggests simultaneous @(see induction) on @('i'), @('j'), and @('a').</p>
+
+ <p>When the selected induction scheme is suggested by just one term the
+ induction is announced with a message like ``@('We will induct according to a
+ scheme suggested by')'' the term in question. But if several terms are
+ involved in the suggestion, either because they suggested the same scheme or
+ because their suggestions were merged with others to form the selected scheme,
+ the announcement includes the phrase ``@('while accommodating')'' the other
+ terms.  Furthermore, as noted in @(see induction-heuristics), the induction
+ mechanism communicates to the simplifier, passing to it the list of all the
+ terms being accommodated.  The simplifier preferentially expands those terms
+ during the subsequent proof attempt.</p>
+
+ <p>Thus, if the prover automatically selects an induction that accommodates
+ terms besides the one suggesting and justifying the induction, and you want to
+ give an @(':induct') hint that causes the same behavior, your hint should
+ include the term suggesting the induction and all of the accommodated terms.
+ We typically do this with a hint like @(':induct (list term0 term1
+ ... termk)').</p>
 
  <p>If both an @(':induct') and a @(':do-not-induct') hint are supplied for a
  given goal then the indicated @(see induction) is applied to the goal and the
@@ -51741,6 +51892,86 @@ tables in the current Hons Space."
  <p><see topic='@(url |Other Requirements|)'><img
  src='res/tours/flying.gif'></img></see></p>")
 
+(defxdoc how-to-contribute
+  :parents (about-acl2)
+  :short "Guide to contributing code to ACL2."
+  :long "<p>The main way to contribute code to ACL2 is to open a pull request
+ (PR) to the public <a href='https://github.com/acl2/acl2'>GitHub
+ repository</a>. This will involve first creating a personal fork of the
+ repository. Then, once you've committed your changes and tested the build, you
+ may open the PR to merge your changes into the ACL2 repository. PRs should
+ target the ``testing'' branch or similar (<i>not</i> the ``master''
+ branch).</p>
+
+ <h3>Checking the Build</h3>
+
+ <p>You should run a regression build to ensure that your code changes did not
+ break the build. To do so, run the following @('make') command in the
+ ``books'' directory:</p>
+
+ @({
+   make -j 8 regression
+ })
+
+ <p>(Note: the @('-j 8') option in the above command is only illustrative. It
+ instructs @('make') to use 8 hardware threads. You may use a higher or lower
+ number to align with your system. See @(see books-certification) for an
+ extended discussion on community book certification.)</p>
+
+ <p>A successful regression build is a good indicator, but it may not tell the
+ whole story. Be careful to avoid introducing code which may build on your
+ local machine but fail in other environments. E.g., via dependence on
+ environment variables or absolute pathnames, use of external tools without an
+ appropriate <see topic='@(url build::cert_param)'>cert_param</see>, short
+ timeouts which may fail on slower machines, etc.</p>
+
+ <h3>Best Code Practices</h3>
+
+ <p>See @(see best-practices) for recommended code practices.</p>
+
+ <h3>Update the Release Notes</h3>
+
+ <p>Consider adding some high-level information about your changes to the
+ Community Books' release notes &mdash; i.e., the appropriate @(see
+ release-notes-books) XDOC topic in @('books/doc/relnotes.lisp').</p>
+
+ <h3>``Off-Limits'' Source Files</h3>
+
+ <p>The community is invited to submit code contributions to the <see
+ topic='@(url community-books)'>Community Books</see>. Source files outside of
+ the ``books'' directory should not be modified, except by system
+ maintainers.</p>
+
+ <p>Suggestions for system changes should be emailed to
+ <a href='mailto:kaufmann@cs.utexas.edu'>Matt Kaufmann</a>.</p>
+
+ <p>For those interested in development of the ACL2 core system, see
+ the @(see developers-guide).</p>
+
+ <h3>Resources for Git/GitHub</h3>
+
+ <p>For those new to Git (the version control system) or GitHub (the platform
+ on which the ACL2 Git repository is hosted), see @(see git-quick-start).</p>
+
+ <h3>Frequent Contributors</h3>
+
+ <p>Frequent contributors may request to join the <a
+ href='https://github.com/acl2/acl2'>GitHub project</a>. Such contributors may
+ push directly to various testing branches without opening a PR (although it is
+ still good practice to open a PR when modifying a widely used book or one
+ primarily authored by someone else).</p>
+
+ <p>To request to join the project, please send email to one of the following
+ individuals.</p>
+ <ul>
+   <li>Eric Smith (@('eric.smith@kestrel.edu'))</li>
+   <li>David Rager (@('ragerdl@gmail.com'))</li>
+   <li>Sol Swords (@('sswords@gmail.com'))</li>
+ </ul>
+
+ <p>See also the @(see community) topic for other ways to connect with the ACL2
+ community.</p>")
+
 (defxdoc |How To Find Out about ACL2 Functions|
   :parents (|Pages Written Especially for the Tours|)
   :short "How To Find Out about ACL2 Functions"
@@ -52744,10 +52975,10 @@ tables in the current Hons Space."
   ACL2_SYSTEM_BOOKS=/home/acl2/4-0/acl2-sources/books
  })
 
- <p>If you follow suggestions in the installation instructions, these books
- will be the ACL2 community books; see @(see community-books).  For another way
- to set the system books directory, which also permits similar handling for
- other directories, see @(see project-dir-alist).</p>
+ <p>If you follow suggestions in the @(see installation) instructions, these
+ books will be the ACL2 community books; see @(see community-books).  For
+ another way to set the system books directory, which also permits similar
+ handling for other directories, see @(see project-dir-alist).</p>
 
  <p>This concludes the guided tour through @(see books).  See @(see
  set-compile-fns) for a subtle point about the interaction between
@@ -53352,7 +53583,7 @@ tables in the current Hons Space."
   See the @('books/demos/ppr1-experiments') for the details of each hint, etc.
   The times reported below were originally recovered from the @('.cert.out')
   file after certification of the book in September, 2023, using the
-  development copy of ACL2 slated to become Version 8.6, running in CCL on a
+  development copy of ACL2 slated to become Version  8.6, running in CCL on a
   Macbook Pro.  Inspect the @('.cert.out') file for more recent results.</p>
 
   <p>As mentioned previously, a common situation with inductive proofs about
@@ -53761,6 +53992,251 @@ tables in the current Hons Space."
   Time: 869/100 seconds
   ACL2 !>
  })")
+
+(defxdoc installation
+  :parents (acl2)
+  :short "Installation Guide"
+  :long "<p>ACL2 is more than just the executable image.  In particular, the
+ system is distributed with libraries developed by the ACL2 community (see
+ @(see community-books)) as well as the <a
+ href='http://www.cs.utexas.edu/users/moore/acl2/manuals/latest/index.html'>ACL2+Books
+ User's Manual</a> for the system and those libraries.</p>
+
+ <p>The installation guide consists of the following main parts.</p>
+
+ <ul>
+
+ <li>See @(see installation-summary) for a <b>summary</b> of installation steps
+ for Unix-like systems.  That should usually suffice to get ACL2 ready for you
+ to use.</li>
+
+ <li>See @(see installation-requirements) for how to <b>obtain a Common Lisp
+ implementation</b>.</li>
+
+ <li>See @(see installation-support) for more <b>details</b> pertaining to
+ obtaining and installing ACL2.  You can probably ignore this topic and its
+ subtopics.</li>
+
+ <li>See @(see using-acl2) for information about <b>running</b> ACL2 and about
+ its <b>@(see documentation)</b>.</li>
+
+ </ul>
+
+ <p>Also see @(see copyright) for information about copyright, license, and
+ authorship of the ACL2 system, and see @(see acknowledgments) for
+ sponsorship information.</p>
+
+ <p>For a variant of ACL2 that supports reasoning about the real numbers, see
+ @(see real).</p>
+
+ <p>See @(see mailing-lists) for information about mailing lists for ACL2
+ users, including how to post and how to access archives.</p>
+
+ <p>ACL2 may be exported to any countries except those subject to embargoes
+ under various laws administered by the Office of Foreign Assets
+ Control (&ldquo;OFAC&rdquo;) of the U. S. Department of the Treasury.</p>
+
+ <p>For more information about getting started with ACL2, see @(see
+ start-here).</p>")
+
+(xdoc::order-subtopics
+ installation
+ (installation-summary
+  installation-requirements
+  installation-support
+  using-acl2))
+
+(defxdoc installation-requirements
+  :parents (installation)
+  :short "Obtaining Common Lisp"
+  :long "<p>ACL2 has been built and tested on x86-64 Linux and on Mac OS X
+ (Darwin), which we call &ldquo;Unix-like systems&rdquo;, as well as (from time
+ to time) some Windows operating systems.  It has been successfully run on
+ other platforms as well, including FreeBSD and ARM architectures.</p>
+
+ <p>The only other requirement for installing ACL2 is to install a suitable
+ Common Lisp implementation.  ACL2 can be hosted by several Common Lisp
+ implementations, as listed alphabetically below.  The most commonly-used of
+ these are SBCL and CCL, which can be obtained without charge.</p>
+
+ <h3>Allegro Common Lisp</h3>
+
+ <p><a href='https://franz.com/'>Allegro Common Lisp</a> is a commercial
+ implementation.  It has been maintained for many years, but it generally runs
+ ACL2 more slowly than most other implementations.</p>
+
+ <h3>Clozure Common Lisp (CCL)</h3>
+
+ <p><a href='https://ccl.clozure.com/'>CCL</a> is available without charge.
+ See @(see ccl-installation) for instructions on how to fetch and install
+ CCL.</p>
+
+ <p>Quoting the <a href='https://ccl.clozure.com/'>CCL website</a>:
+
+ <blockquote>
+
+ Clozure CL (often called CCL for short) is a free Common Lisp implementation
+ with a long history. Some distinguishing features of the implementation
+ include fast compilation speed, native threads, a precise, generational,
+ compacting garbage collector, and a convenient foreign-function interface.
+
+ </blockquote></p>
+
+ <p>As of this writing (July 2025), CCL does not run natively on Arm-based
+ Macs.  There is an effort in progress to remedy that.</p>
+
+ <h3>CMU Common Lisp (CMUCL)</h3>
+
+ <p><a href='https://cmucl.org'>CMUCL</a> is available without charge.</p>
+
+ <p>Follow the <a href='https://cmucl.org/download.html'>Download</a> link on
+ <a href='https://cmucl.org'>the CMUCL website</a> to obtain CMUCL.  It has
+ been maintained for many years, but it generally runs ACL2 more slowly than
+ most other implementations.</p>
+
+ <h3>GNU Common Lisp (GCL)</h3>
+
+ <p><a href='https://www.gnu.org/software/gcl/'>GCL</a> is available without
+ charge.</p>
+
+ <p>You can <a href='https://tracker.debian.org/pkg/acl2'>download a binary
+ Debian package for ACL2</a>.  Thanks to Camm Maguire for maintaining this
+ package.  Note however that it may take some time after each ACL2 release for
+ this package to be updated for that release.</p>
+
+ <p>Otherwise, it should be easy to obtain and build GCL yourself.  Note that
+ ACL2 requires ANSI GCL version 2.6.12 or later.  See <a
+ href='https://www.gnu.org/software/gcl/'>@('https://www.gnu.org/software/gcl/')</a>
+ for instructions.  If you encounter difficulties, see @(see gcl) and perhaps
+ consider the following instructions for obtaining an older version and then
+ building the executable @('gcl/gcl/bin/gcl').</p>
+
+ @({
+ git clone git://git.sv.gnu.org/gcl.git
+ cd gcl/gcl
+ git checkout Version_2_6_13pre
+ ./configure --enable-ansi && make
+ })
+
+ <h3>LispWorks</h3>
+
+ <p><a href='https://www.lispworks.com/'>LispWorks</a> is a commercial
+ implementation.  You may ask the vendor for an evaluation license for the full
+ product if you are considering purchasing a license.</p>
+
+ <h3>Steel Bank Common Lisp (SBCL)</h3>
+
+ <p><a href='https://sbcl.org/'>SBCL</a> is available without charge.  See
+ @(see sbcl-installation-brief) for instructions on how to fetch and install
+ SBCL.  <b>Important</b>: For maximum performance, build from source using the
+ options indicated in @(see sbcl-installation) when building with
+ @('make.sh').</p>")
+
+(defxdoc installation-summary
+  :parents (installation)
+  :short "ACL2 installation summary for Unix-like systems"
+  :long "<p>Here, &ldquo;Unix-like Systems&rdquo; includes Unix and its Linux
+ variants (e.g., Debian), as well as MacOS X.  Note that a quicker install may
+ be possible, by instead obtaining a binary distribution; see @(see
+ pre-built-binary-distributions) if one is available for your platform.
+ Otherwise, you can follow the directions below, which start by fetching a file
+ hosted at <a href='https://github.com/acl2/acl2/'>the GitHub ACL2 System and
+ Books website</a>.  The result is a directory containing not only the ACL2
+ system but, in the @('books/') subdirectory, the ACL2 libraries; see @(see
+ community-books).  The ACL2 <i>system</i>, which has been developed at the
+ University of Texas at Austin, can be obtained or explored separately (though
+ this is rarely done); see @(see obtaining-acl2).</p>
+
+ <ol>
+
+ <li>Change to a directory whose full pathname contains no whitespace and which
+ does not already contain a subdirectory named @('acl2') or @('acl2-8.6').
+ Then use <b>either</b> of the following two methods to obtain the ACL2 source
+ code and community books.
+
+   <ul>
+
+     <li>(<b>Recommended</b> if you don't plan to
+     update from git)<br/>Download
+       <a href='https://github.com/acl2-devel/acl2-devel/releases/download/8.6/acl2-8.6.tar.gz'>gzipped
+       tar file @('acl2-8.6.tar.gz') from GitHub</a> and
+       then execute the following (the @('rm') command is just
+       to make sure you don't already have a subdirectory
+       named @('acl2-8.6')):
+       @({
+       rm -rf acl2-8.6
+       tar xfz acl2-8.6.tar.gz
+       })
+     This will create a subdirectory named @('acl2-8.6').
+     Change to that directory.</li>
+
+     <li>(<b>Development snapshot</b>, required if you want
+       to update from GitHub; see @(see
+       github-commit-code-using-pull-requests))<br/>Execute the following (the
+       @('rm') command is just
+       to make sure you don't already have a subdirectory
+       named @('acl2')):
+       @({
+       rm -rf acl2
+       git clone https://github.com/acl2/acl2
+       })
+       This will create the subdirectory @('acl2').
+       Change to that directory.
+     </li>
+
+   </ul>
+
+ </li><p/>
+
+ <li>Obtain a Common Lisp implementation if you don't already have one; see
+ @(see installation-requirements).  (Note: Some of the ACL2 libraries (see
+ @(see community-books)) depend on Quicklisp, and those are only guaranteed to
+ work with CCL or SBCL.)</li><p/>
+
+ <li>Execute the following command.
+
+ @({
+ make LISP=<path_to_your_lisp_executable>
+ })
+
+ This will create a script in the current directory for running ACL2.  The
+ script is named @('saved_acl2').<br/> <b>Note:</b> You will need Gnu make
+ (preferably newer than Version 3.82).</li>
+
+ <li>Certify some books, for example with
+
+ @({
+ make basic
+ })
+
+ or something fancier such as the following.
+
+ @({
+ (time nice make -j 8 ACL2=/u/smith/bin/acl2 basic) >& make-basic.log
+ })
+
+ This may take only a few minutes, depending your @('-j') value,
+ your machine, and your host Common Lisp.  The
+ resulting log should contain no occurrences of the string
+ &ldquo;CERTIFICATION FAILED&rdquo;; a normal exit (status 0) should guarantee
+ this.  If you want further options or additional explanation (e.g.,
+ you can certify many more books with @('make regression'), and there is a
+ discussion of avoiding root login), see @(see books-certification).</li>
+
+ </ol>
+
+ <p>You now have an ACL2 executable called @('saved_acl2') (from step 3) and
+ access to certified community books (from step 4).  Enjoy!  And please
+ consider contributing to the ACL2 libraries; see @(see
+ how-to-contribute).</p>")
+
+(defxdoc installation-support
+  :parents (installation)
+  :short "Additional support for ACL2 installation"
+  :long "<p>To install ACL2, it will generally suffice to see the summary in
+ @(see installation-summary).  You should read the subtopics below only if that
+ summary was somehow not sufficient.  They provide alternate and additional
+ information for obtaining and installing ACL2 and associated libraries.</p>")
 
 (defxdoc instructions
   :parents (proof-builder)
@@ -54454,20 +54930,11 @@ tables in the current Hons Space."
 
  <p>These are but a few of the interesting projects carried out with ACL2.
  Many of the authors mentioned above have versions of the papers on their web
- pages.  In addition, see <a
- href='http://www.cs.utexas.edu/users/moore/publications/acl2-papers.html'>Books
- and Papers about ACL2 and its Applications</a>.  Also, see the presentations
- in each of the <a
- href='http://www.cs.utexas.edu/users/moore/acl2/workshops.html'>ACL2
- Workshops</a>.</p>")
+ pages.  Also see @(see publications) and see the presentations in each of the
+ ACL2 @(csee Workshops).</p>")
 
 (defxdoc interfacing-tools
-  :parents (top
-
-; Including acl2 as a parent so that all ACL2 system topics can be found under
-; the graph rooted at the acl2 node.
-
-            acl2)
+  :parents (top)
   :short "Libraries and tools for doing basic <see topic='@(url std/io)'>file
  i/o</see>, using raw <see topic='@(url quicklisp)'>Common Lisp
  libraries</see>, working with the <see topic='@(url oslib)'>operating
@@ -57177,11 +57644,9 @@ tables in the current Hons Space."
  described here to prove theorems.  Solutions to the exercises are online, as
  are <a
  href='http://link.springer.com/content/pdf/bbm%3A978-1-4615-4449-4%2F1.pdf'>appendices</a>
- that focus on some practical usage aspects.  See this <a
- href='http://www.cs.utexas.edu/users/moore/publications/acl2-papers.html#Books'>
- web page about the book</a>, which also includes information about its
- companion (also available on Lulu) describing applications of ACL2, some of
- which are from industry.</p>
+ that focus on some practical usage aspects.  See @(see pubs::pubs-books),
+ which also includes information about its companion (also available on Lulu)
+ describing applications of ACL2, some of which are from industry.</p>
 
  <p>Using ACL2 is akin to having a partner in the theorem proving enterprise.
  It will do some of the work and you will do some of the work.  It can't really
@@ -57413,11 +57878,10 @@ tables in the current Hons Space."
  <p>which is <a href='http://www.lulu.com/content/1746161'>available in
  paperback from Lulu</a> for approximately $20 (as of 2010).  That book
  contains hundreds of exercises in programming, proof, and using The Method to
- prove theorems.  Solutions to the exercises are online.  See also this <a
- href='http://www.cs.utexas.edu/users/moore/publications/acl2-papers.html#Books'>
- web page about the book</a>, which also includes information about its
- companion (also available on Lulu) describing applications of ACL2, some of
- which are from industry.</p>
+ prove theorems.  Solutions to the exercises are online.  See @(see
+ pubs::pubs-books), which also includes information about its companion (also
+ available on Lulu) describing applications of ACL2, some of which are from
+ industry.</p>
 
  <p>Thank you for spending the time to get acquainted with the basics of the
  ACL2 theorem prover.  Don't hesitate to send further questions to the ACL2
@@ -62019,6 +62483,70 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
 (defxdoc lists
   :parents (programming)
   :short "Lists of objects, the classic Lisp data structure.")
+
+(defxdoc live-stobj-in-proof
+  :parents (raw-lisp-error)
+  :short "Error messages about &ldquo;live&rdquo; @(see stobj)s during proofs"
+  :long "<p>It is possible to see an error like the following.  (This error is
+ probably very rare, and perhaps can only occur during a proof.)</p>
+
+ @({
+ ***********************************************
+ ************ ABORTING from raw Lisp ***********
+ ********** (see :DOC raw-lisp-error) **********
+ Error:  A live stobj (for stobj ST) was unexpectedly encountered
+         when evaluating a call of the function, ST-INIT.
+         See :DOC live-stobj-in-proof.
+ ***********************************************
+ })
+
+ <p>The solution is generally to @(see disable) the @(see
+ executable-counterpart) of the offending function, as suggested by the example
+ below (essentially provided by Sol Swords).  As of this writing (in July,
+ 2025), the only way to get an unexpected &ldquo;live&rdquo; @(see stobj) is by
+ the use of @(tsee swap-stobjs), as illustrated below.</p>
+
+ <p>First introduce a pair of congruent @(see stobj)s.</p>
+
+ @({
+ (defstobj st (fld))
+ (defstobj st1 (fld1) :congruent-to st)
+ })
+
+ <p>Now define a function that &ldquo;initializes&rdquo; the stobj @('st') by
+ creating a new stobj @('st1') and swapping the two (see @(see
+ swap-stobjs)).</p>
+
+ @({
+ (defun st-init (st)
+   (declare (xargs :stobjs (st)))
+   (with-local-stobj st1
+     (mv-let (st1 st)
+       (swap-stobjs st1 st)
+       st)))
+ })
+
+ <p>The following proof attempt causes the error message displayed above.</p>
+
+ @({
+ (thm (not (equal (st-init '(1)) '(nil))))
+ })
+
+ <p>In fact, that formula is not a theorem!  Through Version  8.6, ACL2
+ mistakenly proved this theorem by evaluating the indicated call of
+ @('st-init') to obtain an actual Lisp array, because of how ACL2 handles @(see
+ stobj)s in Lisp.  But now ACL2 produces the error displayed above.</p>
+
+ <p>The error is avoided if we @(see disable) the @(see executable-counterpart)
+ of the offending function mentioned in the error message, @('st-init').
+ Indeed, the following theorem, which contradicts the false claim above and
+ disables the offending executable-counterpart, shows that the logical value of
+ @('(st-init '(1))') is indeed @(''(nil)').</p>
+
+ @({
+ (thm (equal (st-init '(1)) '(nil))
+      :hints((\"Goal\" :in-theory (disable (:e st-init)))))
+ })")
 
 (defxdoc local
   :parents (events)
@@ -72610,8 +73138,8 @@ it."
   :short "Declare a measure for a @(tsee defun)"
   :long "<p>See @(see xargs) for discussion of how to use the @(':measure')
  keyword to specify a measure for a definition.  A related utility,
- @('measure'), may be found in the @(see community-books), file
- @('kestrel/utilities/system/world-queries.lisp').</p>")
+ @('get-measure'), may be found in the @(see community-books), file
+ @('std/system/get-measure.lisp').</p>")
 
 (defxdoc measure-debug
   :parents (measure debugging)
@@ -106380,7 +106908,7 @@ it."
 
 ; A bug was fixed that was probably present in Version 8.5 (and perhaps earlier
 ; versions), and definitely present in a github version of ACL2 before the
-; release of Version 8.6, that permitted an out-of-bounds array access when
+; release of Version  8.6, that permitted an out-of-bounds array access when
 ; updating a theory to accommodate useless-runes.  That error could occur
 ; during a call of compress1 from update-enabled-structure, from
 ; load-theory-into-enabled-structure-1, from useless-runes-ens.  The latter two
@@ -108138,13 +108666,25 @@ it."
 ;   ; 13.47 seconds realtime, 12.75 seconds runtime
 ;   ; (2,355,093,488 bytes allocated).
 
+; Avoid including TOP as a parent when using :DOC at the terminal, as had been
+; the case for topics DEBUGGING and INTERFACING-TOOLS.
+
+; As part of carrying out the item, "The installation instructions have been
+; moved into the manual...", the installation/ directory has been removed and
+; all-files.txt has been updated correspondingly.  From that directory,
+; however, the following files have not been converted to xdoc, and instead,
+; the first two have been placed in
+; https://www.cs.utexas.edu/users/moore/acl2/contrib/ and the third has been
+; deleted (as it is very likely no longer relevant): windows7.html,
+; windows-gcl-jared.html, and installing-make.html.
+
   :parents (release-notes)
   :short "ACL2 Version  8.7 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
  documentation) has been updated to reflect all changes that are recorded
  here.</p>
 
- <p>Below we roughly organize the changes to ACL2 since Version 8.6 into the
+ <p>Below we roughly organize the changes to ACL2 since Version  8.6 into the
  following categories of changes: existing features, new features, heuristic
  and efficiency improvements, bug fixes, changes at the system level, Emacs
  support, and experimental versions.  Each change is described in just one
@@ -108153,9 +108693,19 @@ it."
 
  <p>Note that only ACL2 system changes are listed below.  See also @(see
  note-8-7-books) for a summary of changes made to the ACL2 Community Books
- since ACL2 8.6, including the build system.</p>
+ since ACL2  8.6, including the build system.</p>
 
  <h3>Changes to Existing Features</h3>
+
+ <p>The output generated by the induction routine has been slightly changed.
+ Now, if term @('t0') suggested the induction scheme but other terms, @('t1'),
+ ... @('tk'), either suggested the same scheme or schemes that merged with
+ @('t0')'s to create the selected scheme, the induction output includes the
+ sentence ``@('We will induct according to a scheme suggested by t0, while
+ accommodating t1, ..., tk')''.  The terms mentioned are all preferentially
+ expanded by the simplifier when they arise in the subgoals produced by that
+ induction.  The fact that the terms are preferentially expanded is not new.
+ What's new is that ACL2 now lists all the accommodated terms.</p>
 
  <h3>New Features</h3>
 
@@ -108210,6 +108760,11 @@ it."
  from @(tsee force)d hypotheses to be created incorrectly.  (This bug has been
  around for at least 10 years and probably for 30 years!)</p>
 
+ <p>Fixed a soundness bug based on the use of @(tsee swap-stobjs) on two @(see
+ stobj)s of which one is &ldquo;live&rdquo;.  See @(see live-stobj-in-proof).
+ Thanks to Sol Swords for reporting this bug, including an example and analysis
+ of possible fixes in his report.</p>
+
  <p>A Lisp error is now avoided when saving event-data (see @(see
  saving-event-data) and submitting certain ill-formed attempts at @(see
  events).  Thanks to Eric Smith for sending the following example.</p>
@@ -108262,16 +108817,27 @@ it."
  found in the ACL2-only manual and because the ACL2+Books manual is helpful for
  informing new users about the libraries provided by the @(see
  community-books).  Thanks to Eric Smith for encouraging this change.  Note
- that the ACL2-only manual will continue to be built in directory
+ that the ACL2-only manual may continue to be built in directory
  @('doc/manual/') when certifying
  @('books/system/doc/acl2-manual.lisp').  (Directory @('doc/manual/') is not to
  be confused with @('books/doc/manual/'), where the ACL2+Books manual is
  built.)</p>
 
- <p>Replaced information about mailing lists in the installation instructions
- using a link to a corresponding, new documentation topic, @(see
+ <p>For the built-in @(':')@(tsee DOC) command at the terminal: changed the top
+ topic of that &ldquo;acl2-only&rdquo; manual from @('ACL2') to @('TOP').  The
+ structures of the documentation trees for that version of the manual and the
+ usual ACL2+Books manual are now consistent.  Thanks to Eric Smith for
+ suggesting that those two manual structures be consistent.</p>
+
+ <p>Replaced information about mailing lists in the @(see installation)
+ instructions using a link to a corresponding, new documentation topic, @(see
  mailing-lists).  So now, the community can make suitable updates to that page.
  Thanks to Eric Smith for suggesting this change.</p>
+
+ <p>The installation instructions have been moved into the manual; see @(see
+ installation).  Thanks to Eric Smith for suggesting this change, which will
+ allow the ACL2 community (specifically, the acl2-books community) to improve
+ those instructions.</p>
 
  <h3>EMACS Support</h3>
 
@@ -109079,6 +109645,60 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  during @(tsee include-book).  If you want to avoid printing from
  @('observation-cw') during @(tsee include-book), then you need to manage that
  yourself.</p>")
+
+(defxdoc obtaining-acl2
+  :parents (installation-support)
+  :short "Alternate instructions for obtaining the ACL2 sources and community books"
+  :long "<p>This topic may be avoided by reading the installation summary: see
+  @(see installation-summary), which is intended to be self-contained.</p>
+
+ <p>(First, a note for Windows users only: we suggest that you obtain a
+ Unix-like environment or, at least, download a utility such as
+ @('djtarnt.exe') to use with the @('-x') option on gzipped tarfiles.  WARNING:
+ At least one user experienced CR/LF issues when using WinZIP, but we have
+ received the suggestion that people untarring with that utility should
+ probably turn off smart cr/lf conversion.)</p>
+
+ <p>Create a directory under which to store ACL2.  Then follow the steps below,
+ to obtain the ACL2 sources and the associated libraries (see @(see
+ community-books)).</p>
+
+ <ul>
+
+ <li>Download <a
+ href='https://github.com/acl2-devel/acl2-devel/releases/download/8.6/acl2-8.6.tar.gz'>@('acl2-8.6.tar.gz')</a>.</li>
+
+ <li>While standing in the directory where you did that download, execute the
+ following Unix/Linux shell commands to obtain the ACL2 system and community
+ books.  (<b>Note</b>: Gnu tar is preferred, as there have been some problems
+ with long file names when using at least one other tar program.  You may want
+ to use the @('-i') option, @('tar xpvfi 8.6.tar'), if you have problems with
+ other than Gnu tar.  You can see if you have Gnu tar by running @('tar -v').)
+ The resulting tarball and its extracted directory may consist of 230M+ bytes
+ and 1100M+ bytes, respectively.  Additional space is required to build an
+ executable image, for example, 170M+ bytes if you use CCL and 230M bytes if
+ you use SBCL; and considerably more will be required to <see topic='@(url
+ books-certification)'>certify books</see>.
+
+ @({
+ tar xfz acl2-8.6.tar.gz
+ rm acl2-8.6.tar.gz
+ cd acl2-8.6
+ })
+
+ </li>
+
+ </ul>
+
+ <p><b>Note</b>: You can also fetch the latest GitHub distribution the ACL2
+ system and the community books, as shown below.</p>
+
+ @({
+ git clone https://github.com/acl2/acl2
+ })
+
+ <p>Moreover, you can <see topic='@(url how-to-contribute)'>contribute books by
+ joining the GitHub project</see>.</p>")
 
 (defxdoc oddp
   :parents (numbers acl2-built-ins)
@@ -111519,19 +112139,18 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   locally.  If you want to build Nqthm and do a regression, see the Nqthm
   installation instructions in @('nqthm-1992/README').</p>
 
-  <p>The ACL2 system, as it stood in 2000, is documented in two textbooks
-  described <a
-  href='https://www.cs.utexas.edu/~moore/publications/acl2-papers.html#Books'>here</a>.
-  These books are a good place for a beginner to start, even though some of the
-  material is out-of-date.  Up-to-date user-level @(see documentation) of ACL2
-  is available online as described in the User's Manuals link on the
-  homepage (below), and a wealth of information is available there.  Some of it
-  is organized for the experienced user trying to get information about a
-  particular feature, but there is a documentation topic, @(see start-here),
-  that provides many starting points for the beginning ACL2 user.</p>
+  <p>The ACL2 system, as it stood in 2000, is documented in two textbooks; see
+  @(see pubs::pubs-books).  These books are a good place for a beginner to
+  start, even though some of the material is out-of-date.  Up-to-date
+  user-level @(see documentation) of ACL2 is available online as described in
+  the User's Manuals link on the homepage (below), and a wealth of information
+  is available there.  Some of it is organized for the experienced user trying
+  to get information about a particular feature, but there is a documentation
+  topic, @(see start-here), that provides many starting points for the
+  beginning ACL2 user.</p>
 
-  <p>Source code, input files, installation instructions, extensive online
-  documentation and other material is available on the <a
+  <p>Source code, input files, @(see installation) instructions, extensive
+  online documentation and other material is available from the <a
   href='http://www.cs.utexas.edu/users/moore/acl2/'>ACL2 homepage</a>:</p>
 
   @({
@@ -111547,19 +112166,16 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   })
 
   <p>As with Nqthm, to explore ACL2 source files or prover input files we
-  recommend that you perform the first step of the installation instructions
-  found under the <a
-  href='https://www.cs.utexas.edu/~moore/acl2/current/HTML/installation/installation.html'>&ldquo;Obtaining,
-  Installing, and License&rdquo;</a> link of the ACL2 homepage above.  That
-  first step downloads a gzipped tar file of the latest sources and input
-  scripts (but not prover output) to a directory of your choosing.  The
-  filenames suffixed with @('.lisp') at the top-level of that directory
-  constitute the ACL2 source code.  The ACL2 regression suite consists of
-  thousands of files called &ldquo;@(see books)&rdquo; and are available under
-  the @('books/') subdirectory.  So, for example, you'll find a toy model of
-  the JVM at @('books/models/jvm/m1/m1.lisp').  If you want to see proofs you
-  must build ACL2 on your machine and run a full regression as described in the
-  installation instructions.</p>
+  recommend that you see @(see installation) and follow the instructions there.
+  That includes placing a copy of the latest sources and input scripts (but not
+  prover output) in a directory on your computer.  The filenames suffixed with
+  @('.lisp') at the top-level of that directory constitute the ACL2 source
+  code.  The ACL2 regression suite consists of thousands of files called
+  &ldquo;@(see books)&rdquo; and are available under the @('books/')
+  subdirectory.  So, for example, you'll find a toy model of the JVM at
+  @('books/models/jvm/m1/m1.lisp').  If you want to see proofs you must build
+  ACL2 on your machine and run a full regression as described in the
+  @(see installation) instructions.</p>
 
   <h3>Quick Index to Related Topics</h3>
   <ul>
@@ -115347,10 +115963,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>In the past, a Windows Installer for ACL2 has included a Unix environment,
  pre-certified standard and workshop books, and a copy of Gnu Emacs.  This
- capability has largely been superseded in the installation instructions' <a
- href='https://www.cs.utexas.edu/~moore/acl2/current/HTML/installation/obtaining-and-installing.html#Build-Particular'>section
- on Building an Executable Image on Some Particular Systems</a>. See also @(see
- windows-installation).</p>
+ capability has largely been superseded; see @(see windows-installation).</p>
 
  <h3>macOS</h3>
 
@@ -115364,14 +115977,14 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>A Debian Gnu Linux package is available, which is likely to work on other
  Linux systems as well.  Thanks to Camm Maguire for maintaining this package,
- and for pointing out that as Debian packages are simply ar and tar archives,
- they can be unpacked on any linux system, and who has said: &ldquo;If someone
- is running Debian, all they want to do is 'apt-get install acl2', doing
- likewise for any optional add-on package they wish as well, e.g. emacs, infix,
- etc.&rdquo; Alternatively, Debian GNU Linux users may wish to <a
- href='http://packages.qa.debian.org/a/acl2.html'>download the ACL2 Debian
- package for Linux</a>.  An alternate location you might want to check is <a
- href='http://backports.debian.org'>@('backports.debian.org')</a>.</p>
+ and for pointing out that as Debian packages are simply @('ar') and @('tar')
+ archives, they can be unpacked on any linux system, and who has said:
+ &ldquo;If someone is running Debian, all they want to do is 'apt-get install
+ acl2', doing likewise for any optional add-on package they wish as well,
+ e.g. emacs, infix, etc.&rdquo; Alternatively, Debian GNU Linux users may wish
+ to <a href='http://packages.qa.debian.org/a/acl2.html'>download the ACL2
+ Debian package for Linux</a>.  An alternate location you might want to check
+ is <a href='http://backports.debian.org'>@('backports.debian.org')</a>.</p>
 
  <h3>Docker images</h3>
 
@@ -121445,6 +122058,9 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <li>Reader errors (for examples see @(see reader) and see @(see
  set-iprint))</li>
 
+ <li>Certain errors during proofs (for an example see @(see
+ live-stobj-in-proof)</li>
+
  </ul>")
 
 (defxdoc read-acl2-oracle
@@ -122095,13 +122711,13 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  lead to related discussions of issues and features of the ACL2 system.  You'll
  need to be connected to the web to access some of these pages, unless you have
  installed ACL2 on your system and built the full manual and books
- documentation.  See the installation instructions on the ACL2 home page [4].
- We provide this material for students who want to explore further.  But these
- links are technically irrelevant to the student who is focused on working the
- exercises here, even if your ultimate goal is to learn how to use ACL2.
- First, learn how to do the exercises here.  In a second pass, where you're
- trying to get ACL2 to do your proofs, you might want to explore.  And
- remember, it is easy for explorers to get lost!</p>
+ documentation.  See the @(see installation) instructions.  We provide this
+ material for students who want to explore further.  But these links are
+ technically irrelevant to the student who is focused on working the exercises
+ here, even if your ultimate goal is to learn how to use ACL2.  First, learn
+ how to do the exercises here.  In a second pass, where you're trying to get
+ ACL2 to do your proofs, you might want to explore.  And remember, it is easy
+ for explorers to get lost!</p>
 
  <p><b>If you are working your way through <i>Recursion and Induction</i> and
  decide to follow one of these explorer links be sure to use the
@@ -126367,9 +126983,8 @@ work on <tt>(q x)</tt>.</p>
  recommend the ACL2 documentation as a way to learn to how to program in full
  Common Lisp.  Indeed, we don't recommend [6] or [7] for that purpose either.
  Many good introductions to Common Lisp are available via the web.  There are
- many implementations of Common Lisp available and the installation
- instructions on the <a href='http://www.cs.utexas.edu/users/moore/acl2/'>ACL2
- home page</a> list several.</li>
+ many implementations of Common Lisp available and the @(see installation)
+ instructions list several; see @(see installation-requirements).</li>
 
  <li>[8] W. A. Hunt, Jr., M. Kaufmann, J S. Moore and A. Slobodova.<br/>
  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Industrial Hardware and Software Verification with ACL2.<br/>
@@ -131578,10 +132193,10 @@ work on <tt>(q x)</tt>.</p>
  </ol>
 
  <p>To see the ruler-extenders of an existing function symbol, @('fn'), in a
- logical @(see world), @('wrld'), evaluate @('(ruler-extenders 'fn wrld)')
+ logical @(see world), @('wrld'), evaluate @('(get-ruler-extenders 'fn wrld)')
  after @('(include-book
- \"kestrel/utilities/system/world-queries\" :dir :system)').  For example,
- evaluation of @('(ruler-extenders 'fn (w state))') provides the
+ \"std/system/get-ruler-extenders\" :dir :system)').  For example,
+ evaluation of @('(get-ruler-extenders 'fn (w state))') provides the
  ruler-extenders of @('fn') in the current logical world.</p>
 
  <p>Below we describe the notion of ruler-extenders in detail, as well as how
@@ -132062,6 +132677,40 @@ work on <tt>(q x)</tt>.</p>
  @(see enable)d or @(see disable)d, and they do not have associated @(see
  corollary) formulas.  In short, despite the fact that the user may sometimes
  see fake runes printed, they should never be typed.</p>")
+
+(defxdoc running-acl2-without-executable
+  :parents (installation-support)
+  :short "Running ACL2 without building an executable image"
+  :long "<p>The most convenient way to use ACL2 is first to install an
+ executable image; see @(see creating-executable).  However, in some cases this
+ is not possible, for example, perhaps if you are using a trial version of a
+ Common Lisp implementation.  In that case you should follow the steps below
+ each time you want to start up ACL2.</p>
+
+ <p>We assume you have obtained ACL2 and placed it in your current directory.
+ Start up your Common Lisp in that directory, and compile by executing the
+ following forms.  <i>This sequence of steps needs to be performed only
+ once.</i></p>
+
+ @({
+ (load \"init.lisp\")
+ (in-package \"ACL2\")
+ (compile-acl2)
+ })
+
+ <p>Now each time you want to use ACL2, execute the following forms after
+ starting up Common Lisp in that same directory.  This may take a minute or
+ two.</p>
+
+ @({
+ (load \"init.lisp\")
+ (in-package \"ACL2\")
+ (load-acl2)
+ (initialize-acl2)
+ (lp) ; enter the ACL2 read-eval-print loop
+ })
+
+ <p>Now see @(see using-acl2).</p>")
 
 (defxdoc rw-cache-state
   :parents (rewrite)
@@ -132902,7 +133551,7 @@ work on <tt>(q x)</tt>.</p>
 
 (defxdoc sbcl-installation
 
-; See sbcl-installation-brief for a comment about former material in
+; See sbcl-installation-brief for a comment about material formerly in
 ; installation/requirements.html.
 
   :parents (building-acl2)
@@ -133026,9 +133675,10 @@ work on <tt>(q x)</tt>.</p>
 (defxdoc sbcl-installation-brief
 
 ; This :DOC topic replaces what was in the section on "Obtaining SBCL" in ACL2
-; file installation/requirements.html.  That material contained some
-; information that is probably now obsolete.  Here is that material, in case
-; some of it turns out to be useful down the road.
+; file installation/requirements.html (which has since been replaced by :DOC
+; installation-requirements).  That material contained some information that is
+; probably now obsolete.  Here is that material, in case some of it turns out
+; to be useful down the road.
 
 #|
 
@@ -140728,6 +141378,9 @@ work on <tt>(q x)</tt>.</p>
  information</b></color> such as how to obtain and build ACL2, copyright and
  license material, mailing lists, connection with GitHub, and so on.</li>
 
+ <li>See @(see using-acl2) for introductory material about <b>using</b>
+ ACL2.</li>
+
  <li>See @(see tours) for <color rgb='#0090f0'><b>overviews at a high
  level</b></color>.  Also see the paper <i><a
  href='https://www.cs.utexas.edu/users/moore/publications/how-to-prove-thms/intro-to-acl2.pdf'>Industrial
@@ -140763,13 +141416,9 @@ work on <tt>(q x)</tt>.</p>
  <li>See @(see interesting-applications) for an overview of some projects that
  have used ACL2.</li>
 
- <li>A <a
- href='https://www.cs.utexas.edu/users/moore/publications/acl2-papers.html'>publications
- page</a> has links to many books and papers.  You can also follow links
- starting at the <a
- href='https://www.cs.utexas.edu/users/moore/acl2/workshops.html'>ACL2
- Workshops page</a> to see programs, talks, and papers presented at ACL2
- Workshops (25 and counting as of 2022).</li>
+ <li>See @(see publications) for links to many books and papers.  You can also
+ see @(see workshops) for programs, talks, and papers presented at the numerous
+ ACL2 Workshops.</li>
 
  <li>The <a href='https://github.com/acl2/acl2/tree/master/books'>Community
  Books</a> is a repository of many projects, processed virtually continuously
@@ -143961,6 +144610,62 @@ work on <tt>(q x)</tt>.</p>
 
  </ul>")
 
+(defxdoc summary-of-acl2-system-distribution
+  :parents (installation-support)
+  :short "Summary of ACL2 system distribution"
+  :long "<p>This topic discusses how to browse a distribution that includes
+ only the ACL2 system, without the <see topic='@(url
+ community-books)'>community books</see>.</p>
+
+ <p>See @(see installation-summary) for how to obtain a gzipped tarfile that
+ contains both the ACL2 sources and community books.  Below we describe the
+ ACL2 distribution only (without the community books).  Its files are available
+ by exploring the @(`(:raw (acl2-url-ref \"distrib/\" \"distrib/\"))`)
+ directory on the ACL2 website or by obtaining a gzipped tarfile,
+ @(`(:raw (acl2-url-ref \"distrib/acl2.tar.gz\" \"acl2.tar.gz\"))`), which
+ extracts to the contents of @(`(:raw (acl2-url-ref \"distrib/\"
+ \"distrib/acl2-sources/\"))`) directory, which in turn contains the ACL2
+ source files as well as the following
+ (and a few others not mentioned here).</p>
+
+ @({
+ LICENSE       ; ACL2 license file
+ GNUmakefile   ; For use with GNU make
+ TAGS          ; Handy for looking at source files with emacs
+ TAGS-acl2-doc ; Handy for finding code in books, e.g., with the acl2-doc browser
+ bin/          ; Contains an executable script, bin/acl2, which invokes ACL2
+ doc/          ; ACL2 documentation
+ emacs/        ; Some helpful emacs utilities
+ })
+
+ <p>Also available are the following.</p>
+
+ <ul>
+
+ <li>@(`(:raw (acl2-url-ref \"distrib/acl2-customization-files/\" \"ACL2
+ customization files\"))`): These @(see acl2-customization) files can be useful
+ for certifying books (see @(see certify-book)), for example with ACL2(p) (see
+ @(see parallelism)).</li>
+
+ <li>@(`(:raw (acl2-url-ref \"distrib/images/\" \"images/\"))`): Some gzip'd
+ tar'd executables; see @(`(:raw (acl2-url-ref \"distrib/images/Readme.html\"
+ \"images/Readme.html\"))`)</li>
+
+ <li>@(`(:raw (acl2-url-ref \"distrib/split/\" \"split/\"))`): The result of
+ splitting up @('acl2.tar.gz')</li>
+
+ </ul>
+
+ <h3>GitHub Distributions</h3>
+
+ <p>We strongly recommend that ACL2 users update their local copies of the
+ system and community books at each ACL2 release.  While that should suffice
+ for many ACL2 users, nevertheless for those who prefer to obtain the latest
+ developments, the ACL2 source code and community books have been made
+ available between ACL2 releases, by way of revision control using git.  See
+ the <a href='https://github.com/acl2/acl2'>project website</a> for more
+ information.</p>")
+
 (defxdoc swap-stobjs
   :parents (stobj acl2-built-ins)
   :short "Swap two congruent @(see stobj)s"
@@ -146458,9 +147163,8 @@ work on <tt>(q x)</tt>.</p>
 
  </ul>
 
- <p>Note that many talks are also available from the <a
- href='http://www.cs.utexas.edu/users/moore/acl2/workshops.html'>ACL2
- Workshops</a> pages and on the <a
+ <p>Note that many talks are also available from the ACL2 @(csee Workshops)
+ pages and on the <a
  href='http://www.cs.utexas.edu/users/moore/acl2/seminar/'>University of Texas
  ACL2 Seminar page</a>.</p>
  ")
@@ -150408,6 +151112,19 @@ work on <tt>(q x)</tt>.</p>
  and vice-versa.  However, if @('new-tp') is supplied and not @('nil'), then it
  should be the new type (the symbol @('macro') or @('atomic-macro'), in any
  package), or else there is no change.</p>")
+
+(defxdoc top
+
+; This form defines the top node of the acl2-only manual.  For the ACL2+Books
+; manual, this topic is replaced by a call of remove-topics-by-name in
+; books/xdoc/import-acl2doc.lisp together with a redefinition of TOP in
+; books/doc/top-topic.lisp.
+
+  :parents ()
+  :short "ACL2 documentation (system only, not including the community books)"
+  :long "<p>This is the documentation for the ACL2 system.  For the ACL2+Books
+  Manual, which documents both the ACL2 system and the ACL2 @(see
+  community-books), see the @(`(:raw (combined-manual-ref))`).</p>")
 
 (defxdoc top-level
   :parents (miscellaneous)
@@ -157221,6 +157938,151 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
             (value '(value-triple :success))))
  })")
 
+(defxdoc using-acl2
+  :parents (installation about-acl2)
+  :short "Using ACL2"
+  :long "<p><b>Table of Contents</b></p>
+
+ <ul>
+ <li>Invoking ACL2</li>
+ <li>Testing ACL2</li>
+ <li>Certifying ACL2 Books</li>
+ <li>Documentation</li>
+ <li>Emacs</li>
+ </ul>
+
+ <h3>Invoking ACL2</h3>
+
+ <p>We assume that you have followed the @(see installation) instructions to
+ install ACL2.  The sources and, in general, an executable image are located in that
+ directory.  However, if you have not saved an executable image but instead use the
+ directions for running ACL2 without building an executable image
+ (see @(see running-acl2-without-executable)), skip to &ldquo;When ACL2 Starts
+ Up&rdquo; below.</p>
+
+ <p>Invoke ACL2 by running the executable file, @('saved_acl2'), for example as
+ follows (but you can supply a suitable pathname if you are not standing in the
+ directory that contains @('saved_acl2')).</p>
+
+ @({
+ mycomputer% ./saved_acl2
+ })
+
+ <p>If you on a Unix-like system, then to make it easy to invoke ACL2 by typing
+ a short command, e.g.,</p>
+
+ @({
+ mycomputer% acl2
+ })
+
+ <p>you may want to install an executable file on your path, e.g.,
+ @('~/bin/acl2'), containing the following two lines where @('<path>') is the
+ absolute pathname for the directory of @('saved_acl2').</p>
+
+ @({
+ #!/bin/sh
+ <path>/saved_acl2 \"$@\"
+ })
+
+ <p>Note: A carriage return in the file after the last line above may be
+ important!</p>
+
+ <p><i>When ACL2 Starts Up</i></p>
+
+ <p>When you invoke ACL2, you should see the host Common Lisp
+ print a header concerning the ACL2 version, license and copyright.</p>
+
+ <p>Most or all hosts then automatically enter the ACL2 <i>command loop</i>, an
+ ACL2 read-eval-print loop with the prompt:</p>
+
+ @({
+ ACL2 !>
+ })
+
+ <p>In the very unlikely case that a host leaves you in Common Lisp's
+ read-eval-print loop, then you'll need to evaluate the Common Lisp expression
+ @('(ACL2::LP)') or simply @('(LP)') if the current package is
+ @('\"ACL2\"').</p>
+
+ <p>Once in the ACL2 command loop, you can type an ACL2 term, typically
+ followed by ``return'' or ``enter,'' and ACL2 will evaluate the term,
+ print its value, and prompt you for another one.  Below are three
+ simple interactions.</p>
+
+ @({
+ ACL2 !>t
+ T
+ ACL2 !>'abc
+ ABC
+ ACL2 !>(+ 2 2)
+ 4
+ })
+
+ <p>To get out of the ACL2 command loop, type the @(':q') command.  This
+ returns you to the host Common Lisp.  We sometimes call this ``raw Lisp.''
+ You may re-enter the command loop with @('(LP)') as above.  To quit ACL2 (and
+ Lisp) entirely, submit the command, @('(quit)').</p>
+
+ <p>Note that when you are in raw Lisp you can overwrite or destroy ACL2 by
+ executing inappropriate Common Lisp expressions.  <b>All bets are off once
+ you've exited the ACL2 loop.</b> That said, this is typically safe and many
+ users do it.  For example, you might exit the ACL2 loop, activate some
+ debugging or trace features in raw Lisp, and then reenter the ACL2 loop.
+ While developing proofs or tracking down problems, this can occasionally be
+ reasonable behavior.</p>
+
+ <p>Now you are ready to test your copy of ACL2.</p>
+
+ <h3>Testing ACL2</h3>
+
+ <p>An easy way to test the theorem prover is to
+ type the following term to the ACL2 command loop.</p>
+
+ @({
+ :mini-proveall
+ })
+
+ <p>This will cause a sequence of commands to be processed, each of which is
+ first printed out as though you had typed it.  Each will print some text,
+ generally a proof of some conjecture.  None should fail.</p>
+
+ <p>A more elaborate test is to certify the community books; see @(see
+ community-books) and @(see certify-book).  This certification is a good idea
+ anyhow; this is our next topic.  On a Unix-like system, you can also certify
+ just a small but useful subset of the books in a few minutes by executing
+ @('make basic') in either the main ACL2 directory or the @('books/')
+ subdirectory.</p>
+
+ <h3>Certifying ACL2 Books</h3>
+
+ <p>The <see topic='@(url community-books)'><i>community books</i></see>, which
+ reside in subdirectory @('books/'), have been contributed by many ACL2 users.
+ See @(see books) for a through discussion of the general topic of books.</p>
+
+ <p>Books should be <i>certified</i> before they are used.  ACL2 is distributed
+ without book @(see certificate)s, mainly because certification produces
+ compiled code specific to the host.  You should certify the books locally,
+ both as a test of your ACL2 image and because books generally need to be
+ certified before they can be used.  See @(see installation), or more
+ specifically @(see installation-summary), for how to perform this
+ certification.  For additional explanation and further options, see @(see
+ books-certification).</p>
+
+ <h3>Documentation</h3>
+
+ <p>See @(see documentation) for a discussion of ACL2's documentation system.
+ To query ACL2 about a built-in topic, @('<topic>'), submit @(':DOC <topic>')
+ to ACL2.</p>
+
+ <h3>Emacs</h3>
+
+ <p>Emacs users may find it helpful to load into emacs the file
+ @('emacs/emacs-acl2.el') for Emacs 24 or 25 or the file
+ @('books/emacs/emacs-acl2.el') for later Emacs versions.  Utilities offered by
+ this file are documented near the top of the file.  In particular, this file
+ automatically loads the @(see acl2-doc) Emacs-based browser for ACL2
+ documentation.</p>")
+
 (defxdoc using-computed-hints
   :parents (computed-hints hints)
   :short "How to use computed hints"
@@ -160954,8 +161816,8 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   :short "Show that a relation is well-founded on a set"
   :long "<p>See @(see well-founded-relation-rule) for discussion of
  well-founded relations in ACL2.  A related utility,
- @('well-founded-relation'), may be found in the @(see community-books), file
- @('kestrel/utilities/system/world-queries.lisp').</p>")
+ @('get-well-founded-relation'), may be found in the @(see community-books), file
+ @('std/system/get-well-founded-relation.lisp').</p>")
 
 (defxdoc well-founded-relation-rule
   :parents (rule-classes)
@@ -161454,7 +162316,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  when the next opportunity arises.</p>")
 
 (defxdoc windows-installation
-  :parents (break-rewrite)
+  :parents (installation-support)
   :short "Installing ACL2 on Windows"
   :long "<p>Windows users will probably want to do one of the following to
  install and run ACL2 on their systems.  Thanks to David Rager for his help
@@ -161464,7 +162326,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
 
  <li>Use a Virtual Machine platform, such as VMware Player (free for
  non-commercial use) or Oracle Virtualbox (free even for commercial
- use) to install Linux, and then follow the normal installation
+ use) to install Linux, and then follow the normal @(see installation)
  instructions to install ACL2.  As of 2014, at least a couple of our
  power users are very happy with this solution, as it provides
  first-class access to utilities relevant to maintaining the ACL2
@@ -161473,10 +162335,10 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  <li>Set up <a
  href='https://en.wikipedia.org/wiki/Windows_Subsystem_for_Linux'>Windows
  Subsystem for Linux</a> (WSL) on a 64-bit version of Windows 10 (or later,
- once available).  Within that subsystem, follow the setup and installation
- instructions for ACL2. See the below section regarding the ACL2 Sedan Windows
- installation instructions for more info, as that involves installing the ACL2
- Sedan in WSL on Windows.</li>
+ once available).  Within that subsystem, follow the setup and @(see
+ installation) instructions for ACL2. See the below section regarding the ACL2
+ Sedan Windows installation instructions for more info, as that involves
+ installing the ACL2 Sedan in WSL on Windows.</li>
 
  <li>Use the ACL2 Sedan (ACL2s) Windows installation instructions &mdash; see
  @(see acl2s::acl2s-installation) for more details. This will install ACL2 and
@@ -161491,7 +162353,106 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  href='http://www.cs.utexas.edu/users/moore/acl2/v3-6/distrib/windows/'>obtain
  a Windows installer for a previous ACL2 release</a>, which mimics some of
  Linux and provides Emacs.  Updated ACL2 binaries have been successfully
- installed in such an environment.</p>")
+ installed in such an environment.</p>
+
+ <p>Here are links to some older documentation topics, possibly out of date,
+ that provide additional information for installing ACL2 on Windows.</p>
+
+ <ul>
+
+ <li>See @(see windows-installation-gcl) for building an executable image on a
+ Windows system using GCL</li>
+
+ <li>Click <a
+ href='https://www.cs.utexas.edu/users/moore/acl2/contrib/windows7.html'>here</a>
+ for some older instructions for building ACL2 on Windows.</li>
+
+ <li>Click <a
+ href='https://www.cs.utexas.edu/users/moore/acl2/contrib/windows-gcl-jared.html'>here</a>
+ for yet older instructions for building ACL2 on Windows using mingw.</li>
+
+ </ul>")
+
+(defxdoc windows-installation-gcl
+  :parents (windows-installation)
+  :short "Building an executable image on a Windows system using GCL"
+  :long "<p>This topic is based on very old documentation that is probably
+ superseded by the topic, @(see windows-installation).  But here are steps that
+ <i>may</i> be helpful when installing ACL2 on Windows with GCL as the host
+ Common Lisp.</p>
+
+ <ol>
+
+ <li><b>FIRST</b> get GCL running on your Windows system using <b>ONE</b> of the
+ following two options.  Note that GCL can be unhappy with spaces in filenames,
+ so you should probably save the GCL distribution to a directory whose path is
+ free of spaces.
+
+ <ul>
+
+ <li><a href='https://www.gnu.org/software/gcl/'>Obtain GCL for Windows
+ systems</a> if such a distribution is available.</li>
+
+ <li><b>OR</b>, perhaps you can build GCL on your Windows system from the
+ sources.  The mingw tools and the cygnus bash shell have been used to build
+ distributed GCL executables.</li>
+
+ </ul></li>
+
+ <li><b>SECOND</b>, create an appropriate GCL batch file.  When we tried
+ running the script @('gclm/bin/gclm.bat'), a separate window popped up, and
+ with an error.  Many ACL2 users prefer running in an emacs shell buffer.  The
+ following modification of @('gclm.bat') seemed to solve the problem
+ (your pathnames may vary).
+
+ @({
+ @
+ % do not delete this line %
+ @ECHO off
+ set cwd=%cd%
+ path C:\\gcl\\gclm\\mingw\\bin;%PATH%
+ C:\\gcl\\gclm\\lib\\gcl-2.6.2\\unixport\\saved_gcl.exe -dir C:/gcl/gclm/lib/gcl-2.6.2/unixport/ -libdir  C:/gcl/gclm/lib/gcl-2.6.2/ -eval \"(setq si::*allow-gzipped-file* t)\" %1 %2 %3 %4 %5 %6 %7 %8 %9
+ })</li>
+
+ <li><b>THIRD</b>, see @(see creating-executable), and follow the instructions
+ in the section, &ldquo;Building an executable image on other than a Unix-like
+ system&rdquo;.  The resulting file may be called @('saved_acl2.exe') rather
+ than @('saved_acl2').</li>
+
+ <li><b>FINALLY</b>, create a suitable file @('acl2.bat').</li>
+
+ </ol>
+
+ <p>If you experience problems, the following hints may help.</p>
+
+ <h3>TROUBLESHOOTING</h3>
+
+ <ul>
+
+ <li>In an attempt to build ACL2 on Windows XP on top of GCL, the attempt broke
+ at the end of the &ldquo;Initialization, first pass&rdquo; step (see @(see
+ creating-executable)), while compiling @('TMP1.lisp').  That was easily
+ remedied by starting up a fresh GCL session and invoking @('(compile-file
+ \"TMP1.lisp\")') before proceeding to the next step.</li>
+
+ <li>When you want to quit ACL2, invoke @('(good-bye)').  The point here is to
+ avoid @('control-c control-d'), even though that often works fine in Emacs
+ under Unix-like systems.</li>
+
+ <li>If the above batch file does not work for some reason, an alternate
+ approach may be to set environment variables.  You may be able to add to the
+ @('PATH') variable <i>gcl-dir</i>@('\\gcc\\bin'), where <i>gcl-dir</i> is the
+ directory where GCL is installed.  To get to the place to set environment
+ variables, you might be able to go to the control panel, under system, under
+ advanced.  Alternately, you might be able to get there by opening @('My
+ Computer') and right-clicking to get to @('Properties'), then selecting the
+ @('Advanced') tab.  At one time, when GCL/Windows was released as Maxima, Pete
+ Manolios once suggested adding the system variable @('LD_LIBRARY_PATH') with
+ the value @('\"maxima-dir\\gcc\\i386-mingw32msvc\\include\"'); this may or may
+ not be necessary for your GCL installation (and the path would of course
+ likely be different).</li>
+
+ </ul>")
 
 (defxdoc with-brr-data
 
@@ -171575,9 +172536,7 @@ expand function call at the current subterm, without simplifying"
   :short "J. Sawada, &ldquo;Verification of a Simple Pipelined Machine
   Model,&rdquo; in M. Kaufmann, P. Manolios, J S. Moore, editors,
   <i>Computer-Aided Reasoning: ACL2 Case Studies</i>, Kluwer Academic
-  Publishers, Chapter 9, pp. 137-150, 2000. (See also <a
-  href='https://www.cs.utexas.edu/~moore/publications/acl2-papers.html#Books'>ACL2
-  books</a>).
+  Publishers, Chapter 9, pp. 137-150, 2000. (See also @(see pubs::pubs-books).)
 
   <br></br><br></br><b>Relevance:</b> operational model of a pipelined machine
   and its verification"
@@ -171817,11 +172776,13 @@ expand function call at the current subterm, without simplifying"
 (defpointer auto-instance defthm<w)
 (defpointer backchain-limit-rw hints t)
 (defpointer backtrack hints t)
+(defpointer bibliography publications)
 (defpointer body system-utilities)
 (defpointer book-makefiles books-certification)
 (defpointer by hints t)
 (defpointer cases hints t)
 (defpointer ccl-updates ccl-installation) ; ccl-updates is the traditional name
+(defpointer certifiable certify-book)
 (defpointer certify-book-failure certify-book-debug)
 (defpointer certifying-books books-certification)
 (defpointer check-invariant-risk set-check-invariant-risk)
