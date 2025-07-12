@@ -54136,13 +54136,13 @@ tables in the current Hons Space."
   :parents (installation)
   :short "ACL2 installation summary for Unix-like systems"
   :long "<p>Here, &ldquo;Unix-like Systems&rdquo; includes Unix and its Linux
- variants (e.g., Debian), as well as MacOS X.  Note that a quicker install may
- be possible, by instead obtaining a binary distribution; see @(see
- pre-built-binary-distributions) if one is available for your platform.
- Otherwise, you can follow the directions below, which start by fetching a file
- hosted at <a href='https://github.com/acl2/acl2/'>the GitHub ACL2 System and
- Books website</a>.  The result is a directory containing not only the ACL2
- system but, in the @('books/') subdirectory, the ACL2 libraries; see @(see
+ variants (e.g., Debian), as well as MacOS X.  A quicker install may be
+ possible by obtaining a binary distribution, if one is available for your
+ platform; see @(see pre-built-binary-distributions).  Otherwise you can follow
+ the directions below, which start by fetching a file hosted at <a
+ href='https://github.com/acl2/acl2/'>the GitHub ACL2 System and Books
+ website</a>.  The result is a directory containing not only the ACL2 system
+ but, in the @('books/') subdirectory, the ACL2 libraries; see @(see
  community-books).  The ACL2 <i>system</i>, which has been developed at the
  University of Texas at Austin, can be obtained or explored separately (though
  this is rarely done); see @(see obtaining-acl2).</p>

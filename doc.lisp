@@ -57760,13 +57760,13 @@ Steel Bank Common Lisp (SBCL)
   "ACL2 installation summary for Unix-like systems
 
   Here, ``Unix-like Systems'' includes Unix and its Linux variants
-  (e.g., Debian), as well as MacOS X.  Note that a quicker install
-  may be possible, by instead obtaining a binary distribution; see
-  [pre-built-binary-distributions] if one is available for your
-  platform.  Otherwise, you can follow the directions below, which
-  start by fetching a file hosted at {the GitHub ACL2 System and
-  Books website | https://github.com/acl2/acl2/}.  The result is a
-  directory containing not only the ACL2 system but, in the [47mbooks/[0m
+  (e.g., Debian), as well as MacOS X.  A quicker install may be
+  possible by obtaining a binary distribution, if one is available
+  for your platform; see [pre-built-binary-distributions].  Otherwise
+  you can follow the directions below, which start by fetching a file
+  hosted at {the GitHub ACL2 System and Books website |
+  https://github.com/acl2/acl2/}.  The result is a directory
+  containing not only the ACL2 system but, in the [47mbooks/[0m
   subdirectory, the ACL2 libraries; see [community-books].  The ACL2
   [3msystem[0m, which has been developed at the University of Texas at
   Austin, can be obtained or explored separately (though this is
