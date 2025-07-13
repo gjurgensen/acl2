@@ -80,6 +80,7 @@
     (BUILD::CERT_PARAM "[books]/build/doc.lisp")
     (CGEN "[books]/acl2s/cgen/top.lisp")
     (CHECKPOINT-LIST "[books]/kestrel/utilities/checkpoints-doc.lisp")
+    (COMMUNITY "[books]/doc/more-topics.lisp")
     (CONSIDERATION "[books]/hints/consider-hint.lisp")
     (BUILD::CUSTOM-CERTIFY-BOOK-COMMANDS "[books]/build/doc.lisp")
     (STD::DEFAGGREGATE "[books]/std/util/defaggregate.lisp")
@@ -1668,10 +1669,11 @@
 
 (defxdoc acl2
   :parents (top)
-  :short "ACL2 documentation (system only, not including the community books)"
-  :long "<p>This is the documentation for the ACL2 system.  For the ACL2+Books
-  Manual, which documents both the ACL2 system and the ACL2 @(see
-  community-books), see the @(`(:raw (combined-manual-ref))`).</p>")
+  :short "ACL2 system documentation"
+  :long "<p>Those topics that pertain to the ACL2 system belong under this node
+ of the @(see documentation).  See @(see top) for the top node of this manual,
+ under which may be found many topics pertaining to the @(see
+ community-books).</p>")
 
 (defxdoc |ACL2 Characters|
   :parents (|Pages Written Especially for the Tours|)
@@ -8587,7 +8589,12 @@ and @(tsee include-book)"
  constructs like @(see mv), and so forth.")
 
 (defxdoc bdd
-  :parents (acl2)
+
+; Note that topics boolean-reasoning and proof-automation do not exist in the
+; acl2-only manual.  This doesn't cause a problem; if it becomes one, we could
+; add them to :DOC broken-link-table.
+
+  :parents (acl2 boolean-reasoning proof-automation)
   :short "Ordered binary decision diagrams with rewriting"
   :long "<p>Note.  The ACL2 bdd capability has been essentially superseded by
  GL; see @(see gl).</p>
@@ -10704,7 +10711,7 @@ and @(tsee include-book)"
  })")
 
 (defxdoc books
-  :parents (acl2)
+  :parents (top)
   :short "<i>Books</i> are files of ACL2 @(see events)&mdash;they are the main
 way to split up large ACL2 developments into separate modules."
 
@@ -16651,8 +16658,8 @@ way to split up large ACL2 developments into separate modules."
   :parents (books)
   :short "Libraries of ACL2 @(see books) developed by the ACL2 community."
 
-  :long "<p>ACL2 @(see books) are files of ACL2 @(see events) like definitions
- and theorems.</p>
+  :long "<p>This topic discusses ACL2 @(see books), which are files of ACL2
+ @(see events) like definitions and theorems.  See also @(see community).</p>
 
  <p>The ACL2 <b>Community Books</b> are the canonical set of open-source books
  for ACL2, developed since the early 1990s by members of the ACL2 community.
@@ -20432,12 +20439,7 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
  tau-system)')) or change the legacy hints to use the new subgoal names.</p>")
 
 (defxdoc debugging
-  :parents (top
-
-; Including acl2 as a parent so that all ACL2 system topics can be found under
-; the graph rooted at the acl2 node.
-
-            acl2)
+  :parents (top)
   :short "Tools for debugging failed or slow proofs, or misbehaving
  functions.")
 
@@ -30799,7 +30801,7 @@ ld) and @(tsee include-book)"
 ; - At UT, /u/www/users/moore/publications/, in particular, hyper-card.html.
 ; - README.md
 
-  :parents (acl2)
+  :parents (top)
   :short "Information about options for downloading and viewing the ACL2
  documentation, contributing documentation, and the available tools for
  documenting your own books."
@@ -54932,12 +54934,7 @@ tables in the current Hons Space."
  ACL2 @(csee Workshops).</p>")
 
 (defxdoc interfacing-tools
-  :parents (top
-
-; Including acl2 as a parent so that all ACL2 system topics can be found under
-; the graph rooted at the acl2 node.
-
-            acl2)
+  :parents (top)
   :short "Libraries and tools for doing basic <see topic='@(url std/io)'>file
  i/o</see>, using raw <see topic='@(url quicklisp)'>Common Lisp
  libraries</see>, working with the <see topic='@(url oslib)'>operating
@@ -108820,11 +108817,17 @@ it."
  found in the ACL2-only manual and because the ACL2+Books manual is helpful for
  informing new users about the libraries provided by the @(see
  community-books).  Thanks to Eric Smith for encouraging this change.  Note
- that the ACL2-only manual will continue to be built in directory
+ that the ACL2-only manual may continue to be built in directory
  @('doc/manual/') when certifying
  @('books/system/doc/acl2-manual.lisp').  (Directory @('doc/manual/') is not to
  be confused with @('books/doc/manual/'), where the ACL2+Books manual is
  built.)</p>
+
+ <p>For the built-in @(':')@(tsee DOC) command at the terminal: changed the top
+ topic of that &ldquo;acl2-only&rdquo; manual from @('ACL2') to @('TOP').  The
+ structures of the documentation trees for that version of the manual and the
+ usual ACL2+Books manual are now consistent.  Thanks to Eric Smith for
+ suggesting that those two manual structures be consistent.</p>
 
  <p>Replaced information about mailing lists in the @(see installation)
  instructions using a link to a corresponding, new documentation topic, @(see
@@ -151109,6 +151112,19 @@ work on <tt>(q x)</tt>.</p>
  and vice-versa.  However, if @('new-tp') is supplied and not @('nil'), then it
  should be the new type (the symbol @('macro') or @('atomic-macro'), in any
  package), or else there is no change.</p>")
+
+(defxdoc top
+
+; This form defines the top node of the acl2-only manual.  For the ACL2+Books
+; manual, this topic is replaced by a call of remove-topics-by-name in
+; books/xdoc/import-acl2doc.lisp together with a redefinition of TOP in
+; books/doc/top-topic.lisp.
+
+  :parents ()
+  :short "ACL2 documentation (system only, not including the community books)"
+  :long "<p>This is the documentation for the ACL2 system.  For the ACL2+Books
+  Manual, which documents both the ACL2 system and the ACL2 @(see
+  community-books), see the @(`(:raw (combined-manual-ref))`).</p>")
 
 (defxdoc top-level
   :parents (miscellaneous)
