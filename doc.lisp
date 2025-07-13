@@ -57772,10 +57772,9 @@ Steel Bank Common Lisp (SBCL)
   Austin, can be obtained or explored separately (though this is
   rarely done); see [obtaining-ACL2].
 
-   1. Change to a directory whose full pathname contains no whitespace and
-      which does not already contain a subdirectory named [47macl2[0m or
-      [47macl2-8.6[0m.  Then use [31;1meither[0m of the following two methods to
-      obtain the ACL2 source code and community books.
+   1. Change to a directory that does not already contain a subdirectory
+      named [47macl2[0m or [47macl2-8.6[0m.  Then use [31;1meither[0m of the following two
+      methods to obtain the ACL2 source code and community books.
 
         * ([31;1mRecommended[0m if you don't plan to update from git)
           Download {gzipped tar file [47macl2-8.6.tar.gz[0m from GitHub |
@@ -106005,6 +106004,15 @@ Changes at the System Level
   [installation].  Thanks to Eric Smith for suggesting this change,
   which will allow the ACL2 community (specifically, the acl2-books
   community) to improve those instructions.
+
+  By default, the directory where an ACL2 executable is to be built
+  must not have a pathname that contains spaces, as before.  However,
+  now there is a variable, [47mACL2_ALLOW_SPACES_IN_DIRECTORIES[0m, that may
+  be set to a non-empty value in order to build an ACL2 executable in
+  such a directory, as noted in the error message.  That message
+  points out that there may be errors, however, when certifying
+  books.  Thanks to Eric Smith for a discussion leading to this
+  change.
 
 
 EMACS Support

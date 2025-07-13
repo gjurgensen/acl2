@@ -54149,10 +54149,9 @@ tables in the current Hons Space."
 
  <ol>
 
- <li>Change to a directory whose full pathname contains no whitespace and which
- does not already contain a subdirectory named @('acl2') or @('acl2-8.6').
- Then use <b>either</b> of the following two methods to obtain the ACL2 source
- code and community books.
+ <li>Change to a directory that does not already contain a subdirectory named
+ @('acl2') or @('acl2-8.6').  Then use <b>either</b> of the following two
+ methods to obtain the ACL2 source code and community books.
 
    <ul>
 
@@ -108838,6 +108837,14 @@ it."
  installation).  Thanks to Eric Smith for suggesting this change, which will
  allow the ACL2 community (specifically, the acl2-books community) to improve
  those instructions.</p>
+
+ <p>By default, the directory where an ACL2 executable is to be built must not
+ have a pathname that contains spaces, as before.  However, now there is a
+ variable, @('ACL2_ALLOW_SPACES_IN_DIRECTORIES'), that may be set to a
+ non-empty value in order to build an ACL2 executable in such a directory, as
+ noted in the error message.  That message points out that there may be errors,
+ however, when certifying books.  Thanks to Eric Smith for a discussion leading
+ to this change.</p>
 
  <h3>EMACS Support</h3>
 
