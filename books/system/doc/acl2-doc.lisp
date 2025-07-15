@@ -80,6 +80,7 @@
     (BUILD::CERT_PARAM "[books]/build/doc.lisp")
     (CGEN "[books]/acl2s/cgen/top.lisp")
     (CHECKPOINT-LIST "[books]/kestrel/utilities/checkpoints-doc.lisp")
+    (COMMUNITY "[books]/doc/more-topics.lisp")
     (CONSIDERATION "[books]/hints/consider-hint.lisp")
     (BUILD::CUSTOM-CERTIFY-BOOK-COMMANDS "[books]/build/doc.lisp")
     (STD::DEFAGGREGATE "[books]/std/util/defaggregate.lisp")
@@ -1668,10 +1669,11 @@
 
 (defxdoc acl2
   :parents (top)
-  :short "ACL2 documentation (system only, not including the community books)"
-  :long "<p>This is the documentation for the ACL2 system.  For the ACL2+Books
-  Manual, which documents both the ACL2 system and the ACL2 @(see
-  community-books), see the @(`(:raw (combined-manual-ref))`).</p>")
+  :short "ACL2 system documentation"
+  :long "<p>Those topics that pertain to the ACL2 system belong under this node
+ of the @(see documentation).  See @(see top) for the top node of this manual,
+ under which may be found many topics pertaining to the @(see
+ community-books).</p>")
 
 (defxdoc |ACL2 Characters|
   :parents (|Pages Written Especially for the Tours|)
@@ -8587,7 +8589,12 @@ and @(tsee include-book)"
  constructs like @(see mv), and so forth.")
 
 (defxdoc bdd
-  :parents (acl2)
+
+; Note that topics boolean-reasoning and proof-automation do not exist in the
+; acl2-only manual.  This doesn't cause a problem; if it becomes one, we could
+; add them to :DOC broken-link-table.
+
+  :parents (acl2 boolean-reasoning proof-automation)
   :short "Ordered binary decision diagrams with rewriting"
   :long "<p>Note.  The ACL2 bdd capability has been essentially superseded by
  GL; see @(see gl).</p>
@@ -10704,7 +10711,7 @@ and @(tsee include-book)"
  })")
 
 (defxdoc books
-  :parents (acl2)
+  :parents (top)
   :short "<i>Books</i> are files of ACL2 @(see events)&mdash;they are the main
 way to split up large ACL2 developments into separate modules."
 
@@ -16651,8 +16658,8 @@ way to split up large ACL2 developments into separate modules."
   :parents (books)
   :short "Libraries of ACL2 @(see books) developed by the ACL2 community."
 
-  :long "<p>ACL2 @(see books) are files of ACL2 @(see events) like definitions
- and theorems.</p>
+  :long "<p>This topic discusses ACL2 @(see books), which are files of ACL2
+ @(see events) like definitions and theorems.  See also @(see community).</p>
 
  <p>The ACL2 <b>Community Books</b> are the canonical set of open-source books
  for ACL2, developed since the early 1990s by members of the ACL2 community.
@@ -20432,12 +20439,7 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
  tau-system)')) or change the legacy hints to use the new subgoal names.</p>")
 
 (defxdoc debugging
-  :parents (top
-
-; Including acl2 as a parent so that all ACL2 system topics can be found under
-; the graph rooted at the acl2 node.
-
-            acl2)
+  :parents (top)
   :short "Tools for debugging failed or slow proofs, or misbehaving
  functions.")
 
@@ -30799,7 +30801,7 @@ ld) and @(tsee include-book)"
 ; - At UT, /u/www/users/moore/publications/, in particular, hyper-card.html.
 ; - README.md
 
-  :parents (acl2)
+  :parents (top)
   :short "Information about options for downloading and viewing the ACL2
  documentation, contributing documentation, and the available tools for
  documenting your own books."
@@ -54134,23 +54136,22 @@ tables in the current Hons Space."
   :parents (installation)
   :short "ACL2 installation summary for Unix-like systems"
   :long "<p>Here, &ldquo;Unix-like Systems&rdquo; includes Unix and its Linux
- variants (e.g., Debian), as well as MacOS X.  Note that a quicker install may
- be possible, by instead obtaining a binary distribution; see @(see
- pre-built-binary-distributions) if one is available for your platform.
- Otherwise, you can follow the directions below, which start by fetching a file
- hosted at <a href='https://github.com/acl2/acl2/'>the GitHub ACL2 System and
- Books website</a>.  The result is a directory containing not only the ACL2
- system but, in the @('books/') subdirectory, the ACL2 libraries; see @(see
+ variants (e.g., Debian), as well as MacOS X.  A quicker install may be
+ possible by obtaining a binary distribution, if one is available for your
+ platform; see @(see pre-built-binary-distributions).  Otherwise you can follow
+ the directions below, which start by fetching a file hosted at <a
+ href='https://github.com/acl2/acl2/'>the GitHub ACL2 System and Books
+ website</a>.  The result is a directory containing not only the ACL2 system
+ but, in the @('books/') subdirectory, the ACL2 libraries; see @(see
  community-books).  The ACL2 <i>system</i>, which has been developed at the
  University of Texas at Austin, can be obtained or explored separately (though
  this is rarely done); see @(see obtaining-acl2).</p>
 
  <ol>
 
- <li>Change to a directory whose full pathname contains no whitespace and which
- does not already contain a subdirectory named @('acl2') or @('acl2-8.6').
- Then use <b>either</b> of the following two methods to obtain the ACL2 source
- code and community books.
+ <li>Change to a directory that does not already contain a subdirectory named
+ @('acl2') or @('acl2-8.6').  Then use <b>either</b> of the following two
+ methods to obtain the ACL2 source code and community books.
 
    <ul>
 
@@ -54932,12 +54933,7 @@ tables in the current Hons Space."
  ACL2 @(csee Workshops).</p>")
 
 (defxdoc interfacing-tools
-  :parents (top
-
-; Including acl2 as a parent so that all ACL2 system topics can be found under
-; the graph rooted at the acl2 node.
-
-            acl2)
+  :parents (top)
   :short "Libraries and tools for doing basic <see topic='@(url std/io)'>file
  i/o</see>, using raw <see topic='@(url quicklisp)'>Common Lisp
  libraries</see>, working with the <see topic='@(url oslib)'>operating
@@ -108820,11 +108816,17 @@ it."
  found in the ACL2-only manual and because the ACL2+Books manual is helpful for
  informing new users about the libraries provided by the @(see
  community-books).  Thanks to Eric Smith for encouraging this change.  Note
- that the ACL2-only manual will continue to be built in directory
+ that the ACL2-only manual may continue to be built in directory
  @('doc/manual/') when certifying
  @('books/system/doc/acl2-manual.lisp').  (Directory @('doc/manual/') is not to
  be confused with @('books/doc/manual/'), where the ACL2+Books manual is
  built.)</p>
+
+ <p>For the built-in @(':')@(tsee DOC) command at the terminal: changed the top
+ topic of that &ldquo;acl2-only&rdquo; manual from @('ACL2') to @('TOP').  The
+ structures of the documentation trees for that version of the manual and the
+ usual ACL2+Books manual are now consistent.  Thanks to Eric Smith for
+ suggesting that those two manual structures be consistent.</p>
 
  <p>Replaced information about mailing lists in the @(see installation)
  instructions using a link to a corresponding, new documentation topic, @(see
@@ -108835,6 +108837,14 @@ it."
  installation).  Thanks to Eric Smith for suggesting this change, which will
  allow the ACL2 community (specifically, the acl2-books community) to improve
  those instructions.</p>
+
+ <p>By default, the directory where an ACL2 executable is to be built must not
+ have a pathname that contains spaces, as before.  However, now there is a
+ variable, @('ACL2_ALLOW_SPACES_IN_DIRECTORIES'), that may be set to a
+ non-empty value in order to build an ACL2 executable in such a directory, as
+ noted in the error message.  That message points out that there may be errors,
+ however, when certifying books.  Thanks to Eric Smith for a discussion leading
+ to this change.</p>
 
  <h3>EMACS Support</h3>
 
@@ -144610,58 +144620,48 @@ work on <tt>(q x)</tt>.</p>
 (defxdoc summary-of-acl2-system-distribution
   :parents (installation-support)
   :short "Summary of ACL2 system distribution"
-  :long "<p>This topic discusses how to browse a distribution that includes
- only the ACL2 system, without the <see topic='@(url
- community-books)'>community books</see>.</p>
+  :long "<p>This topic discusses a distribution that includes only the ACL2
+ system, without the @(see community-books).</p>
 
  <p>See @(see installation-summary) for how to obtain a gzipped tarfile that
  contains both the ACL2 sources and community books.  Below we describe the
  ACL2 distribution only (without the community books).  Its files are available
- by exploring the @(`(:raw (acl2-url-ref \"distrib/\" \"distrib/\"))`)
- directory on the ACL2 website or by obtaining a gzipped tarfile,
- @(`(:raw (acl2-url-ref \"distrib/acl2.tar.gz\" \"acl2.tar.gz\"))`), which
- extracts to the contents of @(`(:raw (acl2-url-ref \"distrib/\"
- \"distrib/acl2-sources/\"))`) directory, which in turn contains the ACL2
- source files as well as the following
- (and a few others not mentioned here).</p>
+ by obtaining a gzipped tarfile, @(`(:raw (acl2-url-ref \"distrib/acl2.tar.gz\"
+ \"acl2.tar.gz\"))`).  If you download this file and extract it with</p>
+
+ @({
+ tar xfz acl2.tar.gz
+ })
+
+ <p>then you will create a subdirectory, @('acl2-sources'), which is
+ approximately the usual ACL2 distribution (see @(see installation-summary))
+ without the @('books') subdirectory.  Among its contents, in addition to the
+ ACL2 source files, are the following.</p>
 
  @({
  LICENSE       ; ACL2 license file
  GNUmakefile   ; For use with GNU make
  TAGS          ; Handy for looking at source files with emacs
  TAGS-acl2-doc ; Handy for finding code in books, e.g., with the acl2-doc browser
+ acl2-customization-files/ ; Useful for certifying books, e.g., with ACL2(p)
  bin/          ; Contains an executable script, bin/acl2, which invokes ACL2
  doc/          ; ACL2 documentation
  emacs/        ; Some helpful emacs utilities
  })
 
- <p>Also available are the following.</p>
-
- <ul>
-
- <li>@(`(:raw (acl2-url-ref \"distrib/acl2-customization-files/\" \"ACL2
- customization files\"))`): These @(see acl2-customization) files can be useful
- for certifying books (see @(see certify-book)), for example with ACL2(p) (see
- @(see parallelism)).</li>
-
- <li>@(`(:raw (acl2-url-ref \"distrib/images/\" \"images/\"))`): Some gzip'd
- tar'd executables; see @(`(:raw (acl2-url-ref \"distrib/images/Readme.html\"
- \"images/Readme.html\"))`)</li>
-
- <li>@(`(:raw (acl2-url-ref \"distrib/split/\" \"split/\"))`): The result of
- splitting up @('acl2.tar.gz')</li>
-
- </ul>
+ <p>Also available are @(`(:raw (acl2-url-ref \"distrib/images/\"
+ \"images/\"))`), which may contain executables; see @(`(:raw (acl2-url-ref
+ \"distrib/images/Readme.html\" \"images/Readme.html\"))`)</p>
 
  <h3>GitHub Distributions</h3>
 
  <p>We strongly recommend that ACL2 users update their local copies of the
- system and community books at each ACL2 release.  While that should suffice
- for many ACL2 users, nevertheless for those who prefer to obtain the latest
- developments, the ACL2 source code and community books have been made
+ system and @(see community-books) every time there is an ACL2 release.  While
+ that should suffice for many ACL2 users, nevertheless for those who prefer to
+ obtain the latest developments, the ACL2 source code and community books are
  available between ACL2 releases, by way of revision control using git.  See
- the <a href='https://github.com/acl2/acl2'>project website</a> for more
- information.</p>")
+ the <a href='https://github.com/acl2/acl2'>GitHub ACL2 project website</a> for
+ more information.</p>")
 
 (defxdoc swap-stobjs
   :parents (stobj acl2-built-ins)
@@ -151109,6 +151109,19 @@ work on <tt>(q x)</tt>.</p>
  and vice-versa.  However, if @('new-tp') is supplied and not @('nil'), then it
  should be the new type (the symbol @('macro') or @('atomic-macro'), in any
  package), or else there is no change.</p>")
+
+(defxdoc top
+
+; This form defines the top node of the acl2-only manual.  For the ACL2+Books
+; manual, this topic is replaced by a call of remove-topics-by-name in
+; books/xdoc/import-acl2doc.lisp together with a redefinition of TOP in
+; books/doc/top-topic.lisp.
+
+  :parents ()
+  :short "ACL2 documentation (system only, not including the community books)"
+  :long "<p>This is the documentation for the ACL2 system.  For the ACL2+Books
+  Manual, which documents both the ACL2 system and the ACL2 @(see
+  community-books), see the @(`(:raw (combined-manual-ref))`).</p>")
 
 (defxdoc top-level
   :parents (miscellaneous)
