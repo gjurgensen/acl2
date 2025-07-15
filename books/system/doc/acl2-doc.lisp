@@ -54136,23 +54136,22 @@ tables in the current Hons Space."
   :parents (installation)
   :short "ACL2 installation summary for Unix-like systems"
   :long "<p>Here, &ldquo;Unix-like Systems&rdquo; includes Unix and its Linux
- variants (e.g., Debian), as well as MacOS X.  Note that a quicker install may
- be possible, by instead obtaining a binary distribution; see @(see
- pre-built-binary-distributions) if one is available for your platform.
- Otherwise, you can follow the directions below, which start by fetching a file
- hosted at <a href='https://github.com/acl2/acl2/'>the GitHub ACL2 System and
- Books website</a>.  The result is a directory containing not only the ACL2
- system but, in the @('books/') subdirectory, the ACL2 libraries; see @(see
+ variants (e.g., Debian), as well as MacOS X.  A quicker install may be
+ possible by obtaining a binary distribution, if one is available for your
+ platform; see @(see pre-built-binary-distributions).  Otherwise you can follow
+ the directions below, which start by fetching a file hosted at <a
+ href='https://github.com/acl2/acl2/'>the GitHub ACL2 System and Books
+ website</a>.  The result is a directory containing not only the ACL2 system
+ but, in the @('books/') subdirectory, the ACL2 libraries; see @(see
  community-books).  The ACL2 <i>system</i>, which has been developed at the
  University of Texas at Austin, can be obtained or explored separately (though
  this is rarely done); see @(see obtaining-acl2).</p>
 
  <ol>
 
- <li>Change to a directory whose full pathname contains no whitespace and which
- does not already contain a subdirectory named @('acl2') or @('acl2-8.6').
- Then use <b>either</b> of the following two methods to obtain the ACL2 source
- code and community books.
+ <li>Change to a directory that does not already contain a subdirectory named
+ @('acl2') or @('acl2-8.6').  Then use <b>either</b> of the following two
+ methods to obtain the ACL2 source code and community books.
 
    <ul>
 
@@ -108839,6 +108838,14 @@ it."
  allow the ACL2 community (specifically, the acl2-books community) to improve
  those instructions.</p>
 
+ <p>By default, the directory where an ACL2 executable is to be built must not
+ have a pathname that contains spaces, as before.  However, now there is a
+ variable, @('ACL2_ALLOW_SPACES_IN_DIRECTORIES'), that may be set to a
+ non-empty value in order to build an ACL2 executable in such a directory, as
+ noted in the error message.  That message points out that there may be errors,
+ however, when certifying books.  Thanks to Eric Smith for a discussion leading
+ to this change.</p>
+
  <h3>EMACS Support</h3>
 
  <h3>Experimental Versions</h3>
@@ -144613,58 +144620,48 @@ work on <tt>(q x)</tt>.</p>
 (defxdoc summary-of-acl2-system-distribution
   :parents (installation-support)
   :short "Summary of ACL2 system distribution"
-  :long "<p>This topic discusses how to browse a distribution that includes
- only the ACL2 system, without the <see topic='@(url
- community-books)'>community books</see>.</p>
+  :long "<p>This topic discusses a distribution that includes only the ACL2
+ system, without the @(see community-books).</p>
 
  <p>See @(see installation-summary) for how to obtain a gzipped tarfile that
  contains both the ACL2 sources and community books.  Below we describe the
  ACL2 distribution only (without the community books).  Its files are available
- by exploring the @(`(:raw (acl2-url-ref \"distrib/\" \"distrib/\"))`)
- directory on the ACL2 website or by obtaining a gzipped tarfile,
- @(`(:raw (acl2-url-ref \"distrib/acl2.tar.gz\" \"acl2.tar.gz\"))`), which
- extracts to the contents of @(`(:raw (acl2-url-ref \"distrib/\"
- \"distrib/acl2-sources/\"))`) directory, which in turn contains the ACL2
- source files as well as the following
- (and a few others not mentioned here).</p>
+ by obtaining a gzipped tarfile, @(`(:raw (acl2-url-ref \"distrib/acl2.tar.gz\"
+ \"acl2.tar.gz\"))`).  If you download this file and extract it with</p>
+
+ @({
+ tar xfz acl2.tar.gz
+ })
+
+ <p>then you will create a subdirectory, @('acl2-sources'), which is
+ approximately the usual ACL2 distribution (see @(see installation-summary))
+ without the @('books') subdirectory.  Among its contents, in addition to the
+ ACL2 source files, are the following.</p>
 
  @({
  LICENSE       ; ACL2 license file
  GNUmakefile   ; For use with GNU make
  TAGS          ; Handy for looking at source files with emacs
  TAGS-acl2-doc ; Handy for finding code in books, e.g., with the acl2-doc browser
+ acl2-customization-files/ ; Useful for certifying books, e.g., with ACL2(p)
  bin/          ; Contains an executable script, bin/acl2, which invokes ACL2
  doc/          ; ACL2 documentation
  emacs/        ; Some helpful emacs utilities
  })
 
- <p>Also available are the following.</p>
-
- <ul>
-
- <li>@(`(:raw (acl2-url-ref \"distrib/acl2-customization-files/\" \"ACL2
- customization files\"))`): These @(see acl2-customization) files can be useful
- for certifying books (see @(see certify-book)), for example with ACL2(p) (see
- @(see parallelism)).</li>
-
- <li>@(`(:raw (acl2-url-ref \"distrib/images/\" \"images/\"))`): Some gzip'd
- tar'd executables; see @(`(:raw (acl2-url-ref \"distrib/images/Readme.html\"
- \"images/Readme.html\"))`)</li>
-
- <li>@(`(:raw (acl2-url-ref \"distrib/split/\" \"split/\"))`): The result of
- splitting up @('acl2.tar.gz')</li>
-
- </ul>
+ <p>Also available are @(`(:raw (acl2-url-ref \"distrib/images/\"
+ \"images/\"))`), which may contain executables; see @(`(:raw (acl2-url-ref
+ \"distrib/images/Readme.html\" \"images/Readme.html\"))`)</p>
 
  <h3>GitHub Distributions</h3>
 
  <p>We strongly recommend that ACL2 users update their local copies of the
- system and community books at each ACL2 release.  While that should suffice
- for many ACL2 users, nevertheless for those who prefer to obtain the latest
- developments, the ACL2 source code and community books have been made
+ system and @(see community-books) every time there is an ACL2 release.  While
+ that should suffice for many ACL2 users, nevertheless for those who prefer to
+ obtain the latest developments, the ACL2 source code and community books are
  available between ACL2 releases, by way of revision control using git.  See
- the <a href='https://github.com/acl2/acl2'>project website</a> for more
- information.</p>")
+ the <a href='https://github.com/acl2/acl2'>GitHub ACL2 project website</a> for
+ more information.</p>")
 
 (defxdoc swap-stobjs
   :parents (stobj acl2-built-ins)
