@@ -55566,8 +55566,13 @@ Update the Release Notes
   The community is invited to submit code contributions to the
   Community Books (see [COMMUNITY-BOOKS]). Source files outside of
   the ``books'' directory should not be modified, except by system
-  maintainers. For those interested in development of the ACL2 core
-  system, see the [developers-guide].
+  maintainers.
+
+  Suggestions for system changes should be emailed to {Matt Kaufmann |
+  mailto:kaufmann@cs.utexas.edu}.
+
+  For those interested in development of the ACL2 core system, see the
+  [developers-guide].
 
 
 Resources for Git/GitHub
@@ -57755,22 +57760,21 @@ Steel Bank Common Lisp (SBCL)
   "ACL2 installation summary for Unix-like systems
 
   Here, ``Unix-like Systems'' includes Unix and its Linux variants
-  (e.g., Debian), as well as MacOS X.  Note that a quicker install
-  may be possible, by instead obtaining a binary distribution; see
-  [pre-built-binary-distributions] if one is available for your
-  platform.  Otherwise, you can follow the directions below, which
-  start by fetching a file hosted at {the GitHub ACL2 System and
-  Books website | https://github.com/acl2/acl2/}.  The result is a
-  directory containing not only the ACL2 system but, in the [47mbooks/[0m
+  (e.g., Debian), as well as MacOS X.  A quicker install may be
+  possible by obtaining a binary distribution, if one is available
+  for your platform; see [pre-built-binary-distributions].  Otherwise
+  you can follow the directions below, which start by fetching a file
+  hosted at {the GitHub ACL2 System and Books website |
+  https://github.com/acl2/acl2/}.  The result is a directory
+  containing not only the ACL2 system but, in the [47mbooks/[0m
   subdirectory, the ACL2 libraries; see [community-books].  The ACL2
   [3msystem[0m, which has been developed at the University of Texas at
   Austin, can be obtained or explored separately (though this is
   rarely done); see [obtaining-ACL2].
 
-   1. Change to a directory whose full pathname contains no whitespace and
-      which does not already contain a subdirectory named [47macl2[0m or
-      [47macl2-8.6[0m.  Then use [31;1meither[0m of the following two methods to
-      obtain the ACL2 source code and community books.
+   1. Change to a directory that does not already contain a subdirectory
+      named [47macl2[0m or [47macl2-8.6[0m.  Then use [31;1meither[0m of the following two
+      methods to obtain the ACL2 source code and community books.
 
         * ([31;1mRecommended[0m if you don't plan to update from git)
           Download {gzipped tar file [47macl2-8.6.tar.gz[0m from GitHub |
@@ -106001,6 +106005,15 @@ Changes at the System Level
   which will allow the ACL2 community (specifically, the acl2-books
   community) to improve those instructions.
 
+  By default, the directory where an ACL2 executable is to be built
+  must not have a pathname that contains spaces, as before.  However,
+  now there is a variable, [47mACL2_ALLOW_SPACES_IN_DIRECTORIES[0m, that may
+  be set to a non-empty value in order to build an ACL2 executable in
+  such a directory, as noted in the error message.  That message
+  points out that there may be errors, however, when certifying
+  books.  Thanks to Eric Smith for a discussion leading to this
+  change.
+
 
 EMACS Support
 
@@ -144425,57 +144438,48 @@ Subtopics
   (INSTALLATION-SUPPORT)
   "Summary of ACL2 system distribution
 
-  This topic discusses how to browse a distribution that includes only
-  the ACL2 system, without the community books (see
-  [COMMUNITY-BOOKS]).
+  This topic discusses a distribution that includes only the ACL2
+  system, without the [community-books].
 
   See [installation-summary] for how to obtain a gzipped tarfile that
   contains both the ACL2 sources and community books.  Below we
   describe the ACL2 distribution only (without the community books).
-  Its files are available by exploring the {distrib/ |
-  https://www.cs.utexas.edu/users/moore/acl2/v8-6/distrib/} directory
-  on the ACL2 website or by obtaining a gzipped tarfile, {acl2.tar.gz
-  |
-  https://www.cs.utexas.edu/users/moore/acl2/v8-6/distrib/acl2.tar.gz},
-  which extracts to the contents of {distrib/acl2-sources/ |
-  https://www.cs.utexas.edu/users/moore/acl2/v8-6/distrib/}
-  directory, which in turn contains the ACL2 source files as well as
-  the following (and a few others not mentioned here).
+  Its files are available by obtaining a gzipped tarfile,
+  {acl2.tar.gz |
+  https://www.cs.utexas.edu/users/moore/acl2/v8-6/distrib/acl2.tar.gz}.
+  If you download this file and extract it with
+
+    tar xfz acl2.tar.gz
+
+  then you will create a subdirectory, [47macl2-sources[0m, which is
+  approximately the usual ACL2 distribution (see
+  [installation-summary]) without the [47mbooks[0m subdirectory.  Among its
+  contents, in addition to the ACL2 source files, are the following.
 
     LICENSE       ; ACL2 license file
     GNUmakefile   ; For use with GNU make
     TAGS          ; Handy for looking at source files with emacs
     TAGS-acl2-doc ; Handy for finding code in books, e.g., with the acl2-doc browser
+    acl2-customization-files/ ; Useful for certifying books, e.g., with ACL2(p)
     bin/          ; Contains an executable script, bin/acl2, which invokes ACL2
     doc/          ; ACL2 documentation
     emacs/        ; Some helpful emacs utilities
 
-  Also available are the following.
-
-    * {ACL2 customization files |
-      https://www.cs.utexas.edu/users/moore/acl2/v8-6/distrib/acl2-customization-files/}:
-      These [ACL2-customization] files can be useful for certifying
-      books (see [certify-book]), for example with ACL2(p) (see
-      [parallelism]).
-
-    * {images/ |
-      https://www.cs.utexas.edu/users/moore/acl2/v8-6/distrib/images/}:
-      Some gzip'd tar'd executables; see {images/Readme.html |
-      https://www.cs.utexas.edu/users/moore/acl2/v8-6/distrib/images/Readme.html}
-
-    * {split/ |
-      https://www.cs.utexas.edu/users/moore/acl2/v8-6/distrib/split/}:
-      The result of splitting up [47macl2.tar.gz[0m
+  Also available are {images/ |
+  https://www.cs.utexas.edu/users/moore/acl2/v8-6/distrib/images/},
+  which may contain executables; see {images/Readme.html |
+  https://www.cs.utexas.edu/users/moore/acl2/v8-6/distrib/images/Readme.html}
 
 
 GitHub Distributions
 
   We strongly recommend that ACL2 users update their local copies of
-  the system and community books at each ACL2 release.  While that
-  should suffice for many ACL2 users, nevertheless for those who
-  prefer to obtain the latest developments, the ACL2 source code and
-  community books have been made available between ACL2 releases, by
-  way of revision control using git.  See the {project website |
+  the system and [community-books] every time there is an ACL2
+  release.  While that should suffice for many ACL2 users,
+  nevertheless for those who prefer to obtain the latest
+  developments, the ACL2 source code and community books are
+  available between ACL2 releases, by way of revision control using
+  git.  See the {GitHub ACL2 project website |
   https://github.com/acl2/acl2} for more information.")
  (SWAP-STOBJS
   (STOBJ ACL2-BUILT-INS)
