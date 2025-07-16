@@ -16668,21 +16668,14 @@ way to split up large ACL2 developments into separate modules."
  other systems, productivity tools for better proof automation and debugging,
  and specialty libraries for areas like hardware verification.</p>
 
- <p>From the <a href='https://github.com/acl2/acl2/'>github ACL2 project</a> web
- site you can:</p>
+ <p>Most installations of ACL2 contain a copy of the Community Books.  See
+ @(see installation).</p>
 
- <ul>
- <li>Download the Community Books;</li>
- <li>Learn how to contribute books to the ACL2 community; and</li>
- <li>Obtain updates between ACL2 releases.</li>
- </ul>
+ <p>Users are encouraged to contribute their own books.  See
+ @(see how-to-contribute).</p>
 
- <p>See @(see git-quick-start) for information about how to download the
- ``bleeding edge'' ACL2 system and community books.</p>
-
- <p>The community books are also available with ACL2 releases.  See the
- ``Installing'' link from the <a
- href='http://www.cs.utexas.edu/users/moore/acl2/'>ACL2 home page</a>.</p>")
+ <p>See @(see community) for more ways to become involved with the ACL2
+ community.</p>")
 
 (defxdoc comp
   :parents (compilation events acl2-built-ins)
