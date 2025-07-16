@@ -54142,6 +54142,11 @@ tables in the current Hons Space."
 
  <ol>
 
+ <li>Obtain a Common Lisp implementation if you don't already have one; see
+ @(see installation-requirements).  (Note: Some of the ACL2 libraries (see
+ @(see community-books)) depend on Quicklisp, and those are only guaranteed to
+ work with CCL or SBCL.)</li><p/>
+
  <li>Change to a directory that does not already contain a subdirectory named
  @('acl2') or @('acl2-8.6').  Then use <b>either</b> of the following two
  methods to obtain the ACL2 source code and community books.
@@ -54179,11 +54184,6 @@ tables in the current Hons Space."
    </ul>
 
  </li><p/>
-
- <li>Obtain a Common Lisp implementation if you don't already have one; see
- @(see installation-requirements).  (Note: Some of the ACL2 libraries (see
- @(see community-books)) depend on Quicklisp, and those are only guaranteed to
- work with CCL or SBCL.)</li><p/>
 
  <li>Execute the following command.
 
