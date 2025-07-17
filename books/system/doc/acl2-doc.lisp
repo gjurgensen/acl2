@@ -54039,87 +54039,6 @@ tables in the current Hons Space."
   installation-support
   using-acl2))
 
-(defxdoc obtaining-common-lisp
-  :parents (installation)
-  :short "Obtaining Common Lisp"
-  :long "<p>A requirement for installing ACL2 is to install a suitable
- Common Lisp implementation.  ACL2 can be hosted by several Common Lisp
- implementations, as listed alphabetically below.  The most commonly-used of
- these are SBCL and CCL, which can be obtained without charge.</p>
-
- <h3>Allegro Common Lisp</h3>
-
- <p><a href='https://franz.com/'>Allegro Common Lisp</a> is a commercial
- implementation.  It has been maintained for many years, but it generally runs
- ACL2 more slowly than most other implementations.</p>
-
- <h3>Clozure Common Lisp (CCL)</h3>
-
- <p><a href='https://ccl.clozure.com/'>CCL</a> is available without charge.
- See @(see ccl-installation) for instructions on how to fetch and install
- CCL.</p>
-
- <p>Quoting the <a href='https://ccl.clozure.com/'>CCL website</a>:
-
- <blockquote>
-
- Clozure CL (often called CCL for short) is a free Common Lisp implementation
- with a long history. Some distinguishing features of the implementation
- include fast compilation speed, native threads, a precise, generational,
- compacting garbage collector, and a convenient foreign-function interface.
-
- </blockquote></p>
-
- <p>As of this writing (July 2025), CCL does not run natively on Arm-based
- Macs.  There is an effort in progress to remedy that.</p>
-
- <h3>CMU Common Lisp (CMUCL)</h3>
-
- <p><a href='https://cmucl.org'>CMUCL</a> is available without charge.</p>
-
- <p>Follow the <a href='https://cmucl.org/download.html'>Download</a> link on
- <a href='https://cmucl.org'>the CMUCL website</a> to obtain CMUCL.  It has
- been maintained for many years, but it generally runs ACL2 more slowly than
- most other implementations.</p>
-
- <h3>GNU Common Lisp (GCL)</h3>
-
- <p><a href='https://www.gnu.org/software/gcl/'>GCL</a> is available without
- charge.</p>
-
- <p>You can <a href='https://tracker.debian.org/pkg/acl2'>download a binary
- Debian package for ACL2</a>.  Thanks to Camm Maguire for maintaining this
- package.  Note however that it may take some time after each ACL2 release for
- this package to be updated for that release.</p>
-
- <p>Otherwise, it should be easy to obtain and build GCL yourself.  Note that
- ACL2 requires ANSI GCL version 2.6.12 or later.  See <a
- href='https://www.gnu.org/software/gcl/'>@('https://www.gnu.org/software/gcl/')</a>
- for instructions.  If you encounter difficulties, see @(see gcl) and perhaps
- consider the following instructions for obtaining an older version and then
- building the executable @('gcl/gcl/bin/gcl').</p>
-
- @({
- git clone git://git.sv.gnu.org/gcl.git
- cd gcl/gcl
- git checkout Version_2_6_13pre
- ./configure --enable-ansi && make
- })
-
- <h3>LispWorks</h3>
-
- <p><a href='https://www.lispworks.com/'>LispWorks</a> is a commercial
- implementation.  You may ask the vendor for an evaluation license for the full
- product if you are considering purchasing a license.</p>
-
- <h3>Steel Bank Common Lisp (SBCL)</h3>
-
- <p><a href='https://sbcl.org/'>SBCL</a> is available without charge.  See
- @(see sbcl-installation-brief) for instructions on how to fetch and install
- SBCL.  <b>Important</b>: For maximum performance, build from source using the
- options indicated in @(see sbcl-installation) when building with
- @('make.sh').</p>")
-
 (defxdoc installation-instructions
   :parents (installation)
   :short "ACL2 installation instructions for Unix-like systems"
@@ -109726,6 +109645,87 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>Moreover, you can <see topic='@(url how-to-contribute)'>contribute books by
  joining the GitHub project</see>.</p>")
+
+(defxdoc obtaining-common-lisp
+  :parents (installation)
+  :short "Obtaining Common Lisp"
+  :long "<p>A requirement for installing ACL2 is to install a suitable
+ Common Lisp implementation.  ACL2 can be hosted by several Common Lisp
+ implementations, as listed alphabetically below.  The most commonly-used of
+ these are SBCL and CCL, which can be obtained without charge.</p>
+
+ <h3>Allegro Common Lisp</h3>
+
+ <p><a href='https://franz.com/'>Allegro Common Lisp</a> is a commercial
+ implementation.  It has been maintained for many years, but it generally runs
+ ACL2 more slowly than most other implementations.</p>
+
+ <h3>Clozure Common Lisp (CCL)</h3>
+
+ <p><a href='https://ccl.clozure.com/'>CCL</a> is available without charge.
+ See @(see ccl-installation) for instructions on how to fetch and install
+ CCL.</p>
+
+ <p>Quoting the <a href='https://ccl.clozure.com/'>CCL website</a>:
+
+ <blockquote>
+
+ Clozure CL (often called CCL for short) is a free Common Lisp implementation
+ with a long history. Some distinguishing features of the implementation
+ include fast compilation speed, native threads, a precise, generational,
+ compacting garbage collector, and a convenient foreign-function interface.
+
+ </blockquote></p>
+
+ <p>As of this writing (July 2025), CCL does not run natively on Arm-based
+ Macs.  There is an effort in progress to remedy that.</p>
+
+ <h3>CMU Common Lisp (CMUCL)</h3>
+
+ <p><a href='https://cmucl.org'>CMUCL</a> is available without charge.</p>
+
+ <p>Follow the <a href='https://cmucl.org/download.html'>Download</a> link on
+ <a href='https://cmucl.org'>the CMUCL website</a> to obtain CMUCL.  It has
+ been maintained for many years, but it generally runs ACL2 more slowly than
+ most other implementations.</p>
+
+ <h3>GNU Common Lisp (GCL)</h3>
+
+ <p><a href='https://www.gnu.org/software/gcl/'>GCL</a> is available without
+ charge.</p>
+
+ <p>You can <a href='https://tracker.debian.org/pkg/acl2'>download a binary
+ Debian package for ACL2</a>.  Thanks to Camm Maguire for maintaining this
+ package.  Note however that it may take some time after each ACL2 release for
+ this package to be updated for that release.</p>
+
+ <p>Otherwise, it should be easy to obtain and build GCL yourself.  Note that
+ ACL2 requires ANSI GCL version 2.6.12 or later.  See <a
+ href='https://www.gnu.org/software/gcl/'>@('https://www.gnu.org/software/gcl/')</a>
+ for instructions.  If you encounter difficulties, see @(see gcl) and perhaps
+ consider the following instructions for obtaining an older version and then
+ building the executable @('gcl/gcl/bin/gcl').</p>
+
+ @({
+ git clone git://git.sv.gnu.org/gcl.git
+ cd gcl/gcl
+ git checkout Version_2_6_13pre
+ ./configure --enable-ansi && make
+ })
+
+ <h3>LispWorks</h3>
+
+ <p><a href='https://www.lispworks.com/'>LispWorks</a> is a commercial
+ implementation.  You may ask the vendor for an evaluation license for the full
+ product if you are considering purchasing a license.</p>
+
+ <h3>Steel Bank Common Lisp (SBCL)</h3>
+
+ <p><a href='https://sbcl.org/'>SBCL</a> is available without charge.  See
+ @(see sbcl-installation-brief) for instructions on how to fetch and install
+ SBCL.  <b>Important</b>: For maximum performance, build from source using the
+ options indicated in @(see sbcl-installation) when building with
+ @('make.sh').</p>")
 
 (defxdoc oddp
   :parents (numbers acl2-built-ins)
