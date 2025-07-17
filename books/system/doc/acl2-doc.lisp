@@ -54128,72 +54128,103 @@ tables in the current Hons Space."
 (defxdoc installation-summary
   :parents (installation)
   :short "ACL2 installation summary for Unix-like systems"
-  :long "<p>Here, &ldquo;Unix-like Systems&rdquo; includes Unix and its Linux
- variants (e.g., Debian), as well as MacOS X.  A quicker install may be
- possible by obtaining a binary distribution, if one is available for your
- platform; see @(see pre-built-binary-distributions).  Otherwise you can follow
- the directions below, which start by fetching a file hosted at <a
- href='https://github.com/acl2/acl2/'>the GitHub ACL2 System and Books
- website</a>.  The result is a directory containing not only the ACL2 system
- but, in the @('books/') subdirectory, the ACL2 libraries; see @(see
- community-books).  The ACL2 <i>system</i>, which has been developed at the
- University of Texas at Austin, can be obtained or explored separately (though
- this is rarely done); see @(see obtaining-acl2).</p>
+  :long  "<p>These instructions describe how to install ACL2 on &ldquo;Unix-like
+ systems&rdquo;, including Linux, macOS, and FreeBSD.  To install ACL2 on
+ Windows, see @(see windows-installation).</p>
+
+ <p>ACL2 installations include both the ACL2 system and the open-source ACL2
+ libraries developed by the ACL2 community, called the
+ <see topic='@(url community-books)'>Community Books</see>.</p>
 
  <ol>
 
- <li>Change to a directory that does not already contain a subdirectory named
- @('acl2') or @('acl2-8.6').  Then use <b>either</b> of the following two
- methods to obtain the ACL2 source code and community books.
-
+ <li>Decide which of the following you want to install:
    <ul>
+         <li>The <b>latest ACL2 release</b>
+         (<see topic='@(url note-8-6)'>version 8.6</see>).  The release is
+         stable and very well tested but does not include any improvements
+         or fixes made since October, 2024.  It may be appropriate
+         if you do not need the very latest tools and libraries and
+         do not plan to contribute to the @(see community-books).  A
+         <see topic='@(url pre-built-binary-distributions)'>pre-built
+         binary distribution</see> of the release may be available for
+         your platform, which can let you avoid following these installation
+         instructions.</li>
 
-     <li>(<b>Recommended</b> if you don't plan to
-     update from git)<br/>Download
-       <a href='https://github.com/acl2-devel/acl2-devel/releases/download/8.6/acl2-8.6.tar.gz'>gzipped
-       tar file @('acl2-8.6.tar.gz') from GitHub</a> and
-       then execute the following (the @('rm') command is just
-       to make sure you don't already have a subdirectory
-       named @('acl2-8.6')):
-       @({
-       rm -rf acl2-8.6
-       tar xfz acl2-8.6.tar.gz
-       })
-     This will create a subdirectory named @('acl2-8.6').
-     Change to that directory.</li>
-
-     <li>(<b>Development snapshot</b>, required if you want
-       to update from GitHub; see @(see
-       github-commit-code-using-pull-requests))<br/>Execute the following (the
-       @('rm') command is just
-       to make sure you don't already have a subdirectory
-       named @('acl2')):
-       @({
-       rm -rf acl2
-       git clone https://github.com/acl2/acl2
-       })
-       This will create the subdirectory @('acl2').
-       Change to that directory.
-     </li>
-
+         <li>The <b>latest development snapshot</b> from GitHub (likely at most
+         a few days old). Development snapshots are only minimally tested and
+         may (rarely) have problems.  However, they provide the latest iteration
+         of ACL2 and the @(see community-books).  Use a development
+         snapshot if you plan to
+         <see topic='@(url github-commit-code-using-pull-requests)'>
+         contribute</see> additions or changes to the
+         @(see community-books), or if you plan to
+         update your copy of ACL2 later.  Pre-built binary distributions of
+         development snapshots are generally not available.</li>
    </ul>
+ </li>
 
- </li><p/>
+<p/>
 
  <li>Obtain a Common Lisp implementation if you don't already have one; see
- @(see installation-requirements).  (Note: Some of the ACL2 libraries (see
- @(see community-books)) depend on Quicklisp, and those are only guaranteed to
- work with CCL or SBCL.)</li><p/>
+ @(see installation-requirements).  (Note: Some of the
+ @(see community-books) depend on @(see Quicklisp), and those are only
+ guaranteed to work with CCL or SBCL.)</li><p/>
 
- <li>Execute the following command.
+ <li>Depending on your decision in Step 1, download ACL2 by doing
+     either of the following:
+    <ul>
+        <li><b>For the latest ACL2 release</b> (version 8.6):
+          <ol>
+            <li>Change to a directory that does not already contain a
+            subdirectory called @('acl2-8.6').</li>
+            <li>Download <a href='https://github.com/acl2-devel/acl2-devel/releases/download/8.6/acl2-8.6.tar.gz'>
+            @('acl2-8.6.tar.gz')</a> to that directory.</li>
+            <li>Execute the following:
+            @({
+            tar xfz acl2-8.6.tar.gz
+            cd acl2-8.6
+            })</li>
+          </ol>
+          The new subdirectory @('acl2-8.6') should now
+          be your shell's current directory.
+        </li>
+
+        <li><b>Or, for the latest development snapshot</b>:
+          <ol>
+            <li>Change to a directory that does not already contain a
+            subdirectory named @('acl2').</li>
+            <li>Execute the following:
+            @({
+            git clone https://github.com/acl2/acl2
+            cd acl2
+            })</li>
+          </ol>
+          The new subdirectory @('acl2') should now be
+          your shell's current directory.
+        </li>
+    </ul>
+ </li><p/>
+
+ <li>Compile ACL2:
 
  @({
  make LISP=<path_to_your_lisp_executable>
  })
 
- This will create a script in the current directory for running ACL2.  The
- script is named @('saved_acl2').<br/> <b>Note:</b> You will need Gnu make
- (preferably newer than Version 3.82).</li>
+ <b>Note:</b> You will need GNU Make (preferably newer than Version 3.82).
+
+ This will create an executable script named @('saved_acl2') (in the
+ current directory) that can be used to run ACL2.</li><p/>
+
+ <li>Optionally, test ACL2 as follows:
+ @({
+ ./saved_acl2
+ :mini-proveall
+ (quit)
+ })
+ You should see \"Mini-proveall completed successfully.\" a few lines above
+ the bottom of the output.</li><p/>
 
  <li>Certify some books, for example with
 
@@ -54217,8 +54248,8 @@ tables in the current Hons Space."
 
  </ol>
 
- <p>You now have an ACL2 executable called @('saved_acl2') (from step 3) and
- access to certified community books (from step 4).  Enjoy!  And please
+ <p>You now have an executable script called @('saved_acl2') and
+ access to certified community books.  Enjoy!  And please
  consider contributing to the ACL2 libraries; see @(see
  how-to-contribute).</p>")
 
