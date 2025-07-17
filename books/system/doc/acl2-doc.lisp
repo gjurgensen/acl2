@@ -162252,8 +162252,9 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
 
  <li>Use a Virtual Machine platform, such as VMware Player (free for
  non-commercial use) or Oracle Virtualbox (free even for commercial
- use) to install Linux, and then follow the normal @(see installation)
- instructions to install ACL2.  As of 2014, at least a couple of our
+ use) to install Linux, and then follow the normal
+ @(see installation-instructions) to install ACL2.  As of 2014, at
+ least a couple of our
  power users are very happy with this solution, as it provides
  first-class access to utilities relevant to maintaining the ACL2
  system and books (like GNU Make and perl).</li>
@@ -162261,8 +162262,8 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  <li>Set up <a
  href='https://en.wikipedia.org/wiki/Windows_Subsystem_for_Linux'>Windows
  Subsystem for Linux</a> (WSL) on a 64-bit version of Windows 10 (or later,
- once available).  Within that subsystem, follow the setup and @(see
- installation) instructions for ACL2. See the below section regarding the ACL2
+ once available).  Within that subsystem, follow the normal @(see
+ installation-instructions) for ACL2. See the below section regarding the ACL2
  Sedan Windows installation instructions for more info, as that involves
  installing the ACL2 Sedan in WSL on Windows.</li>
 
