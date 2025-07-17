@@ -53988,7 +53988,7 @@ tables in the current Hons Space."
  })")
 
 (defxdoc installation
-  :parents (acl2)
+  :parents (acl2 about-acl2)
   :short "Installing ACL2"
   :long "<p>See the @(see installation-instructions) for steps to install ACL2.</p>
 
