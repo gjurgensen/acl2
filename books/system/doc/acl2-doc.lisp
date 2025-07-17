@@ -53989,28 +53989,12 @@ tables in the current Hons Space."
 (defxdoc installation
   :parents (acl2)
   :short "Installing ACL2"
-  :long "
- <p>The installation guide consists of the following main parts.</p>
+  :long "<p>See the @(see installation-instructions) for steps to install ACL2.</p>
 
- <ul>
+ <p>If you encounter problems installing ACL2, or need more information, see @(see
+ installation-support).</p>
 
- <li>See @(see installation-instructions) for installation steps
- for Unix-like systems.  That should usually suffice to get ACL2 ready for you
- to use.</li>
-
- <li>See @(see obtaining-common-lisp) for how to <b>obtain a Common Lisp
- implementation</b>.</li>
-
- <li>See @(see installation-support) for more <b>details</b> pertaining to
- obtaining and installing ACL2.  You can probably ignore this topic and its
- subtopics.</li>
-
- <li>See @(see using-acl2) for information about <b>running</b> ACL2 and about
- its <b>@(see documentation)</b>.</li>
-
- </ul>
-
- <p>Also see @(see copyright) for information about copyright, license, and
+ <p>See @(see copyright) for information about copyright, license, and
  authorship of the ACL2 system, and see @(see acknowledgments) for
  sponsorship information.</p>
 
@@ -54025,7 +54009,8 @@ tables in the current Hons Space."
  Control (&ldquo;OFAC&rdquo;) of the U. S. Department of the Treasury.</p>
 
  <p>For more information about getting started with ACL2, see @(see
- start-here).</p>")
+ start-here).  Also see @(see using-acl2) for information about running ACL2
+ and about its @(see documentation).</p>")
 
 (xdoc::order-subtopics
  installation
