@@ -70626,7 +70626,7 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
  </ul>")
 
 (defxdoc mailing-lists
-  :parents (acl2 about-acl2)
+  :parents (acl2 about-acl2 community)
   :short "Mailing lists for ACL2 users"
   :long "<p>There are the following mailing lists for ACL2 users.  You can
  post messages to these lists only if you are a member, but anyone can view the
@@ -70663,7 +70663,12 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
  </ul></p>
 
  <p>Finally, please report bugs in ACL2 to
- <a href='mailto:kaufmann@cs.utexas.edu'>Matt Kaufmann</a>.</p>")
+ <a href='mailto:kaufmann@cs.utexas.edu'>Matt Kaufmann</a>.</p>
+
+ <p>See @(see community) for ways to connect with other ACL2 users,
+ get help with ACL2, and contribute to improving ACL2 and its
+ @(see community-books).</p>
+ ")
 
 
 (defxdoc make
