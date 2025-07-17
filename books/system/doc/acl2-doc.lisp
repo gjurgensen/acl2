@@ -822,11 +822,17 @@
  Regents of the University of Texas, authored by Matt Kaufmann and J Strother
  Moore.</p>
 
+ <p> This manual contains
+ <see topic='@(url installation)'>installation instructions</see>,
+ <see topic='@(url acl2-tutorial)'>tutorials</see>,
+ and @(see acknowledgments), as well as
+ information about <see topic='@(url mailing-lists)'>mailing lists</see>,
+ related @(see publications), and <see topic='@(url workshops)'>ACL2 Workshops
+ </see>.</p>
+
  <p>See the <a href='http://www.cs.utexas.edu/users/moore/acl2/'>ACL2 home
- page</a> for additional information including tutorials, @(see installation)
- instructions, <see topic='@(url mailing-lists)'> mailing lists</see>. related
- @(see publications), ACL2 workshops and seminars, @(see acknowledgments), and
- other ACL2 releases.</p>
+ page</a> for information about seminars and about other ACL2 releases.
+ </p>
 
  <p>See @(see documentation) for how to access the ACL2+Books User's
  Manual.</p>
@@ -3296,7 +3302,7 @@
 ;   TIDBITS
 ;   TIPS
 
-  :parents (start-here)
+  :parents (start-here about-acl2)
   :short "Tutorial introduction to ACL2"
   :long "<p>To learn about ACL2, read at least the following two links.</p>
 
@@ -70620,7 +70626,7 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
  </ul>")
 
 (defxdoc mailing-lists
-  :parents (acl2)
+  :parents (acl2 about-acl2)
   :short "Mailing lists for ACL2 users"
   :long "<p>There are the following mailing lists for ACL2 users.  You can
  post messages to these lists only if you are a member, but anyone can view the
