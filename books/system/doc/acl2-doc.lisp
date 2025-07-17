@@ -19319,8 +19319,8 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
 (defxdoc creating-executable
   :parents (installation-support)
   :short "Creating or obtaining an executable image"
-  :long "<p>This topic may be avoided by reading the <see topic='@(url
-  installation-instructions)'>installation summary</see>, which is intended to be
+  :long "<p>This topic may be avoided by following the @(see
+  installation-instructions), which are intended to be
   self-contained.</p>
 
  <p>After obtaining the ACL2 sources, the next step is to produce an executable
@@ -109575,8 +109575,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 (defxdoc obtaining-acl2
   :parents (installation-support)
   :short "Alternate instructions for obtaining the ACL2 sources and community books"
-  :long "<p>This topic may be avoided by reading the installation summary: see
-  @(see installation-instructions), which is intended to be self-contained.</p>
+  :long "<p>This topic may be avoided by following the
+  @(see installation-instructions), which are intended to be self-contained.</p>
 
  <p>(First, a note for Windows users only: we suggest that you obtain a
  Unix-like environment or, at least, download a utility such as
