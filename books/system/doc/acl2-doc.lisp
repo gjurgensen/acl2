@@ -13065,30 +13065,6 @@ way to split up large ACL2 developments into separate modules."
  the ACL2 community.  It is to encourage this evolution that @('brr@') provides
  access to the @('*')'d data.</p>")
 
-(defxdoc building-acl2
-  :parents (about-acl2)
-  :short "How to build an ACL2 executable"
-  :long "<p>This topic summarizes steps for building an ACL2 executable.  For
- more details, see @(see installation).</p>
-
- <p>To build an ACL2 executable, submit the following command while standing in
- the main ACL2 directory, where @('<my-lisp>') invokes your Lisp
- executable (default: @('ccl')).</p>
-
- @({
- make LISP=<my-lisp>
- })
-
- <p>You should find \"Initialization SUCCEEDED.\" near the end of the log.
- Note: There may be ACL2 warnings, for example: \"ACL2 Warning [Skip-proofs]
- in....\".  These may be safely ignored.</p>
-
- <p>Note that you will want to certify @(see books) in order to take full
- advantage of ACL2.  See @(see books-certification).</p>
-
- <p>See @(see save-exec) for how to build an ACL2 executable from a state
- resulting from the running of specified @(see command)s.</p>")
-
 (defxdoc built-in-clause
   :parents (rule-classes)
   :short "To build a @(see clause) into the simplifier"
@@ -19374,6 +19350,9 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
  tested.  If this @('make') command does not work for you, see the instructions
  below for &ldquo;Building an executable image on other than a Unix-like
  system&rdquo;.</p>
+
+ <p>See @(see save-exec) for how to build an ACL2 executable from a state
+ resulting from the running of specified @(see command)s.</p>
 
  <h3>Building an executable image on other than a Unix-like system</h3>
 
@@ -54104,8 +54083,11 @@ tables in the current Hons Space."
  <li>Compile ACL2:
 
  @({
- make LISP=<path_to_your_lisp_executable>
+ make LISP=<your_command_to_run_lisp>
  })
+
+ where @('<your_command_to_run_lisp>') is a command that runs
+ your selected Common LISP (default: @('ccl')).
 
  <b>Note:</b> You will need GNU Make (preferably newer than Version 3.82).
 
