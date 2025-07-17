@@ -13931,7 +13931,7 @@ way to split up large ACL2 developments into separate modules."
  the inferiors are moved to new directories.</p>")
 
 (defxdoc ccl-installation
-  :parents (building-acl2)
+  :parents (obtaining-common-lisp)
   :short "Installing Clozure Common Lisp (CCL)"
   :long "<p>For those who use ACL2 built on CCL as the host Common Lisp
  implementation, it has been common practice to use the latest GitHub version
@@ -133508,7 +133508,7 @@ work on <tt>(q x)</tt>.</p>
 ; See sbcl-installation-brief for a comment about material formerly in
 ; installation/requirements.html.
 
-  :parents (building-acl2)
+  :parents (obtaining-common-lisp)
   :short "Installing Steel Bank Common Lisp (SBCL)"
   :long "<p>SBCL is available from <tt><a
  href='https://www.sbcl.org'>https://www.sbcl.org</a></tt>.  You can of course
@@ -133707,7 +133707,7 @@ work on <tt>(q x)</tt>.</p>
 
 |#
 
-  :parents (building-acl2)
+  :parents (obtaining-common-lisp)
   :short "Installing Steel Bank Common Lisp (SBCL)"
   :long "<p>The topic @(see sbcl-installation) contains full installation
  instructions for SBCL.  The present topic contains abbreviated instructions
