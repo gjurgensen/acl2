@@ -54151,8 +54151,8 @@ tables in the current Hons Space."
          your platform, which can let you avoid following these installation
          instructions.</li>
 
-         <li>The <b>latest development snapshot</b> from GitHub (likely only a
-         few days old). Development snapshots are only minimally tested and
+         <li>The <b>latest development snapshot</b> from GitHub (likely at most
+         a few days old). Development snapshots are only minimally tested and
          may (rarely) have problems.  However, they provide the latest iteration
          of ACL2 and the @(see community-books).  Use a development
          snapshot if you plan to
@@ -54212,7 +54212,7 @@ tables in the current Hons Space."
  make LISP=<path_to_your_lisp_executable>
  })
 
- <b>Note:</b> You will need GNU make (preferably newer than Version 3.82).
+ <b>Note:</b> You will need GNU Make (preferably newer than Version 3.82).
 
  This will create an executable script named @('saved_acl2') (in the
  current directory) that can be used to run ACL2.</li><p/>
