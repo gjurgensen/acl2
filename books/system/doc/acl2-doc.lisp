@@ -54042,12 +54042,7 @@ tables in the current Hons Space."
 (defxdoc installation-requirements
   :parents (installation)
   :short "Obtaining Common Lisp"
-  :long "<p>ACL2 has been built and tested on x86-64 Linux and on Mac OS X
- (Darwin), which we call &ldquo;Unix-like systems&rdquo;, as well as (from time
- to time) some Windows operating systems.  It has been successfully run on
- other platforms as well, including FreeBSD and ARM architectures.</p>
-
- <p>The only other requirement for installing ACL2 is to install a suitable
+  :long "<p>A requirement for installing ACL2 is to install a suitable
  Common Lisp implementation.  ACL2 can be hosted by several Common Lisp
  implementations, as listed alphabetically below.  The most commonly-used of
  these are SBCL and CCL, which can be obtained without charge.</p>
