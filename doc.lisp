@@ -19915,21 +19915,14 @@ Subtopics
   productivity tools for better proof automation and debugging, and
   specialty libraries for areas like hardware verification.
 
-  From the {github ACL2 project | https://github.com/acl2/acl2/} web
-  site you can:
+  Most installations of ACL2 contain a copy of the Community Books.
+  See [installation].
 
-    * Download the Community Books;
+  Users are encouraged to contribute their own books.  See
+  [how-to-contribute].
 
-    * Learn how to contribute books to the ACL2 community; and
-
-    * Obtain updates between ACL2 releases.
-
-  See [git-quick-start] for information about how to download the
-  ``bleeding edge'' ACL2 system and community books.
-
-  The community books are also available with ACL2 releases.  See the
-  ``Installing'' link from the {ACL2 home page |
-  http://www.cs.utexas.edu/users/moore/acl2/}.
+  See [community] for more ways to become involved with the ACL2
+  community.
 
 
 Subtopics
