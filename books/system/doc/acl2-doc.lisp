@@ -54129,8 +54129,8 @@ tables in the current Hons Space."
   :parents (installation)
   :short "ACL2 installation summary for Unix-like systems"
   :long  "<p>These instructions describe how to install ACL2 on &ldquo;Unix-like
- systems&rdquo;, including Linux, macOS, and FreeBSD.  To install ACL2 on
- Windows, see @(see windows-installation).</p>
+ systems&rdquo;, including Linux, macOS (with Intel or ARM processors),
+ and FreeBSD.  To install ACL2 on Windows, see @(see windows-installation).</p>
 
  <p>ACL2 installations include both the ACL2 system and the open-source ACL2
  libraries developed by the ACL2 community, called the
