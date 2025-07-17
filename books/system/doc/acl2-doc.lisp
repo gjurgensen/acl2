@@ -19359,7 +19359,7 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
 
  <p>where @('<your_lisp>') is the command to run your local Common Lisp.
  By default, if no @('LISP=<your_lisp>') is specified, then @('LISP=ccl') is
- used, which presumably invokes CCL (see @(see installation-requirements)).</p>
+ used, which presumably invokes CCL (see @(see obtaining-common-lisp)).</p>
 
  <p>This will create executable @('saved_acl2') in the current directory.</p>
 
@@ -19369,7 +19369,7 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
  of a couple hundred megabytes or so.</p>
 
  <p>This @('make') command works for the supported host Common Lisp
- implementations; see @(see installation-requirements), on systems we have
+ implementations; see @(see obtaining-common-lisp), on systems we have
  tested.  If this @('make') command does not work for you, see the instructions
  below for &ldquo;Building an executable image on other than a Unix-like
  system&rdquo;.</p>
@@ -19386,7 +19386,7 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
  image.  In that case, see @(see running-acl2-without-executable).</p>
 
  <p>Your Common Lisp should be one of those listed in @(see
- installation-requirements).  Stand in the directory where you have downloaded
+ obtaining-common-lisp).  Stand in the directory where you have downloaded
  ACL2.</p>
 
  <ol>
@@ -54003,7 +54003,7 @@ tables in the current Hons Space."
  for Unix-like systems.  That should usually suffice to get ACL2 ready for you
  to use.</li>
 
- <li>See @(see installation-requirements) for how to <b>obtain a Common Lisp
+ <li>See @(see obtaining-common-lisp) for how to <b>obtain a Common Lisp
  implementation</b>.</li>
 
  <li>See @(see installation-support) for more <b>details</b> pertaining to
@@ -54035,11 +54035,11 @@ tables in the current Hons Space."
 (xdoc::order-subtopics
  installation
  (installation-summary
-  installation-requirements
+  obtaining-common-lisp
   installation-support
   using-acl2))
 
-(defxdoc installation-requirements
+(defxdoc obtaining-common-lisp
   :parents (installation)
   :short "Obtaining Common Lisp"
   :long "<p>A requirement for installing ACL2 is to install a suitable
@@ -54162,7 +54162,7 @@ tables in the current Hons Space."
 <p/>
 
  <li>Obtain a Common Lisp implementation if you don't already have one; see
- @(see installation-requirements).  (Note: Some of the
+ @(see obtaining-common-lisp).  (Note: Some of the
  @(see community-books) depend on @(see Quicklisp), and those are only
  guaranteed to work with CCL or SBCL.)</li><p/>
 
@@ -127010,7 +127010,7 @@ work on <tt>(q x)</tt>.</p>
  Common Lisp.  Indeed, we don't recommend [6] or [7] for that purpose either.
  Many good introductions to Common Lisp are available via the web.  There are
  many implementations of Common Lisp available and the @(see installation)
- instructions list several; see @(see installation-requirements).</li>
+ instructions list several; see @(see obtaining-common-lisp).</li>
 
  <li>[8] W. A. Hunt, Jr., M. Kaufmann, J S. Moore and A. Slobodova.<br/>
  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Industrial Hardware and Software Verification with ACL2.<br/>
@@ -133702,7 +133702,7 @@ work on <tt>(q x)</tt>.</p>
 
 ; This :DOC topic replaces what was in the section on "Obtaining SBCL" in ACL2
 ; file installation/requirements.html (which has since been replaced by :DOC
-; installation-requirements).  That material contained some information that is
+; obtaining-common-lisp).  That material contained some information that is
 ; probably now obsolete.  Here is that material, in case some of it turns out
 ; to be useful down the road.
 
