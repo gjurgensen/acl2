@@ -19349,8 +19349,9 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
 
  <h3>Building an executable image on a Unix-like system</h3>
 
- <p>We assume you have obtained ACL2, described in @(see obtaining-acl2), but
- you have not obtained a pre-built image.  Change to the directory containing
+ <p>We assume you have obtained ACL2, described in
+ @(see installation-instructions),
+ but you have not obtained a pre-built image.  Change to the directory containing
  the ACL2 sources and execute the command</p>
 
  @({
@@ -109572,60 +109573,6 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  @('observation-cw') during @(tsee include-book), then you need to manage that
  yourself.</p>")
 
-(defxdoc obtaining-acl2
-  :parents (installation-support)
-  :short "Alternate instructions for obtaining the ACL2 sources and community books"
-  :long "<p>This topic may be avoided by following the
-  @(see installation-instructions), which are intended to be self-contained.</p>
-
- <p>(First, a note for Windows users only: we suggest that you obtain a
- Unix-like environment or, at least, download a utility such as
- @('djtarnt.exe') to use with the @('-x') option on gzipped tarfiles.  WARNING:
- At least one user experienced CR/LF issues when using WinZIP, but we have
- received the suggestion that people untarring with that utility should
- probably turn off smart cr/lf conversion.)</p>
-
- <p>Create a directory under which to store ACL2.  Then follow the steps below,
- to obtain the ACL2 sources and the associated libraries (see @(see
- community-books)).</p>
-
- <ul>
-
- <li>Download <a
- href='https://github.com/acl2-devel/acl2-devel/releases/download/8.6/acl2-8.6.tar.gz'>@('acl2-8.6.tar.gz')</a>.</li>
-
- <li>While standing in the directory where you did that download, execute the
- following Unix/Linux shell commands to obtain the ACL2 system and community
- books.  (<b>Note</b>: Gnu tar is preferred, as there have been some problems
- with long file names when using at least one other tar program.  You may want
- to use the @('-i') option, @('tar xpvfi 8.6.tar'), if you have problems with
- other than Gnu tar.  You can see if you have Gnu tar by running @('tar -v').)
- The resulting tarball and its extracted directory may consist of 230M+ bytes
- and 1100M+ bytes, respectively.  Additional space is required to build an
- executable image, for example, 170M+ bytes if you use CCL and 230M bytes if
- you use SBCL; and considerably more will be required to <see topic='@(url
- books-certification)'>certify books</see>.
-
- @({
- tar xfz acl2-8.6.tar.gz
- rm acl2-8.6.tar.gz
- cd acl2-8.6
- })
-
- </li>
-
- </ul>
-
- <p><b>Note</b>: You can also fetch the latest GitHub distribution the ACL2
- system and the community books, as shown below.</p>
-
- @({
- git clone https://github.com/acl2/acl2
- })
-
- <p>Moreover, you can <see topic='@(url how-to-contribute)'>contribute books by
- joining the GitHub project</see>.</p>")
-
 (defxdoc obtaining-common-lisp
   :parents (installation)
   :short "Obtaining Common Lisp"
@@ -162351,6 +162298,21 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  a Windows installer for a previous ACL2 release</a>, which mimics some of
  Linux and provides Emacs.  Updated ACL2 binaries have been successfully
  installed in such an environment.</p>
+
+ <p>When installing ACL2 on Windows without a
+ Unix-like environment, consider at least downloading a utility such as
+ @('djtarnt.exe') to use with the @('-x') option on gzipped tarfiles.</p>
+
+ <p>Gnu tar is preferred, as there have been some problems
+ with long file names when using at least one other tar program.  You may want
+ to use the @('-i') option, @('tar xpvfi ...'), if you have problems with
+ other than Gnu tar.  You can see if you have Gnu tar by running @('tar -v').
+ </p>
+
+ <p>WARNING:
+ At least one user experienced CR/LF issues when using WinZIP, but we have
+ received the suggestion that people untarring with that utility should
+ probably turn off smart cr/lf conversion.</p>
 
  <p>Here are links to some older documentation topics, possibly out of date,
  that provide additional information for installing ACL2 on Windows.</p>
