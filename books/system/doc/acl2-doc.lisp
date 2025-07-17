@@ -53989,12 +53989,7 @@ tables in the current Hons Space."
 (defxdoc installation
   :parents (acl2)
   :short "Installing ACL2"
-  :long "<p>ACL2 is more than just the executable image.  In particular, the
- system is distributed with libraries developed by the ACL2 community (see
- @(see community-books)) as well as the <a
- href='http://www.cs.utexas.edu/users/moore/acl2/manuals/latest/index.html'>ACL2+Books
- User's Manual</a> for the system and those libraries.</p>
-
+  :long "
  <p>The installation guide consists of the following main parts.</p>
 
  <ul>
