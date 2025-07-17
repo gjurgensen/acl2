@@ -53988,7 +53988,7 @@ tables in the current Hons Space."
 
 (defxdoc installation
   :parents (acl2)
-  :short "Installation Guide"
+  :short "Installing ACL2"
   :long "<p>ACL2 is more than just the executable image.  In particular, the
  system is distributed with libraries developed by the ACL2 community (see
  @(see community-books)) as well as the <a
