@@ -19320,7 +19320,7 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
   :parents (installation-support)
   :short "Creating or obtaining an executable image"
   :long "<p>This topic may be avoided by reading the <see topic='@(url
-  installation-summary)'>installation summary</see>, which is intended to be
+  installation-instructions)'>installation summary</see>, which is intended to be
   self-contained.</p>
 
  <p>After obtaining the ACL2 sources, the next step is to produce an executable
@@ -53999,7 +53999,7 @@ tables in the current Hons Space."
 
  <ul>
 
- <li>See @(see installation-summary) for a <b>summary</b> of installation steps
+ <li>See @(see installation-instructions) for installation steps
  for Unix-like systems.  That should usually suffice to get ACL2 ready for you
  to use.</li>
 
@@ -54034,7 +54034,7 @@ tables in the current Hons Space."
 
 (xdoc::order-subtopics
  installation
- (installation-summary
+ (installation-instructions
   obtaining-common-lisp
   installation-support
   using-acl2))
@@ -54120,9 +54120,9 @@ tables in the current Hons Space."
  options indicated in @(see sbcl-installation) when building with
  @('make.sh').</p>")
 
-(defxdoc installation-summary
+(defxdoc installation-instructions
   :parents (installation)
-  :short "ACL2 installation summary for Unix-like systems"
+  :short "ACL2 installation instructions for Unix-like systems"
   :long  "<p>These instructions describe how to install ACL2 on &ldquo;Unix-like
  systems&rdquo;, including Linux, macOS (with Intel or ARM processors),
  and FreeBSD.  To install ACL2 on Windows, see @(see windows-installation).</p>
@@ -54251,10 +54251,11 @@ tables in the current Hons Space."
 (defxdoc installation-support
   :parents (installation)
   :short "Additional support for ACL2 installation"
-  :long "<p>To install ACL2, it will generally suffice to see the summary in
- @(see installation-summary).  You should read the subtopics below only if that
- summary was somehow not sufficient.  They provide alternate and additional
- information for obtaining and installing ACL2 and associated libraries.</p>")
+  :long "<p>To install ACL2, it will generally suffice to see the
+ @(see installation-instructions).  You should read the subtopics below only if
+ those instructions were somehow not sufficient.  They provide alternate and
+ additional information for obtaining and installing ACL2 and associated
+ libraries.</p>")
 
 (defxdoc instructions
   :parents (proof-builder)
@@ -109676,7 +109677,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   :parents (installation-support)
   :short "Alternate instructions for obtaining the ACL2 sources and community books"
   :long "<p>This topic may be avoided by reading the installation summary: see
-  @(see installation-summary), which is intended to be self-contained.</p>
+  @(see installation-instructions), which is intended to be self-contained.</p>
 
  <p>(First, a note for Windows users only: we suggest that you obtain a
  Unix-like environment or, at least, download a utility such as
@@ -144642,7 +144643,7 @@ work on <tt>(q x)</tt>.</p>
   :long "<p>This topic discusses a distribution that includes only the ACL2
  system, without the @(see community-books).</p>
 
- <p>See @(see installation-summary) for how to obtain a gzipped tarfile that
+ <p>See @(see installation-instructions) for how to obtain a gzipped tarfile that
  contains both the ACL2 sources and community books.  Below we describe the
  ACL2 distribution only (without the community books).  Its files are available
  by obtaining a gzipped tarfile, @(`(:raw (acl2-url-ref \"distrib/acl2.tar.gz\"
@@ -144653,7 +144654,7 @@ work on <tt>(q x)</tt>.</p>
  })
 
  <p>then you will create a subdirectory, @('acl2-sources'), which is
- approximately the usual ACL2 distribution (see @(see installation-summary))
+ approximately the usual ACL2 distribution (see @(see installation-instructions))
  without the @('books') subdirectory.  Among its contents, in addition to the
  ACL2 source files, are the following.</p>
 
@@ -158080,7 +158081,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  compiled code specific to the host.  You should certify the books locally,
  both as a test of your ACL2 image and because books generally need to be
  certified before they can be used.  See @(see installation), or more
- specifically @(see installation-summary), for how to perform this
+ specifically @(see installation-instructions), for how to perform this
  certification.  For additional explanation and further options, see @(see
  books-certification).</p>
 
