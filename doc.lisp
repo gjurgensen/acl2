@@ -2758,7 +2758,7 @@ Subtopics
       Hash cons, function memoization, and applicative hash tables
 
   [Installation]
-      Installation Guide
+      Installing ACL2
 
   [Macros]
       Macros allow you to extend the syntax of ACL2.
@@ -22791,8 +22791,9 @@ Subtopics
   (INSTALLATION-SUPPORT)
   "Creating or obtaining an executable image
 
-  This topic may be avoided by reading the installation summary (see
-  [INSTALLATION-SUMMARY]), which is intended to be self-contained.
+  This topic may be avoided by following the
+  [installation-instructions], which are intended to be
+  self-contained.
 
   After obtaining the ACL2 sources, the next step is to produce an
   executable image.  Proceed according to one of the four sections
@@ -22821,16 +22822,16 @@ Pre-built images
 
 Building an executable image on a Unix-like system
 
-  We assume you have obtained ACL2, described in [obtaining-ACL2], but
-  you have not obtained a pre-built image.  Change to the directory
-  containing the ACL2 sources and execute the command
+  We assume you have obtained ACL2, described in
+  [installation-instructions], but you have not obtained a pre-built
+  image.  Change to the directory containing the ACL2 sources and
+  execute the command
 
     make LISP=<your_lisp>
 
   where [47m<your_lisp>[0m is the command to run your local Common Lisp.  By
   default, if no [47mLISP=<your_lisp>[0m is specified, then [47mLISP=ccl[0m is
-  used, which presumably invokes CCL (see
-  [installation-requirements]).
+  used, which presumably invokes CCL (see [obtaining-common-lisp]).
 
   This will create executable [47msaved_acl2[0m in the current directory.
 
@@ -22840,8 +22841,8 @@ Building an executable image on a Unix-like system
   may be on the order of a couple hundred megabytes or so.
 
   This [47mmake[0m command works for the supported host Common Lisp
-  implementations; see [installation-requirements], on systems we
-  have tested.  If this [47mmake[0m command does not work for you, see the
+  implementations; see [obtaining-common-lisp], on systems we have
+  tested.  If this [47mmake[0m command does not work for you, see the
   instructions below for ``Building an executable image on other than
   a Unix-like system''.
 
@@ -22859,7 +22860,7 @@ Building an executable image on other than a Unix-like system
   [running-ACL2-without-executable].
 
   Your Common Lisp should be one of those listed in
-  [installation-requirements].  Stand in the directory where you have
+  [obtaining-common-lisp].  Stand in the directory where you have
   downloaded ACL2.
 
    1. Remove file [47mnsaved_acl2[0m if it exists.
@@ -57602,32 +57603,14 @@ Subtopics
          "See [defun-inline].")
  (INSTALLATION
   (ACL2)
-  "Installation Guide
+  "Installing ACL2
 
-  ACL2 is more than just the executable image.  In particular, the
-  system is distributed with libraries developed by the ACL2
-  community (see [community-books]) as well as the {ACL2+Books User's
-  Manual |
-  http://www.cs.utexas.edu/users/moore/acl2/manuals/latest/index.html}
-  for the system and those libraries.
+  See the [installation-instructions] for steps to install ACL2.
 
-  The installation guide consists of the following main parts.
+  If you encounter problems installing ACL2, or need more information,
+  see [installation-support].
 
-    * See [installation-summary] for a [31;1msummary[0m of installation steps for
-      Unix-like systems.  That should usually suffice to get ACL2
-      ready for you to use.
-
-    * See [installation-requirements] for how to [31;1mobtain a Common Lisp
-      implementation[0m.
-
-    * See [installation-support] for more [31;1mdetails[0m pertaining to obtaining
-      and installing ACL2.  You can probably ignore this topic and
-      its subtopics.
-
-    * See [using-ACL2] for information about [31;1mrunning[0m ACL2 and about its
-      [31;1m[documentation][0m.
-
-  Also see [copyright] for information about copyright, license, and
+  See [copyright] for information about copyright, license, and
   authorship of the ACL2 system, and see [acknowledgments] for
   sponsorship information.
 
@@ -57642,15 +57625,16 @@ Subtopics
   Assets Control (``OFAC'') of the U. S. Department of the Treasury.
 
   For more information about getting started with ACL2, see
-  [start-here].
+  [start-here].  Also see [using-ACL2] for information about running
+  ACL2 and about its [documentation].
 
 
 Subtopics
 
-  [Installation-summary]
-      ACL2 installation summary for Unix-like systems
+  [Installation-instructions]
+      ACL2 installation instructions for Unix-like systems
 
-  [Installation-requirements]
+  [Obtaining-common-lisp]
       Obtaining Common Lisp
 
   [Installation-support]
@@ -57658,154 +57642,97 @@ Subtopics
 
   [Using-ACL2]
       Using ACL2")
- (INSTALLATION-REQUIREMENTS
+ (INSTALLATION-INSTRUCTIONS
   (INSTALLATION)
-  "Obtaining Common Lisp
+  "ACL2 installation instructions for Unix-like systems
 
-  ACL2 has been built and tested on x86-64 Linux and on Mac OS X
-  (Darwin), which we call ``Unix-like systems'', as well as (from
-  time to time) some Windows operating systems.  It has been
-  successfully run on other platforms as well, including FreeBSD and
-  ARM architectures.
+  These instructions describe how to install ACL2 on ``Unix-like
+  systems'', including Linux, macOS (with Intel or ARM processors),
+  and FreeBSD.  To install ACL2 on Windows, see
+  [windows-installation].
 
-  The only other requirement for installing ACL2 is to install a
-  suitable Common Lisp implementation.  ACL2 can be hosted by several
-  Common Lisp implementations, as listed alphabetically below.  The
-  most commonly-used of these are SBCL and CCL, which can be obtained
-  without charge.
+  ACL2 installations include both the ACL2 system and the open-source
+  ACL2 libraries developed by the ACL2 community, called the
+  Community Books (see [COMMUNITY-BOOKS]).
 
+   1. Decide which of the following you want to install:
 
-Allegro Common Lisp
+        * The [31;1mlatest ACL2 release[0m (version 8.6 (see [NOTE-8-6])).  The release
+          is stable and very well tested but does not include any
+          improvements or fixes made since October, 2024.  It may be
+          appropriate if you do not need the very latest tools and
+          libraries and do not plan to contribute to the
+          [community-books].  A pre-built binary distribution (see
+          [PRE-BUILT-BINARY-DISTRIBUTIONS]) of the release may be
+          available for your platform, which can let you avoid
+          following these installation instructions.
 
-  {Allegro Common Lisp | https://franz.com/} is a commercial
-  implementation.  It has been maintained for many years, but it
-  generally runs ACL2 more slowly than most other implementations.
-
-
-Clozure Common Lisp (CCL)
-
-  {CCL | https://ccl.clozure.com/} is available without charge.  See
-  [ccl-installation] for instructions on how to fetch and install
-  CCL.
-
-  Quoting the {CCL website | https://ccl.clozure.com/}:
-      Clozure CL (often called CCL for short) is a free Common Lisp
-      implementation with a long history. Some distinguishing
-      features of the implementation include fast compilation speed,
-      native threads, a precise, generational, compacting garbage
-      collector, and a convenient foreign-function interface.
-
-  As of this writing (July 2025), CCL does not run natively on
-  Arm-based Macs.  There is an effort in progress to remedy that.
-
-
-CMU Common Lisp (CMUCL)
-
-  {CMUCL | https://cmucl.org} is available without charge.
-
-  Follow the {Download | https://cmucl.org/download.html} link on {the
-  CMUCL website | https://cmucl.org} to obtain CMUCL.  It has been
-  maintained for many years, but it generally runs ACL2 more slowly
-  than most other implementations.
-
-
-GNU Common Lisp (GCL)
-
-  {GCL | https://www.gnu.org/software/gcl/} is available without
-  charge.
-
-  You can {download a binary Debian package for ACL2 |
-  https://tracker.debian.org/pkg/acl2}.  Thanks to Camm Maguire for
-  maintaining this package.  Note however that it may take some time
-  after each ACL2 release for this package to be updated for that
-  release.
-
-  Otherwise, it should be easy to obtain and build GCL yourself.  Note
-  that ACL2 requires ANSI GCL version 2.6.12 or later.  See
-  {[47mhttps://www.gnu.org/software/gcl/[0m |
-  https://www.gnu.org/software/gcl/} for instructions.  If you
-  encounter difficulties, see [gcl] and perhaps consider the
-  following instructions for obtaining an older version and then
-  building the executable [47mgcl/gcl/bin/gcl[0m.
-
-    git clone git://git.sv.gnu.org/gcl.git
-    cd gcl/gcl
-    git checkout Version_2_6_13pre
-    ./configure --enable-ansi && make
-
-
-LispWorks
-
-  {LispWorks | https://www.lispworks.com/} is a commercial
-  implementation.  You may ask the vendor for an evaluation license
-  for the full product if you are considering purchasing a license.
-
-
-Steel Bank Common Lisp (SBCL)
-
-  {SBCL | https://sbcl.org/} is available without charge.  See
-  [sbcl-installation-brief] for instructions on how to fetch and
-  install SBCL.  [31;1mImportant[0m: For maximum performance, build from
-  source using the options indicated in [sbcl-installation] when
-  building with [47mmake.sh[0m.")
- (INSTALLATION-SUMMARY
-  (INSTALLATION)
-  "ACL2 installation summary for Unix-like systems
-
-  Here, ``Unix-like Systems'' includes Unix and its Linux variants
-  (e.g., Debian), as well as MacOS X.  A quicker install may be
-  possible by obtaining a binary distribution, if one is available
-  for your platform; see [pre-built-binary-distributions].  Otherwise
-  you can follow the directions below, which start by fetching a file
-  hosted at {the GitHub ACL2 System and Books website |
-  https://github.com/acl2/acl2/}.  The result is a directory
-  containing not only the ACL2 system but, in the [47mbooks/[0m
-  subdirectory, the ACL2 libraries; see [community-books].  The ACL2
-  [3msystem[0m, which has been developed at the University of Texas at
-  Austin, can be obtained or explored separately (though this is
-  rarely done); see [obtaining-ACL2].
-
-   1. Change to a directory that does not already contain a subdirectory
-      named [47macl2[0m or [47macl2-8.6[0m.  Then use [31;1meither[0m of the following two
-      methods to obtain the ACL2 source code and community books.
-
-        * ([31;1mRecommended[0m if you don't plan to update from git)
-          Download {gzipped tar file [47macl2-8.6.tar.gz[0m from GitHub |
-          https://github.com/acl2-devel/acl2-devel/releases/download/8.6/acl2-8.6.tar.gz}
-          and then execute the following (the [47mrm[0m command is just to
-          make sure you don't already have a subdirectory named
-          [47macl2-8.6[0m):
-
-              rm -rf acl2-8.6
-              tar xfz acl2-8.6.tar.gz
-
-          This will create a subdirectory named [47macl2-8.6[0m.  Change to that
-          directory.
-
-        * ([31;1mDevelopment snapshot[0m, required if you want to update from GitHub;
-          see [github-commit-code-using-pull-requests])
-          Execute the following (the [47mrm[0m command is just to make sure you don't
-          already have a subdirectory named [47macl2[0m):
-
-              rm -rf acl2
-              git clone https://github.com/acl2/acl2
-
-          This will create the subdirectory [47macl2[0m.  Change to that directory.
+        * The [31;1mlatest development snapshot[0m from GitHub (likely at most a few
+          days old). Development snapshots are only minimally tested
+          and may (rarely) have problems.  However, they provide the
+          latest iteration of ACL2 and the [community-books].  Use a
+          development snapshot if you plan to  contribute (see
+          [GITHUB-COMMIT-CODE-USING-PULL-REQUESTS]) additions or
+          changes to the [community-books], or if you plan to update
+          your copy of ACL2 later.  Pre-built binary distributions of
+          development snapshots are generally not available.
 
    2. Obtain a Common Lisp implementation if you don't already have one;
-      see [installation-requirements].  (Note: Some of the ACL2
-      libraries (see [community-books]) depend on Quicklisp, and
-      those are only guaranteed to work with CCL or SBCL.)
+      see [obtaining-common-lisp].  (Note: Some of the
+      [community-books] depend on [Quicklisp], and those are only
+      guaranteed to work with CCL or SBCL.)
 
-   3. Execute the following command.
+   3. Depending on your decision in Step 1, download ACL2 by doing either
+      of the following:
+
+        * [31;1mFor the latest ACL2 release[0m (version 8.6):
+
+           1. Change to a directory that does not already contain a subdirectory
+              called [47macl2-8.6[0m.
+
+           2. Download { [47macl2-8.6.tar.gz[0m |
+              https://github.com/acl2-devel/acl2-devel/releases/download/8.6/acl2-8.6.tar.gz}
+              to that directory.
+
+           3. Execute the following:
+
+                  tar xfz acl2-8.6.tar.gz
+                  cd acl2-8.6
+
+          The new subdirectory [47macl2-8.6[0m should now be your shell's current
+          directory.
+
+        * [31;1mOr, for the latest development snapshot[0m:
+
+           1. Change to a directory that does not already contain a subdirectory
+              named [47macl2[0m.
+
+           2. Execute the following:
+
+                  git clone https://github.com/acl2/acl2
+                  cd acl2
+
+          The new subdirectory [47macl2[0m should now be your shell's current
+          directory.
+
+   4. Compile ACL2:
 
           make LISP=<path_to_your_lisp_executable>
 
-      This will create a script in the current directory for running ACL2.
-      The script is named [47msaved_acl2[0m.
-      [31;1mNote:[0m You will need Gnu make (preferably newer than Version 3.82).
+      [31;1mNote:[0m You will need GNU Make (preferably newer than Version 3.82).
+      This will create an executable script named [47msaved_acl2[0m (in the
+      current directory) that can be used to run ACL2.
 
-   4. Certify some books, for example with
+   5. Optionally, test ACL2 as follows:
+
+          ./saved_acl2
+          :mini-proveall
+          (quit)
+
+      You should see \"Mini-proveall completed successfully.\" a few lines
+      above the bottom of the output.
+
+   6. Certify some books, for example with
 
           make basic
 
@@ -57821,29 +57748,24 @@ Steel Bank Common Lisp (SBCL)
       certify many more books with [47mmake regression[0m, and there is a
       discussion of avoiding root login), see [books-certification].
 
-  You now have an ACL2 executable called [47msaved_acl2[0m (from step 3) and
-  access to certified community books (from step 4).  Enjoy!  And
-  please consider contributing to the ACL2 libraries; see
-  [how-to-contribute].")
+  You now have an executable script called [47msaved_acl2[0m and access to
+  certified community books.  Enjoy!  And please consider
+  contributing to the ACL2 libraries; see [how-to-contribute].")
  (INSTALLATION-SUPPORT
   (INSTALLATION)
   "Additional support for ACL2 installation
 
-  To install ACL2, it will generally suffice to see the summary in
-  [installation-summary].  You should read the subtopics below only
-  if that summary was somehow not sufficient.  They provide alternate
-  and additional information for obtaining and installing ACL2 and
-  associated libraries.
+  To install ACL2, it will generally suffice to see the
+  [installation-instructions].  You should read the subtopics below
+  only if those instructions were somehow not sufficient.  They
+  provide alternate and additional information for obtaining and
+  installing ACL2 and associated libraries.
 
 
 Subtopics
 
   [Creating-executable]
       Creating or obtaining an executable image
-
-  [Obtaining-ACL2]
-      Alternate instructions for obtaining the ACL2 sources and community
-      books
 
   [Running-ACL2-without-executable]
       Running ACL2 without building an executable image
@@ -107201,53 +107123,90 @@ Subtopics
   that yourself.")
  (OBSERVATION-CW (POINTERS)
                  "See [observation].")
- (OBTAINING-ACL2
-  (INSTALLATION-SUPPORT)
-  "Alternate instructions for obtaining the ACL2 sources and community
-  books
+ (OBTAINING-COMMON-LISP
+  (INSTALLATION)
+  "Obtaining Common Lisp
 
-  This topic may be avoided by reading the installation summary: see
-  [installation-summary], which is intended to be self-contained.
+  A requirement for installing ACL2 is to install a suitable Common
+  Lisp implementation.  ACL2 can be hosted by several Common Lisp
+  implementations, as listed alphabetically below.  The most
+  commonly-used of these are SBCL and CCL, which can be obtained
+  without charge.
 
-  (First, a note for Windows users only: we suggest that you obtain a
-  Unix-like environment or, at least, download a utility such as
-  [47mdjtarnt.exe[0m to use with the [47m-x[0m option on gzipped tarfiles.
-  WARNING: At least one user experienced CR/LF issues when using
-  WinZIP, but we have received the suggestion that people untarring
-  with that utility should probably turn off smart cr/lf conversion.)
 
-  Create a directory under which to store ACL2.  Then follow the steps
-  below, to obtain the ACL2 sources and the associated libraries (see
-  [community-books]).
+Allegro Common Lisp
 
-    * Download {[47macl2-8.6.tar.gz[0m |
-      https://github.com/acl2-devel/acl2-devel/releases/download/8.6/acl2-8.6.tar.gz}.
+  {Allegro Common Lisp | https://franz.com/} is a commercial
+  implementation.  It has been maintained for many years, but it
+  generally runs ACL2 more slowly than most other implementations.
 
-    * While standing in the directory where you did that download, execute
-      the following Unix/Linux shell commands to obtain the ACL2
-      system and community books.  ([31;1mNote[0m: Gnu tar is preferred, as
-      there have been some problems with long file names when using
-      at least one other tar program.  You may want to use the [47m-i[0m
-      option, [47mtar xpvfi 8.6.tar[0m, if you have problems with other than
-      Gnu tar.  You can see if you have Gnu tar by running [47mtar -v[0m.)
-      The resulting tarball and its extracted directory may consist
-      of 230M+ bytes and 1100M+ bytes, respectively.  Additional
-      space is required to build an executable image, for example,
-      170M+ bytes if you use CCL and 230M bytes if you use SBCL; and
-      considerably more will be required to certify books (see
-      [BOOKS-CERTIFICATION]).
 
-          tar xfz acl2-8.6.tar.gz
-          rm acl2-8.6.tar.gz
-          cd acl2-8.6
+Clozure Common Lisp (CCL)
 
-  [31;1mNote[0m: You can also fetch the latest GitHub distribution the ACL2
-  system and the community books, as shown below.
+  {CCL | https://ccl.clozure.com/} is available without charge.  See
+  [ccl-installation] for instructions on how to fetch and install
+  CCL.
 
-    git clone https://github.com/acl2/acl2
+  Quoting the {CCL website | https://ccl.clozure.com/}:
+      Clozure CL (often called CCL for short) is a free Common Lisp
+      implementation with a long history. Some distinguishing
+      features of the implementation include fast compilation speed,
+      native threads, a precise, generational, compacting garbage
+      collector, and a convenient foreign-function interface.
 
-  Moreover, you can contribute books by joining the GitHub project (see
-  [HOW-TO-CONTRIBUTE]).")
+  As of this writing (July 2025), CCL does not run natively on
+  Arm-based Macs.  There is an effort in progress to remedy that.
+
+
+CMU Common Lisp (CMUCL)
+
+  {CMUCL | https://cmucl.org} is available without charge.
+
+  Follow the {Download | https://cmucl.org/download.html} link on {the
+  CMUCL website | https://cmucl.org} to obtain CMUCL.  It has been
+  maintained for many years, but it generally runs ACL2 more slowly
+  than most other implementations.
+
+
+GNU Common Lisp (GCL)
+
+  {GCL | https://www.gnu.org/software/gcl/} is available without
+  charge.
+
+  You can {download a binary Debian package for ACL2 |
+  https://tracker.debian.org/pkg/acl2}.  Thanks to Camm Maguire for
+  maintaining this package.  Note however that it may take some time
+  after each ACL2 release for this package to be updated for that
+  release.
+
+  Otherwise, it should be easy to obtain and build GCL yourself.  Note
+  that ACL2 requires ANSI GCL version 2.6.12 or later.  See
+  {[47mhttps://www.gnu.org/software/gcl/[0m |
+  https://www.gnu.org/software/gcl/} for instructions.  If you
+  encounter difficulties, see [gcl] and perhaps consider the
+  following instructions for obtaining an older version and then
+  building the executable [47mgcl/gcl/bin/gcl[0m.
+
+    git clone git://git.sv.gnu.org/gcl.git
+    cd gcl/gcl
+    git checkout Version_2_6_13pre
+    ./configure --enable-ansi && make
+
+
+LispWorks
+
+  {LispWorks | https://www.lispworks.com/} is a commercial
+  implementation.  You may ask the vendor for an evaluation license
+  for the full product if you are considering purchasing a license.
+
+
+Steel Bank Common Lisp (SBCL)
+
+  {SBCL | https://sbcl.org/} is available without charge.  See
+  [sbcl-installation-brief] for instructions on how to fetch and
+  install SBCL.  [31;1mImportant[0m: For maximum performance, build from
+  source using the options indicated in [sbcl-installation] when
+  building with [47mmake.sh[0m.")
  (ODDP
   (NUMBERS ACL2-BUILT-INS)
   "Test whether an integer is odd
@@ -122605,7 +122564,7 @@ Annotated Bibliography
       purpose either.  Many good introductions to Common Lisp are
       available via the web.  There are many implementations of
       Common Lisp available and the [installation] instructions list
-      several; see [installation-requirements].
+      several; see [obtaining-common-lisp].
 
     * [8] W. A. Hunt, Jr., M. Kaufmann, J S. Moore and A. Slobodova.
       Industrial Hardware and Software Verification with ACL2.
@@ -144434,8 +144393,8 @@ Subtopics
   This topic discusses a distribution that includes only the ACL2
   system, without the [community-books].
 
-  See [installation-summary] for how to obtain a gzipped tarfile that
-  contains both the ACL2 sources and community books.  Below we
+  See [installation-instructions] for how to obtain a gzipped tarfile
+  that contains both the ACL2 sources and community books.  Below we
   describe the ACL2 distribution only (without the community books).
   Its files are available by obtaining a gzipped tarfile,
   {acl2.tar.gz |
@@ -144446,8 +144405,9 @@ Subtopics
 
   then you will create a subdirectory, [47macl2-sources[0m, which is
   approximately the usual ACL2 distribution (see
-  [installation-summary]) without the [47mbooks[0m subdirectory.  Among its
-  contents, in addition to the ACL2 source files, are the following.
+  [installation-instructions]) without the [47mbooks[0m subdirectory.  Among
+  its contents, in addition to the ACL2 source files, are the
+  following.
 
     LICENSE       ; ACL2 license file
     GNUmakefile   ; For use with GNU make
@@ -157879,9 +157839,9 @@ Certifying ACL2 Books
   compiled code specific to the host.  You should certify the books
   locally, both as a test of your ACL2 image and because books
   generally need to be certified before they can be used.  See
-  [installation], or more specifically [installation-summary], for
-  how to perform this certification.  For additional explanation and
-  further options, see [books-certification].
+  [installation], or more specifically [installation-instructions],
+  for how to perform this certification.  For additional explanation
+  and further options, see [books-certification].
 
 
 Documentation
@@ -162060,6 +162020,19 @@ Concluding Remark
   http://www.cs.utexas.edu/users/moore/acl2/v3-6/distrib/windows/},
   which mimics some of Linux and provides Emacs.  Updated ACL2
   binaries have been successfully installed in such an environment.
+
+  When installing ACL2 on Windows without a Unix-like environment,
+  consider at least downloading a utility such as [47mdjtarnt.exe[0m to use
+  with the [47m-x[0m option on gzipped tarfiles.
+
+  Gnu tar is preferred, as there have been some problems with long file
+  names when using at least one other tar program.  You may want to
+  use the [47m-i[0m option, [47mtar xpvfi ...[0m, if you have problems with other
+  than Gnu tar.  You can see if you have Gnu tar by running [47mtar -v[0m.
+
+  WARNING: At least one user experienced CR/LF issues when using
+  WinZIP, but we have received the suggestion that people untarring
+  with that utility should probably turn off smart cr/lf conversion.
 
   Here are links to some older documentation topics, possibly out of
   date, that provide additional information for installing ACL2 on
