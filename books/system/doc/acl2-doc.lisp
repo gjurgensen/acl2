@@ -109574,15 +109574,15 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>Regardless of which Common Lisp you choose, it is highly recommended that
  you install a 64-bit implementation.  While 32-bit Lisps are supported by the
- core ACL2 system, using a 32-bit Lisp will likely result in reduced
- performance as well as certification failures for certain
- @(see community-books). If you are unsure whether your installed Common Lisp
- is 64-bit or not, try running the following:</p>
+ core ACL2 system, using a 32-bit Lisp may result in reduced performance as
+ well as certification failures for certain @(see community-books).  If you are
+ unsure whether your installed Common Lisp is 64-bit or not, try running the
+ following:</p>
 
   @({
-  ;; Works on CCL, SBCL, GCL. For other Lisps, look through
-  ;; *features* for relevant architectural information.
-  #+(or 64BIT 64-BIT 64-BIT-TARGET) 'yes #-(or 64BIT 64-BIT 64-BIT-TARGET) 'no
+  ;; If you are in an ACL2 REPL, first do :q to exit to Common Lisp.
+  ;; Evaluates to t if in a 64-bit Lisp.
+  (>= most-positive-fixnum (1- (expt 2 60)))
   })
 
  <h3>Allegro Common Lisp</h3>
@@ -109618,7 +109618,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>Follow the <a href='https://cmucl.org/download.html'>Download</a> link on
  <a href='https://cmucl.org'>the CMUCL website</a> to obtain CMUCL.  It has
  been maintained for many years, but it generally runs ACL2 more slowly than
- most other implementations.  CMUCL does not offer a 64-bit version.</p>
+ most other implementations.  At the time of writing (July, 2025), CMUCL does
+ not offer a 64-bit version.</p>
 
  <h3>GNU Common Lisp (GCL)</h3>
 
