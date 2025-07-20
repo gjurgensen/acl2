@@ -13960,16 +13960,7 @@ way to split up large ACL2 developments into separate modules."
 
  <p>One of the links listed above should generally suffice.  But if you
  would like additional information on CCL installation and implementation, see
- @(see ccl-installation-extra).</p>
-
- <p>Note that ACL2's @(see hons-enabled) features are optimized for 64-bit CCL.
- Some large developments may even fail with 32-bit CCL; so for CCL, the 64-bit
- version is preferred.  To check if your CCL is a 64-bit CCL, evaluate the
- following expression in your CCL; the result should be @('YES').</p>
-
- @({
- #+x86_64 'yes #-x86_64 'no
- })")
+ @(see ccl-installation-extra).</p>")
 
 (defxdoc ccl-installation-extra
   :parents (ccl-installation)
@@ -109581,6 +109572,19 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  implementations, as listed alphabetically below.  The most commonly-used of
  these are SBCL and CCL, which can be obtained without charge.</p>
 
+ <p>Regardless of which Common Lisp you choose, it is highly recommended that
+ you install a 64-bit implementation.  While 32-bit Lisps are supported by the
+ core ACL2 system, using a 32-bit Lisp will likely result in reduced
+ performance as well as certification failures for certain
+ @(see community-books). If you are unsure whether your installed Common Lisp
+ is 64-bit or not, try running the following:</p>
+
+  @({
+  ;; Works on CCL, SBCL, GCL. For other Lisps, look through
+  ;; *features* for relevant architectural information.
+  #+(or 64BIT 64-BIT 64-BIT-TARGET) 'yes #-(or 64BIT 64-BIT 64-BIT-TARGET) 'no
+  })
+
  <h3>Allegro Common Lisp</h3>
 
  <p><a href='https://franz.com/'>Allegro Common Lisp</a> is a commercial
@@ -109614,7 +109618,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>Follow the <a href='https://cmucl.org/download.html'>Download</a> link on
  <a href='https://cmucl.org'>the CMUCL website</a> to obtain CMUCL.  It has
  been maintained for many years, but it generally runs ACL2 more slowly than
- most other implementations.</p>
+ most other implementations.  CMUCL does not offer a 64-bit version.</p>
 
  <h3>GNU Common Lisp (GCL)</h3>
 
