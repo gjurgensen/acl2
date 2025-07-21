@@ -822,11 +822,17 @@
  Regents of the University of Texas, authored by Matt Kaufmann and J Strother
  Moore.</p>
 
+ <p> This manual contains
+ <see topic='@(url installation)'>installation instructions</see>,
+ <see topic='@(url acl2-tutorial)'>tutorials</see>,
+ and @(see acknowledgments), as well as
+ information about <see topic='@(url mailing-lists)'>mailing lists</see>,
+ related @(see publications), and <see topic='@(url workshops)'>ACL2 Workshops
+ </see>.</p>
+
  <p>See the <a href='http://www.cs.utexas.edu/users/moore/acl2/'>ACL2 home
- page</a> for additional information including tutorials, @(see installation)
- instructions, <see topic='@(url mailing-lists)'> mailing lists</see>. related
- @(see publications), ACL2 workshops and seminars, @(see acknowledgments), and
- other ACL2 releases.</p>
+ page</a> for information about seminars and about other ACL2 releases.
+ </p>
 
  <p>See @(see documentation) for how to access the ACL2+Books User's
  Manual.</p>
@@ -3296,7 +3302,7 @@
 ;   TIDBITS
 ;   TIPS
 
-  :parents (start-here)
+  :parents (start-here about-acl2)
   :short "Tutorial introduction to ACL2"
   :long "<p>To learn about ACL2, read at least the following two links.</p>
 
@@ -13065,30 +13071,6 @@ way to split up large ACL2 developments into separate modules."
  the ACL2 community.  It is to encourage this evolution that @('brr@') provides
  access to the @('*')'d data.</p>")
 
-(defxdoc building-acl2
-  :parents (about-acl2)
-  :short "How to build an ACL2 executable"
-  :long "<p>This topic summarizes steps for building an ACL2 executable.  For
- more details, see @(see installation).</p>
-
- <p>To build an ACL2 executable, submit the following command while standing in
- the main ACL2 directory, where @('<my-lisp>') invokes your Lisp
- executable (default: @('ccl')).</p>
-
- @({
- make LISP=<my-lisp>
- })
-
- <p>You should find \"Initialization SUCCEEDED.\" near the end of the log.
- Note: There may be ACL2 warnings, for example: \"ACL2 Warning [Skip-proofs]
- in....\".  These may be safely ignored.</p>
-
- <p>Note that you will want to certify @(see books) in order to take full
- advantage of ACL2.  See @(see books-certification).</p>
-
- <p>See @(see save-exec) for how to build an ACL2 executable from a state
- resulting from the running of specified @(see command)s.</p>")
-
 (defxdoc built-in-clause
   :parents (rule-classes)
   :short "To build a @(see clause) into the simplifier"
@@ -13931,7 +13913,7 @@ way to split up large ACL2 developments into separate modules."
  the inferiors are moved to new directories.</p>")
 
 (defxdoc ccl-installation
-  :parents (building-acl2)
+  :parents (obtaining-common-lisp)
   :short "Installing Clozure Common Lisp (CCL)"
   :long "<p>For those who use ACL2 built on CCL as the host Common Lisp
  implementation, it has been common practice to use the latest GitHub version
@@ -19374,6 +19356,9 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
  tested.  If this @('make') command does not work for you, see the instructions
  below for &ldquo;Building an executable image on other than a Unix-like
  system&rdquo;.</p>
+
+ <p>See @(see save-exec) for how to build an ACL2 executable from a state
+ resulting from the running of specified @(see command)s.</p>
 
  <h3>Building an executable image on other than a Unix-like system</h3>
 
@@ -53988,7 +53973,7 @@ tables in the current Hons Space."
  })")
 
 (defxdoc installation
-  :parents (acl2)
+  :parents (acl2 about-acl2)
   :short "Installing ACL2"
   :long "<p>See the @(see installation-instructions) for steps to install ACL2.</p>
 
@@ -54104,8 +54089,12 @@ tables in the current Hons Space."
  <li>Compile ACL2:
 
  @({
- make LISP=<path_to_your_lisp_executable>
+ make LISP=<your_command_to_run_lisp>
  })
+
+ where @('<your_command_to_run_lisp>') is a command that runs
+ your selected Common LISP and is not merely a shell alias. The
+ default for @('<your_command_to_run_lisp>') is @('ccl').
 
  <b>Note:</b> You will need GNU Make (preferably newer than Version 3.82).
 
@@ -70638,7 +70627,7 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
  </ul>")
 
 (defxdoc mailing-lists
-  :parents (acl2)
+  :parents (acl2 about-acl2 community)
   :short "Mailing lists for ACL2 users"
   :long "<p>There are the following mailing lists for ACL2 users.  You can
  post messages to these lists only if you are a member, but anyone can view the
@@ -70675,7 +70664,12 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
  </ul></p>
 
  <p>Finally, please report bugs in ACL2 to
- <a href='mailto:kaufmann@cs.utexas.edu'>Matt Kaufmann</a>.</p>")
+ <a href='mailto:kaufmann@cs.utexas.edu'>Matt Kaufmann</a>.</p>
+
+ <p>See @(see community) for ways to connect with other ACL2 users,
+ get help with ACL2, and contribute to improving ACL2 and its
+ @(see community-books).</p>
+ ")
 
 
 (defxdoc make
@@ -133508,7 +133502,7 @@ work on <tt>(q x)</tt>.</p>
 ; See sbcl-installation-brief for a comment about material formerly in
 ; installation/requirements.html.
 
-  :parents (building-acl2)
+  :parents (obtaining-common-lisp)
   :short "Installing Steel Bank Common Lisp (SBCL)"
   :long "<p>SBCL is available from <tt><a
  href='https://www.sbcl.org'>https://www.sbcl.org</a></tt>.  You can of course
@@ -133707,7 +133701,7 @@ work on <tt>(q x)</tt>.</p>
 
 |#
 
-  :parents (building-acl2)
+  :parents (obtaining-common-lisp)
   :short "Installing Steel Bank Common Lisp (SBCL)"
   :long "<p>The topic @(see sbcl-installation) contains full installation
  instructions for SBCL.  The present topic contains abbreviated instructions
@@ -162270,8 +162264,9 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
 
  <li>Use a Virtual Machine platform, such as VMware Player (free for
  non-commercial use) or Oracle Virtualbox (free even for commercial
- use) to install Linux, and then follow the normal @(see installation)
- instructions to install ACL2.  As of 2014, at least a couple of our
+ use) to install Linux, and then follow the normal
+ @(see installation-instructions) to install ACL2.  As of 2014, at
+ least a couple of our
  power users are very happy with this solution, as it provides
  first-class access to utilities relevant to maintaining the ACL2
  system and books (like GNU Make and perl).</li>
@@ -162279,8 +162274,8 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  <li>Set up <a
  href='https://en.wikipedia.org/wiki/Windows_Subsystem_for_Linux'>Windows
  Subsystem for Linux</a> (WSL) on a 64-bit version of Windows 10 (or later,
- once available).  Within that subsystem, follow the setup and @(see
- installation) instructions for ACL2. See the below section regarding the ACL2
+ once available).  Within that subsystem, follow the normal @(see
+ installation-instructions) for ACL2. See the below section regarding the ACL2
  Sedan Windows installation instructions for more info, as that involves
  installing the ACL2 Sedan in WSL on Windows.</li>
 
