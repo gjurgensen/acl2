@@ -54093,7 +54093,8 @@ tables in the current Hons Space."
  })
 
  where @('<your_command_to_run_lisp>') is a command that runs
- your selected Common LISP (default: @('ccl')).
+ your selected Common LISP and is not merely a shell alias. The
+ default for @('<your_command_to_run_lisp>') is @('ccl').
 
  <b>Note:</b> You will need GNU Make (preferably newer than Version 3.82).
 
