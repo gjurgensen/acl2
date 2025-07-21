@@ -1627,11 +1627,13 @@ Subtopics
   University of Texas, authored by Matt Kaufmann and J Strother
   Moore.
 
+  This manual contains installation instructions (see [INSTALLATION]),
+  tutorials (see [ACL2-TUTORIAL]), and [acknowledgments], as well as
+  information about mailing lists (see [MAILING-LISTS]), related
+  publications, and ACL2 Workshops .
+
   See the {ACL2 home page | http://www.cs.utexas.edu/users/moore/acl2/}
-  for additional information including tutorials, [installation]
-  instructions,  mailing lists (see [MAILING-LISTS]). related
-  publications, ACL2 workshops and seminars, [acknowledgments], and
-  other ACL2 releases.
+  for information about seminars and about other ACL2 releases.
 
   See [documentation] for how to access the ACL2+Books User's Manual.
 
@@ -1646,8 +1648,8 @@ Subtopics
   [ACL2-help]
       The acl2-help mailing list
 
-  [Building-ACL2]
-      How to build an ACL2 executable
+  [ACL2-tutorial]
+      Tutorial introduction to ACL2
 
   [Common-lisp]
       Relation to Common Lisp, including deviations from the spec
@@ -1660,6 +1662,12 @@ Subtopics
 
   [How-to-contribute]
       Guide to contributing code to ACL2.
+
+  [Installation]
+      Installing ACL2
+
+  [Mailing-lists]
+      Mailing lists for ACL2 users
 
   [Operational-semantics]
       Modeling State Machines
@@ -5580,7 +5588,7 @@ Silent loading of ACL2 customization files
   on the ACL2 Sedan and for making their books available to ACL2
   users.")
  (ACL2-TUTORIAL
-  (START-HERE)
+  (START-HERE ABOUT-ACL2)
   "Tutorial introduction to ACL2
 
   To learn about ACL2, read at least the following two links.
@@ -16237,40 +16245,6 @@ Subtopics
   macros, we anticipate that a set of convenient primitives will
   gradually evolve within the ACL2 community.  It is to encourage
   this evolution that [47mbrr@[0m provides access to the [47m*[0m'd data.")
- (BUILDING-ACL2
-  (ABOUT-ACL2)
-  "How to build an ACL2 executable
-
-  This topic summarizes steps for building an ACL2 executable.  For
-  more details, see [installation].
-
-  To build an ACL2 executable, submit the following command while
-  standing in the main ACL2 directory, where [47m<my-lisp>[0m invokes your
-  Lisp executable (default: [47mccl[0m).
-
-    make LISP=<my-lisp>
-
-  You should find \"Initialization SUCCEEDED.\" near the end of the log.
-  Note: There may be ACL2 warnings, for example: \"ACL2 Warning
-  [Skip-proofs] in....\".  These may be safely ignored.
-
-  Note that you will want to certify [books] in order to take full
-  advantage of ACL2.  See [books-certification].
-
-  See [save-exec] for how to build an ACL2 executable from a state
-  resulting from the running of specified [command]s.
-
-
-Subtopics
-
-  [Ccl-installation]
-      Installing Clozure Common Lisp (CCL)
-
-  [Sbcl-installation]
-      Installing Steel Bank Common Lisp (SBCL)
-
-  [Sbcl-installation-brief]
-      Installing Steel Bank Common Lisp (SBCL)")
  (BUILT-IN-CLAUSE
   (RULE-CLASSES)
   "To build a [clause] into the simplifier
@@ -17012,7 +16986,7 @@ Subtopics
   rendered uncertified) if the inferiors are moved to new
   directories.")
  (CCL-INSTALLATION
-  (BUILDING-ACL2)
+  (OBTAINING-COMMON-LISP)
   "Installing Clozure Common Lisp (CCL)
 
   For those who use ACL2 built on CCL as the host Common Lisp
@@ -17039,14 +17013,6 @@ Subtopics
   One of the links listed above should generally suffice.  But if you
   would like additional information on CCL installation and
   implementation, see [ccl-installation-extra].
-
-  Note that ACL2's [hons-enabled] features are optimized for 64-bit
-  CCL.  Some large developments may even fail with 32-bit CCL; so for
-  CCL, the 64-bit version is preferred.  To check if your CCL is a
-  64-bit CCL, evaluate the following expression in your CCL; the
-  result should be [47mYES[0m.
-
-    #+x86_64 'yes #-x86_64 'no
 
 
 Subtopics
@@ -22845,6 +22811,9 @@ Building an executable image on a Unix-like system
   tested.  If this [47mmake[0m command does not work for you, see the
   instructions below for ``Building an executable image on other than
   a Unix-like system''.
+
+  See [save-exec] for how to build an ACL2 executable from a state
+  resulting from the running of specified [command]s.
 
 
 Building an executable image on other than a Unix-like system
@@ -57602,7 +57571,7 @@ Subtopics
  (INLINE (POINTERS)
          "See [defun-inline].")
  (INSTALLATION
-  (ACL2)
+  (ACL2 ABOUT-ACL2)
   "Installing ACL2
 
   See the [installation-instructions] for steps to install ACL2.
@@ -57717,11 +57686,14 @@ Subtopics
 
    4. Compile ACL2:
 
-          make LISP=<path_to_your_lisp_executable>
+          make LISP=<your_command_to_run_lisp>
 
-      [31;1mNote:[0m You will need GNU Make (preferably newer than Version 3.82).
-      This will create an executable script named [47msaved_acl2[0m (in the
-      current directory) that can be used to run ACL2.
+      where [47m<your_command_to_run_lisp>[0m is a command that runs your
+      selected Common LISP and is not merely a shell alias. The
+      default for [47m<your_command_to_run_lisp>[0m is [47mccl[0m.  [31;1mNote:[0m You will
+      need GNU Make (preferably newer than Version 3.82).  This will
+      create an executable script named [47msaved_acl2[0m (in the current
+      directory) that can be used to run ACL2.
 
    5. Optionally, test ACL2 as follows:
 
@@ -74453,7 +74425,7 @@ Subtopics
     * A reasonable model for [47m(magic-ev-fncall 'fn (list a1 a2 ...) state h
       aokp)[0m is [47m(ec-call (fn a1 a2 ...))[0m.")
  (MAILING-LISTS
-  (ACL2)
+  (ACL2 ABOUT-ACL2 COMMUNITY)
   "Mailing lists for ACL2 users
 
   There are the following mailing lists for ACL2 users.  You can post
@@ -74488,7 +74460,11 @@ Subtopics
             https://groups.google.com/forum/#!forum/acl2-books}[0m
 
   Finally, please report bugs in ACL2 to {Matt Kaufmann |
-  mailto:kaufmann@cs.utexas.edu}.")
+  mailto:kaufmann@cs.utexas.edu}.
+
+  See [community] for ways to connect with other ACL2 users, get help
+  with ACL2, and contribute to improving ACL2 and its
+  [community-books].")
  (MAKE
   (DEFREC ACL2-BUILT-INS)
   "Constructor macro for [defrec] structures.
@@ -107133,6 +107109,17 @@ Subtopics
   commonly-used of these are SBCL and CCL, which can be obtained
   without charge.
 
+  Regardless of which Common Lisp you choose, it is highly recommended
+  that you install a 64-bit implementation.  While 32-bit Lisps are
+  supported by the core ACL2 system, using a 32-bit Lisp may result
+  in reduced performance as well as certification failures for
+  certain [community-books].  If you are unsure whether your
+  installed Common Lisp is 64-bit or not, try running the following:
+
+    ;; If you are in an ACL2 REPL, first do :q to exit to Common Lisp.
+    ;; Evaluates to t if in a 64-bit Lisp.
+    (>= most-positive-fixnum (1- (expt 2 60)))
+
 
 Allegro Common Lisp
 
@@ -107165,7 +107152,8 @@ CMU Common Lisp (CMUCL)
   Follow the {Download | https://cmucl.org/download.html} link on {the
   CMUCL website | https://cmucl.org} to obtain CMUCL.  It has been
   maintained for many years, but it generally runs ACL2 more slowly
-  than most other implementations.
+  than most other implementations.  At the time of writing (July,
+  2025), CMUCL does not offer a 64-bit version.
 
 
 GNU Common Lisp (GCL)
@@ -107206,7 +107194,19 @@ Steel Bank Common Lisp (SBCL)
   [sbcl-installation-brief] for instructions on how to fetch and
   install SBCL.  [31;1mImportant[0m: For maximum performance, build from
   source using the options indicated in [sbcl-installation] when
-  building with [47mmake.sh[0m.")
+  building with [47mmake.sh[0m.
+
+
+Subtopics
+
+  [Ccl-installation]
+      Installing Clozure Common Lisp (CCL)
+
+  [Sbcl-installation]
+      Installing Steel Bank Common Lisp (SBCL)
+
+  [Sbcl-installation-brief]
+      Installing Steel Bank Common Lisp (SBCL)")
  (ODDP
   (NUMBERS ACL2-BUILT-INS)
   "Test whether an integer is odd
@@ -133397,7 +133397,7 @@ Further information
     (runes-diff-fn book-string name namep dir ctx state)
     (old-and-new-event-data book-string name namep dir ctx state)")
  (SBCL-INSTALLATION
-  (BUILDING-ACL2)
+  (OBTAINING-COMMON-LISP)
   "Installing Steel Bank Common Lisp (SBCL)
 
   SBCL is available from [47m{https://www.sbcl.org | https://www.sbcl.org}[0m.
@@ -133519,7 +133519,7 @@ Further information
       the script should contain just [47msbcl[0m instead of
       [47m<dir>/run-sbcl.sh[0m.")
  (SBCL-INSTALLATION-BRIEF
-  (BUILDING-ACL2)
+  (OBTAINING-COMMON-LISP)
   "Installing Steel Bank Common Lisp (SBCL)
 
   The topic [sbcl-installation] contains full installation instructions
@@ -161992,7 +161992,7 @@ Concluding Remark
     * Use a Virtual Machine platform, such as VMware Player (free for
       non-commercial use) or Oracle Virtualbox (free even for
       commercial use) to install Linux, and then follow the normal
-      [installation] instructions to install ACL2.  As of 2014, at
+      [installation-instructions] to install ACL2.  As of 2014, at
       least a couple of our power users are very happy with this
       solution, as it provides first-class access to utilities
       relevant to maintaining the ACL2 system and books (like GNU
@@ -162001,8 +162001,8 @@ Concluding Remark
     * Set up {Windows Subsystem for Linux |
       https://en.wikipedia.org/wiki/Windows_Subsystem_for_Linux}
       (WSL) on a 64-bit version of Windows 10 (or later, once
-      available).  Within that subsystem, follow the setup and
-      [installation] instructions for ACL2. See the below section
+      available).  Within that subsystem, follow the normal
+      [installation-instructions] for ACL2. See the below section
       regarding the ACL2 Sedan Windows installation instructions for
       more info, as that involves installing the ACL2 Sedan in WSL on
       Windows.
