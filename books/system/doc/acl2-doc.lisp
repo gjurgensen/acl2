@@ -128415,6 +128415,72 @@ work on <tt>(q x)</tt>.</p>
  <p>The current version of ACL2 is the value of the constant @('(@
  acl2-version)').</p>")
 
+(defxdoc releases
+  :parents (about-acl2)
+  :short "ACL2 releases"
+  :long "<p>The current ACL2 release on the <a
+ href='http://www.cs.utexas.edu/users/moore/acl2/index.html'>ACL2 home page</a>
+ is Version 8.6; see @(see note-8-6) for release notes.</p>
+
+ <p>Below is a list of past releases and their corresponding past ACL2 home
+ pages.  (Note: Some older versions of the manuals have been made unreadable to
+ avoid potential security issues.)</p>
+
+ <ul>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v8-5/index.html'>Version 8.5 (July, 2022)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v8-4/index.html'>Version 8.4 (August, 2021)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v8-3/index.html'>Version 8.3 (April, 2020)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v8-2/index.html'>Version 8.2 (May, 2019)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v8-1/index.html'>Version 8.1 (September, 2018)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v8-0/index.html'>Version 8.0 (December, 2017)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v7-4/index.html'>Version 7.4 (March, 2017)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v7-3/index.html'>Version 7.3 (December, 2016)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v7-2/index.html'>Version 7.2 (January, 2016)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v7-1/index.html'>Version 7.1 (May, 2015)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v7-0/index.html'>Version 7.0 (January, 2015)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v6-5/index.html'>Version 6.5 (August, 2014)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v6-4/index.html'>Version 6.4 (January, 2014)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v6-3/index.html'>Version 6.3 (October, 2013)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v6-2/index.html'>Version 6.2 (June, 2013)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v6-1/index.html'>Version 6.1 (February, 2013)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v6-0/index.html'>Version 6.0 (December, 2012)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v5-0/index.html'>Version 5.0 (August, 2012)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v4-3/index.html'>Version 4.3 (July, 2011)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v4-2/index.html'>Version 4.2 (January, 2011)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v4-1/index.html'>Version 4.1 (September, 2010)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v4-0/index.html'>Version 4.0 (July, 2010)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v3-6/new/v3-6-1/index.html'>Version 3.6.1 (September, 2009)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v3-6/index.html'>Version 3.6 (August, 2009)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v3-5/index.html'>Version 3.5 (May, 2009)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v3-4/index.html'>Version 3.4 (August, 2008)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v3-3/index.html'>Version 3.3 (November, 2007)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v3-2/new/v3-2-1/index.html'>Version 3.2.1 (June, 2007)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v3-2/index.html'>Version 3.2 (April, 2007)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v3-1/index.html'>Version 3.1 (December, 2006)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v3-0/new/v3-0-1/index.html'>Version 3.0.1 (August, 2006)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v3-0/index.html'>Version 3.0 (June, 2006)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v2-9/new/v2-9-4/index.html'>Version 2.9.4 (January, 2006)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v2-9/new/v2-9-3/index.html'>Version 2.9.3 (August, 2005)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v2-9/new/v2-9-2/index.html'>Version 2.9.2 (April, 2005)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v2-9/new/v2-9-1/index.html'>Version 2.9.1 (December, 2004)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v2-9/index.html'>Version 2.9 (October, 2004)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v2-8/index.html'>Version 2.8 (March, 2004)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v2-7/index.html'>Version 2.7 (November, 2002)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v2-6/index.html'>Version 2.6 (November, 2001)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v2-5/index.html'>Version 2.5 (June, 2000)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v2-4/index.html'>Version 2.4 (August, 1999)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v2-3/index.html'>Version 2.3 (October, 1998)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v2-2/index.html'>Version 2.2 (August, 1998)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v2-1/index.html'>Version 2.1 (December, 1997)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v2-0/index.html'>Version 2.0 (July, 1997)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v1-9/acl2-doc.html'>Version 1.9 (Fall, 1996)</a></li>
+ </ul>
+
+ <p><b>Note</b>: The ACL2 Home Pages for versions between 5.0 and 7.0, listed
+ above, did not directly include the Community Books, which were distributed
+ separately.  You may find the books for those versions at <tt><a
+ href='http://acl2.org/books-pre-7.0/'>http://acl2.org/books-pre-7.0/</a></tt>.</p>")
+
 (defxdoc rem
   :parents (numbers acl2-built-ins)
   :short "Remainder using @(tsee truncate)"
@@ -172939,6 +173005,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer open-output-channel io)
 (defpointer open-output-channel-p io)
 (defpointer optimize declare)
+(defpointer other-releases releases)
 (defpointer package packages)
 (defpointer partition-rest-and-keyword-args system-utilities)
 (defpointer pe-table extend-pe-table)
