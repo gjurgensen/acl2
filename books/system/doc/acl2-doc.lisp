@@ -822,20 +822,16 @@
  Regents of the University of Texas, authored by Matt Kaufmann and J Strother
  Moore.</p>
 
- <p> This manual contains
- <see topic='@(url installation)'>installation instructions</see>,
- <see topic='@(url acl2-tutorial)'>tutorials</see>,
- and @(see acknowledgments), as well as
- information about <see topic='@(url mailing-lists)'>mailing lists</see>,
- related @(see publications), and <see topic='@(url workshops)'>ACL2 Workshops
- </see>.</p>
+ <p>This manual contains <see topic='@(url installation)'>installation
+ instructions</see>, <see topic='@(url acl2-tutorial)'>tutorials</see>, and
+ @(see acknowledgments), as well as information about <see topic='@(url
+ mailing-lists)'>mailing lists</see>, related @(see publications), and <see
+ topic='@(url workshops)'>ACL2 Workshops</see>.</p>
 
- <p>See the <a href='http://www.cs.utexas.edu/users/moore/acl2/'>ACL2 home
- page</a> for information about seminars and about other ACL2 releases.
- </p>
-
- <p>See @(see documentation) for how to access the ACL2+Books User's
- Manual.</p>
+ <p>See @(see documentation) for how to access the ACL2+Books User's Manual.
+ See @(see releases) for information about past ACL2 releases.  See the <a
+ href='http://www.cs.utexas.edu/users/moore/acl2/'>ACL2 home page</a> for other
+ information, including seminars.</p>
 
  <p>For statistics on ACL2 code size, see file @('doc/acl2-code-size.txt').</p>")
 

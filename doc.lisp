@@ -1630,12 +1630,12 @@ Subtopics
   This manual contains installation instructions (see [INSTALLATION]),
   tutorials (see [ACL2-TUTORIAL]), and [acknowledgments], as well as
   information about mailing lists (see [MAILING-LISTS]), related
-  publications, and ACL2 Workshops .
-
-  See the {ACL2 home page | http://www.cs.utexas.edu/users/moore/acl2/}
-  for information about seminars and about other ACL2 releases.
+  publications, and ACL2 Workshops.
 
   See [documentation] for how to access the ACL2+Books User's Manual.
+  See [releases] for information about past ACL2 releases.  See the
+  {ACL2 home page | http://www.cs.utexas.edu/users/moore/acl2/} for
+  other information, including seminars.
 
   For statistics on ACL2 code size, see file [47mdoc/acl2-code-size.txt[0m.
 
