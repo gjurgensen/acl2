@@ -13888,8 +13888,7 @@ Building the manual
   viewing, you probably [31;1mdon't need to build it yourself[0m because you
   can just {download | download/} a copy.  If for some reason you do
   want to build the manual yourself, you should be able to do so as
-  follows, provided you have installed glucose.  (That requirement
-  might be eliminated in the future.)
+  follows.
 
     $ cd /path/to/acl2-sources/books
     $ make manual -j 4
