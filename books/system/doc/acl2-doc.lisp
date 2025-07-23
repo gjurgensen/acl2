@@ -10946,8 +10946,7 @@ way to split up large ACL2 developments into separate modules."
  <p>If you just want to get a copy of the ACL2+Books manual for local viewing,
  you probably <b>don't need to build it yourself</b> because you can just <a
  href='download/'>download</a> a copy.  If for some reason you do want to build
- the manual yourself, you should be able to do so as follows, provided you have
- installed glucose.  (That requirement might be eliminated in the future.)</p>
+ the manual yourself, you should be able to do so as follows.</p>
 
  @({
      $ cd /path/to/acl2-sources/books
