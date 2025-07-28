@@ -822,14 +822,16 @@
  Regents of the University of Texas, authored by Matt Kaufmann and J Strother
  Moore.</p>
 
- <p>See the <a href='http://www.cs.utexas.edu/users/moore/acl2/'>ACL2 home
- page</a> for additional information including tutorials, @(see installation)
- instructions, <see topic='@(url mailing-lists)'> mailing lists</see>. related
- @(see publications), ACL2 workshops and seminars, @(see acknowledgments), and
- other ACL2 releases.</p>
+ <p>This manual contains <see topic='@(url installation)'>installation
+ instructions</see>, <see topic='@(url acl2-tutorial)'>tutorials</see>, and
+ @(see acknowledgments), as well as information about <see topic='@(url
+ mailing-lists)'>mailing lists</see>, related @(see publications), and <see
+ topic='@(url workshops)'>ACL2 Workshops</see>.</p>
 
- <p>See @(see documentation) for how to access the ACL2+Books User's
- Manual.</p>
+ <p>See @(see documentation) for how to access the ACL2+Books User's Manual.
+ See @(see releases) for information about past ACL2 releases.  See the <a
+ href='http://www.cs.utexas.edu/users/moore/acl2/'>ACL2 home page</a> for other
+ information, including seminars.</p>
 
  <p>For statistics on ACL2 code size, see file @('doc/acl2-code-size.txt').</p>")
 
@@ -3296,7 +3298,7 @@
 ;   TIDBITS
 ;   TIPS
 
-  :parents (start-here)
+  :parents (start-here about-acl2)
   :short "Tutorial introduction to ACL2"
   :long "<p>To learn about ACL2, read at least the following two links.</p>
 
@@ -10940,8 +10942,7 @@ way to split up large ACL2 developments into separate modules."
  <p>If you just want to get a copy of the ACL2+Books manual for local viewing,
  you probably <b>don't need to build it yourself</b> because you can just <a
  href='download/'>download</a> a copy.  If for some reason you do want to build
- the manual yourself, you should be able to do so as follows, provided you have
- installed glucose.  (That requirement might be eliminated in the future.)</p>
+ the manual yourself, you should be able to do so as follows.</p>
 
  @({
      $ cd /path/to/acl2-sources/books
@@ -13065,30 +13066,6 @@ way to split up large ACL2 developments into separate modules."
  the ACL2 community.  It is to encourage this evolution that @('brr@') provides
  access to the @('*')'d data.</p>")
 
-(defxdoc building-acl2
-  :parents (about-acl2)
-  :short "How to build an ACL2 executable"
-  :long "<p>This topic summarizes steps for building an ACL2 executable.  For
- more details, see @(see installation).</p>
-
- <p>To build an ACL2 executable, submit the following command while standing in
- the main ACL2 directory, where @('<my-lisp>') invokes your Lisp
- executable (default: @('ccl')).</p>
-
- @({
- make LISP=<my-lisp>
- })
-
- <p>You should find \"Initialization SUCCEEDED.\" near the end of the log.
- Note: There may be ACL2 warnings, for example: \"ACL2 Warning [Skip-proofs]
- in....\".  These may be safely ignored.</p>
-
- <p>Note that you will want to certify @(see books) in order to take full
- advantage of ACL2.  See @(see books-certification).</p>
-
- <p>See @(see save-exec) for how to build an ACL2 executable from a state
- resulting from the running of specified @(see command)s.</p>")
-
 (defxdoc built-in-clause
   :parents (rule-classes)
   :short "To build a @(see clause) into the simplifier"
@@ -13931,7 +13908,7 @@ way to split up large ACL2 developments into separate modules."
  the inferiors are moved to new directories.</p>")
 
 (defxdoc ccl-installation
-  :parents (building-acl2)
+  :parents (obtaining-common-lisp)
   :short "Installing Clozure Common Lisp (CCL)"
   :long "<p>For those who use ACL2 built on CCL as the host Common Lisp
  implementation, it has been common practice to use the latest GitHub version
@@ -13960,16 +13937,7 @@ way to split up large ACL2 developments into separate modules."
 
  <p>One of the links listed above should generally suffice.  But if you
  would like additional information on CCL installation and implementation, see
- @(see ccl-installation-extra).</p>
-
- <p>Note that ACL2's @(see hons-enabled) features are optimized for 64-bit CCL.
- Some large developments may even fail with 32-bit CCL; so for CCL, the 64-bit
- version is preferred.  To check if your CCL is a 64-bit CCL, evaluate the
- following expression in your CCL; the result should be @('YES').</p>
-
- @({
- #+x86_64 'yes #-x86_64 'no
- })")
+ @(see ccl-installation-extra).</p>")
 
 (defxdoc ccl-installation-extra
   :parents (ccl-installation)
@@ -19374,6 +19342,9 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
  tested.  If this @('make') command does not work for you, see the instructions
  below for &ldquo;Building an executable image on other than a Unix-like
  system&rdquo;.</p>
+
+ <p>See @(see save-exec) for how to build an ACL2 executable from a state
+ resulting from the running of specified @(see command)s.</p>
 
  <h3>Building an executable image on other than a Unix-like system</h3>
 
@@ -53988,7 +53959,7 @@ tables in the current Hons Space."
  })")
 
 (defxdoc installation
-  :parents (acl2)
+  :parents (acl2 about-acl2)
   :short "Installing ACL2"
   :long "<p>See the @(see installation-instructions) for steps to install ACL2.</p>
 
@@ -54104,8 +54075,12 @@ tables in the current Hons Space."
  <li>Compile ACL2:
 
  @({
- make LISP=<path_to_your_lisp_executable>
+ make LISP=<your_command_to_run_lisp>
  })
+
+ where @('<your_command_to_run_lisp>') is a command that runs
+ your selected Common LISP and is not merely a shell alias. The
+ default for @('<your_command_to_run_lisp>') is @('ccl').
 
  <b>Note:</b> You will need GNU Make (preferably newer than Version 3.82).
 
@@ -70638,7 +70613,7 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
  </ul>")
 
 (defxdoc mailing-lists
-  :parents (acl2)
+  :parents (acl2 about-acl2 community)
   :short "Mailing lists for ACL2 users"
   :long "<p>There are the following mailing lists for ACL2 users.  You can
  post messages to these lists only if you are a member, but anyone can view the
@@ -70675,7 +70650,12 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
  </ul></p>
 
  <p>Finally, please report bugs in ACL2 to
- <a href='mailto:kaufmann@cs.utexas.edu'>Matt Kaufmann</a>.</p>")
+ <a href='mailto:kaufmann@cs.utexas.edu'>Matt Kaufmann</a>.</p>
+
+ <p>See @(see community) for ways to connect with other ACL2 users,
+ get help with ACL2, and contribute to improving ACL2 and its
+ @(see community-books).</p>
+ ")
 
 
 (defxdoc make
@@ -109581,6 +109561,19 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  implementations, as listed alphabetically below.  The most commonly-used of
  these are SBCL and CCL, which can be obtained without charge.</p>
 
+ <p>Regardless of which Common Lisp you choose, it is highly recommended that
+ you install a 64-bit implementation.  While 32-bit Lisps are supported by the
+ core ACL2 system, using a 32-bit Lisp may result in reduced performance as
+ well as certification failures for certain @(see community-books).  If you are
+ unsure whether your installed Common Lisp is 64-bit or not, try running the
+ following:</p>
+
+  @({
+  ;; If you are in an ACL2 REPL, first do :q to exit to Common Lisp.
+  ;; Evaluates to t if in a 64-bit Lisp.
+  (>= most-positive-fixnum (1- (expt 2 60)))
+  })
+
  <h3>Allegro Common Lisp</h3>
 
  <p><a href='https://franz.com/'>Allegro Common Lisp</a> is a commercial
@@ -109614,7 +109607,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>Follow the <a href='https://cmucl.org/download.html'>Download</a> link on
  <a href='https://cmucl.org'>the CMUCL website</a> to obtain CMUCL.  It has
  been maintained for many years, but it generally runs ACL2 more slowly than
- most other implementations.</p>
+ most other implementations.  At the time of writing (July, 2025), CMUCL does
+ not offer a 64-bit version.</p>
 
  <h3>GNU Common Lisp (GCL)</h3>
 
@@ -128416,6 +128410,72 @@ work on <tt>(q x)</tt>.</p>
  <p>The current version of ACL2 is the value of the constant @('(@
  acl2-version)').</p>")
 
+(defxdoc releases
+  :parents (about-acl2)
+  :short "ACL2 releases"
+  :long "<p>The current ACL2 release on the <a
+ href='http://www.cs.utexas.edu/users/moore/acl2/index.html'>ACL2 home page</a>
+ is Version 8.6; see @(see note-8-6) for release notes.</p>
+
+ <p>Below is a list of past releases and their corresponding past ACL2 home
+ pages.  (Note: Some older versions of the manuals have been made unreadable to
+ avoid potential security issues.)</p>
+
+ <ul>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v8-5/index.html'>Version 8.5 (July, 2022)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v8-4/index.html'>Version 8.4 (August, 2021)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v8-3/index.html'>Version 8.3 (April, 2020)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v8-2/index.html'>Version 8.2 (May, 2019)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v8-1/index.html'>Version 8.1 (September, 2018)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v8-0/index.html'>Version 8.0 (December, 2017)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v7-4/index.html'>Version 7.4 (March, 2017)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v7-3/index.html'>Version 7.3 (December, 2016)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v7-2/index.html'>Version 7.2 (January, 2016)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v7-1/index.html'>Version 7.1 (May, 2015)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v7-0/index.html'>Version 7.0 (January, 2015)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v6-5/index.html'>Version 6.5 (August, 2014)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v6-4/index.html'>Version 6.4 (January, 2014)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v6-3/index.html'>Version 6.3 (October, 2013)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v6-2/index.html'>Version 6.2 (June, 2013)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v6-1/index.html'>Version 6.1 (February, 2013)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v6-0/index.html'>Version 6.0 (December, 2012)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v5-0/index.html'>Version 5.0 (August, 2012)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v4-3/index.html'>Version 4.3 (July, 2011)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v4-2/index.html'>Version 4.2 (January, 2011)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v4-1/index.html'>Version 4.1 (September, 2010)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v4-0/index.html'>Version 4.0 (July, 2010)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v3-6/new/v3-6-1/index.html'>Version 3.6.1 (September, 2009)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v3-6/index.html'>Version 3.6 (August, 2009)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v3-5/index.html'>Version 3.5 (May, 2009)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v3-4/index.html'>Version 3.4 (August, 2008)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v3-3/index.html'>Version 3.3 (November, 2007)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v3-2/new/v3-2-1/index.html'>Version 3.2.1 (June, 2007)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v3-2/index.html'>Version 3.2 (April, 2007)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v3-1/index.html'>Version 3.1 (December, 2006)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v3-0/new/v3-0-1/index.html'>Version 3.0.1 (August, 2006)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v3-0/index.html'>Version 3.0 (June, 2006)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v2-9/new/v2-9-4/index.html'>Version 2.9.4 (January, 2006)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v2-9/new/v2-9-3/index.html'>Version 2.9.3 (August, 2005)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v2-9/new/v2-9-2/index.html'>Version 2.9.2 (April, 2005)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v2-9/new/v2-9-1/index.html'>Version 2.9.1 (December, 2004)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v2-9/index.html'>Version 2.9 (October, 2004)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v2-8/index.html'>Version 2.8 (March, 2004)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v2-7/index.html'>Version 2.7 (November, 2002)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v2-6/index.html'>Version 2.6 (November, 2001)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v2-5/index.html'>Version 2.5 (June, 2000)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v2-4/index.html'>Version 2.4 (August, 1999)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v2-3/index.html'>Version 2.3 (October, 1998)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v2-2/index.html'>Version 2.2 (August, 1998)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v2-1/index.html'>Version 2.1 (December, 1997)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v2-0/index.html'>Version 2.0 (July, 1997)</a></li>
+ <li><a href='http://www.cs.utexas.edu/users/moore/acl2/v1-9/acl2-doc.html'>Version 1.9 (Fall, 1996)</a></li>
+ </ul>
+
+ <p><b>Note</b>: The ACL2 Home Pages for versions between 5.0 and 7.0, listed
+ above, did not directly include the Community Books, which were distributed
+ separately.  You may find the books for those versions at <tt><a
+ href='http://acl2.org/books-pre-7.0/'>http://acl2.org/books-pre-7.0/</a></tt>.</p>")
+
 (defxdoc rem
   :parents (numbers acl2-built-ins)
   :short "Remainder using @(tsee truncate)"
@@ -133508,7 +133568,7 @@ work on <tt>(q x)</tt>.</p>
 ; See sbcl-installation-brief for a comment about material formerly in
 ; installation/requirements.html.
 
-  :parents (building-acl2)
+  :parents (obtaining-common-lisp)
   :short "Installing Steel Bank Common Lisp (SBCL)"
   :long "<p>SBCL is available from <tt><a
  href='https://www.sbcl.org'>https://www.sbcl.org</a></tt>.  You can of course
@@ -133707,7 +133767,7 @@ work on <tt>(q x)</tt>.</p>
 
 |#
 
-  :parents (building-acl2)
+  :parents (obtaining-common-lisp)
   :short "Installing Steel Bank Common Lisp (SBCL)"
   :long "<p>The topic @(see sbcl-installation) contains full installation
  instructions for SBCL.  The present topic contains abbreviated instructions
@@ -162270,8 +162330,9 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
 
  <li>Use a Virtual Machine platform, such as VMware Player (free for
  non-commercial use) or Oracle Virtualbox (free even for commercial
- use) to install Linux, and then follow the normal @(see installation)
- instructions to install ACL2.  As of 2014, at least a couple of our
+ use) to install Linux, and then follow the normal
+ @(see installation-instructions) to install ACL2.  As of 2014, at
+ least a couple of our
  power users are very happy with this solution, as it provides
  first-class access to utilities relevant to maintaining the ACL2
  system and books (like GNU Make and perl).</li>
@@ -162279,8 +162340,8 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
  <li>Set up <a
  href='https://en.wikipedia.org/wiki/Windows_Subsystem_for_Linux'>Windows
  Subsystem for Linux</a> (WSL) on a 64-bit version of Windows 10 (or later,
- once available).  Within that subsystem, follow the setup and @(see
- installation) instructions for ACL2. See the below section regarding the ACL2
+ once available).  Within that subsystem, follow the normal @(see
+ installation-instructions) for ACL2. See the below section regarding the ACL2
  Sedan Windows installation instructions for more info, as that involves
  installing the ACL2 Sedan in WSL on Windows.</li>
 
@@ -172939,6 +173000,7 @@ expand function call at the current subterm, without simplifying"
 (defpointer open-output-channel io)
 (defpointer open-output-channel-p io)
 (defpointer optimize declare)
+(defpointer other-releases releases)
 (defpointer package packages)
 (defpointer partition-rest-and-keyword-args system-utilities)
 (defpointer pe-table extend-pe-table)
