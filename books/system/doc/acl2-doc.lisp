@@ -7758,7 +7758,11 @@ and @(tsee include-book)"
  stobj"
   :long "<p>For an illustration of @('attach-stobj'), see @(see
  community-books) directory @('books/demos/attach-stobj/'), in particular file
- @('README.txt') in that directory.</p>
+ @('README.txt') in that directory.  An overview of the subject of this topic
+ may be found in the paper, <a
+ href='https://cgi.cse.unsw.edu.au/~eptcs/paper.cgi?ACL2in2025.7'>&ldquo;Extended
+ Abstract: Mutable Objects with Several Implementations&rdquo;</a> by Matt
+ Kaufmann, Yahya Sohail, and Warren A. Hunt Jr.</p>
 
  <p>This topic assumes familiarity with abstract @(see stobj)s; see @(see
  defabsstobj).  It documents a way to modify the foundation and primitives of
@@ -21184,6 +21188,7 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
     :recognizer recognizer
     :creator creator
     :corr-fn corr-fn
+    :corr-fn-exists corr-fn-exists
     :congruent-to congruent-to
     :non-executable non-executable
     :protect-default protect-default
@@ -21243,6 +21248,10 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
  correspondence theorems).  The default for @('corr-fn') is obtained by adding
  the suffix @('\"$CORR\"') to @('name').</p>
 
+ <p>@('Corr-fn-exists') is a Boolean with default @('nil'), which will
+ generally serve well.  See @(see stobj-attachment-restrictions) for a
+ discussion of this argument.</p>
+
  <p>@('Congruent-to') should either be @('nil') (the default) or the name of an
  abstract stobj previously introduced (by @(tsee defabsstobj)).  In the latter
  case, the current and previous abstract stobj should have the same
@@ -21270,9 +21279,10 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
  <p>An important aspect of the @('congruent-to') parameter is that if it is not
  @('nil'), then the checks for lemmas &mdash; @('{CORRESPONDENCE}'),
  @('{GUARD-THM}'), and @('{PRESERVED}') &mdash; are omitted.  Thus, the values
- of keyword @(':CORR-FN'), and the values of keywords @(':CORRESPONDENCE'),
- @(':GUARD-THM'), and @(':PRESERVED') in each export (as we discuss next), are
- irrelevant; they are not inferred and they need not be supplied.</p>
+ of keywords @(':CORR-FN') and @(':CORR-FN-EXISTS'), and the values of keywords
+ @(':CORRESPONDENCE'), @(':GUARD-THM'), and @(':PRESERVED') in each export (as
+ we discuss next), are irrelevant; they are not inferred and they need not be
+ supplied.</p>
 
  <p>The value of @(':EXPORTS') is a non-empty true list.  Each @('ei') is a
  function spec (for an exported function).  The valid keywords are @(':LOGIC'),
@@ -108664,6 +108674,16 @@ it."
  Thanks to Sol Swords for reporting this bug, including an example and analysis
  of possible fixes in his report.</p>
 
+ <p>Fixed a soundness bug due to the interaction of @(see stobj)s and @(tsee
+ defattach).  The fundamental problem was that @('defattach') events can cause
+ a stobj recognizer to become false; see @(see community-book)
+ @('books/system/tests/stobj-attach-unsoundness.lisp').  The solution is to
+ disallow attachments for certain supporters of stobj primitives; see @(see
+ stobj-attachment-restrictions).  Thanks to Sol Swords for reporting the bug,
+ analyzing it quite thoroughly, contributing the book mentioned above,
+ modifying other books as necessary, and providing preliminary code to fix the
+ bug, and for helpful conversations.</p>
+
  <p>A Lisp error is now avoided when saving event-data (see @(see
  saving-event-data) and submitting certain ill-formed attempts at @(see
  events).  Thanks to Eric Smith for sending the following example.</p>
@@ -142764,6 +142784,89 @@ work on <tt>(q x)</tt>.</p>
 
  <p>But we are getting ahead of ourselves.  To start the stobj tour recommended
  earlier in this topic, see @(see stobj-example-1).</p>")
+
+(defxdoc stobj-attachment-restrictions
+  :parents (ld)
+  :short "Restrictions on attachments to supporters of @(see stobj) primitives"
+  :long "<p>This topic assumes that the reader is familiar with the basics of
+ @(tsee defattach) and @(see stobj)s (which are introduced by @(tsee defstobj)
+ and @(tsee defabsstobj)).  It concerns restrictions that disallow the use of
+ @(tsee defattach) on <i>supporters</i> of @(see stobj) recognizers and, for
+ @(tsee defabsstobj), other stobj functions.  Here, a <i>supporter</i> of a
+ function symbol @('f') is a function symbol used in the event that introduces
+ @('f') or, recursively, is a supporter of any of those function symbols.</p>
+
+ <p>The @(see community-book)
+ @('books/system/tests/stobj-attach-unsoundness.lisp'), developed by Sol
+ Swords, illustrates a soundness bug that existed through ACL2 Version_8.6.
+ That book shows several ways that @('nil') could be proved by using @(tsee
+ defattach) to falsify stobj invariants &mdash; either the recognizer or, for
+ abstract stobjs, the correspondence function.</p>
+
+ <p>Those proofs of @('nil') no longer succeed because of the following two
+ restrictions now imposed by ACL2.</p>
+
+ <ol>
+
+ <li>No supporter of a stobj recognizer is allowed to have an attachment.</li>
+
+ <li>For a @(tsee defabsstobj) event, there must be a correspondence function
+ whose supporters are not allowed to have attachments.</li>
+
+ </ol>
+
+ <p>The second of these criteria may be met by the @('defabsstobj') event in
+ <i>either</i> of the following two ways.</p>
+
+ <blockquote>
+
+ <p>Keyword @(':CORR-FN-EXISTS') has value @('t'), and the value of
+ @(':CORR-FN') is a function symbol whose supporters are not allowed to have
+ attachments.</p>
+
+ <p><b>OR</b></p>
+
+ <p>Keyword @(':CORR-FN-EXISTS') has value @('nil') (the default), and the
+ supporters of any stobj primitive (the creator and exports, in addition to the
+ recognizer) are not allowed to have attachments.</p>
+
+ </blockquote>
+
+ <p>Note that in the first sub-case, where keyword argument
+ @(':CORR-FN-EXISTS') has value @('t'), the definition of the @(':CORR-FN')
+ symbol must be non-@(see local).  In the second sub-case, where keyword
+ argument @(':CORR-FN-EXISTS') has value @('nil'), the notion of
+ &ldquo;supporter&rdquo; is understood to include any function symbol that is a
+ supporter of either the @(':LOGIC') or the @(':EXEC') function of the stobj
+ primitive.</p>
+
+ <p>We conclude with an optional remark (for those interested in theory) that
+ discusses how the two sub-cases above are related.  Namely, for an abstract
+ stobj @('st'), there is always an implicit correspondence function definable
+ in terms of the primitives as follows.  A concrete state @('c_k') and abstract
+ state @('a_k') correspond if there are corresponding sequences of values
+ @('c_i') and @('a_i') (i &le; k) produced by corresponding applications of
+ primitives, as follows.</p>
+
+ <ul>
+
+ <li>@('c_0') and @('a_0') are the initial concrete (foundational) and abstract
+ copies of @('st'), that is, produced by applying the @(':EXEC') and
+ @(':LOGIC') creator of @('st'), respectively.</li>
+
+ <li>For all i &lt; k, there is a stobj export @('fi') returning @('st') with
+ @(':EXEC') function @('fi_E') and @(':LOGIC') function @('fi_L') and
+ well-guarded parameter lists @('p_E') and @('p_L') for @('fi'), such that the
+ following conditions hold.  The lists @('p_E') and @('p_L') agree except in
+ the @('st') position, which has @('c_i') for @('p_E') and @('a_i') for
+ @('p_L').  Then @('c_j') and @('a_j') are returned by the respective calls of
+ @('fi_E') on @('p_E') and @('fi_L') on @('p_L').</li>
+
+ </ul>
+
+ <p>For theoretical details pertaining to this topic, see the long comment,
+ &ldquo;Essay on the Correctness of Abstract Stobjs&rdquo;, in the ACL2 source
+ code.</p>")
 
 (defxdoc stobj-example-1
   :parents (stobj)
