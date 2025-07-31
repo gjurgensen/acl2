@@ -2949,7 +2949,7 @@
           \"books/system/doc/rendered-doc-combined.lsp\")
   'TOP
   \"ACL2+Books Manual\"
-  \"https://www.cs.utexas.edu/users/moore/acl2/manuals/current/rendered-doc-combined.lsp.gz\"
+  \"https://acl2.org/doc/rendered-doc-combined.lsp.gz\"
   (concat *acl2-sources-dir* \"TAGS-acl2-doc\")
   (concat *acl2-sources-dir* \"TAGS\"))
 
@@ -3108,8 +3108,7 @@
  version</a>, then to use the ACL2+Books Manual you will need an extra file.
  You can build this file yourself, as described below but you may prefer to
  download it: for example, when you start ACL2-Doc, you may be given the option
- of downloading <a
- href='https://www.cs.utexas.edu/users/moore/acl2/manuals/current/rendered-doc-combined.lsp.gz'>a
+ of downloading <a href='https://acl2.org/doc/rendered-doc-combined.lsp.gz'>a
  tarball for the latest ``bleeding edge'' copy</a> and extracting into
  directory @('system/doc/') of your community books directory.  Indeed, the
  system will do all this for you if you answer @('y') to that query.
@@ -41530,7 +41529,7 @@ current fast alists."
 
  <p><b>Q</b>.  How do I find something in the <b>ACL2 documentation</b>?
  <b>A</b>.  Try the ``Jump to'' or ``Search'' boxes at the <a
- href='http://www.cs.utexas.edu/users/moore/acl2/current/combined-manual/index.html'>ACL2+Books Manual</a>.</p>
+ href='https://acl2.org/doc/index.html'>ACL2+Books Manual</a>.</p>
 
  <p><b>Q</b>.  How does the theorem prover work?  <b>A</b>.  We really don't
  think you need to know much about the inner workings of the prover to become
@@ -108766,6 +108765,12 @@ it."
  however, when certifying books.  Thanks to Eric Smith for a discussion leading
  to this change.</p>
 
+ <p>References to the old &ldquo;bleeding edge&rdquo; manual
+ (<a
+ href='https://www.cs.utexas.edu/users/moore/acl2/manuals/latest/'>https://www.cs.utexas.edu/users/moore/acl2/manuals/latest/'</a>)
+ have been replaced by references to the new one
+ (<a href='https://acl2.org/doc/'>https://acl2.org/doc/</a>).</p>
+
  <h3>EMACS Support</h3>
 
  <h3>Experimental Versions</h3>
@@ -141458,7 +141463,7 @@ work on <tt>(q x)</tt>.</p>
  Books</a> is a repository of many projects, processed virtually continuously
  by virtue of constituting the ACL2 regression suite.  Many of those projects
  are descried in the <a
- href='http://www.cs.utexas.edu/users/moore/acl2/manuals/latest/index.html'>ACL2+books
+ href='https://acl2.org/doc/index.html'>ACL2+books
  online manual</a>.</li>
 
  </ul></li>
