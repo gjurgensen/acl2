@@ -5294,7 +5294,7 @@ Silent loading of ACL2 customization files
              \"books/system/doc/rendered-doc-combined.lsp\")
      'TOP
      \"ACL2+Books Manual\"
-     \"https://www.cs.utexas.edu/users/moore/acl2/manuals/current/rendered-doc-combined.lsp.gz\"
+     \"https://acl2.org/doc/rendered-doc-combined.lsp.gz\"
      (concat *acl2-sources-dir* \"TAGS-acl2-doc\")
      (concat *acl2-sources-dir* \"TAGS\"))
 
@@ -5439,11 +5439,11 @@ Silent loading of ACL2 customization files
       to download it: for example, when you start ACL2-Doc, you may
       be given the option of downloading {a tarball for the latest
       ``bleeding edge'' copy |
-      https://www.cs.utexas.edu/users/moore/acl2/manuals/current/rendered-doc-combined.lsp.gz}
-      and extracting into directory [47msystem/doc/[0m of your community
-      books directory.  Indeed, the system will do all this for you
-      if you answer [47my[0m to that query.  Alternatively, you can insist
-      on a download of a ``bleeding edge'' version by using the `[47mD[0m'
+      https://acl2.org/doc/rendered-doc-combined.lsp.gz} and
+      extracting into directory [47msystem/doc/[0m of your community books
+      directory.  Indeed, the system will do all this for you if you
+      answer [47my[0m to that query.  Alternatively, you can insist on a
+      download of a ``bleeding edge'' version by using the `[47mD[0m'
       command.  However, if you prefer to browse the ACL2 User's
       Manual (without the books), you can put the following form into
       your [47m~/.emacs[0m file, above the form that loads the code for
@@ -45177,7 +45177,7 @@ Subtopics
 
   [31;1mQ[0m.  How do I find something in the [31;1mACL2 documentation[0m?  [31;1mA[0m.  Try the
   ``Jump to'' or ``Search'' boxes at the {ACL2+Books Manual |
-  http://www.cs.utexas.edu/users/moore/acl2/current/combined-manual/index.html}.
+  https://acl2.org/doc/index.html}.
 
   [31;1mQ[0m.  How does the theorem prover work?  [31;1mA[0m.  We really don't think you
   need to know much about the inner workings of the prover to become
@@ -105930,6 +105930,12 @@ Changes at the System Level
   books.  Thanks to Eric Smith for a discussion leading to this
   change.
 
+  References to the old ``bleeding edge'' manual
+  ({https://www.cs.utexas.edu/users/moore/acl2/manuals/latest/' |
+  https://www.cs.utexas.edu/users/moore/acl2/manuals/latest/}) have
+  been replaced by references to the new one ({https://acl2.org/doc/
+  | https://acl2.org/doc/}).
+
 
 EMACS Support
 
@@ -141182,7 +141188,7 @@ Subtopics
           continuously by virtue of constituting the ACL2 regression
           suite.  Many of those projects are descried in the
           {ACL2+books online manual |
-          http://www.cs.utexas.edu/users/moore/acl2/manuals/latest/index.html}.
+          https://acl2.org/doc/index.html}.
 
     * [31;1mProgramming with ACL2[0m is introduced gently in the documentation
       topic, [gentle-introduction-to-ACL2-programming].
