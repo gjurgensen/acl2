@@ -5294,7 +5294,7 @@ Silent loading of ACL2 customization files
              \"books/system/doc/rendered-doc-combined.lsp\")
      'TOP
      \"ACL2+Books Manual\"
-     \"https://www.cs.utexas.edu/users/moore/acl2/manuals/current/rendered-doc-combined.lsp.gz\"
+     \"https://acl2.org/doc/rendered-doc-combined.lsp.gz\"
      (concat *acl2-sources-dir* \"TAGS-acl2-doc\")
      (concat *acl2-sources-dir* \"TAGS\"))
 
@@ -5439,11 +5439,11 @@ Silent loading of ACL2 customization files
       to download it: for example, when you start ACL2-Doc, you may
       be given the option of downloading {a tarball for the latest
       ``bleeding edge'' copy |
-      https://www.cs.utexas.edu/users/moore/acl2/manuals/current/rendered-doc-combined.lsp.gz}
-      and extracting into directory [47msystem/doc/[0m of your community
-      books directory.  Indeed, the system will do all this for you
-      if you answer [47my[0m to that query.  Alternatively, you can insist
-      on a download of a ``bleeding edge'' version by using the `[47mD[0m'
+      https://acl2.org/doc/rendered-doc-combined.lsp.gz} and
+      extracting into directory [47msystem/doc/[0m of your community books
+      directory.  Indeed, the system will do all this for you if you
+      answer [47my[0m to that query.  Alternatively, you can insist on a
+      download of a ``bleeding edge'' version by using the `[47mD[0m'
       command.  However, if you prefer to browse the ACL2 User's
       Manual (without the books), you can put the following form into
       your [47m~/.emacs[0m file, above the form that loads the code for
@@ -10872,7 +10872,11 @@ Subtopics
 
   For an illustration of [47mattach-stobj[0m, see [community-books] directory
   [47mbooks/demos/attach-stobj/[0m, in particular file [47mREADME.txt[0m in that
-  directory.
+  directory.  An overview of the subject of this topic may be found
+  in the paper, {``Extended Abstract: Mutable Objects with Several
+  Implementations'' |
+  https://cgi.cse.unsw.edu.au/~eptcs/paper.cgi?ACL2in2025.7} by Matt
+  Kaufmann, Yahya Sohail, and Warren A. Hunt Jr.
 
   This topic assumes familiarity with abstract [stobj]s; see
   [defabsstobj].  It documents a way to modify the foundation and
@@ -24558,6 +24562,7 @@ Subtopics
       :recognizer recognizer
       :creator creator
       :corr-fn corr-fn
+      :corr-fn-exists corr-fn-exists
       :congruent-to congruent-to
       :non-executable non-executable
       :protect-default protect-default
@@ -24615,6 +24620,10 @@ Subtopics
       correspondence theorems).  The default for [47mcorr-fn[0m is obtained
       by adding the suffix [47m\"$CORR\"[0m to [47mname[0m.
 
+      [47mCorr-fn-exists[0m is a Boolean with default [47mnil[0m, which will generally
+      serve well.  See [stobj-attachment-restrictions] for a
+      discussion of this argument.
+
       [47mCongruent-to[0m should either be [47mnil[0m (the default) or the name of an
       abstract stobj previously introduced (by [47m[defabsstobj][0m).  In
       the latter case, the current and previous abstract stobj should
@@ -24643,10 +24652,10 @@ Subtopics
       An important aspect of the [47mcongruent-to[0m parameter is that if it is
       not [47mnil[0m, then the checks for lemmas --- [47m{CORRESPONDENCE}[0m,
       [47m{GUARD-THM}[0m, and [47m{PRESERVED}[0m --- are omitted.  Thus, the values
-      of keyword [47m:CORR-FN[0m, and the values of keywords
-      [47m:CORRESPONDENCE[0m, [47m:GUARD-THM[0m, and [47m:PRESERVED[0m in each export (as
-      we discuss next), are irrelevant; they are not inferred and
-      they need not be supplied.
+      of keywords [47m:CORR-FN[0m and [47m:CORR-FN-EXISTS[0m, and the values of
+      keywords [47m:CORRESPONDENCE[0m, [47m:GUARD-THM[0m, and [47m:PRESERVED[0m in each
+      export (as we discuss next), are irrelevant; they are not
+      inferred and they need not be supplied.
 
       The value of [47m:EXPORTS[0m is a non-empty true list.  Each [47mei[0m is a
       function spec (for an exported function).  The valid keywords
@@ -45168,7 +45177,7 @@ Subtopics
 
   [31;1mQ[0m.  How do I find something in the [31;1mACL2 documentation[0m?  [31;1mA[0m.  Try the
   ``Jump to'' or ``Search'' boxes at the {ACL2+Books Manual |
-  http://www.cs.utexas.edu/users/moore/acl2/current/combined-manual/index.html}.
+  https://acl2.org/doc/index.html}.
 
   [31;1mQ[0m.  How does the theorem prover work?  [31;1mA[0m.  We really don't think you
   need to know much about the inner workings of the prover to become
@@ -64516,6 +64525,9 @@ Subtopics
 
   [Reset-ld-specials]
       Restores initial settings of the [47m[ld][0m specials
+
+  [Stobj-attachment-restrictions]
+      Restrictions on attachments to supporters of [stobj] primitives
 
   [Wormhole]
       [47m[ld][0m without [47m[state][0m --- a short-cut to a parallel universe")
@@ -105822,6 +105834,17 @@ Bug Fixes
   Thanks to Sol Swords for reporting this bug, including an example
   and analysis of possible fixes in his report.
 
+  Fixed a soundness bug due to the interaction of [stobj]s and
+  [47m[defattach][0m.  The fundamental problem was that [47mdefattach[0m events can
+  cause a stobj recognizer to become false; see [community-book]
+  [47mbooks/system/tests/stobj-attach-unsoundness.lisp[0m.  The solution is
+  to disallow attachments for certain supporters of stobj primitives;
+  see [stobj-attachment-restrictions].  Thanks to Sol Swords for
+  reporting the bug, analyzing it quite thoroughly, contributing the
+  book mentioned above, modifying other books as necessary, and
+  providing preliminary code to fix the bug, and for helpful
+  conversations.
+
   A Lisp error is now avoided when saving event-data (see
   [saving-event-data] and submitting certain ill-formed attempts at
   [events].  Thanks to Eric Smith for sending the following example.
@@ -105906,6 +105929,12 @@ Changes at the System Level
   points out that there may be errors, however, when certifying
   books.  Thanks to Eric Smith for a discussion leading to this
   change.
+
+  References to the old ``bleeding edge'' manual
+  ({https://www.cs.utexas.edu/users/moore/acl2/manuals/latest/' |
+  https://www.cs.utexas.edu/users/moore/acl2/manuals/latest/}) have
+  been replaced by references to the new one ({https://acl2.org/doc/
+  | https://acl2.org/doc/}).
 
 
 EMACS Support
@@ -141159,7 +141188,7 @@ Subtopics
           continuously by virtue of constituting the ACL2 regression
           suite.  Many of those projects are descried in the
           {ACL2+books online manual |
-          http://www.cs.utexas.edu/users/moore/acl2/manuals/latest/index.html}.
+          https://acl2.org/doc/index.html}.
 
     * [31;1mProgramming with ACL2[0m is introduced gently in the documentation
       topic, [gentle-introduction-to-ACL2-programming].
@@ -142558,6 +142587,78 @@ Subtopics
 
   [With-local-stobj]
       Locally bind a single-threaded object")
+ (STOBJ-ATTACHMENT-RESTRICTIONS
+  (LD)
+  "Restrictions on attachments to supporters of [stobj] primitives
+
+  This topic assumes that the reader is familiar with the basics of
+  [47m[defattach][0m and [stobj]s (which are introduced by [47m[defstobj][0m and
+  [47m[defabsstobj][0m).  It concerns restrictions that disallow the use of
+  [47m[defattach][0m on [3msupporters[0m of [stobj] recognizers and, for
+  [47m[defabsstobj][0m, other stobj functions.  Here, a [3msupporter[0m of a
+  function symbol [47mf[0m is a function symbol used in the event that
+  introduces [47mf[0m or, recursively, is a supporter of any of those
+  function symbols.
+
+  The [community-book]
+  [47mbooks/system/tests/stobj-attach-unsoundness.lisp[0m, developed by Sol
+  Swords, illustrates a soundness bug that existed through ACL2
+  Version_8.6.  That book shows several ways that [47mnil[0m could be proved
+  by using [47m[defattach][0m to falsify stobj invariants --- either the
+  recognizer or, for abstract stobjs, the correspondence function.
+
+  Those proofs of [47mnil[0m no longer succeed because of the following two
+  restrictions now imposed by ACL2.
+
+   1. No supporter of a stobj recognizer is allowed to have an attachment.
+
+   2. For a [47m[defabsstobj][0m event, there must be a correspondence function
+      whose supporters are not allowed to have attachments.
+
+  The second of these criteria may be met by the [47mdefabsstobj[0m event in
+  [3meither[0m of the following two ways.
+
+      Keyword [47m:CORR-FN-EXISTS[0m has value [47mt[0m, and the value of [47m:CORR-FN[0m is a
+      function symbol whose supporters are not allowed to have
+      attachments.
+
+      [31;1mOR[0m
+
+      Keyword [47m:CORR-FN-EXISTS[0m has value [47mnil[0m (the default), and the
+      supporters of any stobj primitive (the creator and exports, in
+      addition to the recognizer) are not allowed to have
+      attachments.
+
+  Note that in the first sub-case, where keyword argument
+  [47m:CORR-FN-EXISTS[0m has value [47mt[0m, the definition of the [47m:CORR-FN[0m symbol
+  must be non-[local].  In the second sub-case, where keyword
+  argument [47m:CORR-FN-EXISTS[0m has value [47mnil[0m, the notion of ``supporter''
+  is understood to include any function symbol that is a supporter of
+  either the [47m:LOGIC[0m or the [47m:EXEC[0m function of the stobj primitive.
+
+  We conclude with an optional remark (for those interested in theory)
+  that discusses how the two sub-cases above are related.  Namely,
+  for an abstract stobj [47mst[0m, there is always an implicit
+  correspondence function definable in terms of the primitives as
+  follows.  A concrete state [47mc_k[0m and abstract state [47ma_k[0m correspond if
+  there are corresponding sequences of values [47mc_i[0m and [47ma_i[0m (i <= k)
+  produced by corresponding applications of primitives, as follows.
+
+    * [47mc_0[0m and [47ma_0[0m are the initial concrete (foundational) and abstract
+      copies of [47mst[0m, that is, produced by applying the [47m:EXEC[0m and
+      [47m:LOGIC[0m creator of [47mst[0m, respectively.
+
+    * For all i < k, there is a stobj export [47mfi[0m returning [47mst[0m with [47m:EXEC[0m
+      function [47mfi_E[0m and [47m:LOGIC[0m function [47mfi_L[0m and well-guarded
+      parameter lists [47mp_E[0m and [47mp_L[0m for [47mfi[0m, such that the following
+      conditions hold.  The lists [47mp_E[0m and [47mp_L[0m agree except in the [47mst[0m
+      position, which has [47mc_i[0m for [47mp_E[0m and [47ma_i[0m for [47mp_L[0m.  Then [47mc_j[0m and
+      [47ma_j[0m are returned by the respective calls of [47mfi_E[0m on [47mp_E[0m and
+      [47mfi_L[0m on [47mp_L[0m.
+
+  For theoretical details pertaining to this topic, see the long
+  comment, ``Essay on the Correctness of Abstract Stobjs'', in the
+  ACL2 source code.")
  (STOBJ-EXAMPLE-1
   (STOBJ)
   "An example of the use of single-threaded objects
