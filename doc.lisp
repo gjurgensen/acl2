@@ -142595,10 +142595,10 @@ Subtopics
   [47m[defattach][0m and [stobj]s (which are introduced by [47m[defstobj][0m and
   [47m[defabsstobj][0m).  It concerns restrictions that disallow the use of
   [47m[defattach][0m on [3msupporters[0m of [stobj] recognizers and, for
-  [47m[defabsstobj][0m, other stobj functions.  Here, a [3msupporter[0m of a
-  function symbol [47mf[0m is a function symbol used in the event that
-  introduces [47mf[0m or, recursively, is a supporter of any of those
-  function symbols.
+  [47m[defabsstobj][0m, other stobj primitives that return the new stobj.
+  Here, a [3msupporter[0m of a function symbol [47mf[0m is a function symbol used
+  in the event that introduces [47mf[0m or, recursively, is a supporter of
+  any of those function symbols.
 
   The [community-book]
   [47mbooks/system/tests/stobj-attach-unsoundness.lisp[0m, developed by Sol
@@ -142626,15 +142626,16 @@ Subtopics
 
       Keyword [47m:CORR-FN-EXISTS[0m has value [47mnil[0m (the default), and the
       supporters of any stobj primitive (the creator and exports, in
-      addition to the recognizer) are not allowed to have
-      attachments.
+      addition to the recognizer) that returns the new stobj are not
+      allowed to have attachments.
 
   Note that in the first sub-case, where keyword argument
   [47m:CORR-FN-EXISTS[0m has value [47mt[0m, the definition of the [47m:CORR-FN[0m symbol
   must be non-[local].  In the second sub-case, where keyword
   argument [47m:CORR-FN-EXISTS[0m has value [47mnil[0m, the notion of ``supporter''
-  is understood to include any function symbol that is a supporter of
-  either the [47m:LOGIC[0m or the [47m:EXEC[0m function of the stobj primitive.
+  of a stobj primitive is understood to include any function symbol
+  that is a supporter of either the [47m:LOGIC[0m or the [47m:EXEC[0m function of
+  that stobj primitive.
 
   We conclude with an optional remark (for those interested in theory)
   that discusses how the two sub-cases above are related.  Namely,
@@ -142642,7 +142643,8 @@ Subtopics
   correspondence function definable in terms of the primitives as
   follows.  A concrete state [47mc_k[0m and abstract state [47ma_k[0m correspond if
   there are corresponding sequences of values [47mc_i[0m and [47ma_i[0m (i <= k)
-  produced by corresponding applications of primitives, as follows.
+  produced by corresponding applications of primitives, each of which
+  returns the new stobj, as follows.
 
     * [47mc_0[0m and [47ma_0[0m are the initial concrete (foundational) and abstract
       copies of [47mst[0m, that is, produced by applying the [47m:EXEC[0m and
@@ -142651,8 +142653,9 @@ Subtopics
     * For all i < k, there is a stobj export [47mfi[0m returning [47mst[0m with [47m:EXEC[0m
       function [47mfi_E[0m and [47m:LOGIC[0m function [47mfi_L[0m and well-guarded
       parameter lists [47mp_E[0m and [47mp_L[0m for [47mfi[0m, such that the following
-      conditions hold.  The lists [47mp_E[0m and [47mp_L[0m agree except in the [47mst[0m
-      position, which has [47mc_i[0m for [47mp_E[0m and [47ma_i[0m for [47mp_L[0m.  Then [47mc_j[0m and
+      conditions hold.  The lists [47mp_E[0m and [47mp_L[0m agree except in one
+      position,which is where [47mst[0m is returned.  The actual parameter
+      at that positioni s[47mc_i[0m for [47mp_E[0m and [47ma_i[0m for [47mp_L[0m.  Then [47mc_j[0m and
       [47ma_j[0m are returned by the respective calls of [47mfi_E[0m on [47mp_E[0m and
       [47mfi_L[0m on [47mp_L[0m.
 
