@@ -142797,9 +142797,10 @@ work on <tt>(q x)</tt>.</p>
  @(tsee defattach) and @(see stobj)s (which are introduced by @(tsee defstobj)
  and @(tsee defabsstobj)).  It concerns restrictions that disallow the use of
  @(tsee defattach) on <i>supporters</i> of @(see stobj) recognizers and, for
- @(tsee defabsstobj), other stobj functions.  Here, a <i>supporter</i> of a
- function symbol @('f') is a function symbol used in the event that introduces
- @('f') or, recursively, is a supporter of any of those function symbols.</p>
+ @(tsee defabsstobj), other stobj primitives that return the new stobj.  Here,
+ a <i>supporter</i> of a function symbol @('f') is a function symbol used in
+ the event that introduces @('f') or, recursively, is a supporter of any of
+ those function symbols.</p>
 
  <p>The @(see community-book)
  @('books/system/tests/stobj-attach-unsoundness.lisp'), developed by Sol
@@ -142833,7 +142834,8 @@ work on <tt>(q x)</tt>.</p>
 
  <p>Keyword @(':CORR-FN-EXISTS') has value @('nil') (the default), and the
  supporters of any stobj primitive (the creator and exports, in addition to the
- recognizer) are not allowed to have attachments.</p>
+ recognizer) that returns the new stobj are not allowed to have
+ attachments.</p>
 
  </blockquote>
 
@@ -142841,9 +142843,9 @@ work on <tt>(q x)</tt>.</p>
  @(':CORR-FN-EXISTS') has value @('t'), the definition of the @(':CORR-FN')
  symbol must be non-@(see local).  In the second sub-case, where keyword
  argument @(':CORR-FN-EXISTS') has value @('nil'), the notion of
- &ldquo;supporter&rdquo; is understood to include any function symbol that is a
- supporter of either the @(':LOGIC') or the @(':EXEC') function of the stobj
- primitive.</p>
+ &ldquo;supporter&rdquo; of a stobj primitive is understood to include any
+ function symbol that is a supporter of either the @(':LOGIC') or the
+ @(':EXEC') function of that stobj primitive.</p>
 
  <p>We conclude with an optional remark (for those interested in theory) that
  discusses how the two sub-cases above are related.  Namely, for an abstract
@@ -142851,7 +142853,7 @@ work on <tt>(q x)</tt>.</p>
  in terms of the primitives as follows.  A concrete state @('c_k') and abstract
  state @('a_k') correspond if there are corresponding sequences of values
  @('c_i') and @('a_i') (i &le; k) produced by corresponding applications of
- primitives, as follows.</p>
+ primitives, each of which returns the new stobj, as follows.</p>
 
  <ul>
 
@@ -142863,9 +142865,10 @@ work on <tt>(q x)</tt>.</p>
  @(':EXEC') function @('fi_E') and @(':LOGIC') function @('fi_L') and
  well-guarded parameter lists @('p_E') and @('p_L') for @('fi'), such that the
  following conditions hold.  The lists @('p_E') and @('p_L') agree except in
- the @('st') position, which has @('c_i') for @('p_E') and @('a_i') for
- @('p_L').  Then @('c_j') and @('a_j') are returned by the respective calls of
- @('fi_E') on @('p_E') and @('fi_L') on @('p_L').</li>
+ one position,which is where @('st') is returned.  The actual parameter at that
+ positioni s@('c_i') for @('p_E') and @('a_i') for @('p_L').  Then @('c_j') and
+ @('a_j') are returned by the respective calls of @('fi_E') on @('p_E') and
+ @('fi_L') on @('p_L').</li>
 
  </ul>
 
