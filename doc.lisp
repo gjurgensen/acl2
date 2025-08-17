@@ -33133,10 +33133,20 @@ Subtopics
 
   This topic assumes that you have read the introduction to [47mloop$[0m
   expressions in ACL2; see [loop$].  Here we give more complete
-  documentation on [47mDO[0m [47mloop$[0m expressions, beginning with an informal
-  introduction based largely on examples and then continuing with
-  detailed syntax and semantics.  For a discussion of proofs about
-  [47mloop$[0ms, see [stating-and-proving-lemmas-about-loop$s].
+  documentation on [47mDO[0m [47mloop$[0m expressions.  This discussion is
+  partitioned into the following sections
+
+    * INFORMAL INTRODUCTION --- examples of [47mDO[0m [47mloop$[0m expressions
+
+    * SYNTAX --- detailed discussion of the legal syntax
+
+    * SEMANTICS --- detailed discussion of how [47mDO[0m [47mloop$[0m expressions are
+      translated into calls of the general-purpose function [47m[do$][0m
+
+    * SIGNALING ERRORS --- how [47mDO[0m [47mloop$[0ms can signal errors
+
+  For a discussion of proofs about [47mloop$[0ms, see
+  [stating-and-proving-lemmas-about-loop$s].
 
   More examples of [47m[loop$][0m expressions, including [47mDO[0m [47mloop$[0ms, may be
   found in [community-book] [47mprojects/apply/loop-tests.lisp[0m.
@@ -33211,7 +33221,7 @@ INFORMAL INTRODUCTION
     ACL2 !>
 
   See [lp-section-14] of the [47mLoop$[0m Primer for some exercises in writing
-  and executing [47mDO[0m [47mLoop$[0ms (with answers in a Community Book).  But
+  and executing [47mDO[0m [47mloop$[0ms (with answers in a Community Book).  But
   remember to come back here when you get to the end of that section.
 
   [31;1mParallel Assignment Using [47mMv-setq[0m[31;1m[0m
@@ -33751,7 +33761,7 @@ SYNTAX
       [47mvar[0m if [47mvar[0m is a stobj
 
     * [47m(MV-SETQ (var0 ... varn) term)[0m for two or more distinct variables
-      [47mvari[0m, where each [47mvari[0m is declared in a [47mWITH[0m declaration or is a
+      [47mvari[0m, where each [47mvari[0m is declared in a [47mWITH[0m clause or is a
       stobj name, and [47mterm[0m is an ordinary term that returns n+1
       values, where if [47mvari[0m is a stobj then the ith value returned is
       of that type
@@ -33765,20 +33775,20 @@ SYNTAX
   We conclude this section by discussing some syntactic restrictions.
 
   The following restriction applies to [47mloop$[0m expressions meeting the
-  following two conditions: [47m:VALUES[0m specifies other than the default
-  of [47m(NIL)[0m, and there is at least one [47mloop-finish[0m expression in the
-  [47mloop$[0m body.  In that case, there must be a [47mFINALLY[0m clause that ACL2
-  recognizes as always executing a [47mreturn[0m call.  This makes sense,
-  since in Common Lisp, the value returned by a [47mloop[0m is [47mnil[0m when
-  ``falling through'' without executing a [47mreturn[0m; but [47mnil[0m would
-  violate the specified [47m:VALUES[0m in the case above.
+  following two conditions: [47m:VALUES[0m specifies something other than
+  the default of [47m(NIL)[0m, and there is at least one [47mloop-finish[0m
+  expression in the [47mloop$[0m body.  In that case, there must be a
+  [47mFINALLY[0m clause that ACL2 recognizes as always executing a [47mreturn[0m
+  call.  This makes sense, since in Common Lisp, the value returned
+  by a [47mloop[0m is [47mnil[0m when ``falling through'' without executing a
+  [47mreturn[0m; but [47mnil[0m would violate the specified [47m:VALUES[0m in the case
+  above.
 
   As noted above, assignments with [47msetq[0m and [47mmv-setq[0m may only set stobj
   variables and variables declared using [47mWITH[0m.  This restriction
   applies to the innermost [47mloop$[0m that contains the assignment.  The
-  following, for example, is illegal because the [47mWITH[0m declaration for
-  [47mx[0m is not in the [47mloop$[0m immediately above the assignment to [47mx[0m with
-  [47msetq[0m.
+  following, for example, is illegal because the [47mWITH[0m clause for [47mx[0m is
+  not in the [47mloop$[0m immediately above the assignment to [47mx[0m with [47msetq[0m.
 
     (defun do-loop-nested-outer-with-var-bad (lst)
       (loop$ with x = lst
@@ -33821,6 +33831,10 @@ SYNTAX
 
   In a function call, it is illegal for a LOOP$ expression to occur in
   a slot whose [ilk] is not [47mnil[0m.
+
+  See the section SIGNALING ERRORS, below, for how the syntax described
+  here allows for [47mDO[0m [47mloop$[0ms to manipulate [47m[stobj][0ms and [47m[state][0m,
+  including how to signal errors from within the body of the [47mloop$[0m.
 
 
 SEMANTICS
@@ -34201,6 +34215,225 @@ SEMANTICS
   [47mnew-alist[0m is [47mnil[0m, so the conjunct [47m(CONSP (CDR (ASSOC-EQ-SAFE 'X
   ALIST)))[0m from the measure lambda's guard is false, so the guard
   evaluates to [47mnil[0m.
+
+
+SIGNALING ERRORS
+
+  We explain the subtleties of error signaling from within [47mDO[0m [47mloop$[0ms by
+  example.  To illustrate the full complexity of the situation, our
+  example will involve a [47mDO[0m that is manipulating a [stobj], and we'll
+  verify the guards.  The basic idea is that we'll define a function,
+  called [47mtransaction[0m, that either detects and signals an error or
+  updates the stobj, and then we'll write a [47mDO[0m [47mloop$[0m that executes a
+  series of transactions.  In fact, you may think of the stobj as
+  representing an account that must maintain a non-negative balance
+  and the transaction as taking an integer and adding it to the
+  balance provided that doesn't produce a negative balance.  Managing
+  the signatures of the various functions in body of the [47mloop$[0m and
+  declaring the ``right'' guards takes some experience.  After we've
+  presented a correct solution we will show some plausible
+  alternatives and explain why they are unacceptable.
+
+  Recall that the standard idiom for signaling a ``soft'' error in ACL2
+  is to call the function [47m[error1][0m, usually via the macro [47m[er][0m.
+  [47mError1[0m returns an [error-triple] of the form [47m(mv t nil state)[0m.  So
+  our [47mDO[0m [47mloop$[0m will necessarily manipulate [47mstate[0m in addition to the
+  user's stobj.
+
+  To admit the functions shown below, first execute these three
+  commands.
+
+    (include-book \"projects/apply/top\" :dir :system)
+    (set-state-ok t)
+    (defstobj st (balance :type (satisfies natp) :initially 0))
+
+  Note that our stobj has just one field, named [47mbalance[0m, which must be
+  a natural number and is initially 0.  Below is the basic
+  [47mtransaction[0m function which may signal an error.  Note that two
+  unnecessary lines are commented out as explained in note [1] below.
+
+    (defun transaction (delta st state)
+      (declare (xargs :stobjs (st state)
+                      :guard (and (integerp delta)
+    ;                             (stp st)                     ; [1]
+    ;                             (state-p state)              ; [1]
+                                  (error1-state-p state))))    ; [2]
+      (cond ((< (balance st) (- delta))
+             (mv-let (erp val state)                           ; [3]
+               (er soft 'transaction
+                   \"The stobj's balance is ~x0 but the delta is ~x1, so this ~
+                    transaction is not allowed!\"
+                   (balance st)
+                   delta)
+               (declare (ignore val))
+               (mv erp st state)))
+            (t (let ((st (update-balance (+ (balance st) delta)
+                                         st)))
+                 (mv nil st state)))))
+
+  Notes on [47mtransaction[0m:
+
+    * [1] We don't need to include [47m(stp state)[0m and [47m(state-p state)[0m
+      explicitly in the [47m:guard[0m for the function because they're
+      implicitly included by the [47m:stobjs[0m declaration.
+
+    * [2] The [47m[er][0m macro expands to a call of the function [47m[error1][0m, and
+      [47merror1[0m requires that its [47m[state][0m argument not only satisfy the
+      recognizer for ACL2 states, [47mstate-p[0m, but also some other
+      conditions to allow formatted printing to certain channels.
+      See [47m:[0m[47m[pe][0m [47merror1-state-p[0m and its subroutine [47mfmt-state-p[0m.  By
+      the way, you won't see ``[47m(state-p state)[0m'' in the [47m:guard[0m
+      declaration of [47merror1[0m.  But it is implicit in the use of the
+      variable named [47mstate[0m as a formal.  To see the full guard of a
+      function, [3mfn[0m, you can do [47m:[0m[47m[args][0m [3mfn[0m or, alternatively, [47m(guard
+      '[0m[3mfn[0m[47m nil (w state))[0m.
+
+    * [3] We signal an error with the [47mer[0m macro.  But the signature of [47mer[0m is
+      [47m(mv * * state)[0m, i.e., the first two values returned are
+      ``ordinary'' objects, not stobjs.  But our function,
+      [47mtransaction[0m, must return the (possibly) modified stobj [47mst[0m.  So
+      we ``catch'' the error triple generated by [47mer[0m and replace the
+      ordinary [47mval[0m, which in this case is [47mnil[0m, by [47mst[0m.
+
+  Since we'll use [47mtransaction[0m in a [47mDO[0m [47mloop$[0m, we need a warrant.
+
+    (defwarrant transaction)
+
+  The lemma below is not strictly necessary.  If we don't prove it
+  here, the guard proof for our [47mloop$[0m takes longer because we have to
+  prove a more complicated instance of this lemma by induction.
+
+    (defthm dumb-lemma
+      (implies (and lst
+                    (integer-listp lst))
+               (integerp (car lst)))
+      :rule-classes :type-prescription)
+
+  Finally, we define the function that executes a series of
+  [47mtransaction[0ms on a sequence of integers.  But it may detect and
+  signal an error partway through the sequence.  Note that several
+  lines are commented out, either because they are optional or
+  because they are prohibited, as explained in the accompanying notes
+  below.
+
+    (defun transaction-loop (delta-lst st state)
+      (declare (xargs :stobjs (st state)
+                      :guard (and (integer-listp delta-lst)
+    ;                             (stp st)                     ; See Note [1] above
+    ;                             (state-p state)              ; See Note [1] above
+                                  (error1-state-p state))
+                      :guard-hints ((\"Goal\" :in-theory (enable error1)))))
+      (loop$ with lst = delta-lst
+    ;        with st                                           ; [4]
+    ;        with state                                        ; [4]
+             with erp                                          ; [5]
+             do
+             :guard (and (integer-listp lst)
+                         (stp st)                              ; [6]
+                         (state-p state)                       ; [6]
+                         (error1-state-p state))
+             :values (nil st state)
+             (cond
+              ((eq lst nil) (return (mv nil st state)))
+              (t (progn                                        ; [7]
+                   (mv-setq (erp st state)
+                            (transaction (car lst) st state))
+                   (cond
+                    (erp (return (mv erp st state)))
+                    (t (setq lst (cdr lst)))))))))
+
+  Notes on [47mtransaction-loop[0m:
+
+    * [4] One might think that we need to bind [47mst[0m and [47mstate[0m in [47mWITH[0m clauses
+      because, in the body of the [47mDO[0m [47mloop$[0m, we assign to them, with
+      [47mmv-setq[0m, here, or in other examples, with [47msetq[0m.  But ACL2
+      disallows binding stobj names in [47mWITH[0m clauses.  A syntax error
+      is signaled if you try that.
+
+    * [5] We must bind [47merp[0m in a [47mWITH[0m clause because we assign to it in the
+      body and it is an ordinary object.
+
+    * [6] One might think that we do not need to include [47m(stp st)[0m and
+      [47m(state-p state)[0m in the [47m:guard[0m of the [47mDO[0m [47mloop$[0m body, for the
+      same reasons we did not have to include them in the [47m:guard[0m of
+      the function itself: might they be implicitly included by
+      virtue of their being stobj names?  The answer is no!  If a
+      stobj is used in the body of a [47mDO[0m [47mloop$[0m, the [47m:guard[0m for the [47mDO[0m
+      [47mloop$[0m must include the stobj recognizer if guard checking is to
+      succeed.
+
+    * [7] Finally, the construction
+
+          (progn (mv-setq (erp st state) <term>) <do-body-term>)
+
+      used here may seem odd.  One might be inclined to write something
+      like this instead:
+
+          (mv-let (erp st state) <term> <do-body-term>)
+
+      However, the latter construction is syntactically illegal in the
+      body of a [47mDO[0m [47mloop$[0m.  The reason has to do with the precise
+      definition of ``do-body terms'' (see the SYNTAX section above).
+      Recall that do-body terms are term-like but allow very
+      restricted uses of [47mreturn[0m, [47mprogn[0m, [47msetq[0m, [47mmv-setq[0m, and
+      [47mloop-finish[0m and possibly other do-body subterms.  Do-body terms
+      are not actually ACL2 terms!
+
+      To be precise, one might have tried to use the following as the body
+      of the [47mloop$[0m in [47mtransaction-loop[0m.
+
+          (cond
+            ((eq lst nil) (return (mv nil st state)))
+            (t (mv-let (erp st state)
+                       (transaction (car lst) st state)
+                 (cond
+                  (erp (return (mv erp st state)))
+                  (t (setq lst (cdr lst)))))))
+
+      Note the [47mmv-let[0m.  It is syntactically illegal because its final
+      argument, namely the [47mcond[0m-expression, uses [47mreturn[0m and [47msetq[0m
+      where ACL2 function names are required.  In writing the above,
+      the user has presumed that an [47mmv-let[0m expression in a do-body
+      term allows the final argument to be a do-body term instead of
+      an ACL2 term.  This presumption is incorrect.  Instead, use
+      [47mprogn[0m and [47mmv-setq[0m to field the values of a multi-valued
+      function like [47mtransaction[0m and then write the do-body term to
+      process them.
+
+  Here is a sample session log after introducing the correct
+  definitions above.  Note that the balance starts at 0, the user,
+  employing the function [47mtransaction[0m, adds 100 and then attempts to
+  subtract 150.  An error is signaled and the balance remains 100.
+  Then the user runs the [47mtransaction-loop[0m function with a starting
+  balance of 100 and attempts to successively subtract 20, then 30,
+  then 55, and then attempts to add 200.  The loop terminates with an
+  error on the 55 and leaves the balance at 50, never processing the
+  200.
+
+    ACL2 !>(balance st)
+    0
+    ACL2 !>(transaction 100 st state)
+    (NIL <st> <state>)
+    ACL2 !>(balance st)
+    100
+    ACL2 !>(transaction -150 st state)
+
+
+    ACL2 Error in TRANSACTION:  The stobj's balance is 100 but the delta
+    is -150, so this transaction is not allowed!
+
+    (T <st> <state>)
+    ACL2 !>(balance st)
+    100
+    ACL2 !>(transaction-loop '(-20 -30 -55 200) st state)
+
+
+    ACL2 Error in TRANSACTION:  The stobj's balance is 50 but the delta
+    is -55, so this transaction is not allowed!
+
+    (T <st> <state>)
+    ACL2 !>(balance st)
+    50
 
 
 Subtopics
@@ -36862,18 +37095,19 @@ Subtopics
     (er-soft  'top-level \"Illegal-inputs\" \"Illegal inputs, ~x0 and ~x1.\" a b)
 
   The examples above all print an error message to standard output
-  saying that [47ma[0m and [47mb[0m are illegal inputs.  However, the first three
-  abort evaluation after printing an error message (while logically
-  returning [47mnil[0m, though in ordinary evaluation the return value is
-  never seen); while the last two return [47m(mv t nil state)[0m after
-  printing an error message.  The result in each of the last two
-  cases can be interpreted as an ``error'' when programming with the
-  ACL2 [47m[state][0m, something most ACL2 users will probably not want to
-  do unless they are building systems of some sort; see
-  [programming-with-state].  If state is not available in the current
-  context then you will probably want to use a call other than the
-  last to cause an error; for example, if you are returning two
-  values, you may write [47m(mv (er hard ...) nil)[0m.
+  saying that (the values of) [47ma[0m and [47mb[0m are illegal inputs.  However,
+  the first three --- which we call [3mhard errors[0m --- abort evaluation
+  after printing an error message (while logically returning [47mnil[0m,
+  though in ordinary evaluation the return value is never seen);
+  while the last two --- so-called [3msoft errors[0m --- return an
+  [error-triple], [47m(mv t nil state)[0m, after printing an error message.
+  The result in each of the two soft error cases can be interpreted
+  as an ``error'' when programming with the ACL2 [47m[state][0m, something
+  most ACL2 users will probably not want to do unless they are
+  building systems of some sort; see [programming-with-state].  If
+  state is not available in the current context then you will
+  probably want to cause a hard error; for example, if you are
+  returning two values, you may write [47m(mv (er hard ...) nil)[0m.
 
   The difference between the [47mhard[0m and [47mhard?[0m forms is one of guards.
   Use [47mhard[0m if you want the call to generate a (clearly impossible)
@@ -36896,10 +37130,16 @@ Subtopics
   [47mEr[0m is a macro, and the examples above expand to calls of ACL2
   functions; see below.  Also see [illegal], [hard-error], and
   [error1].  The [47mhard?[0m/[47mhard?![0m forms have expansions that call the
-  function, [47m[hard-error][0m, which has a [guard] of [47mT[0m, while the
-  [47mhard[0m/[47mhard![0m forms have expansions that call the function, [47m[illegal][0m,
+  function [47m[hard-error][0m, which has a [guard] of [47mT[0m, while the
+  [47mhard[0m/[47mhard![0m forms have expansions that call the function [47m[illegal][0m,
   which has a guard that is logically [47mNIL[0m.  Those generate code that
-  is in [47m:[0m[47m[logic][0m mode, as do variants of [47m(er soft ...)[0m.
+  is in [47m:[0m[47m[logic][0m mode, as do variants of [47m(er soft ...)[0m.  The soft
+  error forms expand to calls of the function [47m[error1][0m, which
+  necessarily takes [47m[state][0m as an explicit argument since it returns
+  an [error-triple].  The guard for the soft error forms is that of
+  [47m[error1][0m.  Note in particular that soft errors require the state to
+  satisfy certain restrictions beyond just the usual [47mstate-p[0m
+  predicate.
 
   The general forms of the macros are as follows.  Their
   macroexpansions include code that avoids the printing of error
@@ -37142,10 +37382,24 @@ Subtopics
 
   [47mError1[0m can be interpreted as causing an ``error'' when programming
   with the ACL2 [47m[state][0m, something most ACL2 users will probably not
-  want to do; see [ld-error-triples] and see [er-progn].  In order to
-  cause errors with [47m:[0m[47m[logic][0m mode functions, see [hard-error] and see
-  [illegal].  Better yet, see [er] for a macro that provides a
-  unified way of signaling errors.
+  want to do; see [ld-error-triples] and see [er-progn].  However,
+  [47merror1[0m is a guard verified [47m[logic][0m mode function whose guard is
+
+    (AND (STATE-P STATE)
+         (STRINGP STR)
+         (ERROR1-STATE-P STATE)
+         (CHARACTER-ALISTP ALIST)
+         (OR (NULL SUMMARY) (STRINGP SUMMARY)))
+
+  Note in particular that the state must not only satisfy the basic
+  recognizer, [47mstate-p[0m, for ACL2 states but must also satisfy
+  [47merror1-state-p[0m, which includes additional restrictions ensuring
+  that [47merror1[0m can print formatted output to the standard character
+  output channel, [47m[standard-co][0m, interpret the table maintained by
+  [47m[set-inhibit-er][0m, etc.  If the complexity of [error1]'s guard
+  discourages you from using it in guard-verified logic mode systems
+  you may wish to cause a [hard-error] with [47m[illegal][0m or the more
+  unified way of signaling errors with the macro [47m[er][0m.
 
   As mentioned above, [47merror1[0m always returns [47m(mv t nil state)[0m.  But if a
   call [47m(error1 ctx summary str alist)[0m is encountered during
@@ -105935,6 +106189,10 @@ Changes at the System Level
   https://www.cs.utexas.edu/users/moore/acl2/manuals/latest/}) have
   been replaced by references to the new one ({https://acl2.org/doc/
   | https://acl2.org/doc/}).
+
+  The documentation for [47m[do-loop$][0m has been extended to illustrate how
+  to signal a soft error from within the body of a [47mDO[0m [47m[loop$][0m
+  expression.
 
 
 EMACS Support
