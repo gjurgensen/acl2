@@ -29588,9 +29588,18 @@ ld) and @(tsee include-book)"
   :short "Iteration with @(tsee loop$) using local variables and @(see stobj)s"
   :long "<p>This topic assumes that you have read the introduction to
  @('loop$') expressions in ACL2; see @(see loop$).  Here we give more complete
- documentation on @('DO') @('loop$') expressions, beginning with an informal
- introduction based largely on examples and then continuing with detailed
- syntax and semantics.  For a discussion of proofs about @('loop$')s, see @(see
+ documentation on @('DO') @('loop$') expressions.  This discussion is
+ partitioned into the following sections</p>
+
+ <ul>
+ <li>INFORMAL INTRODUCTION &mdash; examples of @('DO') @('loop$') expressions</li>
+ <li>SYNTAX &mdash; detailed discussion of the legal syntax</li>
+ <li>SEMANTICS &mdash; detailed discussion of how @('DO') @('loop$') expressions
+ are translated into calls of the general-purpose function @(tsee DO$)</li>
+ <li>SIGNALING ERRORS &mdash; how @('DO') @('loop$')s can signal errors</li>
+ </ul>
+
+ <p>For a discussion of proofs about @('loop$')s, see @(see
  stating-and-proving-lemmas-about-loop$s).</p>
 
  <p>More examples of @(tsee loop$) expressions, including @('DO') @('loop$')s,
@@ -29677,7 +29686,7 @@ ld) and @(tsee include-book)"
  })
 
  <p>See @(see lp-section-14) of the @('Loop$') Primer for some exercises in
- writing and executing @('DO') @('Loop$')s (with answers in a Community Book).
+ writing and executing @('DO') @('loop$')s (with answers in a Community Book).
  But remember to come back here when you get to the end of that section.</p>
 
  <p><b>Parallel Assignment Using @('Mv-setq')</b></p>
@@ -30253,7 +30262,7 @@ ld) and @(tsee include-book)"
  @('var') is a stobj</li>
 
  <li>@('(MV-SETQ (var0 ... varn) term)') for two or more distinct variables
- @('vari'), where each @('vari') is declared in a @('WITH') declaration or is a
+ @('vari'), where each @('vari') is declared in a @('WITH') clause or is a
  stobj name, and @('term') is an ordinary term that returns n+1 values, where
  if @('vari') is a stobj then the ith value returned is of that type</li>
 
@@ -30268,18 +30277,18 @@ ld) and @(tsee include-book)"
  <p>We conclude this section by discussing some syntactic restrictions.</p>
 
  <p>The following restriction applies to @('loop$') expressions meeting the
- following two conditions: @(':VALUES') specifies other than the default of
- @('(NIL)'), and there is at least one @('loop-finish') expression in the
- @('loop$') body.  In that case, there must be a @('FINALLY') clause that ACL2
- recognizes as always executing a @('return') call.  This makes sense, since in
- Common Lisp, the value returned by a @('loop') is @('nil') when ``falling
- through'' without executing a @('return'); but @('nil') would violate the
- specified @(':VALUES') in the case above.</p>
+ following two conditions: @(':VALUES') specifies something other than the
+ default of @('(NIL)'), and there is at least one @('loop-finish') expression
+ in the @('loop$') body.  In that case, there must be a @('FINALLY') clause
+ that ACL2 recognizes as always executing a @('return') call.  This makes
+ sense, since in Common Lisp, the value returned by a @('loop') is @('nil')
+ when ``falling through'' without executing a @('return'); but @('nil') would
+ violate the specified @(':VALUES') in the case above.</p>
 
  <p>As noted above, assignments with @('setq') and @('mv-setq') may only set
  stobj variables and variables declared using @('WITH').  This restriction
  applies to the innermost @('loop$') that contains the assignment.  The
- following, for example, is illegal because the @('WITH') declaration for
+ following, for example, is illegal because the @('WITH') clause for
  @('x') is not in the @('loop$') immediately above the assignment to @('x')
  with @('setq').</p>
 
@@ -30328,6 +30337,10 @@ ld) and @(tsee include-book)"
 
  <p>In a function call, it is illegal for a LOOP$ expression to occur in a slot
  whose @(see ilk) is not @('nil').</p>
+
+ <p>See the section SIGNALING ERRORS, below, for how the syntax described here
+ allows for @('DO') @('loop$')s to manipulate @(tsee stobj)s and @(tsee state),
+ including how to signal errors from within the body of the @('loop$').</p>
 
  <h3>SEMANTICS</h3>
 
@@ -30666,7 +30679,247 @@ ld) and @(tsee include-book)"
  measure-fn (list new-alist))') in the definition of @('do$').  But
  @('new-alist') is @('nil'), so the conjunct @('(CONSP (CDR (ASSOC-EQ-SAFE 'X
  ALIST)))') from the measure lambda's guard is false, so the guard evaluates to
- @('nil').</p>")
+ @('nil').</p>
+
+ <h3>SIGNALING ERRORS</h3>
+
+ <p>We explain the subtleties of error signaling from within @('DO')
+ @('loop$')s by example.  To illustrate the full complexity of the situation,
+ our example will involve a @('DO') that is manipulating a @(see stobj), and
+ we'll verify the guards.  The basic idea is that we'll define a function,
+ called @('transaction'), that either detects and signals an error or updates
+ the stobj, and then we'll write a @('DO') @('loop$') that executes a series of
+ transactions.  In fact, you may think of the stobj as representing an account
+ that must maintain a non-negative balance and the transaction as taking an
+ integer and adding it to the balance provided that doesn't produce a negative
+ balance.  Managing the signatures of the various functions in body of the
+ @('loop$') and declaring the ``right'' guards takes some experience.  After
+ we've presented a correct solution we will show some plausible alternatives
+ and explain why they are unacceptable.</p>
+
+ <p>Recall that the standard idiom for signaling a ``soft'' error in ACL2 is to
+ call the function @(tsee error1), usually via the macro @(tsee er).
+ @('Error1') returns an @(see error-triple) of the form @('(mv t nil state)').
+ So our @('DO') @('loop$') will necessarily manipulate @('state') in addition
+ to the user's stobj.</p>
+
+ <p>To admit the functions shown below, first execute these three commands.</p>
+
+ @({
+ (include-book \"projects/apply/top\" :dir :system)
+ (set-state-ok t)
+ (defstobj st (balance :type (satisfies natp) :initially 0))
+ })
+
+ <p>Note that our stobj has just one field, named @('balance'), which must be a
+ natural number and is initially 0.  Below is the basic @('transaction')
+ function which may signal an error.  Note that two unnecessary lines are
+ commented out as explained in note [1] below.</p>
+
+ @({
+  (defun transaction (delta st state)
+    (declare (xargs :stobjs (st state)
+                    :guard (and (integerp delta)
+  ;                             (stp st)                     ; [1]
+  ;                             (state-p state)              ; [1]
+                                (error1-state-p state))))    ; [2]
+    (cond ((< (balance st) (- delta))
+           (mv-let (erp val state)                           ; [3]
+             (er soft 'transaction
+                 \"The stobj's balance is ~x0 but the delta is ~x1, so this ~
+                  transaction is not allowed!\"
+                 (balance st)
+                 delta)
+             (declare (ignore val))
+             (mv erp st state)))
+          (t (let ((st (update-balance (+ (balance st) delta)
+                                       st)))
+               (mv nil st state)))))
+  })
+
+  <p>Notes on @('transaction'):</p>
+
+  <ul>
+
+  <li>[1] We don't need to include @('(stp state)') and @('(state-p state)')
+    explicitly in the @(':guard') for the function because they're implicitly
+    included by the @(':stobjs') declaration.</li>
+
+  <li>[2] The @(tsee er) macro expands to a call of the function @(tsee
+    error1), and @('error1') requires that its @(tsee state) argument not only
+    satisfy the recognizer for ACL2 states, @('state-p'), but also some
+    other conditions to allow formatted printing to certain channels.  See
+    @(':')@(tsee pe) @('error1-state-p') and its subroutine @('fmt-state-p').
+    By the way, you won't see ``@('(state-p state)')'' in the @(':guard')
+    declaration of @('error1').  But it is implicit in the use of the variable
+    named @('state') as a formal.  To see the full guard of a function,
+    <i>fn</i>, you can do @(':')@(tsee args) <i>fn</i> or,
+    alternatively, @('(guard '')<i>fn</i>@(' nil (w state))').</li>
+
+  <li>[3] We signal an error with the @('er') macro.  But the signature of
+    @('er') is @('(mv * * state)'), i.e., the first two values returned are
+    ``ordinary'' objects, not stobjs.  But our function, @('transaction'), must
+    return the (possibly) modified stobj @('st').  So we ``catch'' the error
+    triple generated by @('er') and replace the ordinary @('val'), which in
+    this case is @('nil'), by @('st').</li>
+  </ul>
+
+ <p>Since we'll use @('transaction') in a @('DO') @('loop$'), we need a
+ warrant.</p>
+
+ @({
+ (defwarrant transaction)
+ })
+
+ <p>The lemma below is not strictly necessary.  If we don't prove it here, the
+ guard proof for our @('loop$') takes longer because we have to prove a more
+ complicated instance of this lemma by induction.</p>
+
+ @({
+ (defthm dumb-lemma
+   (implies (and lst
+                 (integer-listp lst))
+            (integerp (car lst)))
+   :rule-classes :type-prescription)
+ })
+
+ <p>Finally, we define the function that executes a series of @('transaction')s
+ on a sequence of integers.  But it may detect and signal an error partway
+ through the sequence.  Note that several lines are commented out, either
+ because they are optional or because they are prohibited, as explained in the
+ accompanying notes below.</p>
+
+
+ @({
+ (defun transaction-loop (delta-lst st state)
+   (declare (xargs :stobjs (st state)
+                   :guard (and (integer-listp delta-lst)
+ ;                             (stp st)                     ; See Note [1] above
+ ;                             (state-p state)              ; See Note [1] above
+                               (error1-state-p state))
+                   :guard-hints ((\"Goal\" :in-theory (enable error1)))))
+   (loop$ with lst = delta-lst
+ ;        with st                                           ; [4]
+ ;        with state                                        ; [4]
+          with erp                                          ; [5]
+          do
+          :guard (and (integer-listp lst)
+                      (stp st)                              ; [6]
+                      (state-p state)                       ; [6]
+                      (error1-state-p state))
+          :values (nil st state)
+          (cond
+           ((eq lst nil) (return (mv nil st state)))
+           (t (progn                                        ; [7]
+                (mv-setq (erp st state)
+                         (transaction (car lst) st state))
+                (cond
+                 (erp (return (mv erp st state)))
+                 (t (setq lst (cdr lst)))))))))
+ })
+
+ <p>Notes on @('transaction-loop'):</p>
+
+ <ul>
+
+ <li>[4] One might think that we need to bind @('st') and @('state') in
+     @('WITH') clauses because, in the body of the @('DO') @('loop$'), we
+     assign to them, with @('mv-setq'), here, or in other examples, with
+     @('setq').  But ACL2 disallows binding stobj names in @('WITH') clauses.
+     A syntax error is signaled if you try that.</li>
+
+ <li>[5] We must bind @('erp') in a @('WITH') clause because we assign to it
+     in the body and it is an ordinary object.</li>
+
+ <li>[6] One might think that we do not need to include @('(stp st)') and
+     @('(state-p state)') in the @(':guard') of the @('DO') @('loop$') body,
+     for the same reasons we did not have to include them in the @(':guard') of
+     the function itself: might they be implicitly included by virtue of their
+     being stobj names?  The answer is no!  If a stobj is used in the body of a
+     @('DO') @('loop$'), the @(':guard') for the @('DO') @('loop$') must
+     include the stobj recognizer if guard checking is to succeed.</li>
+
+ <li>[7] Finally, the construction
+
+     @({
+     (progn (mv-setq (erp st state) <term>) <do-body-term>)
+     })
+
+     used here may seem odd.  One might be inclined to write something like
+     this instead:
+
+     @({
+     (mv-let (erp st state) <term> <do-body-term>)
+     })
+
+     However, the latter construction is syntactically illegal in the body
+     of a @('DO') @('loop$').  The reason has to do with the precise definition
+     of ``do-body terms'' (see the SYNTAX section above).  Recall that do-body
+     terms are term-like but allow very restricted uses of @('return'),
+     @('progn'), @('setq'), @('mv-setq'), and @('loop-finish') and possibly
+     other do-body subterms.  Do-body terms are not actually ACL2 terms!
+
+     <p/>To be precise, one might have tried to use the following as the body
+     of the @('loop$') in @('transaction-loop').
+
+     @({
+     (cond
+       ((eq lst nil) (return (mv nil st state)))
+       (t (mv-let (erp st state)
+                  (transaction (car lst) st state)
+            (cond
+             (erp (return (mv erp st state)))
+             (t (setq lst (cdr lst)))))))
+     })
+
+     Note the @('mv-let').  It is syntactically illegal because its final
+     argument, namely the @('cond')-expression, uses @('return') and @('setq')
+     where ACL2 function names are required.  In writing the above, the user
+     has presumed that an @('mv-let') expression in a do-body term allows the
+     final argument to be a do-body term instead of an ACL2 term.  This
+     presumption is incorrect.  Instead, use @('progn') and @('mv-setq') to
+     field the values of a multi-valued function like @('transaction') and then
+     write the do-body term to process them.</li>
+
+ </ul>
+
+ <p>Here is a sample session log after introducing the correct definitions
+ above.  Note that the balance starts at 0, the user, employing the function
+ @('transaction'), adds 100 and then attempts to subtract 150.  An error is
+ signaled and the balance remains 100.  Then the user runs the
+ @('transaction-loop') function with a starting balance of 100 and attempts to
+ successively subtract 20, then 30, then 55, and then attempts to add 200.  The
+ loop terminates with an error on the 55 and leaves the balance at 50, never
+ processing the 200.</p>
+
+ @({
+ ACL2 !>(balance st)
+ 0
+ ACL2 !>(transaction 100 st state)
+ (NIL <st> <state>)
+ ACL2 !>(balance st)
+ 100
+ ACL2 !>(transaction -150 st state)
+
+
+ ACL2 Error in TRANSACTION:  The stobj's balance is 100 but the delta
+ is -150, so this transaction is not allowed!
+
+ (T <st> <state>)
+ ACL2 !>(balance st)
+ 100
+ ACL2 !>(transaction-loop '(-20 -30 -55 200) st state)
+
+
+ ACL2 Error in TRANSACTION:  The stobj's balance is 50 but the delta
+ is -55, so this transaction is not allowed!
+
+ (T <st> <state>)
+ ACL2 !>(balance st)
+ 50
+ })
+
+ ")
 
 (defxdoc do-not
   :parents (hints)
@@ -33389,17 +33642,18 @@ ld) and @(tsee include-book)"
  })
 
  <p>The examples above all print an error message to standard output saying
- that @('a') and @('b') are illegal inputs.  However, the first three abort
- evaluation after printing an error message (while logically returning
- @('nil'), though in ordinary evaluation the return value is never seen); while
- the last two return @('(mv t nil state)') after printing an error message.
- The result in each of the last two cases can be interpreted as an ``error''
- when programming with the ACL2 @(tsee state), something most ACL2 users will
- probably not want to do unless they are building systems of some sort; see
- @(see programming-with-state).  If state is not available in the current
- context then you will probably want to use a call other than the last to cause
- an error; for example, if you are returning two values, you may write
- @('(mv (er hard ...) nil)').</p>
+ that (the values of) @('a') and @('b') are illegal inputs.  However, the first
+ three &mdash; which we call <i>hard errors</i> &mdash; abort evaluation after
+ printing an error message (while logically returning @('nil'), though in
+ ordinary evaluation the return value is never seen); while the last two
+ &mdash; so-called <i>soft errors</i> &mdash; return an @(see error-triple),
+ @('(mv t nil state)'), after printing an error message.  The result in each of
+ the two soft error cases can be interpreted as an ``error'' when programming
+ with the ACL2 @(tsee state), something most ACL2 users will probably not want
+ to do unless they are building systems of some sort; see @(see
+ programming-with-state).  If state is not available in the current context
+ then you will probably want to cause a hard error; for example, if you are
+ returning two values, you may write @('(mv (er hard ...) nil)').</p>
 
  <p>The difference between the @('hard') and @('hard?') forms is one of guards.
  Use @('hard') if you want the call to generate a (clearly impossible) guard
@@ -33420,10 +33674,15 @@ ld) and @(tsee include-book)"
  <p>@('Er') is a macro, and the examples above expand to calls of ACL2
  functions; see below.  Also see @(see illegal), @(see hard-error), and @(see
  error1).  The @('hard?')/@('hard?!') forms have expansions that call the
- function, @(tsee hard-error), which has a @(see guard) of @('T'), while the
- @('hard')/@('hard!') forms have expansions that call the function, @(tsee
+ function @(tsee hard-error), which has a @(see guard) of @('T'), while the
+ @('hard')/@('hard!') forms have expansions that call the function @(tsee
  illegal), which has a guard that is logically @('NIL').  Those generate code
- that is in @(':')@(tsee logic) mode, as do variants of @('(er soft ...)').</p>
+ that is in @(':')@(tsee logic) mode, as do variants of @('(er soft ...)').
+ The soft error forms expand to calls of the function @(tsee error1), which
+ necessarily takes @(tsee state) as an explicit argument since it returns an
+ @(see error-triple).  The guard for the soft error forms is that of @(tsee
+ error1).  Note in particular that soft errors require the state to satisfy
+ certain restrictions beyond just the usual @('state-p') predicate.</p>
 
  <p>The general forms of the macros are as follows.  Their macroexpansions
  include code that avoids the printing of error messages when error output is
@@ -33677,10 +33936,26 @@ ld) and @(tsee include-book)"
 
  <p>@('Error1') can be interpreted as causing an ``error'' when programming
  with the ACL2 @(tsee state), something most ACL2 users will probably not want
- to do; see @(see ld-error-triples) and see @(see er-progn).  In order to cause
- errors with @(':')@(tsee logic) mode functions, see @(see hard-error) and see
- @(see illegal).  Better yet, see @(see er) for a macro that provides a unified
- way of signaling errors.</p>
+ to do; see @(see ld-error-triples) and see @(see er-progn).  However, @('error1')
+ is a guard verified @(tsee logic) mode function whose guard is</p>
+
+ @({
+ (AND (STATE-P STATE)
+      (STRINGP STR)
+      (ERROR1-STATE-P STATE)
+      (CHARACTER-ALISTP ALIST)
+      (OR (NULL SUMMARY) (STRINGP SUMMARY)))
+ })
+
+ <p>Note in particular that the state must not only satisfy the basic
+ recognizer, @('state-p'), for ACL2 states but must also satisfy
+ @('error1-state-p'), which includes additional restrictions ensuring that
+ @('error1') can print formatted output to the standard character output
+ channel, @(tsee standard-co), interpret the table maintained by @(tsee
+ set-inhibit-er), etc.  If the complexity of @(see error1)'s guard discourages
+ you from using it in guard-verified logic mode systems you may wish to cause a
+ @(see hard-error) with @(tsee illegal) or the more unified way of signaling
+ errors with the macro @(tsee er).</p>
 
  <p>As mentioned above, @('error1') always returns @('(mv t nil state)').  But
  if a call @('(error1 ctx summary str alist)') is encountered during
@@ -108770,6 +109045,10 @@ it."
  href='https://www.cs.utexas.edu/users/moore/acl2/manuals/latest/'>https://www.cs.utexas.edu/users/moore/acl2/manuals/latest/'</a>)
  have been replaced by references to the new one
  (<a href='https://acl2.org/doc/'>https://acl2.org/doc/</a>).</p>
+
+ <p>The documentation for @(tsee do-loop$) has been extended to illustrate how
+ to signal a soft error from within the body of a @('DO') @(tsee loop$)
+ expression.</p>
 
  <h3>EMACS Support</h3>
 
