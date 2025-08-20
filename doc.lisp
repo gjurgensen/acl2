@@ -81105,7 +81105,7 @@ Subtopics
   For this topic we assume that you already understand the basics of
   single-threaded objects in ACL2.  See [stobj], and in particular,
   see [defstobj], which notes that a stobj field can itself be a
-  stobj, an array or hash-tablle of stobjs, or a [stobj-table].  The
+  stobj, an array or hash-table of stobjs, or a [stobj-table].  The
   present [documentation] topic expands on that point.  However, we
   ignore stobj-table fields here; see [stobj-table] for such
   documentation.
@@ -81286,11 +81286,12 @@ SECTION: Accessing and updating stobj fields of stobjs using
   [47mparent[0m, which is a stobj isomorphic to [47mchild[0m, to have a value of 3.
   Below we explain the terms ``bindings'', ``producer variables'',
   ``producer'', and ``consumer'', as well as how to understand this
-  form.
+  form.  (Note that ``producer variables'' refers to a list of one or
+  more variables.)
 
     (stobj-let
      ((child (fld2 parent)))  ; bindings
-     (child)                  ; producer variable(s)
+     (child)                  ; producer variables
      (update-fld 3 child)     ; producer
      (update-fld3 'a parent)) ; consumer
 
@@ -81300,7 +81301,7 @@ SECTION: Accessing and updating stobj fields of stobjs using
     * Bindings:
           Bind [47mchild[0m to [47m(fld2 parent)[0m.
 
-    * Producer variable(s) and producer:
+    * Producer variables and producer:
           Then bind the variable, [47mchild[0m, to the value of the producer,
           [47m(update-fld 3 child)[0m.
 
@@ -81314,7 +81315,7 @@ SECTION: Accessing and updating stobj fields of stobjs using
   following expression, though this is approximate (see below).
 
     (let ((child (fld2 parent))) ; bindings
-      (let ((child (update-fld 3 child))) ; bind producer vars to producer
+      (let ((child (update-fld 3 child))) ; bind producer variables to producer
         (let ((parent (update-fld2 child parent))) ; implicit update of parent
           (update-fld3 'a parent))))
 
@@ -81694,7 +81695,7 @@ SECTION: Precise documentation for [47mstobj-let[0m
 
     (let BINDINGS'
       (declare (ignorable . STOBJ-LET-BOUND-VARIABLES))
-      (mv-let PRODUCER-VARS
+      (mv-let PRODUCER-VARIABLES
               PRODUCER
               (let* UPDATES
                 CONSUMER)))
@@ -81862,7 +81863,7 @@ SECTION: Using [47mstobj-let[0m with abstract stobjs
     ; bindings:
        ((n$  (uenslot1 two-usuallyequal-nums))
         (n$2 (uenslot2 two-usuallyequal-nums)))
-    ; producer variable:
+    ; producer variables:
        (n1 n2)
     ; producer:
        (mv (n$val n$) (n$val n$2))

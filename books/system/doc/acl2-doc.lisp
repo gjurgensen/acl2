@@ -77320,7 +77320,7 @@ it."
   :long "<p>For this topic we assume that you already understand the basics of
  single-threaded objects in ACL2.  See @(see stobj), and in particular, see
  @(see defstobj), which notes that a stobj field can itself be a stobj, an
- array or hash-tablle of stobjs, or a @(see stobj-table).  The present @(see
+ array or hash-table of stobjs, or a @(see stobj-table).  The present @(see
  documentation) topic expands on that point.  However, we ignore stobj-table
  fields here; see @(see stobj-table) for such documentation.</p>
 
@@ -77502,12 +77502,14 @@ it."
  <p>The following form returns the result of updating the @('fld2') field of
  @('parent'), which is a stobj isomorphic to @('child'), to have a value of 3.
  Below we explain the terms ``bindings'', ``producer variables'', ``producer'',
- and ``consumer'', as well as how to understand this form.</p>
+ and ``consumer'', as well as how to understand this form.  (Note that
+ &ldquo;producer variables&rdquo; refers to a list of one or more
+ variables.)</p>
 
  @({
     (stobj-let
      ((child (fld2 parent)))  ; bindings
-     (child)                  ; producer variable(s)
+     (child)                  ; producer variables
      (update-fld 3 child)     ; producer
      (update-fld3 'a parent)) ; consumer
  })
@@ -77518,7 +77520,7 @@ it."
  <ul>
  <li>Bindings:<br/>
      <blockquote>Bind @('child') to @('(fld2 parent)').</blockquote></li>
- <li>Producer variable(s) and producer:<br/>
+ <li>Producer variables and producer:<br/>
      <blockquote>Then bind the variable, @('child'), to the value of
      the producer, @('(update-fld 3 child)').</blockquote></li>
  <li>Implicit update of parent:<br/>
@@ -77534,7 +77536,7 @@ it."
 
  @({
     (let ((child (fld2 parent))) ; bindings
-      (let ((child (update-fld 3 child))) ; bind producer vars to producer
+      (let ((child (update-fld 3 child))) ; bind producer variables to producer
         (let ((parent (update-fld2 child parent))) ; implicit update of parent
           (update-fld3 'a parent))))
  })
@@ -77946,7 +77948,7 @@ it."
  @({
     (let BINDINGS'
       (declare (ignorable . STOBJ-LET-BOUND-VARIABLES))
-      (mv-let PRODUCER-VARS
+      (mv-let PRODUCER-VARIABLES
               PRODUCER
               (let* UPDATES
                 CONSUMER)))
@@ -78123,7 +78125,7 @@ it."
  ; bindings:
     ((n$  (uenslot1 two-usuallyequal-nums))
      (n$2 (uenslot2 two-usuallyequal-nums)))
- ; producer variable:
+ ; producer variables:
     (n1 n2)
  ; producer:
     (mv (n$val n$) (n$val n$2))
