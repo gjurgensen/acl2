@@ -21206,17 +21206,18 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
  <code>
  (fn @(':kwd1') val1 ... @(':kwdn') valn), </code>
 
- <p>that is, a symbol followed by a @(tsee keyword-value-listp).  We view the
- case of a symbol, @('s'), as the function spec @('(s)'), with no keywords.
- There must be no duplicate keywords.  In each case that we expect a function
- spec, the context provides a set of valid keywords for that function spec; it
- is an error to provide any other keyword in the function spec.  Each function
- spec is interpreted as its ``completion'', obtained by extending the function
- spec with a default value for each valid keyword as indicated below.  With
- that interpretation, the ``exported function'' of a function spec is its
- @('car'), and that function symbol and each keyword value must be a
- guard-verified function symbol; and moreover, the @(':EXEC') function must not
- include the new abstract stobj name, @('st'), among its formals.</p>
+ <p>that is, a symbol followed by a @(tsee keyword-value-listp).  Each
+ @('vali') must be a symbol.  We view the case of a symbol, @('s'), as the
+ function spec @('(s)'), with no keywords.  There must be no duplicate
+ keywords.  In each case that we expect a function spec, the context provides a
+ set of valid keywords for that function spec; it is an error to provide any
+ other keyword in the function spec.  Each function spec is interpreted as its
+ ``completion'', obtained by extending the function spec with a default value
+ for each valid keyword as indicated below.  With that interpretation, the
+ ``exported function'' of a function spec is its @('car'), and that function
+ symbol and each keyword value must be a guard-verified function symbol; and
+ moreover, the @(':EXEC') function must not include the new abstract stobj
+ name, @('st'), among its formals.</p>
 
  <p>We are ready to describe the arguments of @('defabsstobj').</p>
 
@@ -21285,7 +21286,7 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
 
  <p>The value of @(':EXPORTS') is a non-empty true list.  Each @('ei') is a
  function spec (for an exported function).  The valid keywords are @(':LOGIC'),
- @(':EXEC'), @(':CORRESPONDENCE'), and @(':GUARD-THM'), @(':PROTECT'),
+ @(':EXEC'), @(':CORRESPONDENCE'), @(':GUARD-THM'), @(':PROTECT'), and
  @(':UPDATER'), and also @(':PRESERVED') if and only if the specified
  @(':EXEC') function returns the foundational stobj.  The default values for
  all of these keywords except @(':UPDATER') and @(':PROTECT') are obtained by
@@ -26357,7 +26358,7 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
  <p>satisfying the same requirements as in the General Form for @(tsee defun).
  The effect is to define a macro @('fn') and a function @('fn$inline') (i.e., a
  symbol in the same package as @('fn') but whose @(tsee symbol-name) has the
- suffix @('\"$INLINE\"'), such that each call of @('fn') expands to a call of
+ suffix @('\"$INLINE\"')), such that each call of @('fn') expands to a call of
  the function symbol @('fn$inline') on the same arguments.  Moreover, @(tsee
  table) @(see events) are generated that allow the use of @('fn') in @(see
  theory) expressions to represent @('fn$inline') and that cause any
@@ -26422,8 +26423,10 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
 
  <p>(2) Every function symbol defined in ACL2 whose @(tsee symbol-name) has the
  suffix @('\"$INLINE\"') is proclaimed to be inline; similarly for
- @('\"$NOTINLINE\"') and notinline.  These restrictions are explained in a
- comment in the ACL2 source definition of macro @('defun-inline').</p>
+ @('\"$NOTINLINE\"') and notinline.  These suffix restrictions are explained in
+ a comment in the ACL2 source definition of macro @('defun-inline').  Note that
+ only the functions themselves are thus proclaimed, not their executable
+ counterparts (also known as *1* functions; see @(see evaluation)).</p>
 
  <p>(3) No special treatment for inlining (or notinlining) is given for
  function symbols locally defined by @(tsee flet), with two exceptions: when
@@ -26446,8 +26449,7 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
  compile in another host Lisp by using @(tsee include-book) with argument
  @(':load-compiled-file :comp').  Then in subsequent sessions, including that
  book with the second host Lisp will not result in any inline or notinline
- behavior for functions defined in the book.  This may be fixed in a future
- release if someone complains.</p>")
+ behavior for functions defined in the book.</p>")
 
 (defxdoc defun-mode
   :parents (defun)
@@ -108863,6 +108865,11 @@ it."
 ; deleted (as it is very likely no longer relevant): windows7.html,
 ; windows-gcl-jared.html, and installing-make.html.
 
+; Fixed a message printed by :pso that mistakenly referenced obsolete :DOC
+; topic set-saved-output when there is no saved output to print.  The message
+; now points to :DOC pso, and it also suggests turning on PROVE output.  Thanks
+; to Warren Hunt for reporting the buggy message.
+
   :parents (release-notes)
   :short "ACL2 Version  8.7 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -108990,6 +108997,18 @@ it."
  allowed in both the key and value expressions when updating the table, that
  is, using the @(':put') and @(':clear') operations.  However, @('ENS') was not
  being allowed in the key expression.  That has been fixed.</p>
+
+ <p>Fixed a bug that was preventing inlining, in some Lisps (SBCL and perhaps
+ Allegro CL and CMUCL), of functions whose name ends in @('\"$INLINE\"'), such
+ as those generated by @(tsee defun-inline).  Thanks to Grant Jurgensen for
+ reporting this bug with a helpful example.</p>
+
+ <p>A @(tsee defabsstobj) event contains <i>function specs</i> that are each
+ either a symbol or a list of the form @('(fn :kwd1 val1 ... :kwdn valn)').
+ Each @('vali') must be a symbol, but when this was not the case, a raw Lisp
+ error could occur.  Now a clean error message is printed, and this requirement
+ on the @('vali') has been made explicit in the documentation for @(tsee
+ defabsstobj).</p>
 
  <h3>Changes at the System Level</h3>
 
