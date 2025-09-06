@@ -7202,6 +7202,94 @@ Subtopics
                "See [system-utilities].")
  (ALL-VARS (POINTERS)
            "See [system-utilities].")
+ (ALLEGRO-CL
+  (OBTAINING-COMMON-LISP)
+  "Allegro Common Lisp as a host for ACL2
+
+  {Allegro Common Lisp |
+  https://franz.com/products/allegro-common-lisp/} (Allegro CL) is
+  one of the Common Lisp implementations upon which an ACL2
+  executable can be built (see [obtaining-common-lisp]).  But here,
+  we discuss a concern.
+
+  Although testing is ongoing for ACL2 built upon Allegro CL, the
+  version used has been Allegro CL 10.1 since 2017.  What's more, in
+  September 2025, for an ACL2 executable built with host Lisp Allegro
+  CL, the use of ``[47mmake regression[0m'' resulted in four books (in the
+  [community-books]) that failed to certify.  We discuss those
+  failures in the ``[31;1mDetails[0m'' section below.  These failures may
+  suggest that Allegro CL, at least for its Version 10.1, does not
+  correctly support the Common Lisp language, or at least there is
+  problematic ACL2 code specific to Allegro CL.  In practice we don't
+  expect a lot of problems when using ACL2 built on Allegro CL.
+  However, since Allegro CL is relatively slow compared to several
+  other Common Lisp implementations that can host ACL2 --- SBCL, CCL,
+  LispWorks, and GCL --- those failures suggest that Allegro CL might
+  not be a good choice for ACL2 users.
+
+
+Details
+
+  Here are details regarding the four certification failures under
+  [47mbooks/[0m that are referenced above.  [31;1mThese details are quite
+  technical and probably only of interest to system implementors.[0m
+
+    * [47mkestrel/c/syntax/validator.lisp[0m
+
+        The following error from the corresponding [47mvalidator.cert.out[0m file is
+        very surprising, since the [47m[defrec][0m form for
+        [47mACL2::CLAUSE-PROCESSOR-HINT[0m has a ``cheap'' flag of [47mnil[0m, so
+        the same error can be expected to show up regardless of the
+        host Lisp --- yet as of this writing (in September 2025) it
+        seems not to have shown up for a long time, if ever.
+
+          HARD ACL2 ERROR in ACL2::RECORD-ERROR:  An attempt was made to treat
+          (49683 :TYPE-PRESCRIPTION BLOCK-ITEM-TYPES) as a record of type
+          ACL2::CLAUSE-PROCESSOR-HINT.
+
+        There were other errors like that one as well.
+
+        So for that same ACL2 version (ACL2 git hash
+        fe29908c4589c1de3b41d6c98cc8bec012c7eba3), the same book and
+        the books that (recursively) support it were certified using
+        a safety-3 ACL2 executable built on CCL.  The book certified
+        without any ``HARD ACL2 ERROR''.  This suggests that the
+        problem is likely restricted to runs using Allegro CL.
+
+        However, that book allows some trust tags (in file [47mcert.acl2[0m in that
+        directory), so perhaps there are shenanigans that somehow
+        exonerate the Allegro CL build of ACL2.  But the last failure
+        discussed below does not involve trust tags.
+
+    * [47mkestrel/axe/examples/aes-blast.lisp[0m
+      [47mkestrel/axe/examples/aes-blast-boolean.lisp[0m
+
+        These two report errors (in their [47m.cert.out[0m files) that involve using
+        the [serialize] capability to write the [47m.cert[0m file.  But
+        [47mcert.acl2[0m in that directory allows trust tags, which could be
+        relevant.  Note that serialize errors may be very difficult
+        to debug.
+
+        A second certification was tried on the second of these (picked
+        arbitrarily) in case this was just a weird glitch.  However,
+        a similar error occurred (though with a slightly different
+        backtrace).
+
+    * [47mprojects/aleo/vm/circuits/axe/blake2s-proof2.lisp[0m
+
+        This one shows a backtrace that includes the following form.
+
+          (RATIONALP 8444461749428370424248824938781546531375899335154063827935233455916872368129)
+
+        That shouldn't cause an error, but apparently it did.  Maybe the
+        image was already corrupted.  Submitting that form in a fresh
+        session produced no error.
+
+        As with the first example, a safety-3 CCL-based certification (of
+        this book and all supporting books, recursively) produced no
+        errors.  But unlike the first example, this book does not
+        allow trust tags.  This example thus provides strong evidence
+        that Allegro CL is not a great choice for hosting ACL2.")
  (ALLOCATE-FIXNUM-RANGE
   (NUMBERS ACL2-BUILT-INS)
   "Set aside fixnums in GCL
@@ -107429,7 +107517,8 @@ Allegro Common Lisp
 
   {Allegro Common Lisp | https://franz.com/} is a commercial
   implementation.  It has been maintained for many years, but it
-  generally runs ACL2 more slowly than most other implementations.
+  generally runs ACL2 more slowly than most other implementations,
+  and there are other issues; see [allegro-cl].
 
 
 Clozure Common Lisp (CCL)
@@ -107502,6 +107591,9 @@ Steel Bank Common Lisp (SBCL)
 
 
 Subtopics
+
+  [Allegro-cl]
+      Allegro Common Lisp as a host for ACL2
 
   [Ccl-installation]
       Installing Clozure Common Lisp (CCL)
@@ -110922,7 +111014,8 @@ Further Explanation
   ACL2 currently runs on [31;1mUnix[0m, [31;1mLinux[0m, [31;1mWindows[0m, and [31;1mMacintosh OS X[0m
   operating systems.
 
-  It can generally be built in any of the following Common Lisps:
+  It can generally be built in any of the following Common Lisps (but
+  see [allegro-cl] for a caveat about Allegro Common Lisp):
 
     * [31;1mAllegro Common Lisp[0m,
     * [31;1mCCL[0m (formerly OpenMCL)
