@@ -33,6 +33,8 @@
 (in-package "ACL2")
 
 (include-book "std/util/bstar" :dir :system)
+(include-book "std/system/constant-namep" :dir :system)
+(include-book "std/system/constant-value" :dir :system)
 
 (mutual-recursion
  (defun magic-ev (x alist state hard-errp aokp)
@@ -42,7 +44,9 @@
                    :stobjs state))
    (cond ((not x) (mv nil nil))
          ((atom x)
-          (mv nil (cdr (assoc-eq x alist))))
+          (if (constant-namep x (w state))
+              (mv nil (constant-value x (w state)))
+            (mv nil (cdr (assoc-eq x alist)))))
          ((eq (car x) 'quote) (mv nil (cadr x)))
          ((consp (car x))
           (b* (((mv err args)
@@ -102,5 +106,3 @@
 (verify-guards magic-ev
   :hints ((and stable-under-simplificationp
                '(:expand ((pseudo-termp x))))))
-
-
