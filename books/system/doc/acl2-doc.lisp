@@ -22961,6 +22961,9 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
  instead.  Also see @(see using-tables-efficiently) for an analogous issue with
  @(tsee table) events.</p>
 
+<p>@('Defconst') sets the @('const') property of @('name') to the quoted value
+of @('term'). This can be retrieved with @(tsee getpropc).</p>
+
  <p>It may be of interest to note that @('defconst') is implemented at the lisp
  level using @('defparameter'), as opposed to @('defconstant').
  (Implementation note: this is important for proper support of undoing and
