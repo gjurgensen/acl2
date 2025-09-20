@@ -22962,7 +22962,7 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
  @(tsee table) events.</p>
 
 <p>@('Defconst') sets the @('const') property of @('name') to the quoted value
-of @('term'). This can be retrieved with @(see getpropc).</p>
+of @('term'). This can be retrieved with @(tsee getpropc).</p>
 
  <p>It may be of interest to note that @('defconst') is implemented at the lisp
  level using @('defparameter'), as opposed to @('defconstant').
