@@ -26306,6 +26306,9 @@ Subtopics
   [using-tables-efficiently] for an analogous issue with [47m[table][0m
   events.
 
+  [47mDefconst[0m sets the [47mconst[0m property of [47mname[0m to the quoted value of [47mterm[0m.
+  This can be retrieved with [47m[getpropc][0m.
+
   It may be of interest to note that [47mdefconst[0m is implemented at the
   lisp level using [47mdefparameter[0m, as opposed to [47mdefconstant[0m.
   (Implementation note: this is important for proper support of
