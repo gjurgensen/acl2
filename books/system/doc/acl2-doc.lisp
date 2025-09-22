@@ -155766,6 +155766,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   (INTEGER i j)          (AND (INTEGERP X)   ; See notes below.
                               (<= i X)
                               (<= X j))
+  LIST                   (LISTP X)
   (MEMBER x1 ... xn)     (MEMBER X '(x1 ... xn))
   (MOD i)                same as (INTEGER 0 i-1)
   NIL                    NIL
