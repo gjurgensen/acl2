@@ -28573,7 +28573,6 @@ The Default Function Names
               ...
               (fieldk :type typek :initially valk)
               :renaming doublets
-              :doc doc-string
               :inline inline-flag)
 
   [47mname[0m must be a new symbol, each [47mfieldi[0m must be a symbol, each [47mtypei[0m
@@ -59927,7 +59926,7 @@ Some Practice Problems
 
     (defthm examples-of-orderedp$
       (and (orderedp$ '(1 3 5 7) '<)
-           (not (orderedp '(1 3 3 5 7) '<)))
+           (not (orderedp$ '(1 3 3 5 7) '<)))
       :rule-classes nil)
 
   [31;1mProblem 6[0m: You might hope that [47m(orderedp$ (sort$ lst fn) fn)[0m is a
@@ -71595,7 +71594,7 @@ LP11: Proving Theorems about [47mFOR[0m [47mLoop$[0ms
       (loop$ for i from 1 to imax
              append
              (loop$ for j from 1 to jmax
-                    collect (make-pair i j)))))
+                    collect (make-pair i j))))
 
     ACL2 Error [Translate] in ( DEFUN ALL-PAIRS-LOOP$ ...):  The body of
     a LAMBDA object, lambda$ term, or loop$ statement should be fully badged
@@ -71637,7 +71636,7 @@ LP11: Proving Theorems about [47mFOR[0m [47mLoop$[0ms
       (loop$ for i from 1 to imax
              append
              (loop$ for j from 1 to jmax
-                    collect (make-pair i j)))))
+                    collect (make-pair i j))))
 
     *** Key checkpoint at the top level: ***
 
@@ -71809,7 +71808,7 @@ LP11: Proving Theorems about [47mFOR[0m [47mLoop$[0ms
       (implies (and (natp imax)
                     (natp jmax))
                (equal (all-pairs-loop$ imax jmax)
-                      (all-pairs imax jmax)))))
+                      (all-pairs imax jmax))))
 
     *** Key checkpoint at the top level: ***
 
@@ -71868,7 +71867,7 @@ LP11: Proving Theorems about [47mFOR[0m [47mLoop$[0ms
                              (loop$-as (list (from-to-by 1 (car loop$-gvars) 1)))))
          (list jmax)
          (loop$-as (list (from-to-by i0 imax 1))))
-        (all-pairs-helper1 i0 imax jmax)))))
+        (all-pairs-helper1 i0 imax jmax))))
 
     *** Key checkpoint under a top-level induction: ***
 
@@ -71945,7 +71944,7 @@ LP11: Proving Theorems about [47mFOR[0m [47mLoop$[0ms
                              (loop$-as (list (from-to-by 1 (car loop$-gvars) 1)))))
          (list jmax)
          (loop$-as (list (from-to-by i0 imax 1))))
-        (all-pairs-helper1 i0 imax jmax)))))
+        (all-pairs-helper1 i0 imax jmax))))
 
     *** Key checkpoint at the top level: ***
 
@@ -71994,7 +71993,7 @@ LP11: Proving Theorems about [47mFOR[0m [47mLoop$[0ms
                     (natp jmax))
                (equal (all-pairs-loop$ imax jmax)
                       (all-pairs imax jmax)))
-      :hints ((\"Goal\" :do-not-induct t))))
+      :hints ((\"Goal\" :do-not-induct t)))
 
     *** Key checkpoints at the top level: ***
 
@@ -72071,7 +72070,7 @@ LP11: Proving Theorems about [47mFOR[0m [47mLoop$[0ms
   The final series of events to solve this problem is shown below.
 
     ; Include standard apply$ book.
-    (include-book \"projects/apply/top\" :dir :system)}
+    (include-book \"projects/apply/top\" :dir :system)
 
     ; Define and verify the guards of the recursive all-pairs.
     (defun make-pair (i j)
@@ -156627,7 +156626,7 @@ Type Specs
     (SATISFIES pred)       (pred X) ; Lisp requires a unary function, not a macro
     SIGNED-BYTE            (INTEGERP X)
     (SIGNED-BYTE i)        same as (INTEGER k m) where k=-2^(i-1), m=2^(i-1)-1
-    STANDARD-CHAR          (STANDARD-CHARP X)
+    STANDARD-CHAR          (STANDARD-CHAR-P X)
     STRING                 (STRINGP X)
     (STRING max)           (AND (STRINGP X) (EQUAL (LENGTH X) max))
     SYMBOL                 (SYMBOLP X)
