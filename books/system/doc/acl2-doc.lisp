@@ -25215,7 +25215,6 @@ of @('term'). This can be retrieved with @(tsee getpropc).</p>
             ...
             (fieldk :type typek :initially valk)
             :renaming doublets
-            :doc doc-string
             :inline inline-flag)
  })
 
@@ -56374,7 +56373,7 @@ tables in the current Hons Space."
   @({
   (defthm examples-of-orderedp$
     (and (orderedp$ '(1 3 5 7) '<)
-         (not (orderedp '(1 3 3 5 7) '<)))
+         (not (orderedp$ '(1 3 3 5 7) '<)))
     :rule-classes nil)
   })
 
@@ -66895,7 +66894,7 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
     (loop$ for i from 1 to imax
            append
            (loop$ for j from 1 to jmax
-                  collect (make-pair i j)))))
+                  collect (make-pair i j))))
 
   ACL2 Error [Translate] in ( DEFUN ALL-PAIRS-LOOP$ ...):  The body of
   a LAMBDA object, lambda$ term, or loop$ statement should be fully badged
@@ -66939,7 +66938,7 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
     (loop$ for i from 1 to imax
            append
            (loop$ for j from 1 to jmax
-                  collect (make-pair i j)))))
+                  collect (make-pair i j))))
 
   *** Key checkpoint at the top level: ***
 
@@ -67119,7 +67118,7 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
     (implies (and (natp imax)
                   (natp jmax))
              (equal (all-pairs-loop$ imax jmax)
-                    (all-pairs imax jmax)))))
+                    (all-pairs imax jmax))))
 
   *** Key checkpoint at the top level: ***
 
@@ -67180,7 +67179,7 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
                            (loop$-as (list (from-to-by 1 (car loop$-gvars) 1)))))
        (list jmax)
        (loop$-as (list (from-to-by i0 imax 1))))
-      (all-pairs-helper1 i0 imax jmax)))))
+      (all-pairs-helper1 i0 imax jmax))))
 
   *** Key checkpoint under a top-level induction: ***
 
@@ -67264,7 +67263,7 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
                            (loop$-as (list (from-to-by 1 (car loop$-gvars) 1)))))
        (list jmax)
        (loop$-as (list (from-to-by i0 imax 1))))
-      (all-pairs-helper1 i0 imax jmax)))))
+      (all-pairs-helper1 i0 imax jmax))))
 
   *** Key checkpoint at the top level: ***
 
@@ -67316,7 +67315,7 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
                   (natp jmax))
              (equal (all-pairs-loop$ imax jmax)
                     (all-pairs imax jmax)))
-    :hints ((\"Goal\" :do-not-induct t))))
+    :hints ((\"Goal\" :do-not-induct t)))
 
   *** Key checkpoints at the top level: ***
 
@@ -67397,7 +67396,7 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
 
   @({
   ; Include standard apply$ book.
-  (include-book \"projects/apply/top\" :dir :system)}
+  (include-book \"projects/apply/top\" :dir :system)
 
   ; Define and verify the guards of the recursive all-pairs.
   (defun make-pair (i j)
@@ -155787,7 +155786,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   (SATISFIES pred)       (pred X) ; Lisp requires a unary function, not a macro
   SIGNED-BYTE            (INTEGERP X)
   (SIGNED-BYTE i)        same as (INTEGER k m) where k=-2^(i-1), m=2^(i-1)-1
-  STANDARD-CHAR          (STANDARD-CHARP X)
+  STANDARD-CHAR          (STANDARD-CHAR-P X)
   STRING                 (STRINGP X)
   (STRING max)           (AND (STRINGP X) (EQUAL (LENGTH X) max))
   SYMBOL                 (SYMBOLP X)
