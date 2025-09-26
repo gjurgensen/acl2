@@ -1077,3 +1077,10 @@ error (int __status, int __errnum, const char *__format, ...)
  parse-translation-unit
  ""
  :gcc t)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(test-parse
+ parse-expression
+ "1.92592994438723585305597794258492732e-34F128"
+ :gcc t)
