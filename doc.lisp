@@ -32710,7 +32710,10 @@ Subtopics
 
   Note that all the names are implicitly quoted.  If you wish to
   disable a computed list of names, [47mlst[0m, use the theory expression
-  [47m(set-difference-theories (current-theory :here) lst)[0m.")
+  [47m(set-difference-theories (current-theory :here) lst)[0m.
+
+  To see the runes currently disabled that are among those created when
+  a function symbol [47mFN[0m is introduced, evaluate [47m(disabledp 'FN)[0m.")
  (DISABLE-FORCING
   (FORCE)
   "To disallow forced case-splits
@@ -35890,7 +35893,10 @@ Miscellaneous efficiency ideas
 
   Note that all the names are implicitly quoted.  If you wish to enable
   a computed list of names, [47mlst[0m, use the theory expression
-  [47m(union-theories (current-theory :here) lst)[0m.")
+  [47m(union-theories (current-theory :here) lst)[0m.
+
+  To see the runes currently disabled that are among those created when
+  a function symbol [47mFN[0m is introduced, evaluate [47m(disabledp 'FN)[0m.")
  (ENABLE-FORCING
   (FORCE)
   "To allow forced case splits
@@ -115715,8 +115721,10 @@ Subtopics
   but it is useful to see [linear] to learn about maximal terms
   (which, as one might guess, are stored under ``Max-term'').
 
-  Currently, this function does not print congruence rules, equivalence
-  rules, or refinement rules.
+  Currently, this function does not print [congruence] rules,
+  [equivalence] rules, or [refinement] rules.  Moreover, [induction]
+  rules that are created by recursive definitions will not show up
+  with [47m:pr[0m.
 
   The expert user might also wish to use [47m[find-rules-of-rune][0m.  See
   [find-rules-of-rune].")
