@@ -29218,7 +29218,10 @@ ld) and @(tsee include-book)"
 
  <p>Note that all the names are implicitly quoted.  If you wish to disable a
  computed list of names, @('lst'), use the theory expression
- @('(set-difference-theories (current-theory :here) lst)').</p>")
+ @('(set-difference-theories (current-theory :here) lst)').</p>
+
+ <p>To see the runes currently disabled that are among those created when a
+ function symbol @('FN') is introduced, evaluate @('(disabledp 'FN)').</p>")
 
 (defxdoc disable-forcing
   :parents (force)
@@ -32459,7 +32462,10 @@ ld) and @(tsee include-book)"
 
  <p>Note that all the names are implicitly quoted.  If you wish to enable a
  computed list of names, @('lst'), use the theory expression @('(union-theories
- (current-theory :here) lst)').</p>")
+ (current-theory :here) lst)').</p>
+
+ <p>To see the runes currently disabled that are among those created when a
+ function symbol @('FN') is introduced, evaluate @('(disabledp 'FN)').</p>")
 
 (defxdoc enable-forcing
   :parents (force)
@@ -115639,8 +115645,10 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  self-explanatory, but it is useful to see @(see linear) to learn about maximal
  terms (which, as one might guess, are stored under ``Max-term'').</p>
 
- <p>Currently, this function does not print congruence rules, equivalence
- rules, or refinement rules.</p>
+ <p>Currently, this function does not print @(see congruence) rules, @(see
+ equivalence) rules, or @(see refinement) rules.  Moreover, @(see induction)
+ rules that are created by recursive definitions will not show up with
+ @(':pr').</p>
 
  <p>The expert user might also wish to use @(tsee find-rules-of-rune).  See
  @(see find-rules-of-rune).</p>")
