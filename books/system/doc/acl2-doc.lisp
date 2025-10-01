@@ -108974,6 +108974,8 @@ it."
 ; now points to :DOC pso, and it also suggests turning on PROVE output.  Thanks
 ; to Warren Hunt for reporting the buggy message.
 
+; Considerably improved the Essay on the Correctness of Abstract Stobjs.
+
   :parents (release-notes)
   :short "ACL2 Version  8.7 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
