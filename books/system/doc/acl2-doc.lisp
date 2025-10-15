@@ -2421,6 +2421,14 @@
  non-@('nil') @(':')@(tsee rule-classes)).  See @(see set-tau-auto-mode).</p>
 
  @({
+  :subgoal-loop-limits
+ })
+
+ <p>This key's value must be a @(tsee cons) whose @(tsee car) is either
+ @('nil') or a natural number and whose @(tsee cdr) is @('nil') or a natural
+ number.  See @(see set-subgoal-loop-limits).</p>
+
+ @({
   :ruler-extenders
  })
 
@@ -54100,7 +54108,10 @@ tables in the current Hons Space."
  @(':induct') hint is applied, then any attempt to push a subgoal for induction
  will fail (unless it too has an associated @(':induct') hint).</p>
 
- <p>To change the limit, see @(see set-induction-depth-limit).</p>")
+ <p>To change the limit, see @(see set-induction-depth-limit).</p>
+
+ <p>For another way to limit the lengths of proof attempts, see @(tsee
+ set-subgoal-loop-limits).</p>")
 
 (defxdoc induction-heuristics
   :parents (rule-classes)
@@ -109014,6 +109025,15 @@ it."
  must have no free variables, even though variables @('WORLD') and @('ENS') are
  normally permitted.  See @(see table).</p>
 
+ <p>A new feature provides ways to stop certain infinite loops in the
+ waterfall.  It is now possible to specify a limit on how many times the
+ waterfall can produce a new subgoal along a branch.  It is also possible to
+ specify that the prover should check for ``simple'' loops in the waterfall.
+ The default setting for this new feature limits the branch length to 1000 and
+ enables checking for duplicate goals.  See @(tsee
+ set-subgoal-loop-limits) for details.  Thanks to Eric Smith for suggesting
+ that we consider supporting loop detection at the goal level.</p>
+
  <h3>Heuristic and Efficiency Improvements</h3>
 
  <p>Applications that use functions with floating-point inputs or outputs (see
@@ -138751,6 +138771,156 @@ work on <tt>(q x)</tt>.</p>
  <p>The mode is stored in the defaults table, See @(see acl2-defaults-table).
  Thus, the mode may be set @(tsee local)ly in books.</p>")
 
+(defxdoc set-subgoal-loop-limits
+ :parents (miscellaneous)
+ :short "Set the maximum length and repetition count of the subgoal path"
+ :long "<p>The ACL2 ``waterfall'' (see @(see hints-and-the-waterfall)) produces
+ a tree of Goals and Subgoals.  Consider a path through this tree in which each
+ formula is an immediate descendent of the previous formula.  More precisely,
+ each element of the path records a goal formula (represented as a @(see
+ clause)), the name by which the user may refer to it, e.g., @('\"Goal''\"') or
+ @('\"Subgoal *1/2.3\"') (represented as a @(see clause-identifier)), the
+ clause processor that produced the formula, e.g., @('simplify-clause'),
+ @('eliminate-destructors-clause'), @('fertilize-clause'), etc., and the @(see
+ ttree) that records the @(see rune)s the processor used and other information
+ about what the processor did.  Finally, each path starts with the top-level
+ Goal or one of the cases produced by induction or a forcing round, and ends 
+ with (i) the reduction of the current goal to true, (ii) the abandonment of the proof
+ attempt, or (iii) the addition of the current goal to the ``pool'' for a
+ subsequent attempt at an inductive proof.</p>
+
+ <p>@('Subgoal-loop-limits') is a user-settable parameter that can limit (a)
+ the maximum length of a path and (b) the maximum number of repetitions in the
+ path of a formula and the clause processor that produced it.  In particular,
+ @('subgoal-loop-limits') is a pair, @('(len . cnt)').  If @('len') is
+ @('nil'), there is no limit on the length of a path, otherwise proof attempts
+ are aborted if the length of any subgoal path exceeds @('len').  If @('cnt')
+ is @('nil'), no check for formula repetition is made, otherwise each new
+ subgoal formula (and its processor) is compared with @(tsee equal) to the
+ ancestors along the path.  A probable loop is signaled and the proof is
+ aborted if the number of occurrences exceeds @('cnt').</p>
+
+ <p>The initial setting of @('subgoal-loop-limits') is @('(1000 . 2)').  That
+ is, no proof can produce a path longer than a 1000 successive descendants or
+ with more than 2 repetitions of the same formula (and processor).</p>
+
+ <p>One might assume that a repetition count greater than 1 indicates a loop,
+ but that is not true.  Various ACL2 clause processors may see the same formula
+ at different points along a path and, guided by heuristics sensitive to what
+ happened the last time the formula was seen, do something different.</p>
+
+ <p>This function, @('set-subgoal-loop-limits'), sets the
+ @('subgoal-loop-limits').</p>
+
+ @({
+ Example Forms:
+ (set-subgoal-loop-limits nil) ; = (set-subgoal-loop-limits '(nil . nil))
+ (set-subgoal-loop-limits t)   ; = (set-subgoal-loop-limits '(nil . 2))
+ (set-subgoal-loop-limits 100) ; = (set-subgoal-loop-limits '(100 . 2))
+ (set-subgoal-loop-limits :default) ; = (set-subgoal-loop-limits '(100 . 2))
+ (set-subgoal-loop-limits '(100 . 5))
+
+ General Form:
+ (set-subgoal-loop-limits term)
+ })
+
+ <p>where @('term') should evaluate to a @(tsee cons) whose @(tsee car) is
+ either @('nil') or a natural number and whose @(tsee cdr) is @('nil') or a
+ non-0 natural number.  However, several abbreviations are allowed.</p>
+
+ <ul>
+
+ <li>If @('term') evaluates to @('nil'), then @('(nil . nil)') is used,
+ imposing no limit on the length of a path and disabling loop detection.</li>
+
+ <li>If @('term') evaluates to @('t'), then @('(nil . 3)') is used, imposing no
+ length limit but defining a loop to be 3 or more repetitions of a formula and
+ proof technique.</li>
+
+ <li>If @('term') evaluates to a natural number, @('n'), then the pair
+ constructed by @('(cons n 3)') is used, imposing a length limit of @('n') and
+ defining a loop to be 3 or more repetitions of a formula and proof
+ technique.</li>
+
+ <li>If @('term') evaluates to @(':DEFAULT'), then the pair @('(1000 . 2)') is
+ used, which sets the @('subgoal-loop-limits') to its initial value, imposing a
+ maximum path length of 1000 and a maximum repetition count of 2.</li>
+
+ </ul>
+
+ <p>When these limits are violated, an error occurs and the proof attempt is
+ abandoned.</p>
+
+ <p>Of course, there are loops other than the simple ones this feature enables!
+ For example, the available rules may cause the simplifier to transform a
+ subgoal into a bigger one, e.g., @('Goal') @('(p x)') may be transformed to
+ @('Goal'') @('(p (f x))'), which may then transform to @('Goal''') @('(p (f (f
+ x)))'), etc.  <i>The prover does not check for such loops.</i> However, such
+ loops are stopped by the path length limit.  (Internal rewrite loops, in which
+ control never exits the simplifier, are not stopped even by a short path
+ length.)  For other ways to restrict the prover, see @(see
+ set-rewrite-stack-limit), @(see with-prover-time-limit), @(see
+ with-prover-step-limit), @(see set-prover-step-limit), and @(see
+ set-induction-depth-limit).</p>
+
+ <p>If a proof aborts because of a probable loop and you suspect the prover is
+ not really in a loop, i.e., that further iteration will break the cycle and
+ make progress, use @('set-subgoal-loop-limits') to change the default 3 to a
+ bigger number and try the proof again!</p>
+
+ <p>Checking for simple loops will slow down the prover in proofs producing
+ very long subgoal paths.</p>
+
+ <p>Note: @('Set-subgoal-loop-limits') is an @(see event)!  It does not print
+ the usual event @(see summary) but nevertheless changes the ACL2 logical @(see
+ world) and is so recorded.  Moreover, its effect is to set the @(tsee
+ acl2-defaults-table), and hence its effect is @(tsee local) to the book or
+ @(tsee encapsulate) form containing it; see @(see acl2-defaults-table).</p>
+
+ <p>To see the current limit</p>
+
+ @({
+ (subgoal-loop-limits (w state))
+ })
+
+ <p>When a loop is detected an error is signaled naming the clause processor,
+ the repeated identical subgoals, and the runes used in each passage through
+ the loop.  One such error message is shown below.</p>
+
+ @({
+ ACL2 Error [Waterfall-loop] in ( THM ...): The clause processor
+ SIMPLIFY-CLAUSE has been applied to the same formula more than 2 times, namely
+ at Goal', Goal'10' and Goal'19'.  That suggests a loop in the waterfall.
+ Consequently, we are aborting!  The following list shows the runes used in
+ each passage through the loop between successive subgoals.
+
+ ((\"Goal'\" ((:EXECUTABLE-COUNTERPART BINARY-+)
+            (:REWRITE RULE1)
+            (:REWRITE RULE2)
+            (:REWRITE RULE3)
+            (:REWRITE RULE4))
+           \"Goal'10'\")
+  (\"Goal'10'\" ((:EXECUTABLE-COUNTERPART BINARY-+)
+               (:REWRITE RULE1)
+               (:REWRITE RULE2)
+               (:REWRITE RULE3)
+               (:REWRITE RULE4))
+              \"Goal'19'\")).
+
+ For more information see :DOC set-subgoal-loop-limits.
+ })
+
+ <p>In the above example, we see that @('\"Goal'\"') was transformed by
+ @('SIMPLIFY-CLAUSE'), using the runes listed, into @('\"Goal'10'\"').
+ Furthermore, the formulas of @('\"Goal'\"') and @('\"Goal'10'\"') are
+ identical.  We also see that @('SIMPLIFY-CLAUSE') then transformed
+ @('\"Goal'10'\"'), using the same runes, to the same formula again at
+ @('\"Goal'19'\"').</p>
+
+ <p>After the error, and if you so choose, you can use the utility @(tsee pso)
+ to display the (possibly gagged, see @(see set-gag-mode)) prover output
+ between the named subgoals.</p>")
+
 (defxdoc set-table-guard
   :parents (table events)
   :short "Set the @(':guard') for a @(see table)"
@@ -144804,6 +144974,18 @@ work on <tt>(q x)</tt>.</p>
 
  <p>When you are finished with that, use your browser's <b>Back Button</b> to
  return to @(see introduction-to-key-checkpoints).</p>")
+
+(defxdoc subgoal-loop-limits
+  :parents (miscellaneous)
+  :short "maximum length of the subgoal stack"
+  :long "@({
+ General Form:
+ (subgoal-loop-limits (w state))
+ })
+
+ <p>See @(tsee set-subgoal-loop-limits) for a discussion of how you can set
+ this parameter, which can be used to detect simple looping by the prover and
+ to cut off some forms of infinite looping.</p>")
 
 (defxdoc sublis
   :parents (alists acl2-built-ins)
