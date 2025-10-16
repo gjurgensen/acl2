@@ -134255,7 +134255,7 @@ work on <tt>(q x)</tt>.</p>
  version number).
 
  @({
- tar xfj sbcl-2.2.10-source.tar.bz2
+ tar jxf sbcl-2.2.10-source.tar.bz2
  })</li>
 
  <li>Change to the new directory and build SBCL with options appropriate for
@@ -138784,7 +138784,7 @@ work on <tt>(q x)</tt>.</p>
  @('eliminate-destructors-clause'), @('fertilize-clause'), etc., and the @(see
  ttree) that records the @(see rune)s the processor used and other information
  about what the processor did.  Finally, each path starts with the top-level
- Goal or one of the cases produced by induction or a forcing round, and ends 
+ Goal or one of the cases produced by induction or a forcing round, and ends
  with (i) the reduction of the current goal to true, (ii) the abandonment of the proof
  attempt, or (iii) the addition of the current goal to the ``pool'' for a
  subsequent attempt at an inductive proof.</p>
