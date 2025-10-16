@@ -134145,7 +134145,7 @@ Further information
       follows (again, where ``[47m2.2.10[0m'' is replaced by the current
       SBCL version number).
 
-          tar xfj sbcl-2.2.10-source.tar.bz2
+          tar jxf sbcl-2.2.10-source.tar.bz2
 
    4. Change to the new directory and build SBCL with options appropriate
       for ACL2, as follows (again, replacing ``[47m2.2.10[0m'' as
