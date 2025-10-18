@@ -2421,6 +2421,14 @@
  non-@('nil') @(':')@(tsee rule-classes)).  See @(see set-tau-auto-mode).</p>
 
  @({
+  :subgoal-loop-limits
+ })
+
+ <p>This key's value must be a @(tsee cons) whose @(tsee car) is either
+ @('nil') or a natural number and whose @(tsee cdr) is @('nil') or a natural
+ number.  See @(see set-subgoal-loop-limits).</p>
+
+ @({
   :ruler-extenders
  })
 
@@ -19024,10 +19032,11 @@ subtree of X with T, without duplication.</p>
   :long "<p>For a function symbol, @('fn'), and a logical @(see world),
  @('wrld') &mdash; for example, the current world, @('(w state)') &mdash;
  evaluation of the form @('(constraint-info fn wrld)') returns @('(mv flg c)'),
- where @('c') is the list of @(see constraint)s on @('fn') (implicitly
- conjoined), and @('flg') is @('nil') if @('fn') is a defined function and
- otherwise is a function symbol with that same list of constraints (possibly
- @('fn') itself).  See @(see constraint) for relevant background.</p>
+ where @('c') is the defining axiom for @('fn') if @('flg') is @('nil'), and
+ otherwise @('c') indicates the @(see constraint)s on @('fn') and @('flg') is
+ the function symbol whose @('constraint-lst') property is @('c').  See @(see
+ constraint) for relevant background, and for further details see comments in
+ the ACL2 source code for @('constraint-info').</p>
 
  <p>We illustrate with the following example.</p>
 
@@ -19043,7 +19052,8 @@ subtree of X with T, without duplication.</p>
  })
 
  <p>Then we can see the results of @('constraint-info') on each introduced
- function symbol, as follows.</p>
+ function symbol, as follows.  (Some whitespace has been edited in the
+ result.)</p>
 
  @({
  ACL2 !>(let ((wrld (w state)))
@@ -19053,16 +19063,13 @@ subtree of X with T, without duplication.</p>
             'f2 (mv-let (flg2 c2) (constraint-info 'f2 wrld) (list flg2 c2))
             'f3 (mv-let (flg3 c3) (constraint-info 'f3 wrld) (list flg3 c3))
             'f4 (mv-let (flg4 c4) (constraint-info 'f4 wrld) (list flg4 c4))))
- (RESULT F1
-         (F1 ((EQUAL (F4 X) (F3 X))
-              (EQUAL (F1 X) (F4 X))))
+ (RESULT F1 (F1 ((EQUAL (F4 X) (F3 X))
+                 (EQUAL (F1 X) (F4 X))))
          F2 (NIL (EQUAL (F2 X) (F1 X)))
-         F3
-         (F1 ((EQUAL (F4 X) (F3 X))
-              (EQUAL (F1 X) (F4 X))))
-         F4
-         (F1 ((EQUAL (F4 X) (F3 X))
-              (EQUAL (F1 X) (F4 X)))))
+         F3 (F1 ((EQUAL (F4 X) (F3 X))
+                 (EQUAL (F1 X) (F4 X))))
+         F4 (F1 ((EQUAL (F4 X) (F3 X))
+                 (EQUAL (F1 X) (F4 X)))))
  ACL2 !>
  })
 
@@ -19071,10 +19078,7 @@ subtree of X with T, without duplication.</p>
  doesn't affect the constraints because it can be safely moved to just after
  the @('encapsulate').  However, the definition of @('f4') does affect (or
  ``infect''; see @(see subversive-recursions)) the constraints: it can't be
- moved to after the @('encapsulate') because of the @('defthm') after it.</p>
-
- <p>Also see @(see constraint).  For more details, see comments in the
- definition of @('constraint-info') in the ACL2 source code.</p>")
+ moved to after the @('encapsulate') because of the @('defthm') after it.</p>")
 
 (defxdoc context-message-pair
   :parents (kestrel-utilities system-utilities-non-built-in)
@@ -25215,7 +25219,6 @@ of @('term'). This can be retrieved with @(tsee getpropc).</p>
             ...
             (fieldk :type typek :initially valk)
             :renaming doublets
-            :doc doc-string
             :inline inline-flag)
  })
 
@@ -29219,7 +29222,10 @@ ld) and @(tsee include-book)"
 
  <p>Note that all the names are implicitly quoted.  If you wish to disable a
  computed list of names, @('lst'), use the theory expression
- @('(set-difference-theories (current-theory :here) lst)').</p>")
+ @('(set-difference-theories (current-theory :here) lst)').</p>
+
+ <p>To see the runes currently disabled that are among those created when a
+ function symbol @('FN') is introduced, evaluate @('(disabledp 'FN)').</p>")
 
 (defxdoc disable-forcing
   :parents (force)
@@ -32460,7 +32466,10 @@ ld) and @(tsee include-book)"
 
  <p>Note that all the names are implicitly quoted.  If you wish to enable a
  computed list of names, @('lst'), use the theory expression @('(union-theories
- (current-theory :here) lst)').</p>")
+ (current-theory :here) lst)').</p>
+
+ <p>To see the runes currently disabled that are among those created when a
+ function symbol @('FN') is introduced, evaluate @('(disabledp 'FN)').</p>")
 
 (defxdoc enable-forcing
   :parents (force)
@@ -54095,7 +54104,10 @@ tables in the current Hons Space."
  @(':induct') hint is applied, then any attempt to push a subgoal for induction
  will fail (unless it too has an associated @(':induct') hint).</p>
 
- <p>To change the limit, see @(see set-induction-depth-limit).</p>")
+ <p>To change the limit, see @(see set-induction-depth-limit).</p>
+
+ <p>For another way to limit the lengths of proof attempts, see @(tsee
+ set-subgoal-loop-limits).</p>")
 
 (defxdoc induction-heuristics
   :parents (rule-classes)
@@ -56374,7 +56386,7 @@ tables in the current Hons Space."
   @({
   (defthm examples-of-orderedp$
     (and (orderedp$ '(1 3 5 7) '<)
-         (not (orderedp '(1 3 3 5 7) '<)))
+         (not (orderedp$ '(1 3 3 5 7) '<)))
     :rule-classes nil)
   })
 
@@ -66895,7 +66907,7 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
     (loop$ for i from 1 to imax
            append
            (loop$ for j from 1 to jmax
-                  collect (make-pair i j)))))
+                  collect (make-pair i j))))
 
   ACL2 Error [Translate] in ( DEFUN ALL-PAIRS-LOOP$ ...):  The body of
   a LAMBDA object, lambda$ term, or loop$ statement should be fully badged
@@ -66939,7 +66951,7 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
     (loop$ for i from 1 to imax
            append
            (loop$ for j from 1 to jmax
-                  collect (make-pair i j)))))
+                  collect (make-pair i j))))
 
   *** Key checkpoint at the top level: ***
 
@@ -67119,7 +67131,7 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
     (implies (and (natp imax)
                   (natp jmax))
              (equal (all-pairs-loop$ imax jmax)
-                    (all-pairs imax jmax)))))
+                    (all-pairs imax jmax))))
 
   *** Key checkpoint at the top level: ***
 
@@ -67180,7 +67192,7 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
                            (loop$-as (list (from-to-by 1 (car loop$-gvars) 1)))))
        (list jmax)
        (loop$-as (list (from-to-by i0 imax 1))))
-      (all-pairs-helper1 i0 imax jmax)))))
+      (all-pairs-helper1 i0 imax jmax))))
 
   *** Key checkpoint under a top-level induction: ***
 
@@ -67264,7 +67276,7 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
                            (loop$-as (list (from-to-by 1 (car loop$-gvars) 1)))))
        (list jmax)
        (loop$-as (list (from-to-by i0 imax 1))))
-      (all-pairs-helper1 i0 imax jmax)))))
+      (all-pairs-helper1 i0 imax jmax))))
 
   *** Key checkpoint at the top level: ***
 
@@ -67316,7 +67328,7 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
                   (natp jmax))
              (equal (all-pairs-loop$ imax jmax)
                     (all-pairs imax jmax)))
-    :hints ((\"Goal\" :do-not-induct t))))
+    :hints ((\"Goal\" :do-not-induct t)))
 
   *** Key checkpoints at the top level: ***
 
@@ -67397,7 +67409,7 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
 
   @({
   ; Include standard apply$ book.
-  (include-book \"projects/apply/top\" :dir :system)}
+  (include-book \"projects/apply/top\" :dir :system)
 
   ; Define and verify the guards of the recursive all-pairs.
   (defun make-pair (i j)
@@ -108969,6 +108981,8 @@ it."
 ; now points to :DOC pso, and it also suggests turning on PROVE output.  Thanks
 ; to Warren Hunt for reporting the buggy message.
 
+; Considerably improved the Essay on the Correctness of Abstract Stobjs.
+
   :parents (release-notes)
   :short "ACL2 Version  8.7 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -109006,6 +109020,15 @@ it."
  table &mdash; that is, for the @(':put') and @(':clear') operations &mdash;
  must have no free variables, even though variables @('WORLD') and @('ENS') are
  normally permitted.  See @(see table).</p>
+
+ <p>A new feature provides ways to stop certain infinite loops in the
+ waterfall.  It is now possible to specify a limit on how many times the
+ waterfall can produce a new subgoal along a branch.  It is also possible to
+ specify that the prover should check for ``simple'' loops in the waterfall.
+ The default setting for this new feature limits the branch length to 1000 and
+ enables checking for duplicate goals.  See @(tsee
+ set-subgoal-loop-limits) for details.  Thanks to Eric Smith for suggesting
+ that we consider supporting loop detection at the goal level.</p>
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
@@ -115640,8 +115663,10 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  self-explanatory, but it is useful to see @(see linear) to learn about maximal
  terms (which, as one might guess, are stored under ``Max-term'').</p>
 
- <p>Currently, this function does not print congruence rules, equivalence
- rules, or refinement rules.</p>
+ <p>Currently, this function does not print @(see congruence) rules, @(see
+ equivalence) rules, or @(see refinement) rules.  Moreover, @(see induction)
+ rules that are created by recursive definitions will not show up with
+ @(':pr').</p>
 
  <p>The expert user might also wish to use @(tsee find-rules-of-rune).  See
  @(see find-rules-of-rune).</p>")
@@ -134226,7 +134251,7 @@ work on <tt>(q x)</tt>.</p>
  version number).
 
  @({
- tar xfj sbcl-2.2.10-source.tar.bz2
+ tar jxf sbcl-2.2.10-source.tar.bz2
  })</li>
 
  <li>Change to the new directory and build SBCL with options appropriate for
@@ -138741,6 +138766,156 @@ work on <tt>(q x)</tt>.</p>
 
  <p>The mode is stored in the defaults table, See @(see acl2-defaults-table).
  Thus, the mode may be set @(tsee local)ly in books.</p>")
+
+(defxdoc set-subgoal-loop-limits
+ :parents (miscellaneous)
+ :short "Set the maximum length and repetition count of the subgoal path"
+ :long "<p>The ACL2 ``waterfall'' (see @(see hints-and-the-waterfall)) produces
+ a tree of Goals and Subgoals.  Consider a path through this tree in which each
+ formula is an immediate descendent of the previous formula.  More precisely,
+ each element of the path records a goal formula (represented as a @(see
+ clause)), the name by which the user may refer to it, e.g., @('\"Goal''\"') or
+ @('\"Subgoal *1/2.3\"') (represented as a @(see clause-identifier)), the
+ clause processor that produced the formula, e.g., @('simplify-clause'),
+ @('eliminate-destructors-clause'), @('fertilize-clause'), etc., and the @(see
+ ttree) that records the @(see rune)s the processor used and other information
+ about what the processor did.  Finally, each path starts with the top-level
+ Goal or one of the cases produced by induction or a forcing round, and ends
+ with (i) the reduction of the current goal to true, (ii) the abandonment of the proof
+ attempt, or (iii) the addition of the current goal to the ``pool'' for a
+ subsequent attempt at an inductive proof.</p>
+
+ <p>@('Subgoal-loop-limits') is a user-settable parameter that can limit (a)
+ the maximum length of a path and (b) the maximum number of repetitions in the
+ path of a formula and the clause processor that produced it.  In particular,
+ @('subgoal-loop-limits') is a pair, @('(len . cnt)').  If @('len') is
+ @('nil'), there is no limit on the length of a path, otherwise proof attempts
+ are aborted if the length of any subgoal path exceeds @('len').  If @('cnt')
+ is @('nil'), no check for formula repetition is made, otherwise each new
+ subgoal formula (and its processor) is compared with @(tsee equal) to the
+ ancestors along the path.  A probable loop is signaled and the proof is
+ aborted if the number of occurrences exceeds @('cnt').</p>
+
+ <p>The initial setting of @('subgoal-loop-limits') is @('(1000 . 2)').  That
+ is, no proof can produce a path longer than a 1000 successive descendants or
+ with more than 2 repetitions of the same formula (and processor).</p>
+
+ <p>One might assume that a repetition count greater than 1 indicates a loop,
+ but that is not true.  Various ACL2 clause processors may see the same formula
+ at different points along a path and, guided by heuristics sensitive to what
+ happened the last time the formula was seen, do something different.</p>
+
+ <p>This function, @('set-subgoal-loop-limits'), sets the
+ @('subgoal-loop-limits').</p>
+
+ @({
+ Example Forms:
+ (set-subgoal-loop-limits nil) ; = (set-subgoal-loop-limits '(nil . nil))
+ (set-subgoal-loop-limits t)   ; = (set-subgoal-loop-limits '(nil . 2))
+ (set-subgoal-loop-limits 100) ; = (set-subgoal-loop-limits '(100 . 2))
+ (set-subgoal-loop-limits :default) ; = (set-subgoal-loop-limits '(100 . 2))
+ (set-subgoal-loop-limits '(100 . 5))
+
+ General Form:
+ (set-subgoal-loop-limits term)
+ })
+
+ <p>where @('term') should evaluate to a @(tsee cons) whose @(tsee car) is
+ either @('nil') or a natural number and whose @(tsee cdr) is @('nil') or a
+ non-0 natural number.  However, several abbreviations are allowed.</p>
+
+ <ul>
+
+ <li>If @('term') evaluates to @('nil'), then @('(nil . nil)') is used,
+ imposing no limit on the length of a path and disabling loop detection.</li>
+
+ <li>If @('term') evaluates to @('t'), then @('(nil . 3)') is used, imposing no
+ length limit but defining a loop to be 3 or more repetitions of a formula and
+ proof technique.</li>
+
+ <li>If @('term') evaluates to a natural number, @('n'), then the pair
+ constructed by @('(cons n 3)') is used, imposing a length limit of @('n') and
+ defining a loop to be 3 or more repetitions of a formula and proof
+ technique.</li>
+
+ <li>If @('term') evaluates to @(':DEFAULT'), then the pair @('(1000 . 2)') is
+ used, which sets the @('subgoal-loop-limits') to its initial value, imposing a
+ maximum path length of 1000 and a maximum repetition count of 2.</li>
+
+ </ul>
+
+ <p>When these limits are violated, an error occurs and the proof attempt is
+ abandoned.</p>
+
+ <p>Of course, there are loops other than the simple ones this feature enables!
+ For example, the available rules may cause the simplifier to transform a
+ subgoal into a bigger one, e.g., @('Goal') @('(p x)') may be transformed to
+ @('Goal'') @('(p (f x))'), which may then transform to @('Goal''') @('(p (f (f
+ x)))'), etc.  <i>The prover does not check for such loops.</i> However, such
+ loops are stopped by the path length limit.  (Internal rewrite loops, in which
+ control never exits the simplifier, are not stopped even by a short path
+ length.)  For other ways to restrict the prover, see @(see
+ set-rewrite-stack-limit), @(see with-prover-time-limit), @(see
+ with-prover-step-limit), @(see set-prover-step-limit), and @(see
+ set-induction-depth-limit).</p>
+
+ <p>If a proof aborts because of a probable loop and you suspect the prover is
+ not really in a loop, i.e., that further iteration will break the cycle and
+ make progress, use @('set-subgoal-loop-limits') to change the default 3 to a
+ bigger number and try the proof again!</p>
+
+ <p>Checking for simple loops will slow down the prover in proofs producing
+ very long subgoal paths.</p>
+
+ <p>Note: @('Set-subgoal-loop-limits') is an @(see event)!  It does not print
+ the usual event @(see summary) but nevertheless changes the ACL2 logical @(see
+ world) and is so recorded.  Moreover, its effect is to set the @(tsee
+ acl2-defaults-table), and hence its effect is @(tsee local) to the book or
+ @(tsee encapsulate) form containing it; see @(see acl2-defaults-table).</p>
+
+ <p>To see the current limit</p>
+
+ @({
+ (subgoal-loop-limits (w state))
+ })
+
+ <p>When a loop is detected an error is signaled naming the clause processor,
+ the repeated identical subgoals, and the runes used in each passage through
+ the loop.  One such error message is shown below.</p>
+
+ @({
+ ACL2 Error [Waterfall-loop] in ( THM ...): The clause processor
+ SIMPLIFY-CLAUSE has been applied to the same formula more than 2 times, namely
+ at Goal', Goal'10' and Goal'19'.  That suggests a loop in the waterfall.
+ Consequently, we are aborting!  The following list shows the runes used in
+ each passage through the loop between successive subgoals.
+
+ ((\"Goal'\" ((:EXECUTABLE-COUNTERPART BINARY-+)
+            (:REWRITE RULE1)
+            (:REWRITE RULE2)
+            (:REWRITE RULE3)
+            (:REWRITE RULE4))
+           \"Goal'10'\")
+  (\"Goal'10'\" ((:EXECUTABLE-COUNTERPART BINARY-+)
+               (:REWRITE RULE1)
+               (:REWRITE RULE2)
+               (:REWRITE RULE3)
+               (:REWRITE RULE4))
+              \"Goal'19'\")).
+
+ For more information see :DOC set-subgoal-loop-limits.
+ })
+
+ <p>In the above example, we see that @('\"Goal'\"') was transformed by
+ @('SIMPLIFY-CLAUSE'), using the runes listed, into @('\"Goal'10'\"').
+ Furthermore, the formulas of @('\"Goal'\"') and @('\"Goal'10'\"') are
+ identical.  We also see that @('SIMPLIFY-CLAUSE') then transformed
+ @('\"Goal'10'\"'), using the same runes, to the same formula again at
+ @('\"Goal'19'\"').</p>
+
+ <p>After the error, and if you so choose, you can use the utility @(tsee pso)
+ to display the (possibly gagged, see @(see set-gag-mode)) prover output
+ between the named subgoals.</p>")
 
 (defxdoc set-table-guard
   :parents (table events)
@@ -144795,6 +144970,18 @@ work on <tt>(q x)</tt>.</p>
 
  <p>When you are finished with that, use your browser's <b>Back Button</b> to
  return to @(see introduction-to-key-checkpoints).</p>")
+
+(defxdoc subgoal-loop-limits
+  :parents (miscellaneous)
+  :short "maximum length of the subgoal stack"
+  :long "@({
+ General Form:
+ (subgoal-loop-limits (w state))
+ })
+
+ <p>See @(tsee set-subgoal-loop-limits) for a discussion of how you can set
+ this parameter, which can be used to detect simple looping by the prover and
+ to cut off some forms of infinite looping.</p>")
 
 (defxdoc sublis
   :parents (alists acl2-built-ins)
@@ -155788,7 +155975,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   (SATISFIES pred)       (pred X) ; Lisp requires a unary function, not a macro
   SIGNED-BYTE            (INTEGERP X)
   (SIGNED-BYTE i)        same as (INTEGER k m) where k=-2^(i-1), m=2^(i-1)-1
-  STANDARD-CHAR          (STANDARD-CHARP X)
+  STANDARD-CHAR          (STANDARD-CHAR-P X)
   STRING                 (STRINGP X)
   (STRING max)           (AND (STRINGP X) (EQUAL (LENGTH X) max))
   SYMBOL                 (SYMBOLP X)

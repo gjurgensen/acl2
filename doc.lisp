@@ -77,7 +77,7 @@ Subtopics
   [defthm], [in-theory], [xargs], [state], etc., without an [47macl2::[0m
   prefix.
 
-  The constant [47m*acl2-exports*[0m lists [47m1659[0m symbols, including most
+  The constant [47m*acl2-exports*[0m lists [47m1661[0m symbols, including most
   documented ACL2 system constants, functions, and macros.  You will
   typically also want to import many symbols from Common Lisp; see
   [*common-lisp-symbols-from-main-lisp-package*].
@@ -664,9 +664,9 @@ Subtopics
        set-skip-meta-termp-checks
        set-skip-meta-termp-checks!
        set-slow-alist-action
-       set-splitter-output
-       set-standard-co set-standard-oi
-       set-state-ok set-table-guard
+       set-splitter-output set-standard-co
+       set-standard-oi set-state-ok
+       set-subgoal-loop-limits set-table-guard
        set-tau-auto-mode set-temp-touchable-fns
        set-temp-touchable-vars set-timer
        set-total-parallelism-work-limit
@@ -719,7 +719,8 @@ Subtopics
        string<-l-trichotomy
        string<= string> string>=
        stringp stringp-symbol-package-name
-       strip-cars strip-cdrs sublis sublis-fn
+       strip-cars strip-cdrs
+       subgoal-loop-limits sublis sublis-fn
        sublis-fn-lst-simple sublis-fn-simple
        subseq subseq-list subsequencep
        subsetp subsetp-eq subsetp-equal
@@ -4809,6 +4810,12 @@ Silent loading of ACL2 customization files
   wishes ACL2 to look for opportunities to create [47m:[0m[47m[tau-system][0m rules
   from all suitable [47mdefun[0ms and from all suitable [47mdefthm[0ms (with
   non-[47mnil[0m [47m:[0m[47m[rule-classes][0m).  See [set-tau-auto-mode].
+
+    :subgoal-loop-limits
+
+  This key's value must be a [47m[cons][0m whose [47m[car][0m is either [47mnil[0m or a
+  natural number and whose [47m[cdr][0m is [47mnil[0m or a natural number.  See
+  [set-subgoal-loop-limits].
 
     :ruler-extenders
 
@@ -28573,7 +28580,6 @@ The Default Function Names
               ...
               (fieldk :type typek :initially valk)
               :renaming doublets
-              :doc doc-string
               :inline inline-flag)
 
   [47mname[0m must be a new symbol, each [47mfieldi[0m must be a symbol, each [47mtypei[0m
@@ -32711,7 +32717,10 @@ Subtopics
 
   Note that all the names are implicitly quoted.  If you wish to
   disable a computed list of names, [47mlst[0m, use the theory expression
-  [47m(set-difference-theories (current-theory :here) lst)[0m.")
+  [47m(set-difference-theories (current-theory :here) lst)[0m.
+
+  To see the runes currently disabled that are among those created when
+  a function symbol [47mFN[0m is introduced, evaluate [47m(disabledp 'FN)[0m.")
  (DISABLE-FORCING
   (FORCE)
   "To disallow forced case-splits
@@ -35891,7 +35900,10 @@ Miscellaneous efficiency ideas
 
   Note that all the names are implicitly quoted.  If you wish to enable
   a computed list of names, [47mlst[0m, use the theory expression
-  [47m(union-theories (current-theory :here) lst)[0m.")
+  [47m(union-theories (current-theory :here) lst)[0m.
+
+  To see the runes currently disabled that are among those created when
+  a function symbol [47mFN[0m is introduced, evaluate [47m(disabledp 'FN)[0m.")
  (ENABLE-FORCING
   (FORCE)
   "To allow forced case splits
@@ -57693,6 +57705,9 @@ Conclusion
 
   To change the limit, see [set-induction-depth-limit].
 
+  For another way to limit the lengths of proof attempts, see
+  [47m[set-subgoal-loop-limits][0m.
+
 
 Subtopics
 
@@ -59927,7 +59942,7 @@ Some Practice Problems
 
     (defthm examples-of-orderedp$
       (and (orderedp$ '(1 3 5 7) '<)
-           (not (orderedp '(1 3 3 5 7) '<)))
+           (not (orderedp$ '(1 3 3 5 7) '<)))
       :rule-classes nil)
 
   [31;1mProblem 6[0m: You might hope that [47m(orderedp$ (sort$ lst fn) fn)[0m is a
@@ -71595,7 +71610,7 @@ LP11: Proving Theorems about [47mFOR[0m [47mLoop$[0ms
       (loop$ for i from 1 to imax
              append
              (loop$ for j from 1 to jmax
-                    collect (make-pair i j)))))
+                    collect (make-pair i j))))
 
     ACL2 Error [Translate] in ( DEFUN ALL-PAIRS-LOOP$ ...):  The body of
     a LAMBDA object, lambda$ term, or loop$ statement should be fully badged
@@ -71637,7 +71652,7 @@ LP11: Proving Theorems about [47mFOR[0m [47mLoop$[0ms
       (loop$ for i from 1 to imax
              append
              (loop$ for j from 1 to jmax
-                    collect (make-pair i j)))))
+                    collect (make-pair i j))))
 
     *** Key checkpoint at the top level: ***
 
@@ -71809,7 +71824,7 @@ LP11: Proving Theorems about [47mFOR[0m [47mLoop$[0ms
       (implies (and (natp imax)
                     (natp jmax))
                (equal (all-pairs-loop$ imax jmax)
-                      (all-pairs imax jmax)))))
+                      (all-pairs imax jmax))))
 
     *** Key checkpoint at the top level: ***
 
@@ -71868,7 +71883,7 @@ LP11: Proving Theorems about [47mFOR[0m [47mLoop$[0ms
                              (loop$-as (list (from-to-by 1 (car loop$-gvars) 1)))))
          (list jmax)
          (loop$-as (list (from-to-by i0 imax 1))))
-        (all-pairs-helper1 i0 imax jmax)))))
+        (all-pairs-helper1 i0 imax jmax))))
 
     *** Key checkpoint under a top-level induction: ***
 
@@ -71945,7 +71960,7 @@ LP11: Proving Theorems about [47mFOR[0m [47mLoop$[0ms
                              (loop$-as (list (from-to-by 1 (car loop$-gvars) 1)))))
          (list jmax)
          (loop$-as (list (from-to-by i0 imax 1))))
-        (all-pairs-helper1 i0 imax jmax)))))
+        (all-pairs-helper1 i0 imax jmax))))
 
     *** Key checkpoint at the top level: ***
 
@@ -71994,7 +72009,7 @@ LP11: Proving Theorems about [47mFOR[0m [47mLoop$[0ms
                     (natp jmax))
                (equal (all-pairs-loop$ imax jmax)
                       (all-pairs imax jmax)))
-      :hints ((\"Goal\" :do-not-induct t))))
+      :hints ((\"Goal\" :do-not-induct t)))
 
     *** Key checkpoints at the top level: ***
 
@@ -72071,7 +72086,7 @@ LP11: Proving Theorems about [47mFOR[0m [47mLoop$[0ms
   The final series of events to solve this problem is shown below.
 
     ; Include standard apply$ book.
-    (include-book \"projects/apply/top\" :dir :system)}
+    (include-book \"projects/apply/top\" :dir :system)
 
     ; Define and verify the guards of the recursive all-pairs.
     (defun make-pair (i j)
@@ -79538,8 +79553,14 @@ Subtopics
   [Set-prover-step-limit]
       Sets the step-limit used by the ACL2 prover
 
+  [Set-subgoal-loop-limits]
+      Set the maximum length and repetition count of the subgoal path
+
   [Specious-simplification]
       Nonproductive proof steps
+
+  [Subgoal-loop-limits]
+      maximum length of the subgoal stack
 
   [Subversive-inductions]
       Why we restrict [encapsulate]d recursive functions
@@ -106131,6 +106152,16 @@ New Features
   [47m:clear[0m operations --- must have no free variables, even though
   variables [47mWORLD[0m and [47mENS[0m are normally permitted.  See [table].
 
+  A new feature provides ways to stop certain infinite loops in the
+  waterfall.  It is now possible to specify a limit on how many times
+  the waterfall can produce a new subgoal along a branch.  It is also
+  possible to specify that the prover should check for ``simple''
+  loops in the waterfall.  The default setting for this new feature
+  limits the branch length to 1000 and enables checking for duplicate
+  goals.  See [47m[set-subgoal-loop-limits][0m for details.  Thanks to Eric
+  Smith for suggesting that we consider supporting loop detection at
+  the goal level.
+
 
 Heuristic and Efficiency Improvements
 
@@ -115716,8 +115747,10 @@ Subtopics
   but it is useful to see [linear] to learn about maximal terms
   (which, as one might guess, are stored under ``Max-term'').
 
-  Currently, this function does not print congruence rules, equivalence
-  rules, or refinement rules.
+  Currently, this function does not print [congruence] rules,
+  [equivalence] rules, or [refinement] rules.  Moreover, [induction]
+  rules that are created by recursive definitions will not show up
+  with [47m:pr[0m.
 
   The expert user might also wish to use [47m[find-rules-of-rune][0m.  See
   [find-rules-of-rune].")
@@ -134112,7 +134145,7 @@ Further information
       follows (again, where ``[47m2.2.10[0m'' is replaced by the current
       SBCL version number).
 
-          tar xfj sbcl-2.2.10-source.tar.bz2
+          tar jxf sbcl-2.2.10-source.tar.bz2
 
    4. Change to the new directory and build SBCL with options appropriate
       for ACL2, as follows (again, replacing ``[47m2.2.10[0m'' as
@@ -138556,6 +138589,150 @@ Subtopics
 
   The mode is stored in the defaults table, See [ACL2-defaults-table].
   Thus, the mode may be set [47m[local][0mly in books.")
+ (SET-SUBGOAL-LOOP-LIMITS
+  (MISCELLANEOUS)
+  "Set the maximum length and repetition count of the subgoal path
+
+  The ACL2 ``waterfall'' (see [hints-and-the-waterfall]) produces a
+  tree of Goals and Subgoals.  Consider a path through this tree in
+  which each formula is an immediate descendent of the previous
+  formula.  More precisely, each element of the path records a goal
+  formula (represented as a [clause]), the name by which the user may
+  refer to it, e.g., [47m\"Goal''\"[0m or [47m\"Subgoal *1/2.3\"[0m (represented as a
+  [clause-identifier]), the clause processor that produced the
+  formula, e.g., [47msimplify-clause[0m, [47meliminate-destructors-clause[0m,
+  [47mfertilize-clause[0m, etc., and the [ttree] that records the [rune]s
+  the processor used and other information about what the processor
+  did.  Finally, each path starts with the top-level Goal or one of
+  the cases produced by induction or a forcing round, and ends with
+  (i) the reduction of the current goal to true, (ii) the abandonment
+  of the proof attempt, or (iii) the addition of the current goal to
+  the ``pool'' for a subsequent attempt at an inductive proof.
+
+  [47mSubgoal-loop-limits[0m is a user-settable parameter that can limit (a)
+  the maximum length of a path and (b) the maximum number of
+  repetitions in the path of a formula and the clause processor that
+  produced it.  In particular, [47msubgoal-loop-limits[0m is a pair, [47m(len .
+  cnt)[0m.  If [47mlen[0m is [47mnil[0m, there is no limit on the length of a path,
+  otherwise proof attempts are aborted if the length of any subgoal
+  path exceeds [47mlen[0m.  If [47mcnt[0m is [47mnil[0m, no check for formula repetition
+  is made, otherwise each new subgoal formula (and its processor) is
+  compared with [47m[equal][0m to the ancestors along the path.  A probable
+  loop is signaled and the proof is aborted if the number of
+  occurrences exceeds [47mcnt[0m.
+
+  The initial setting of [47msubgoal-loop-limits[0m is [47m(1000 . 2)[0m.  That is,
+  no proof can produce a path longer than a 1000 successive
+  descendants or with more than 2 repetitions of the same formula
+  (and processor).
+
+  One might assume that a repetition count greater than 1 indicates a
+  loop, but that is not true.  Various ACL2 clause processors may see
+  the same formula at different points along a path and, guided by
+  heuristics sensitive to what happened the last time the formula was
+  seen, do something different.
+
+  This function, [47mset-subgoal-loop-limits[0m, sets the [47msubgoal-loop-limits[0m.
+
+    Example Forms:
+    (set-subgoal-loop-limits nil) ; = (set-subgoal-loop-limits '(nil . nil))
+    (set-subgoal-loop-limits t)   ; = (set-subgoal-loop-limits '(nil . 2))
+    (set-subgoal-loop-limits 100) ; = (set-subgoal-loop-limits '(100 . 2))
+    (set-subgoal-loop-limits :default) ; = (set-subgoal-loop-limits '(100 . 2))
+    (set-subgoal-loop-limits '(100 . 5))
+
+    General Form:
+    (set-subgoal-loop-limits term)
+
+  where [47mterm[0m should evaluate to a [47m[cons][0m whose [47m[car][0m is either [47mnil[0m or a
+  natural number and whose [47m[cdr][0m is [47mnil[0m or a non-0 natural number.
+  However, several abbreviations are allowed.
+
+    * If [47mterm[0m evaluates to [47mnil[0m, then [47m(nil . nil)[0m is used, imposing no limit
+      on the length of a path and disabling loop detection.
+
+    * If [47mterm[0m evaluates to [47mt[0m, then [47m(nil . 3)[0m is used, imposing no length
+      limit but defining a loop to be 3 or more repetitions of a
+      formula and proof technique.
+
+    * If [47mterm[0m evaluates to a natural number, [47mn[0m, then the pair constructed
+      by [47m(cons n 3)[0m is used, imposing a length limit of [47mn[0m and
+      defining a loop to be 3 or more repetitions of a formula and
+      proof technique.
+
+    * If [47mterm[0m evaluates to [47m:DEFAULT[0m, then the pair [47m(1000 . 2)[0m is used,
+      which sets the [47msubgoal-loop-limits[0m to its initial value,
+      imposing a maximum path length of 1000 and a maximum repetition
+      count of 2.
+
+  When these limits are violated, an error occurs and the proof attempt
+  is abandoned.
+
+  Of course, there are loops other than the simple ones this feature
+  enables!  For example, the available rules may cause the simplifier
+  to transform a subgoal into a bigger one, e.g., [47mGoal[0m [47m(p x)[0m may be
+  transformed to [47mGoal'[0m [47m(p (f x))[0m, which may then transform to [47mGoal''[0m
+  [47m(p (f (f x)))[0m, etc.  [3mThe prover does not check for such loops.[0m
+  However, such loops are stopped by the path length limit.
+  (Internal rewrite loops, in which control never exits the
+  simplifier, are not stopped even by a short path length.)  For
+  other ways to restrict the prover, see [set-rewrite-stack-limit],
+  [with-prover-time-limit], [with-prover-step-limit],
+  [set-prover-step-limit], and [set-induction-depth-limit].
+
+  If a proof aborts because of a probable loop and you suspect the
+  prover is not really in a loop, i.e., that further iteration will
+  break the cycle and make progress, use [47mset-subgoal-loop-limits[0m to
+  change the default 3 to a bigger number and try the proof again!
+
+  Checking for simple loops will slow down the prover in proofs
+  producing very long subgoal paths.
+
+  Note: [47mSet-subgoal-loop-limits[0m is an [event]!  It does not print the
+  usual event [summary] but nevertheless changes the ACL2 logical
+  [world] and is so recorded.  Moreover, its effect is to set the
+  [47m[ACL2-defaults-table][0m, and hence its effect is [47m[local][0m to the book
+  or [47m[encapsulate][0m form containing it; see [ACL2-defaults-table].
+
+  To see the current limit
+
+    (subgoal-loop-limits (w state))
+
+  When a loop is detected an error is signaled naming the clause
+  processor, the repeated identical subgoals, and the runes used in
+  each passage through the loop.  One such error message is shown
+  below.
+
+    ACL2 Error [Waterfall-loop] in ( THM ...): The clause processor
+    SIMPLIFY-CLAUSE has been applied to the same formula more than 2 times, namely
+    at Goal', Goal'10' and Goal'19'.  That suggests a loop in the waterfall.
+    Consequently, we are aborting!  The following list shows the runes used in
+    each passage through the loop between successive subgoals.
+
+    ((\"Goal'\" ((:EXECUTABLE-COUNTERPART BINARY-+)
+               (:REWRITE RULE1)
+               (:REWRITE RULE2)
+               (:REWRITE RULE3)
+               (:REWRITE RULE4))
+              \"Goal'10'\")
+     (\"Goal'10'\" ((:EXECUTABLE-COUNTERPART BINARY-+)
+                  (:REWRITE RULE1)
+                  (:REWRITE RULE2)
+                  (:REWRITE RULE3)
+                  (:REWRITE RULE4))
+                 \"Goal'19'\")).
+
+    For more information see :DOC set-subgoal-loop-limits.
+
+  In the above example, we see that [47m\"Goal'\"[0m was transformed by
+  [47mSIMPLIFY-CLAUSE[0m, using the runes listed, into [47m\"Goal'10'\"[0m.
+  Furthermore, the formulas of [47m\"Goal'\"[0m and [47m\"Goal'10'\"[0m are identical.
+  We also see that [47mSIMPLIFY-CLAUSE[0m then transformed [47m\"Goal'10'\"[0m, using
+  the same runes, to the same formula again at [47m\"Goal'19'\"[0m.
+
+  After the error, and if you so choose, you can use the utility [47m[pso][0m
+  to display the (possibly gagged, see [set-gag-mode]) prover output
+  between the named subgoals.")
  (SET-TABLE-GUARD
   (TABLE EVENTS)
   "Set the [47m:guard[0m for a [table]
@@ -144589,6 +144766,16 @@ Subtopics
   return to [introduction-to-key-checkpoints].")
  (SUBCOR-VAR (POINTERS)
              "See [system-utilities].")
+ (SUBGOAL-LOOP-LIMITS
+  (MISCELLANEOUS)
+  "maximum length of the subgoal stack
+
+    General Form:
+    (subgoal-loop-limits (w state))
+
+  See [47m[set-subgoal-loop-limits][0m for a discussion of how you can set
+  this parameter, which can be used to detect simple looping by the
+  prover and to cut off some forms of infinite looping.")
  (SUBLIS
   (ALISTS ACL2-BUILT-INS)
   "Substitute an alist into a tree
@@ -156627,7 +156814,7 @@ Type Specs
     (SATISFIES pred)       (pred X) ; Lisp requires a unary function, not a macro
     SIGNED-BYTE            (INTEGERP X)
     (SIGNED-BYTE i)        same as (INTEGER k m) where k=-2^(i-1), m=2^(i-1)-1
-    STANDARD-CHAR          (STANDARD-CHARP X)
+    STANDARD-CHAR          (STANDARD-CHAR-P X)
     STRING                 (STRINGP X)
     (STRING max)           (AND (STRINGP X) (EQUAL (LENGTH X) max))
     SYMBOL                 (SYMBOLP X)
