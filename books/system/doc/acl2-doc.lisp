@@ -19032,10 +19032,11 @@ subtree of X with T, without duplication.</p>
   :long "<p>For a function symbol, @('fn'), and a logical @(see world),
  @('wrld') &mdash; for example, the current world, @('(w state)') &mdash;
  evaluation of the form @('(constraint-info fn wrld)') returns @('(mv flg c)'),
- where @('c') is the list of @(see constraint)s on @('fn') (implicitly
- conjoined), and @('flg') is @('nil') if @('fn') is a defined function and
- otherwise is a function symbol with that same list of constraints (possibly
- @('fn') itself).  See @(see constraint) for relevant background.</p>
+ where @('c') is the defining axiom for @('fn') if @('flg') is @('nil'), and
+ otherwise @('c') indicates the @(see constraint)s on @('fn') and @('flg') is
+ the function symbol whose @('constraint-lst') property is @('c').  See @(see
+ constraint) for relevant background, and for further details see comments in
+ the ACL2 source code for @('constraint-info').</p>
 
  <p>We illustrate with the following example.</p>
 
@@ -19051,7 +19052,8 @@ subtree of X with T, without duplication.</p>
  })
 
  <p>Then we can see the results of @('constraint-info') on each introduced
- function symbol, as follows.</p>
+ function symbol, as follows.  (Some whitespace has been edited in the
+ result.)</p>
 
  @({
  ACL2 !>(let ((wrld (w state)))
@@ -19061,16 +19063,13 @@ subtree of X with T, without duplication.</p>
             'f2 (mv-let (flg2 c2) (constraint-info 'f2 wrld) (list flg2 c2))
             'f3 (mv-let (flg3 c3) (constraint-info 'f3 wrld) (list flg3 c3))
             'f4 (mv-let (flg4 c4) (constraint-info 'f4 wrld) (list flg4 c4))))
- (RESULT F1
-         (F1 ((EQUAL (F4 X) (F3 X))
-              (EQUAL (F1 X) (F4 X))))
+ (RESULT F1 (F1 ((EQUAL (F4 X) (F3 X))
+                 (EQUAL (F1 X) (F4 X))))
          F2 (NIL (EQUAL (F2 X) (F1 X)))
-         F3
-         (F1 ((EQUAL (F4 X) (F3 X))
-              (EQUAL (F1 X) (F4 X))))
-         F4
-         (F1 ((EQUAL (F4 X) (F3 X))
-              (EQUAL (F1 X) (F4 X)))))
+         F3 (F1 ((EQUAL (F4 X) (F3 X))
+                 (EQUAL (F1 X) (F4 X))))
+         F4 (F1 ((EQUAL (F4 X) (F3 X))
+                 (EQUAL (F1 X) (F4 X)))))
  ACL2 !>
  })
 
@@ -19079,10 +19078,7 @@ subtree of X with T, without duplication.</p>
  doesn't affect the constraints because it can be safely moved to just after
  the @('encapsulate').  However, the definition of @('f4') does affect (or
  ``infect''; see @(see subversive-recursions)) the constraints: it can't be
- moved to after the @('encapsulate') because of the @('defthm') after it.</p>
-
- <p>Also see @(see constraint).  For more details, see comments in the
- definition of @('constraint-info') in the ACL2 source code.</p>")
+ moved to after the @('encapsulate') because of the @('defthm') after it.</p>")
 
 (defxdoc context-message-pair
   :parents (kestrel-utilities system-utilities-non-built-in)
