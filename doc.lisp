@@ -77,7 +77,7 @@ Subtopics
   [defthm], [in-theory], [xargs], [state], etc., without an [47macl2::[0m
   prefix.
 
-  The constant [47m*acl2-exports*[0m lists [47m1659[0m symbols, including most
+  The constant [47m*acl2-exports*[0m lists [47m1661[0m symbols, including most
   documented ACL2 system constants, functions, and macros.  You will
   typically also want to import many symbols from Common Lisp; see
   [*common-lisp-symbols-from-main-lisp-package*].
@@ -664,9 +664,9 @@ Subtopics
        set-skip-meta-termp-checks
        set-skip-meta-termp-checks!
        set-slow-alist-action
-       set-splitter-output
-       set-standard-co set-standard-oi
-       set-state-ok set-table-guard
+       set-splitter-output set-standard-co
+       set-standard-oi set-state-ok
+       set-subgoal-loop-limits set-table-guard
        set-tau-auto-mode set-temp-touchable-fns
        set-temp-touchable-vars set-timer
        set-total-parallelism-work-limit
@@ -719,7 +719,8 @@ Subtopics
        string<-l-trichotomy
        string<= string> string>=
        stringp stringp-symbol-package-name
-       strip-cars strip-cdrs sublis sublis-fn
+       strip-cars strip-cdrs
+       subgoal-loop-limits sublis sublis-fn
        sublis-fn-lst-simple sublis-fn-simple
        subseq subseq-list subsequencep
        subsetp subsetp-eq subsetp-equal
@@ -4810,6 +4811,12 @@ Silent loading of ACL2 customization files
   from all suitable [47mdefun[0ms and from all suitable [47mdefthm[0ms (with
   non-[47mnil[0m [47m:[0m[47m[rule-classes][0m).  See [set-tau-auto-mode].
 
+    :subgoal-loop-limits
+
+  This key's value must be a [47m[cons][0m whose [47m[car][0m is either [47mnil[0m or a
+  natural number and whose [47m[cdr][0m is [47mnil[0m or a natural number.  See
+  [set-subgoal-loop-limits].
+
     :ruler-extenders
 
   This key's value may be a list of symbols, indicating those function
@@ -7202,6 +7209,94 @@ Subtopics
                "See [system-utilities].")
  (ALL-VARS (POINTERS)
            "See [system-utilities].")
+ (ALLEGRO-CL
+  (OBTAINING-COMMON-LISP)
+  "Allegro Common Lisp as a host for ACL2
+
+  {Allegro Common Lisp |
+  https://franz.com/products/allegro-common-lisp/} (Allegro CL) is
+  one of the Common Lisp implementations upon which an ACL2
+  executable can be built (see [obtaining-common-lisp]).  But here,
+  we discuss a concern.
+
+  Although testing is ongoing for ACL2 built upon Allegro CL, the
+  version used has been Allegro CL 10.1 since 2017.  What's more, in
+  September 2025, for an ACL2 executable built with host Lisp Allegro
+  CL, the use of ``[47mmake regression[0m'' resulted in four books (in the
+  [community-books]) that failed to certify.  We discuss those
+  failures in the ``[31;1mDetails[0m'' section below.  These failures may
+  suggest that Allegro CL, at least for its Version 10.1, does not
+  correctly support the Common Lisp language, or at least there is
+  problematic ACL2 code specific to Allegro CL.  In practice we don't
+  expect a lot of problems when using ACL2 built on Allegro CL.
+  However, since Allegro CL is relatively slow compared to several
+  other Common Lisp implementations that can host ACL2 --- SBCL, CCL,
+  LispWorks, and GCL --- those failures suggest that Allegro CL might
+  not be a good choice for ACL2 users.
+
+
+Details
+
+  Here are details regarding the four certification failures under
+  [47mbooks/[0m that are referenced above.  [31;1mThese details are quite
+  technical and probably only of interest to system implementors.[0m
+
+    * [47mkestrel/c/syntax/validator.lisp[0m
+
+        The following error from the corresponding [47mvalidator.cert.out[0m file is
+        very surprising, since the [47m[defrec][0m form for
+        [47mACL2::CLAUSE-PROCESSOR-HINT[0m has a ``cheap'' flag of [47mnil[0m, so
+        the same error can be expected to show up regardless of the
+        host Lisp --- yet as of this writing (in September 2025) it
+        seems not to have shown up for a long time, if ever.
+
+          HARD ACL2 ERROR in ACL2::RECORD-ERROR:  An attempt was made to treat
+          (49683 :TYPE-PRESCRIPTION BLOCK-ITEM-TYPES) as a record of type
+          ACL2::CLAUSE-PROCESSOR-HINT.
+
+        There were other errors like that one as well.
+
+        So for that same ACL2 version (ACL2 git hash
+        fe29908c4589c1de3b41d6c98cc8bec012c7eba3), the same book and
+        the books that (recursively) support it were certified using
+        a safety-3 ACL2 executable built on CCL.  The book certified
+        without any ``HARD ACL2 ERROR''.  This suggests that the
+        problem is likely restricted to runs using Allegro CL.
+
+        However, that book allows some trust tags (in file [47mcert.acl2[0m in that
+        directory), so perhaps there are shenanigans that somehow
+        exonerate the Allegro CL build of ACL2.  But the last failure
+        discussed below does not involve trust tags.
+
+    * [47mkestrel/axe/examples/aes-blast.lisp[0m
+      [47mkestrel/axe/examples/aes-blast-boolean.lisp[0m
+
+        These two report errors (in their [47m.cert.out[0m files) that involve using
+        the [serialize] capability to write the [47m.cert[0m file.  But
+        [47mcert.acl2[0m in that directory allows trust tags, which could be
+        relevant.  Note that serialize errors may be very difficult
+        to debug.
+
+        A second certification was tried on the second of these (picked
+        arbitrarily) in case this was just a weird glitch.  However,
+        a similar error occurred (though with a slightly different
+        backtrace).
+
+    * [47mprojects/aleo/vm/circuits/axe/blake2s-proof2.lisp[0m
+
+        This one shows a backtrace that includes the following form.
+
+          (RATIONALP 8444461749428370424248824938781546531375899335154063827935233455916872368129)
+
+        That shouldn't cause an error, but apparently it did.  Maybe the
+        image was already corrupted.  Submitting that form in a fresh
+        session produced no error.
+
+        As with the first example, a safety-3 CCL-based certification (of
+        this book and all supporting books, recursively) produced no
+        errors.  But unlike the first example, this book does not
+        allow trust tags.  This example thus provides strong evidence
+        that Allegro CL is not a great choice for hosting ACL2.")
  (ALLOCATE-FIXNUM-RANGE
   (NUMBERS ACL2-BUILT-INS)
   "Set aside fixnums in GCL
@@ -24579,19 +24674,19 @@ Subtopics
 
     (fn [47m:kwd1[0m val1 ... [47m:kwdn[0m valn),
 
-  that is, a symbol followed by a [47m[keyword-value-listp][0m.  We view the
-  case of a symbol, [47ms[0m, as the function spec [47m(s)[0m, with no keywords.
-  There must be no duplicate keywords.  In each case that we expect a
-  function spec, the context provides a set of valid keywords for
-  that function spec; it is an error to provide any other keyword in
-  the function spec.  Each function spec is interpreted as its
-  ``completion'', obtained by extending the function spec with a
-  default value for each valid keyword as indicated below.  With that
-  interpretation, the ``exported function'' of a function spec is its
-  [47mcar[0m, and that function symbol and each keyword value must be a
-  guard-verified function symbol; and moreover, the [47m:EXEC[0m function
-  must not include the new abstract stobj name, [47mst[0m, among its
-  formals.
+  that is, a symbol followed by a [47m[keyword-value-listp][0m.  Each [47mvali[0m
+  must be a symbol.  We view the case of a symbol, [47ms[0m, as the function
+  spec [47m(s)[0m, with no keywords.  There must be no duplicate keywords.
+  In each case that we expect a function spec, the context provides a
+  set of valid keywords for that function spec; it is an error to
+  provide any other keyword in the function spec.  Each function spec
+  is interpreted as its ``completion'', obtained by extending the
+  function spec with a default value for each valid keyword as
+  indicated below.  With that interpretation, the ``exported
+  function'' of a function spec is its [47mcar[0m, and that function symbol
+  and each keyword value must be a guard-verified function symbol;
+  and moreover, the [47m:EXEC[0m function must not include the new abstract
+  stobj name, [47mst[0m, among its formals.
 
   We are ready to describe the arguments of [47mdefabsstobj[0m.
 
@@ -24659,7 +24754,7 @@ Subtopics
 
       The value of [47m:EXPORTS[0m is a non-empty true list.  Each [47mei[0m is a
       function spec (for an exported function).  The valid keywords
-      are [47m:LOGIC[0m, [47m:EXEC[0m, [47m:CORRESPONDENCE[0m, and [47m:GUARD-THM[0m, [47m:PROTECT[0m,
+      are [47m:LOGIC[0m, [47m:EXEC[0m, [47m:CORRESPONDENCE[0m, [47m:GUARD-THM[0m, [47m:PROTECT[0m, and
       [47m:UPDATER[0m, and also [47m:PRESERVED[0m if and only if the specified
       [47m:EXEC[0m function returns the foundational stobj.  The default
       values for all of these keywords except [47m:UPDATER[0m and [47m:PROTECT[0m
@@ -26217,6 +26312,9 @@ Subtopics
   code), consider using [defconsts] instead.  Also see
   [using-tables-efficiently] for an analogous issue with [47m[table][0m
   events.
+
+  [47mDefconst[0m sets the [47mconst[0m property of [47mname[0m to the quoted value of [47mterm[0m.
+  This can be retrieved with [47m[getpropc][0m.
 
   It may be of interest to note that [47mdefconst[0m is implemented at the
   lisp level using [47mdefparameter[0m, as opposed to [47mdefconstant[0m.
@@ -28482,7 +28580,6 @@ The Default Function Names
               ...
               (fieldk :type typek :initially valk)
               :renaming doublets
-              :doc doc-string
               :inline inline-flag)
 
   [47mname[0m must be a new symbol, each [47mfieldi[0m must be a symbol, each [47mtypei[0m
@@ -29774,7 +29871,7 @@ Subtopics
   satisfying the same requirements as in the General Form for [47m[defun][0m.
   The effect is to define a macro [47mfn[0m and a function [47mfn$inline[0m (i.e.,
   a symbol in the same package as [47mfn[0m but whose [47m[symbol-name][0m has the
-  suffix [47m\"$INLINE\"[0m, such that each call of [47mfn[0m expands to a call of
+  suffix [47m\"$INLINE\"[0m), such that each call of [47mfn[0m expands to a call of
   the function symbol [47mfn$inline[0m on the same arguments.  Moreover,
   [47m[table][0m [events] are generated that allow the use of [47mfn[0m in [theory]
   expressions to represent [47mfn$inline[0m and that cause any untranslated
@@ -29836,8 +29933,11 @@ Subtopics
 
   (2) Every function symbol defined in ACL2 whose [47m[symbol-name][0m has the
   suffix [47m\"$INLINE\"[0m is proclaimed to be inline; similarly for
-  [47m\"$NOTINLINE\"[0m and notinline.  These restrictions are explained in a
-  comment in the ACL2 source definition of macro [47mdefun-inline[0m.
+  [47m\"$NOTINLINE\"[0m and notinline.  These suffix restrictions are
+  explained in a comment in the ACL2 source definition of macro
+  [47mdefun-inline[0m.  Note that only the functions themselves are thus
+  proclaimed, not their executable counterparts (also known as *1*
+  functions; see [evaluation]).
 
   (3) No special treatment for inlining (or notinlining) is given for
   function symbols locally defined by [47m[flet][0m, with two exceptions:
@@ -29862,8 +29962,7 @@ Subtopics
   with argument [47m:load-compiled-file :comp[0m.  Then in subsequent
   sessions, including that book with the second host Lisp will not
   result in any inline or notinline behavior for functions defined in
-  the book.  This may be fixed in a future release if someone
-  complains."
+  the book."
 )
  (DEFUN-MODE
   (DEFUN)
@@ -32618,7 +32717,10 @@ Subtopics
 
   Note that all the names are implicitly quoted.  If you wish to
   disable a computed list of names, [47mlst[0m, use the theory expression
-  [47m(set-difference-theories (current-theory :here) lst)[0m.")
+  [47m(set-difference-theories (current-theory :here) lst)[0m.
+
+  To see the runes currently disabled that are among those created when
+  a function symbol [47mFN[0m is introduced, evaluate [47m(disabledp 'FN)[0m.")
  (DISABLE-FORCING
   (FORCE)
   "To disallow forced case-splits
@@ -33133,10 +33235,20 @@ Subtopics
 
   This topic assumes that you have read the introduction to [47mloop$[0m
   expressions in ACL2; see [loop$].  Here we give more complete
-  documentation on [47mDO[0m [47mloop$[0m expressions, beginning with an informal
-  introduction based largely on examples and then continuing with
-  detailed syntax and semantics.  For a discussion of proofs about
-  [47mloop$[0ms, see [stating-and-proving-lemmas-about-loop$s].
+  documentation on [47mDO[0m [47mloop$[0m expressions.  This discussion is
+  partitioned into the following sections
+
+    * INFORMAL INTRODUCTION --- examples of [47mDO[0m [47mloop$[0m expressions
+
+    * SYNTAX --- detailed discussion of the legal syntax
+
+    * SEMANTICS --- detailed discussion of how [47mDO[0m [47mloop$[0m expressions are
+      translated into calls of the general-purpose function [47m[do$][0m
+
+    * SIGNALING ERRORS --- how [47mDO[0m [47mloop$[0ms can signal errors
+
+  For a discussion of proofs about [47mloop$[0ms, see
+  [stating-and-proving-lemmas-about-loop$s].
 
   More examples of [47m[loop$][0m expressions, including [47mDO[0m [47mloop$[0ms, may be
   found in [community-book] [47mprojects/apply/loop-tests.lisp[0m.
@@ -33211,7 +33323,7 @@ INFORMAL INTRODUCTION
     ACL2 !>
 
   See [lp-section-14] of the [47mLoop$[0m Primer for some exercises in writing
-  and executing [47mDO[0m [47mLoop$[0ms (with answers in a Community Book).  But
+  and executing [47mDO[0m [47mloop$[0ms (with answers in a Community Book).  But
   remember to come back here when you get to the end of that section.
 
   [31;1mParallel Assignment Using [47mMv-setq[0m[31;1m[0m
@@ -33751,7 +33863,7 @@ SYNTAX
       [47mvar[0m if [47mvar[0m is a stobj
 
     * [47m(MV-SETQ (var0 ... varn) term)[0m for two or more distinct variables
-      [47mvari[0m, where each [47mvari[0m is declared in a [47mWITH[0m declaration or is a
+      [47mvari[0m, where each [47mvari[0m is declared in a [47mWITH[0m clause or is a
       stobj name, and [47mterm[0m is an ordinary term that returns n+1
       values, where if [47mvari[0m is a stobj then the ith value returned is
       of that type
@@ -33765,20 +33877,20 @@ SYNTAX
   We conclude this section by discussing some syntactic restrictions.
 
   The following restriction applies to [47mloop$[0m expressions meeting the
-  following two conditions: [47m:VALUES[0m specifies other than the default
-  of [47m(NIL)[0m, and there is at least one [47mloop-finish[0m expression in the
-  [47mloop$[0m body.  In that case, there must be a [47mFINALLY[0m clause that ACL2
-  recognizes as always executing a [47mreturn[0m call.  This makes sense,
-  since in Common Lisp, the value returned by a [47mloop[0m is [47mnil[0m when
-  ``falling through'' without executing a [47mreturn[0m; but [47mnil[0m would
-  violate the specified [47m:VALUES[0m in the case above.
+  following two conditions: [47m:VALUES[0m specifies something other than
+  the default of [47m(NIL)[0m, and there is at least one [47mloop-finish[0m
+  expression in the [47mloop$[0m body.  In that case, there must be a
+  [47mFINALLY[0m clause that ACL2 recognizes as always executing a [47mreturn[0m
+  call.  This makes sense, since in Common Lisp, the value returned
+  by a [47mloop[0m is [47mnil[0m when ``falling through'' without executing a
+  [47mreturn[0m; but [47mnil[0m would violate the specified [47m:VALUES[0m in the case
+  above.
 
   As noted above, assignments with [47msetq[0m and [47mmv-setq[0m may only set stobj
   variables and variables declared using [47mWITH[0m.  This restriction
   applies to the innermost [47mloop$[0m that contains the assignment.  The
-  following, for example, is illegal because the [47mWITH[0m declaration for
-  [47mx[0m is not in the [47mloop$[0m immediately above the assignment to [47mx[0m with
-  [47msetq[0m.
+  following, for example, is illegal because the [47mWITH[0m clause for [47mx[0m is
+  not in the [47mloop$[0m immediately above the assignment to [47mx[0m with [47msetq[0m.
 
     (defun do-loop-nested-outer-with-var-bad (lst)
       (loop$ with x = lst
@@ -33821,6 +33933,10 @@ SYNTAX
 
   In a function call, it is illegal for a LOOP$ expression to occur in
   a slot whose [ilk] is not [47mnil[0m.
+
+  See the section SIGNALING ERRORS, below, for how the syntax described
+  here allows for [47mDO[0m [47mloop$[0ms to manipulate [47m[stobj][0ms and [47m[state][0m,
+  including how to signal errors from within the body of the [47mloop$[0m.
 
 
 SEMANTICS
@@ -34201,6 +34317,225 @@ SEMANTICS
   [47mnew-alist[0m is [47mnil[0m, so the conjunct [47m(CONSP (CDR (ASSOC-EQ-SAFE 'X
   ALIST)))[0m from the measure lambda's guard is false, so the guard
   evaluates to [47mnil[0m.
+
+
+SIGNALING ERRORS
+
+  We explain the subtleties of error signaling from within [47mDO[0m [47mloop$[0ms by
+  example.  To illustrate the full complexity of the situation, our
+  example will involve a [47mDO[0m that is manipulating a [stobj], and we'll
+  verify the guards.  The basic idea is that we'll define a function,
+  called [47mtransaction[0m, that either detects and signals an error or
+  updates the stobj, and then we'll write a [47mDO[0m [47mloop$[0m that executes a
+  series of transactions.  In fact, you may think of the stobj as
+  representing an account that must maintain a non-negative balance
+  and the transaction as taking an integer and adding it to the
+  balance provided that doesn't produce a negative balance.  Managing
+  the signatures of the various functions in body of the [47mloop$[0m and
+  declaring the ``right'' guards takes some experience.  After we've
+  presented a correct solution we will show some plausible
+  alternatives and explain why they are unacceptable.
+
+  Recall that the standard idiom for signaling a ``soft'' error in ACL2
+  is to call the function [47m[error1][0m, usually via the macro [47m[er][0m.
+  [47mError1[0m returns an [error-triple] of the form [47m(mv t nil state)[0m.  So
+  our [47mDO[0m [47mloop$[0m will necessarily manipulate [47mstate[0m in addition to the
+  user's stobj.
+
+  To admit the functions shown below, first execute these three
+  commands.
+
+    (include-book \"projects/apply/top\" :dir :system)
+    (set-state-ok t)
+    (defstobj st (balance :type (satisfies natp) :initially 0))
+
+  Note that our stobj has just one field, named [47mbalance[0m, which must be
+  a natural number and is initially 0.  Below is the basic
+  [47mtransaction[0m function which may signal an error.  Note that two
+  unnecessary lines are commented out as explained in note [1] below.
+
+    (defun transaction (delta st state)
+      (declare (xargs :stobjs (st state)
+                      :guard (and (integerp delta)
+    ;                             (stp st)                     ; [1]
+    ;                             (state-p state)              ; [1]
+                                  (error1-state-p state))))    ; [2]
+      (cond ((< (balance st) (- delta))
+             (mv-let (erp val state)                           ; [3]
+               (er soft 'transaction
+                   \"The stobj's balance is ~x0 but the delta is ~x1, so this ~
+                    transaction is not allowed!\"
+                   (balance st)
+                   delta)
+               (declare (ignore val))
+               (mv erp st state)))
+            (t (let ((st (update-balance (+ (balance st) delta)
+                                         st)))
+                 (mv nil st state)))))
+
+  Notes on [47mtransaction[0m:
+
+    * [1] We don't need to include [47m(stp state)[0m and [47m(state-p state)[0m
+      explicitly in the [47m:guard[0m for the function because they're
+      implicitly included by the [47m:stobjs[0m declaration.
+
+    * [2] The [47m[er][0m macro expands to a call of the function [47m[error1][0m, and
+      [47merror1[0m requires that its [47m[state][0m argument not only satisfy the
+      recognizer for ACL2 states, [47mstate-p[0m, but also some other
+      conditions to allow formatted printing to certain channels.
+      See [47m:[0m[47m[pe][0m [47merror1-state-p[0m and its subroutine [47mfmt-state-p[0m.  By
+      the way, you won't see ``[47m(state-p state)[0m'' in the [47m:guard[0m
+      declaration of [47merror1[0m.  But it is implicit in the use of the
+      variable named [47mstate[0m as a formal.  To see the full guard of a
+      function, [3mfn[0m, you can do [47m:[0m[47m[args][0m [3mfn[0m or, alternatively, [47m(guard
+      '[0m[3mfn[0m[47m nil (w state))[0m.
+
+    * [3] We signal an error with the [47mer[0m macro.  But the signature of [47mer[0m is
+      [47m(mv * * state)[0m, i.e., the first two values returned are
+      ``ordinary'' objects, not stobjs.  But our function,
+      [47mtransaction[0m, must return the (possibly) modified stobj [47mst[0m.  So
+      we ``catch'' the error triple generated by [47mer[0m and replace the
+      ordinary [47mval[0m, which in this case is [47mnil[0m, by [47mst[0m.
+
+  Since we'll use [47mtransaction[0m in a [47mDO[0m [47mloop$[0m, we need a warrant.
+
+    (defwarrant transaction)
+
+  The lemma below is not strictly necessary.  If we don't prove it
+  here, the guard proof for our [47mloop$[0m takes longer because we have to
+  prove a more complicated instance of this lemma by induction.
+
+    (defthm dumb-lemma
+      (implies (and lst
+                    (integer-listp lst))
+               (integerp (car lst)))
+      :rule-classes :type-prescription)
+
+  Finally, we define the function that executes a series of
+  [47mtransaction[0ms on a sequence of integers.  But it may detect and
+  signal an error partway through the sequence.  Note that several
+  lines are commented out, either because they are optional or
+  because they are prohibited, as explained in the accompanying notes
+  below.
+
+    (defun transaction-loop (delta-lst st state)
+      (declare (xargs :stobjs (st state)
+                      :guard (and (integer-listp delta-lst)
+    ;                             (stp st)                     ; See Note [1] above
+    ;                             (state-p state)              ; See Note [1] above
+                                  (error1-state-p state))
+                      :guard-hints ((\"Goal\" :in-theory (enable error1)))))
+      (loop$ with lst = delta-lst
+    ;        with st                                           ; [4]
+    ;        with state                                        ; [4]
+             with erp                                          ; [5]
+             do
+             :guard (and (integer-listp lst)
+                         (stp st)                              ; [6]
+                         (state-p state)                       ; [6]
+                         (error1-state-p state))
+             :values (nil st state)
+             (cond
+              ((eq lst nil) (return (mv nil st state)))
+              (t (progn                                        ; [7]
+                   (mv-setq (erp st state)
+                            (transaction (car lst) st state))
+                   (cond
+                    (erp (return (mv erp st state)))
+                    (t (setq lst (cdr lst)))))))))
+
+  Notes on [47mtransaction-loop[0m:
+
+    * [4] One might think that we need to bind [47mst[0m and [47mstate[0m in [47mWITH[0m clauses
+      because, in the body of the [47mDO[0m [47mloop$[0m, we assign to them, with
+      [47mmv-setq[0m, here, or in other examples, with [47msetq[0m.  But ACL2
+      disallows binding stobj names in [47mWITH[0m clauses.  A syntax error
+      is signaled if you try that.
+
+    * [5] We must bind [47merp[0m in a [47mWITH[0m clause because we assign to it in the
+      body and it is an ordinary object.
+
+    * [6] One might think that we do not need to include [47m(stp st)[0m and
+      [47m(state-p state)[0m in the [47m:guard[0m of the [47mDO[0m [47mloop$[0m body, for the
+      same reasons we did not have to include them in the [47m:guard[0m of
+      the function itself: might they be implicitly included by
+      virtue of their being stobj names?  The answer is no!  If a
+      stobj is used in the body of a [47mDO[0m [47mloop$[0m, the [47m:guard[0m for the [47mDO[0m
+      [47mloop$[0m must include the stobj recognizer if guard checking is to
+      succeed.
+
+    * [7] Finally, the construction
+
+          (progn (mv-setq (erp st state) <term>) <do-body-term>)
+
+      used here may seem odd.  One might be inclined to write something
+      like this instead:
+
+          (mv-let (erp st state) <term> <do-body-term>)
+
+      However, the latter construction is syntactically illegal in the
+      body of a [47mDO[0m [47mloop$[0m.  The reason has to do with the precise
+      definition of ``do-body terms'' (see the SYNTAX section above).
+      Recall that do-body terms are term-like but allow very
+      restricted uses of [47mreturn[0m, [47mprogn[0m, [47msetq[0m, [47mmv-setq[0m, and
+      [47mloop-finish[0m and possibly other do-body subterms.  Do-body terms
+      are not actually ACL2 terms!
+
+      To be precise, one might have tried to use the following as the body
+      of the [47mloop$[0m in [47mtransaction-loop[0m.
+
+          (cond
+            ((eq lst nil) (return (mv nil st state)))
+            (t (mv-let (erp st state)
+                       (transaction (car lst) st state)
+                 (cond
+                  (erp (return (mv erp st state)))
+                  (t (setq lst (cdr lst)))))))
+
+      Note the [47mmv-let[0m.  It is syntactically illegal because its final
+      argument, namely the [47mcond[0m-expression, uses [47mreturn[0m and [47msetq[0m
+      where ACL2 function names are required.  In writing the above,
+      the user has presumed that an [47mmv-let[0m expression in a do-body
+      term allows the final argument to be a do-body term instead of
+      an ACL2 term.  This presumption is incorrect.  Instead, use
+      [47mprogn[0m and [47mmv-setq[0m to field the values of a multi-valued
+      function like [47mtransaction[0m and then write the do-body term to
+      process them.
+
+  Here is a sample session log after introducing the correct
+  definitions above.  Note that the balance starts at 0, the user,
+  employing the function [47mtransaction[0m, adds 100 and then attempts to
+  subtract 150.  An error is signaled and the balance remains 100.
+  Then the user runs the [47mtransaction-loop[0m function with a starting
+  balance of 100 and attempts to successively subtract 20, then 30,
+  then 55, and then attempts to add 200.  The loop terminates with an
+  error on the 55 and leaves the balance at 50, never processing the
+  200.
+
+    ACL2 !>(balance st)
+    0
+    ACL2 !>(transaction 100 st state)
+    (NIL <st> <state>)
+    ACL2 !>(balance st)
+    100
+    ACL2 !>(transaction -150 st state)
+
+
+    ACL2 Error in TRANSACTION:  The stobj's balance is 100 but the delta
+    is -150, so this transaction is not allowed!
+
+    (T <st> <state>)
+    ACL2 !>(balance st)
+    100
+    ACL2 !>(transaction-loop '(-20 -30 -55 200) st state)
+
+
+    ACL2 Error in TRANSACTION:  The stobj's balance is 50 but the delta
+    is -55, so this transaction is not allowed!
+
+    (T <st> <state>)
+    ACL2 !>(balance st)
+    50
 
 
 Subtopics
@@ -35565,7 +35900,10 @@ Miscellaneous efficiency ideas
 
   Note that all the names are implicitly quoted.  If you wish to enable
   a computed list of names, [47mlst[0m, use the theory expression
-  [47m(union-theories (current-theory :here) lst)[0m.")
+  [47m(union-theories (current-theory :here) lst)[0m.
+
+  To see the runes currently disabled that are among those created when
+  a function symbol [47mFN[0m is introduced, evaluate [47m(disabledp 'FN)[0m.")
  (ENABLE-FORCING
   (FORCE)
   "To allow forced case splits
@@ -36862,18 +37200,19 @@ Subtopics
     (er-soft  'top-level \"Illegal-inputs\" \"Illegal inputs, ~x0 and ~x1.\" a b)
 
   The examples above all print an error message to standard output
-  saying that [47ma[0m and [47mb[0m are illegal inputs.  However, the first three
-  abort evaluation after printing an error message (while logically
-  returning [47mnil[0m, though in ordinary evaluation the return value is
-  never seen); while the last two return [47m(mv t nil state)[0m after
-  printing an error message.  The result in each of the last two
-  cases can be interpreted as an ``error'' when programming with the
-  ACL2 [47m[state][0m, something most ACL2 users will probably not want to
-  do unless they are building systems of some sort; see
-  [programming-with-state].  If state is not available in the current
-  context then you will probably want to use a call other than the
-  last to cause an error; for example, if you are returning two
-  values, you may write [47m(mv (er hard ...) nil)[0m.
+  saying that (the values of) [47ma[0m and [47mb[0m are illegal inputs.  However,
+  the first three --- which we call [3mhard errors[0m --- abort evaluation
+  after printing an error message (while logically returning [47mnil[0m,
+  though in ordinary evaluation the return value is never seen);
+  while the last two --- so-called [3msoft errors[0m --- return an
+  [error-triple], [47m(mv t nil state)[0m, after printing an error message.
+  The result in each of the two soft error cases can be interpreted
+  as an ``error'' when programming with the ACL2 [47m[state][0m, something
+  most ACL2 users will probably not want to do unless they are
+  building systems of some sort; see [programming-with-state].  If
+  state is not available in the current context then you will
+  probably want to cause a hard error; for example, if you are
+  returning two values, you may write [47m(mv (er hard ...) nil)[0m.
 
   The difference between the [47mhard[0m and [47mhard?[0m forms is one of guards.
   Use [47mhard[0m if you want the call to generate a (clearly impossible)
@@ -36896,10 +37235,16 @@ Subtopics
   [47mEr[0m is a macro, and the examples above expand to calls of ACL2
   functions; see below.  Also see [illegal], [hard-error], and
   [error1].  The [47mhard?[0m/[47mhard?![0m forms have expansions that call the
-  function, [47m[hard-error][0m, which has a [guard] of [47mT[0m, while the
-  [47mhard[0m/[47mhard![0m forms have expansions that call the function, [47m[illegal][0m,
+  function [47m[hard-error][0m, which has a [guard] of [47mT[0m, while the
+  [47mhard[0m/[47mhard![0m forms have expansions that call the function [47m[illegal][0m,
   which has a guard that is logically [47mNIL[0m.  Those generate code that
-  is in [47m:[0m[47m[logic][0m mode, as do variants of [47m(er soft ...)[0m.
+  is in [47m:[0m[47m[logic][0m mode, as do variants of [47m(er soft ...)[0m.  The soft
+  error forms expand to calls of the function [47m[error1][0m, which
+  necessarily takes [47m[state][0m as an explicit argument since it returns
+  an [error-triple].  The guard for the soft error forms is that of
+  [47m[error1][0m.  Note in particular that soft errors require the state to
+  satisfy certain restrictions beyond just the usual [47mstate-p[0m
+  predicate.
 
   The general forms of the macros are as follows.  Their
   macroexpansions include code that avoids the printing of error
@@ -37142,10 +37487,24 @@ Subtopics
 
   [47mError1[0m can be interpreted as causing an ``error'' when programming
   with the ACL2 [47m[state][0m, something most ACL2 users will probably not
-  want to do; see [ld-error-triples] and see [er-progn].  In order to
-  cause errors with [47m:[0m[47m[logic][0m mode functions, see [hard-error] and see
-  [illegal].  Better yet, see [er] for a macro that provides a
-  unified way of signaling errors.
+  want to do; see [ld-error-triples] and see [er-progn].  However,
+  [47merror1[0m is a guard verified [47m[logic][0m mode function whose guard is
+
+    (AND (STATE-P STATE)
+         (STRINGP STR)
+         (ERROR1-STATE-P STATE)
+         (CHARACTER-ALISTP ALIST)
+         (OR (NULL SUMMARY) (STRINGP SUMMARY)))
+
+  Note in particular that the state must not only satisfy the basic
+  recognizer, [47mstate-p[0m, for ACL2 states but must also satisfy
+  [47merror1-state-p[0m, which includes additional restrictions ensuring
+  that [47merror1[0m can print formatted output to the standard character
+  output channel, [47m[standard-co][0m, interpret the table maintained by
+  [47m[set-inhibit-er][0m, etc.  If the complexity of [error1]'s guard
+  discourages you from using it in guard-verified logic mode systems
+  you may wish to cause a [hard-error] with [47m[illegal][0m or the more
+  unified way of signaling errors with the macro [47m[er][0m.
 
   As mentioned above, [47merror1[0m always returns [47m(mv t nil state)[0m.  But if a
   call [47m(error1 ctx summary str alist)[0m is encountered during
@@ -57346,6 +57705,9 @@ Conclusion
 
   To change the limit, see [set-induction-depth-limit].
 
+  For another way to limit the lengths of proof attempts, see
+  [47m[set-subgoal-loop-limits][0m.
+
 
 Subtopics
 
@@ -59580,7 +59942,7 @@ Some Practice Problems
 
     (defthm examples-of-orderedp$
       (and (orderedp$ '(1 3 5 7) '<)
-           (not (orderedp '(1 3 3 5 7) '<)))
+           (not (orderedp$ '(1 3 3 5 7) '<)))
       :rule-classes nil)
 
   [31;1mProblem 6[0m: You might hope that [47m(orderedp$ (sort$ lst fn) fn)[0m is a
@@ -71248,7 +71610,7 @@ LP11: Proving Theorems about [47mFOR[0m [47mLoop$[0ms
       (loop$ for i from 1 to imax
              append
              (loop$ for j from 1 to jmax
-                    collect (make-pair i j)))))
+                    collect (make-pair i j))))
 
     ACL2 Error [Translate] in ( DEFUN ALL-PAIRS-LOOP$ ...):  The body of
     a LAMBDA object, lambda$ term, or loop$ statement should be fully badged
@@ -71290,7 +71652,7 @@ LP11: Proving Theorems about [47mFOR[0m [47mLoop$[0ms
       (loop$ for i from 1 to imax
              append
              (loop$ for j from 1 to jmax
-                    collect (make-pair i j)))))
+                    collect (make-pair i j))))
 
     *** Key checkpoint at the top level: ***
 
@@ -71462,7 +71824,7 @@ LP11: Proving Theorems about [47mFOR[0m [47mLoop$[0ms
       (implies (and (natp imax)
                     (natp jmax))
                (equal (all-pairs-loop$ imax jmax)
-                      (all-pairs imax jmax)))))
+                      (all-pairs imax jmax))))
 
     *** Key checkpoint at the top level: ***
 
@@ -71521,7 +71883,7 @@ LP11: Proving Theorems about [47mFOR[0m [47mLoop$[0ms
                              (loop$-as (list (from-to-by 1 (car loop$-gvars) 1)))))
          (list jmax)
          (loop$-as (list (from-to-by i0 imax 1))))
-        (all-pairs-helper1 i0 imax jmax)))))
+        (all-pairs-helper1 i0 imax jmax))))
 
     *** Key checkpoint under a top-level induction: ***
 
@@ -71598,7 +71960,7 @@ LP11: Proving Theorems about [47mFOR[0m [47mLoop$[0ms
                              (loop$-as (list (from-to-by 1 (car loop$-gvars) 1)))))
          (list jmax)
          (loop$-as (list (from-to-by i0 imax 1))))
-        (all-pairs-helper1 i0 imax jmax)))))
+        (all-pairs-helper1 i0 imax jmax))))
 
     *** Key checkpoint at the top level: ***
 
@@ -71647,7 +72009,7 @@ LP11: Proving Theorems about [47mFOR[0m [47mLoop$[0ms
                     (natp jmax))
                (equal (all-pairs-loop$ imax jmax)
                       (all-pairs imax jmax)))
-      :hints ((\"Goal\" :do-not-induct t))))
+      :hints ((\"Goal\" :do-not-induct t)))
 
     *** Key checkpoints at the top level: ***
 
@@ -71724,7 +72086,7 @@ LP11: Proving Theorems about [47mFOR[0m [47mLoop$[0ms
   The final series of events to solve this problem is shown below.
 
     ; Include standard apply$ book.
-    (include-book \"projects/apply/top\" :dir :system)}
+    (include-book \"projects/apply/top\" :dir :system)
 
     ; Define and verify the guards of the recursive all-pairs.
     (defun make-pair (i j)
@@ -79191,8 +79553,14 @@ Subtopics
   [Set-prover-step-limit]
       Sets the step-limit used by the ACL2 prover
 
+  [Set-subgoal-loop-limits]
+      Set the maximum length and repetition count of the subgoal path
+
   [Specious-simplification]
       Nonproductive proof steps
+
+  [Subgoal-loop-limits]
+      maximum length of the subgoal stack
 
   [Subversive-inductions]
       Why we restrict [encapsulate]d recursive functions
@@ -80851,7 +81219,7 @@ Subtopics
   For this topic we assume that you already understand the basics of
   single-threaded objects in ACL2.  See [stobj], and in particular,
   see [defstobj], which notes that a stobj field can itself be a
-  stobj, an array or hash-tablle of stobjs, or a [stobj-table].  The
+  stobj, an array or hash-table of stobjs, or a [stobj-table].  The
   present [documentation] topic expands on that point.  However, we
   ignore stobj-table fields here; see [stobj-table] for such
   documentation.
@@ -81032,11 +81400,12 @@ SECTION: Accessing and updating stobj fields of stobjs using
   [47mparent[0m, which is a stobj isomorphic to [47mchild[0m, to have a value of 3.
   Below we explain the terms ``bindings'', ``producer variables'',
   ``producer'', and ``consumer'', as well as how to understand this
-  form.
+  form.  (Note that ``producer variables'' refers to a list of one or
+  more variables.)
 
     (stobj-let
      ((child (fld2 parent)))  ; bindings
-     (child)                  ; producer variable(s)
+     (child)                  ; producer variables
      (update-fld 3 child)     ; producer
      (update-fld3 'a parent)) ; consumer
 
@@ -81046,7 +81415,7 @@ SECTION: Accessing and updating stobj fields of stobjs using
     * Bindings:
           Bind [47mchild[0m to [47m(fld2 parent)[0m.
 
-    * Producer variable(s) and producer:
+    * Producer variables and producer:
           Then bind the variable, [47mchild[0m, to the value of the producer,
           [47m(update-fld 3 child)[0m.
 
@@ -81060,7 +81429,7 @@ SECTION: Accessing and updating stobj fields of stobjs using
   following expression, though this is approximate (see below).
 
     (let ((child (fld2 parent))) ; bindings
-      (let ((child (update-fld 3 child))) ; bind producer vars to producer
+      (let ((child (update-fld 3 child))) ; bind producer variables to producer
         (let ((parent (update-fld2 child parent))) ; implicit update of parent
           (update-fld3 'a parent))))
 
@@ -81440,7 +81809,7 @@ SECTION: Precise documentation for [47mstobj-let[0m
 
     (let BINDINGS'
       (declare (ignorable . STOBJ-LET-BOUND-VARIABLES))
-      (mv-let PRODUCER-VARS
+      (mv-let PRODUCER-VARIABLES
               PRODUCER
               (let* UPDATES
                 CONSUMER)))
@@ -81608,7 +81977,7 @@ SECTION: Using [47mstobj-let[0m with abstract stobjs
     ; bindings:
        ((n$  (uenslot1 two-usuallyequal-nums))
         (n$2 (uenslot2 two-usuallyequal-nums)))
-    ; producer variable:
+    ; producer variables:
        (n1 n2)
     ; producer:
        (mv (n$val n$) (n$val n$2))
@@ -105783,6 +106152,16 @@ New Features
   [47m:clear[0m operations --- must have no free variables, even though
   variables [47mWORLD[0m and [47mENS[0m are normally permitted.  See [table].
 
+  A new feature provides ways to stop certain infinite loops in the
+  waterfall.  It is now possible to specify a limit on how many times
+  the waterfall can produce a new subgoal along a branch.  It is also
+  possible to specify that the prover should check for ``simple''
+  loops in the waterfall.  The default setting for this new feature
+  limits the branch length to 1000 and enables checking for duplicate
+  goals.  See [47m[set-subgoal-loop-limits][0m for details.  Thanks to Eric
+  Smith for suggesting that we consider supporting loop detection at
+  the goal level.
+
 
 Heuristic and Efficiency Improvements
 
@@ -105874,6 +106253,18 @@ Bug Fixes
   table, that is, using the [47m:put[0m and [47m:clear[0m operations.  However, [47mENS[0m
   was not being allowed in the key expression.  That has been fixed.
 
+  (SBCL only) Fixed a bug, for ACL2 hosted on SBCL, that was preventing
+  inlining of functions whose name ends in [47m\"$INLINE\"[0m, such as those
+  generated by [47m[defun-inline][0m.  Thanks to Grant Jurgensen for
+  reporting this bug with a helpful example.
+
+  A [47m[defabsstobj][0m event contains [3mfunction specs[0m that are each either a
+  symbol or a list of the form [47m(fn :kwd1 val1 ... :kwdn valn)[0m.  Each
+  [47mvali[0m must be a symbol, but when this was not the case, a raw Lisp
+  error could occur.  Now a clean error message is printed, and this
+  requirement on the [47mvali[0m has been made explicit in the documentation
+  for [47m[defabsstobj][0m.
+
 
 Changes at the System Level
 
@@ -105935,6 +106326,10 @@ Changes at the System Level
   https://www.cs.utexas.edu/users/moore/acl2/manuals/latest/}) have
   been replaced by references to the new one ({https://acl2.org/doc/
   | https://acl2.org/doc/}).
+
+  The documentation for [47m[do-loop$][0m has been extended to illustrate how
+  to signal a soft error from within the body of a [47mDO[0m [47m[loop$][0m
+  expression.
 
 
 EMACS Support
@@ -107156,7 +107551,8 @@ Allegro Common Lisp
 
   {Allegro Common Lisp | https://franz.com/} is a commercial
   implementation.  It has been maintained for many years, but it
-  generally runs ACL2 more slowly than most other implementations.
+  generally runs ACL2 more slowly than most other implementations,
+  and there are other issues; see [allegro-cl].
 
 
 Clozure Common Lisp (CCL)
@@ -107229,6 +107625,9 @@ Steel Bank Common Lisp (SBCL)
 
 
 Subtopics
+
+  [Allegro-cl]
+      Allegro Common Lisp as a host for ACL2
 
   [Ccl-installation]
       Installing Clozure Common Lisp (CCL)
@@ -110649,7 +111048,8 @@ Further Explanation
   ACL2 currently runs on [31;1mUnix[0m, [31;1mLinux[0m, [31;1mWindows[0m, and [31;1mMacintosh OS X[0m
   operating systems.
 
-  It can generally be built in any of the following Common Lisps:
+  It can generally be built in any of the following Common Lisps (but
+  see [allegro-cl] for a caveat about Allegro Common Lisp):
 
     * [31;1mAllegro Common Lisp[0m,
     * [31;1mCCL[0m (formerly OpenMCL)
@@ -115347,8 +115747,10 @@ Subtopics
   but it is useful to see [linear] to learn about maximal terms
   (which, as one might guess, are stored under ``Max-term'').
 
-  Currently, this function does not print congruence rules, equivalence
-  rules, or refinement rules.
+  Currently, this function does not print [congruence] rules,
+  [equivalence] rules, or [refinement] rules.  Moreover, [induction]
+  rules that are created by recursive definitions will not show up
+  with [47m:pr[0m.
 
   The expert user might also wish to use [47m[find-rules-of-rune][0m.  See
   [find-rules-of-rune].")
@@ -133743,7 +134145,7 @@ Further information
       follows (again, where ``[47m2.2.10[0m'' is replaced by the current
       SBCL version number).
 
-          tar xfj sbcl-2.2.10-source.tar.bz2
+          tar jxf sbcl-2.2.10-source.tar.bz2
 
    4. Change to the new directory and build SBCL with options appropriate
       for ACL2, as follows (again, replacing ``[47m2.2.10[0m'' as
@@ -138187,6 +138589,150 @@ Subtopics
 
   The mode is stored in the defaults table, See [ACL2-defaults-table].
   Thus, the mode may be set [47m[local][0mly in books.")
+ (SET-SUBGOAL-LOOP-LIMITS
+  (MISCELLANEOUS)
+  "Set the maximum length and repetition count of the subgoal path
+
+  The ACL2 ``waterfall'' (see [hints-and-the-waterfall]) produces a
+  tree of Goals and Subgoals.  Consider a path through this tree in
+  which each formula is an immediate descendent of the previous
+  formula.  More precisely, each element of the path records a goal
+  formula (represented as a [clause]), the name by which the user may
+  refer to it, e.g., [47m\"Goal''\"[0m or [47m\"Subgoal *1/2.3\"[0m (represented as a
+  [clause-identifier]), the clause processor that produced the
+  formula, e.g., [47msimplify-clause[0m, [47meliminate-destructors-clause[0m,
+  [47mfertilize-clause[0m, etc., and the [ttree] that records the [rune]s
+  the processor used and other information about what the processor
+  did.  Finally, each path starts with the top-level Goal or one of
+  the cases produced by induction or a forcing round, and ends with
+  (i) the reduction of the current goal to true, (ii) the abandonment
+  of the proof attempt, or (iii) the addition of the current goal to
+  the ``pool'' for a subsequent attempt at an inductive proof.
+
+  [47mSubgoal-loop-limits[0m is a user-settable parameter that can limit (a)
+  the maximum length of a path and (b) the maximum number of
+  repetitions in the path of a formula and the clause processor that
+  produced it.  In particular, [47msubgoal-loop-limits[0m is a pair, [47m(len .
+  cnt)[0m.  If [47mlen[0m is [47mnil[0m, there is no limit on the length of a path,
+  otherwise proof attempts are aborted if the length of any subgoal
+  path exceeds [47mlen[0m.  If [47mcnt[0m is [47mnil[0m, no check for formula repetition
+  is made, otherwise each new subgoal formula (and its processor) is
+  compared with [47m[equal][0m to the ancestors along the path.  A probable
+  loop is signaled and the proof is aborted if the number of
+  occurrences exceeds [47mcnt[0m.
+
+  The initial setting of [47msubgoal-loop-limits[0m is [47m(1000 . 2)[0m.  That is,
+  no proof can produce a path longer than a 1000 successive
+  descendants or with more than 2 repetitions of the same formula
+  (and processor).
+
+  One might assume that a repetition count greater than 1 indicates a
+  loop, but that is not true.  Various ACL2 clause processors may see
+  the same formula at different points along a path and, guided by
+  heuristics sensitive to what happened the last time the formula was
+  seen, do something different.
+
+  This function, [47mset-subgoal-loop-limits[0m, sets the [47msubgoal-loop-limits[0m.
+
+    Example Forms:
+    (set-subgoal-loop-limits nil) ; = (set-subgoal-loop-limits '(nil . nil))
+    (set-subgoal-loop-limits t)   ; = (set-subgoal-loop-limits '(nil . 2))
+    (set-subgoal-loop-limits 100) ; = (set-subgoal-loop-limits '(100 . 2))
+    (set-subgoal-loop-limits :default) ; = (set-subgoal-loop-limits '(100 . 2))
+    (set-subgoal-loop-limits '(100 . 5))
+
+    General Form:
+    (set-subgoal-loop-limits term)
+
+  where [47mterm[0m should evaluate to a [47m[cons][0m whose [47m[car][0m is either [47mnil[0m or a
+  natural number and whose [47m[cdr][0m is [47mnil[0m or a non-0 natural number.
+  However, several abbreviations are allowed.
+
+    * If [47mterm[0m evaluates to [47mnil[0m, then [47m(nil . nil)[0m is used, imposing no limit
+      on the length of a path and disabling loop detection.
+
+    * If [47mterm[0m evaluates to [47mt[0m, then [47m(nil . 3)[0m is used, imposing no length
+      limit but defining a loop to be 3 or more repetitions of a
+      formula and proof technique.
+
+    * If [47mterm[0m evaluates to a natural number, [47mn[0m, then the pair constructed
+      by [47m(cons n 3)[0m is used, imposing a length limit of [47mn[0m and
+      defining a loop to be 3 or more repetitions of a formula and
+      proof technique.
+
+    * If [47mterm[0m evaluates to [47m:DEFAULT[0m, then the pair [47m(1000 . 2)[0m is used,
+      which sets the [47msubgoal-loop-limits[0m to its initial value,
+      imposing a maximum path length of 1000 and a maximum repetition
+      count of 2.
+
+  When these limits are violated, an error occurs and the proof attempt
+  is abandoned.
+
+  Of course, there are loops other than the simple ones this feature
+  enables!  For example, the available rules may cause the simplifier
+  to transform a subgoal into a bigger one, e.g., [47mGoal[0m [47m(p x)[0m may be
+  transformed to [47mGoal'[0m [47m(p (f x))[0m, which may then transform to [47mGoal''[0m
+  [47m(p (f (f x)))[0m, etc.  [3mThe prover does not check for such loops.[0m
+  However, such loops are stopped by the path length limit.
+  (Internal rewrite loops, in which control never exits the
+  simplifier, are not stopped even by a short path length.)  For
+  other ways to restrict the prover, see [set-rewrite-stack-limit],
+  [with-prover-time-limit], [with-prover-step-limit],
+  [set-prover-step-limit], and [set-induction-depth-limit].
+
+  If a proof aborts because of a probable loop and you suspect the
+  prover is not really in a loop, i.e., that further iteration will
+  break the cycle and make progress, use [47mset-subgoal-loop-limits[0m to
+  change the default 3 to a bigger number and try the proof again!
+
+  Checking for simple loops will slow down the prover in proofs
+  producing very long subgoal paths.
+
+  Note: [47mSet-subgoal-loop-limits[0m is an [event]!  It does not print the
+  usual event [summary] but nevertheless changes the ACL2 logical
+  [world] and is so recorded.  Moreover, its effect is to set the
+  [47m[ACL2-defaults-table][0m, and hence its effect is [47m[local][0m to the book
+  or [47m[encapsulate][0m form containing it; see [ACL2-defaults-table].
+
+  To see the current limit
+
+    (subgoal-loop-limits (w state))
+
+  When a loop is detected an error is signaled naming the clause
+  processor, the repeated identical subgoals, and the runes used in
+  each passage through the loop.  One such error message is shown
+  below.
+
+    ACL2 Error [Waterfall-loop] in ( THM ...): The clause processor
+    SIMPLIFY-CLAUSE has been applied to the same formula more than 2 times, namely
+    at Goal', Goal'10' and Goal'19'.  That suggests a loop in the waterfall.
+    Consequently, we are aborting!  The following list shows the runes used in
+    each passage through the loop between successive subgoals.
+
+    ((\"Goal'\" ((:EXECUTABLE-COUNTERPART BINARY-+)
+               (:REWRITE RULE1)
+               (:REWRITE RULE2)
+               (:REWRITE RULE3)
+               (:REWRITE RULE4))
+              \"Goal'10'\")
+     (\"Goal'10'\" ((:EXECUTABLE-COUNTERPART BINARY-+)
+                  (:REWRITE RULE1)
+                  (:REWRITE RULE2)
+                  (:REWRITE RULE3)
+                  (:REWRITE RULE4))
+                 \"Goal'19'\")).
+
+    For more information see :DOC set-subgoal-loop-limits.
+
+  In the above example, we see that [47m\"Goal'\"[0m was transformed by
+  [47mSIMPLIFY-CLAUSE[0m, using the runes listed, into [47m\"Goal'10'\"[0m.
+  Furthermore, the formulas of [47m\"Goal'\"[0m and [47m\"Goal'10'\"[0m are identical.
+  We also see that [47mSIMPLIFY-CLAUSE[0m then transformed [47m\"Goal'10'\"[0m, using
+  the same runes, to the same formula again at [47m\"Goal'19'\"[0m.
+
+  After the error, and if you so choose, you can use the utility [47m[pso][0m
+  to display the (possibly gagged, see [set-gag-mode]) prover output
+  between the named subgoals.")
  (SET-TABLE-GUARD
   (TABLE EVENTS)
   "Set the [47m:guard[0m for a [table]
@@ -144220,6 +144766,16 @@ Subtopics
   return to [introduction-to-key-checkpoints].")
  (SUBCOR-VAR (POINTERS)
              "See [system-utilities].")
+ (SUBGOAL-LOOP-LIMITS
+  (MISCELLANEOUS)
+  "maximum length of the subgoal stack
+
+    General Form:
+    (subgoal-loop-limits (w state))
+
+  See [47m[set-subgoal-loop-limits][0m for a discussion of how you can set
+  this parameter, which can be used to detect simple looping by the
+  prover and to cut off some forms of infinite looping.")
  (SUBLIS
   (ALISTS ACL2-BUILT-INS)
   "Substitute an alist into a tree
@@ -156236,6 +156792,7 @@ Type Specs
     (INTEGER i j)          (AND (INTEGERP X)   ; See notes below.
                                 (<= i X)
                                 (<= X j))
+    LIST                   (LISTP X)
     (MEMBER x1 ... xn)     (MEMBER X '(x1 ... xn))
     (MOD i)                same as (INTEGER 0 i-1)
     NIL                    NIL
@@ -156257,7 +156814,7 @@ Type Specs
     (SATISFIES pred)       (pred X) ; Lisp requires a unary function, not a macro
     SIGNED-BYTE            (INTEGERP X)
     (SIGNED-BYTE i)        same as (INTEGER k m) where k=-2^(i-1), m=2^(i-1)-1
-    STANDARD-CHAR          (STANDARD-CHARP X)
+    STANDARD-CHAR          (STANDARD-CHAR-P X)
     STRING                 (STRINGP X)
     (STRING max)           (AND (STRINGP X) (EQUAL (LENGTH X) max))
     SYMBOL                 (SYMBOLP X)

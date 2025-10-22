@@ -2421,6 +2421,14 @@
  non-@('nil') @(':')@(tsee rule-classes)).  See @(see set-tau-auto-mode).</p>
 
  @({
+  :subgoal-loop-limits
+ })
+
+ <p>This key's value must be a @(tsee cons) whose @(tsee car) is either
+ @('nil') or a natural number and whose @(tsee cdr) is @('nil') or a natural
+ number.  See @(see set-subgoal-loop-limits).</p>
+
+ @({
   :ruler-extenders
  })
 
@@ -4608,6 +4616,102 @@ and @(tsee include-book)"
 (defxdoc alists
   :parents (programming)
   :short "Operations on association lists, which bind keys to values.")
+
+(defxdoc allegro-cl
+  :parents (obtaining-common-lisp)
+  :short "Allegro Common Lisp as a host for ACL2"
+  :long "<p><a href='https://franz.com/products/allegro-common-lisp/'>Allegro
+ Common Lisp</a> (Allegro CL) is one of the Common Lisp implementations upon
+ which an ACL2 executable can be built (see @(see obtaining-common-lisp)).  But
+ here, we discuss a concern.</p>
+
+ <p>Although testing is ongoing for ACL2 built upon Allegro CL, the version
+ used has been Allegro CL 10.1 since 2017.  What's more, in September 2025, for
+ an ACL2 executable built with host Lisp Allegro CL, the use of &ldquo;@('make
+ regression')&rdquo; resulted in four books (in the @(see community-books))
+ that failed to certify.  We discuss those failures in the
+ &ldquo;<b>Details</b>&rdquo; section below.  These failures may suggest that
+ Allegro CL, at least for its Version 10.1, does not correctly support the
+ Common Lisp language, or at least there is problematic ACL2 code specific to
+ Allegro CL.  In practice we don't expect a lot of problems when using ACL2
+ built on Allegro CL.  However, since Allegro CL is relatively slow compared to
+ several other Common Lisp implementations that can host ACL2 &mdash; SBCL,
+ CCL, LispWorks, and GCL &mdash; those failures suggest that Allegro CL might
+ not be a good choice for ACL2 users.</p>
+
+ <h3>Details</h3>
+
+ <p>Here are details regarding the four certification failures under
+ @('books/') that are referenced above.  <b>These details are quite technical
+ and probably only of interest to system implementors.</b></p>
+
+ <ul>
+
+ <li>@('kestrel/c/syntax/validator.lisp')<p/>
+
+ <p>The following error from the corresponding @('validator.cert.out') file is
+ very surprising, since the @(tsee defrec) form for
+ @('ACL2::CLAUSE-PROCESSOR-HINT') has a &ldquo;cheap&rdquo; flag of @('nil'),
+ so the same error can be expected to show up regardless of the host Lisp
+ &mdash; yet as of this writing (in September 2025) it seems not to have shown
+ up for a long time, if ever.</p>
+
+ @({
+ HARD ACL2 ERROR in ACL2::RECORD-ERROR:  An attempt was made to treat
+ (49683 :TYPE-PRESCRIPTION BLOCK-ITEM-TYPES) as a record of type
+ ACL2::CLAUSE-PROCESSOR-HINT.
+ })
+
+ <p>There were other errors like that one as well.</p>
+
+ <p>So for that same ACL2 version (ACL2 git hash
+ fe29908c4589c1de3b41d6c98cc8bec012c7eba3), the same book and the books that
+ (recursively) support it were certified using a safety-3 ACL2 executable built
+ on CCL.  The book certified without any &ldquo;HARD ACL2 ERROR&rdquo;.  This
+ suggests that the problem is likely restricted to runs using Allegro CL.</p>
+
+ <p>However, that book allows some trust tags (in file @('cert.acl2') in that
+ directory), so perhaps there are shenanigans that somehow exonerate the
+ Allegro CL build of ACL2.  But the last failure discussed below does not
+ involve trust tags.</p>
+
+ </li>
+
+ <li>@('kestrel/axe/examples/aes-blast.lisp')<br/>
+ @('kestrel/axe/examples/aes-blast-boolean.lisp')<p/>
+
+ <p>These two report errors (in their @('.cert.out') files) that involve using
+ the @(see serialize) capability to write the @('.cert') file.  But
+ @('cert.acl2') in that directory allows trust tags, which could be relevant.
+ Note that serialize errors may be very difficult to debug.</p>
+
+ <p>A second certification was tried on the second of these (picked
+ arbitrarily) in case this was just a weird glitch.  However, a similar error
+ occurred (though with a slightly different backtrace).</p>
+
+ </li>
+
+ <li>@('projects/aleo/vm/circuits/axe/blake2s-proof2.lisp')<p/>
+
+ <p>This one shows a backtrace that includes the following form.</p>
+
+ @({
+ (RATIONALP 8444461749428370424248824938781546531375899335154063827935233455916872368129)
+ })
+
+ <p>That shouldn't cause an error, but apparently it did.  Maybe the image was
+ already corrupted.  Submitting that form in a fresh session produced no
+ error.</p>
+
+ <p>As with the first example, a safety-3 CCL-based certification (of this book
+ and all supporting books, recursively) produced no errors.  But unlike the
+ first example, this book does not allow trust tags.  This example thus
+ provides strong evidence that Allegro CL is not a great choice for hosting
+ ACL2.</p>
+
+ </li>
+
+ </ul>")
 
 (defxdoc allocate-fixnum-range
   :parents (numbers acl2-built-ins)
@@ -18928,10 +19032,11 @@ subtree of X with T, without duplication.</p>
   :long "<p>For a function symbol, @('fn'), and a logical @(see world),
  @('wrld') &mdash; for example, the current world, @('(w state)') &mdash;
  evaluation of the form @('(constraint-info fn wrld)') returns @('(mv flg c)'),
- where @('c') is the list of @(see constraint)s on @('fn') (implicitly
- conjoined), and @('flg') is @('nil') if @('fn') is a defined function and
- otherwise is a function symbol with that same list of constraints (possibly
- @('fn') itself).  See @(see constraint) for relevant background.</p>
+ where @('c') is the defining axiom for @('fn') if @('flg') is @('nil'), and
+ otherwise @('c') indicates the @(see constraint)s on @('fn') and @('flg') is
+ the function symbol whose @('constraint-lst') property is @('c').  See @(see
+ constraint) for relevant background, and for further details see comments in
+ the ACL2 source code for @('constraint-info').</p>
 
  <p>We illustrate with the following example.</p>
 
@@ -18947,7 +19052,8 @@ subtree of X with T, without duplication.</p>
  })
 
  <p>Then we can see the results of @('constraint-info') on each introduced
- function symbol, as follows.</p>
+ function symbol, as follows.  (Some whitespace has been edited in the
+ result.)</p>
 
  @({
  ACL2 !>(let ((wrld (w state)))
@@ -18957,16 +19063,13 @@ subtree of X with T, without duplication.</p>
             'f2 (mv-let (flg2 c2) (constraint-info 'f2 wrld) (list flg2 c2))
             'f3 (mv-let (flg3 c3) (constraint-info 'f3 wrld) (list flg3 c3))
             'f4 (mv-let (flg4 c4) (constraint-info 'f4 wrld) (list flg4 c4))))
- (RESULT F1
-         (F1 ((EQUAL (F4 X) (F3 X))
-              (EQUAL (F1 X) (F4 X))))
+ (RESULT F1 (F1 ((EQUAL (F4 X) (F3 X))
+                 (EQUAL (F1 X) (F4 X))))
          F2 (NIL (EQUAL (F2 X) (F1 X)))
-         F3
-         (F1 ((EQUAL (F4 X) (F3 X))
-              (EQUAL (F1 X) (F4 X))))
-         F4
-         (F1 ((EQUAL (F4 X) (F3 X))
-              (EQUAL (F1 X) (F4 X)))))
+         F3 (F1 ((EQUAL (F4 X) (F3 X))
+                 (EQUAL (F1 X) (F4 X))))
+         F4 (F1 ((EQUAL (F4 X) (F3 X))
+                 (EQUAL (F1 X) (F4 X)))))
  ACL2 !>
  })
 
@@ -18975,10 +19078,7 @@ subtree of X with T, without duplication.</p>
  doesn't affect the constraints because it can be safely moved to just after
  the @('encapsulate').  However, the definition of @('f4') does affect (or
  ``infect''; see @(see subversive-recursions)) the constraints: it can't be
- moved to after the @('encapsulate') because of the @('defthm') after it.</p>
-
- <p>Also see @(see constraint).  For more details, see comments in the
- definition of @('constraint-info') in the ACL2 source code.</p>")
+ moved to after the @('encapsulate') because of the @('defthm') after it.</p>")
 
 (defxdoc context-message-pair
   :parents (kestrel-utilities system-utilities-non-built-in)
@@ -21206,17 +21306,18 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
  <code>
  (fn @(':kwd1') val1 ... @(':kwdn') valn), </code>
 
- <p>that is, a symbol followed by a @(tsee keyword-value-listp).  We view the
- case of a symbol, @('s'), as the function spec @('(s)'), with no keywords.
- There must be no duplicate keywords.  In each case that we expect a function
- spec, the context provides a set of valid keywords for that function spec; it
- is an error to provide any other keyword in the function spec.  Each function
- spec is interpreted as its ``completion'', obtained by extending the function
- spec with a default value for each valid keyword as indicated below.  With
- that interpretation, the ``exported function'' of a function spec is its
- @('car'), and that function symbol and each keyword value must be a
- guard-verified function symbol; and moreover, the @(':EXEC') function must not
- include the new abstract stobj name, @('st'), among its formals.</p>
+ <p>that is, a symbol followed by a @(tsee keyword-value-listp).  Each
+ @('vali') must be a symbol.  We view the case of a symbol, @('s'), as the
+ function spec @('(s)'), with no keywords.  There must be no duplicate
+ keywords.  In each case that we expect a function spec, the context provides a
+ set of valid keywords for that function spec; it is an error to provide any
+ other keyword in the function spec.  Each function spec is interpreted as its
+ ``completion'', obtained by extending the function spec with a default value
+ for each valid keyword as indicated below.  With that interpretation, the
+ ``exported function'' of a function spec is its @('car'), and that function
+ symbol and each keyword value must be a guard-verified function symbol; and
+ moreover, the @(':EXEC') function must not include the new abstract stobj
+ name, @('st'), among its formals.</p>
 
  <p>We are ready to describe the arguments of @('defabsstobj').</p>
 
@@ -21285,7 +21386,7 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
 
  <p>The value of @(':EXPORTS') is a non-empty true list.  Each @('ei') is a
  function spec (for an exported function).  The valid keywords are @(':LOGIC'),
- @(':EXEC'), @(':CORRESPONDENCE'), and @(':GUARD-THM'), @(':PROTECT'),
+ @(':EXEC'), @(':CORRESPONDENCE'), @(':GUARD-THM'), @(':PROTECT'), and
  @(':UPDATER'), and also @(':PRESERVED') if and only if the specified
  @(':EXEC') function returns the foundational stobj.  The default values for
  all of these keywords except @(':UPDATER') and @(':PROTECT') are obtained by
@@ -22863,6 +22964,9 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
  trust tags to traffic in raw Lisp code), consider using @(see defconsts)
  instead.  Also see @(see using-tables-efficiently) for an analogous issue with
  @(tsee table) events.</p>
+
+<p>@('Defconst') sets the @('const') property of @('name') to the quoted value
+of @('term'). This can be retrieved with @(tsee getpropc).</p>
 
  <p>It may be of interest to note that @('defconst') is implemented at the lisp
  level using @('defparameter'), as opposed to @('defconstant').
@@ -25115,7 +25219,6 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
             ...
             (fieldk :type typek :initially valk)
             :renaming doublets
-            :doc doc-string
             :inline inline-flag)
  })
 
@@ -26357,7 +26460,7 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
  <p>satisfying the same requirements as in the General Form for @(tsee defun).
  The effect is to define a macro @('fn') and a function @('fn$inline') (i.e., a
  symbol in the same package as @('fn') but whose @(tsee symbol-name) has the
- suffix @('\"$INLINE\"'), such that each call of @('fn') expands to a call of
+ suffix @('\"$INLINE\"')), such that each call of @('fn') expands to a call of
  the function symbol @('fn$inline') on the same arguments.  Moreover, @(tsee
  table) @(see events) are generated that allow the use of @('fn') in @(see
  theory) expressions to represent @('fn$inline') and that cause any
@@ -26422,8 +26525,10 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
 
  <p>(2) Every function symbol defined in ACL2 whose @(tsee symbol-name) has the
  suffix @('\"$INLINE\"') is proclaimed to be inline; similarly for
- @('\"$NOTINLINE\"') and notinline.  These restrictions are explained in a
- comment in the ACL2 source definition of macro @('defun-inline').</p>
+ @('\"$NOTINLINE\"') and notinline.  These suffix restrictions are explained in
+ a comment in the ACL2 source definition of macro @('defun-inline').  Note that
+ only the functions themselves are thus proclaimed, not their executable
+ counterparts (also known as *1* functions; see @(see evaluation)).</p>
 
  <p>(3) No special treatment for inlining (or notinlining) is given for
  function symbols locally defined by @(tsee flet), with two exceptions: when
@@ -26446,8 +26551,7 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
  compile in another host Lisp by using @(tsee include-book) with argument
  @(':load-compiled-file :comp').  Then in subsequent sessions, including that
  book with the second host Lisp will not result in any inline or notinline
- behavior for functions defined in the book.  This may be fixed in a future
- release if someone complains.</p>")
+ behavior for functions defined in the book.</p>")
 
 (defxdoc defun-mode
   :parents (defun)
@@ -29118,7 +29222,10 @@ ld) and @(tsee include-book)"
 
  <p>Note that all the names are implicitly quoted.  If you wish to disable a
  computed list of names, @('lst'), use the theory expression
- @('(set-difference-theories (current-theory :here) lst)').</p>")
+ @('(set-difference-theories (current-theory :here) lst)').</p>
+
+ <p>To see the runes currently disabled that are among those created when a
+ function symbol @('FN') is introduced, evaluate @('(disabledp 'FN)').</p>")
 
 (defxdoc disable-forcing
   :parents (force)
@@ -29588,9 +29695,18 @@ ld) and @(tsee include-book)"
   :short "Iteration with @(tsee loop$) using local variables and @(see stobj)s"
   :long "<p>This topic assumes that you have read the introduction to
  @('loop$') expressions in ACL2; see @(see loop$).  Here we give more complete
- documentation on @('DO') @('loop$') expressions, beginning with an informal
- introduction based largely on examples and then continuing with detailed
- syntax and semantics.  For a discussion of proofs about @('loop$')s, see @(see
+ documentation on @('DO') @('loop$') expressions.  This discussion is
+ partitioned into the following sections</p>
+
+ <ul>
+ <li>INFORMAL INTRODUCTION &mdash; examples of @('DO') @('loop$') expressions</li>
+ <li>SYNTAX &mdash; detailed discussion of the legal syntax</li>
+ <li>SEMANTICS &mdash; detailed discussion of how @('DO') @('loop$') expressions
+ are translated into calls of the general-purpose function @(tsee DO$)</li>
+ <li>SIGNALING ERRORS &mdash; how @('DO') @('loop$')s can signal errors</li>
+ </ul>
+
+ <p>For a discussion of proofs about @('loop$')s, see @(see
  stating-and-proving-lemmas-about-loop$s).</p>
 
  <p>More examples of @(tsee loop$) expressions, including @('DO') @('loop$')s,
@@ -29677,7 +29793,7 @@ ld) and @(tsee include-book)"
  })
 
  <p>See @(see lp-section-14) of the @('Loop$') Primer for some exercises in
- writing and executing @('DO') @('Loop$')s (with answers in a Community Book).
+ writing and executing @('DO') @('loop$')s (with answers in a Community Book).
  But remember to come back here when you get to the end of that section.</p>
 
  <p><b>Parallel Assignment Using @('Mv-setq')</b></p>
@@ -30253,7 +30369,7 @@ ld) and @(tsee include-book)"
  @('var') is a stobj</li>
 
  <li>@('(MV-SETQ (var0 ... varn) term)') for two or more distinct variables
- @('vari'), where each @('vari') is declared in a @('WITH') declaration or is a
+ @('vari'), where each @('vari') is declared in a @('WITH') clause or is a
  stobj name, and @('term') is an ordinary term that returns n+1 values, where
  if @('vari') is a stobj then the ith value returned is of that type</li>
 
@@ -30268,18 +30384,18 @@ ld) and @(tsee include-book)"
  <p>We conclude this section by discussing some syntactic restrictions.</p>
 
  <p>The following restriction applies to @('loop$') expressions meeting the
- following two conditions: @(':VALUES') specifies other than the default of
- @('(NIL)'), and there is at least one @('loop-finish') expression in the
- @('loop$') body.  In that case, there must be a @('FINALLY') clause that ACL2
- recognizes as always executing a @('return') call.  This makes sense, since in
- Common Lisp, the value returned by a @('loop') is @('nil') when ``falling
- through'' without executing a @('return'); but @('nil') would violate the
- specified @(':VALUES') in the case above.</p>
+ following two conditions: @(':VALUES') specifies something other than the
+ default of @('(NIL)'), and there is at least one @('loop-finish') expression
+ in the @('loop$') body.  In that case, there must be a @('FINALLY') clause
+ that ACL2 recognizes as always executing a @('return') call.  This makes
+ sense, since in Common Lisp, the value returned by a @('loop') is @('nil')
+ when ``falling through'' without executing a @('return'); but @('nil') would
+ violate the specified @(':VALUES') in the case above.</p>
 
  <p>As noted above, assignments with @('setq') and @('mv-setq') may only set
  stobj variables and variables declared using @('WITH').  This restriction
  applies to the innermost @('loop$') that contains the assignment.  The
- following, for example, is illegal because the @('WITH') declaration for
+ following, for example, is illegal because the @('WITH') clause for
  @('x') is not in the @('loop$') immediately above the assignment to @('x')
  with @('setq').</p>
 
@@ -30328,6 +30444,10 @@ ld) and @(tsee include-book)"
 
  <p>In a function call, it is illegal for a LOOP$ expression to occur in a slot
  whose @(see ilk) is not @('nil').</p>
+
+ <p>See the section SIGNALING ERRORS, below, for how the syntax described here
+ allows for @('DO') @('loop$')s to manipulate @(tsee stobj)s and @(tsee state),
+ including how to signal errors from within the body of the @('loop$').</p>
 
  <h3>SEMANTICS</h3>
 
@@ -30666,7 +30786,247 @@ ld) and @(tsee include-book)"
  measure-fn (list new-alist))') in the definition of @('do$').  But
  @('new-alist') is @('nil'), so the conjunct @('(CONSP (CDR (ASSOC-EQ-SAFE 'X
  ALIST)))') from the measure lambda's guard is false, so the guard evaluates to
- @('nil').</p>")
+ @('nil').</p>
+
+ <h3>SIGNALING ERRORS</h3>
+
+ <p>We explain the subtleties of error signaling from within @('DO')
+ @('loop$')s by example.  To illustrate the full complexity of the situation,
+ our example will involve a @('DO') that is manipulating a @(see stobj), and
+ we'll verify the guards.  The basic idea is that we'll define a function,
+ called @('transaction'), that either detects and signals an error or updates
+ the stobj, and then we'll write a @('DO') @('loop$') that executes a series of
+ transactions.  In fact, you may think of the stobj as representing an account
+ that must maintain a non-negative balance and the transaction as taking an
+ integer and adding it to the balance provided that doesn't produce a negative
+ balance.  Managing the signatures of the various functions in body of the
+ @('loop$') and declaring the ``right'' guards takes some experience.  After
+ we've presented a correct solution we will show some plausible alternatives
+ and explain why they are unacceptable.</p>
+
+ <p>Recall that the standard idiom for signaling a ``soft'' error in ACL2 is to
+ call the function @(tsee error1), usually via the macro @(tsee er).
+ @('Error1') returns an @(see error-triple) of the form @('(mv t nil state)').
+ So our @('DO') @('loop$') will necessarily manipulate @('state') in addition
+ to the user's stobj.</p>
+
+ <p>To admit the functions shown below, first execute these three commands.</p>
+
+ @({
+ (include-book \"projects/apply/top\" :dir :system)
+ (set-state-ok t)
+ (defstobj st (balance :type (satisfies natp) :initially 0))
+ })
+
+ <p>Note that our stobj has just one field, named @('balance'), which must be a
+ natural number and is initially 0.  Below is the basic @('transaction')
+ function which may signal an error.  Note that two unnecessary lines are
+ commented out as explained in note [1] below.</p>
+
+ @({
+  (defun transaction (delta st state)
+    (declare (xargs :stobjs (st state)
+                    :guard (and (integerp delta)
+  ;                             (stp st)                     ; [1]
+  ;                             (state-p state)              ; [1]
+                                (error1-state-p state))))    ; [2]
+    (cond ((< (balance st) (- delta))
+           (mv-let (erp val state)                           ; [3]
+             (er soft 'transaction
+                 \"The stobj's balance is ~x0 but the delta is ~x1, so this ~
+                  transaction is not allowed!\"
+                 (balance st)
+                 delta)
+             (declare (ignore val))
+             (mv erp st state)))
+          (t (let ((st (update-balance (+ (balance st) delta)
+                                       st)))
+               (mv nil st state)))))
+  })
+
+  <p>Notes on @('transaction'):</p>
+
+  <ul>
+
+  <li>[1] We don't need to include @('(stp state)') and @('(state-p state)')
+    explicitly in the @(':guard') for the function because they're implicitly
+    included by the @(':stobjs') declaration.</li>
+
+  <li>[2] The @(tsee er) macro expands to a call of the function @(tsee
+    error1), and @('error1') requires that its @(tsee state) argument not only
+    satisfy the recognizer for ACL2 states, @('state-p'), but also some
+    other conditions to allow formatted printing to certain channels.  See
+    @(':')@(tsee pe) @('error1-state-p') and its subroutine @('fmt-state-p').
+    By the way, you won't see ``@('(state-p state)')'' in the @(':guard')
+    declaration of @('error1').  But it is implicit in the use of the variable
+    named @('state') as a formal.  To see the full guard of a function,
+    <i>fn</i>, you can do @(':')@(tsee args) <i>fn</i> or,
+    alternatively, @('(guard '')<i>fn</i>@(' nil (w state))').</li>
+
+  <li>[3] We signal an error with the @('er') macro.  But the signature of
+    @('er') is @('(mv * * state)'), i.e., the first two values returned are
+    ``ordinary'' objects, not stobjs.  But our function, @('transaction'), must
+    return the (possibly) modified stobj @('st').  So we ``catch'' the error
+    triple generated by @('er') and replace the ordinary @('val'), which in
+    this case is @('nil'), by @('st').</li>
+  </ul>
+
+ <p>Since we'll use @('transaction') in a @('DO') @('loop$'), we need a
+ warrant.</p>
+
+ @({
+ (defwarrant transaction)
+ })
+
+ <p>The lemma below is not strictly necessary.  If we don't prove it here, the
+ guard proof for our @('loop$') takes longer because we have to prove a more
+ complicated instance of this lemma by induction.</p>
+
+ @({
+ (defthm dumb-lemma
+   (implies (and lst
+                 (integer-listp lst))
+            (integerp (car lst)))
+   :rule-classes :type-prescription)
+ })
+
+ <p>Finally, we define the function that executes a series of @('transaction')s
+ on a sequence of integers.  But it may detect and signal an error partway
+ through the sequence.  Note that several lines are commented out, either
+ because they are optional or because they are prohibited, as explained in the
+ accompanying notes below.</p>
+
+
+ @({
+ (defun transaction-loop (delta-lst st state)
+   (declare (xargs :stobjs (st state)
+                   :guard (and (integer-listp delta-lst)
+ ;                             (stp st)                     ; See Note [1] above
+ ;                             (state-p state)              ; See Note [1] above
+                               (error1-state-p state))
+                   :guard-hints ((\"Goal\" :in-theory (enable error1)))))
+   (loop$ with lst = delta-lst
+ ;        with st                                           ; [4]
+ ;        with state                                        ; [4]
+          with erp                                          ; [5]
+          do
+          :guard (and (integer-listp lst)
+                      (stp st)                              ; [6]
+                      (state-p state)                       ; [6]
+                      (error1-state-p state))
+          :values (nil st state)
+          (cond
+           ((eq lst nil) (return (mv nil st state)))
+           (t (progn                                        ; [7]
+                (mv-setq (erp st state)
+                         (transaction (car lst) st state))
+                (cond
+                 (erp (return (mv erp st state)))
+                 (t (setq lst (cdr lst)))))))))
+ })
+
+ <p>Notes on @('transaction-loop'):</p>
+
+ <ul>
+
+ <li>[4] One might think that we need to bind @('st') and @('state') in
+     @('WITH') clauses because, in the body of the @('DO') @('loop$'), we
+     assign to them, with @('mv-setq'), here, or in other examples, with
+     @('setq').  But ACL2 disallows binding stobj names in @('WITH') clauses.
+     A syntax error is signaled if you try that.</li>
+
+ <li>[5] We must bind @('erp') in a @('WITH') clause because we assign to it
+     in the body and it is an ordinary object.</li>
+
+ <li>[6] One might think that we do not need to include @('(stp st)') and
+     @('(state-p state)') in the @(':guard') of the @('DO') @('loop$') body,
+     for the same reasons we did not have to include them in the @(':guard') of
+     the function itself: might they be implicitly included by virtue of their
+     being stobj names?  The answer is no!  If a stobj is used in the body of a
+     @('DO') @('loop$'), the @(':guard') for the @('DO') @('loop$') must
+     include the stobj recognizer if guard checking is to succeed.</li>
+
+ <li>[7] Finally, the construction
+
+     @({
+     (progn (mv-setq (erp st state) <term>) <do-body-term>)
+     })
+
+     used here may seem odd.  One might be inclined to write something like
+     this instead:
+
+     @({
+     (mv-let (erp st state) <term> <do-body-term>)
+     })
+
+     However, the latter construction is syntactically illegal in the body
+     of a @('DO') @('loop$').  The reason has to do with the precise definition
+     of ``do-body terms'' (see the SYNTAX section above).  Recall that do-body
+     terms are term-like but allow very restricted uses of @('return'),
+     @('progn'), @('setq'), @('mv-setq'), and @('loop-finish') and possibly
+     other do-body subterms.  Do-body terms are not actually ACL2 terms!
+
+     <p/>To be precise, one might have tried to use the following as the body
+     of the @('loop$') in @('transaction-loop').
+
+     @({
+     (cond
+       ((eq lst nil) (return (mv nil st state)))
+       (t (mv-let (erp st state)
+                  (transaction (car lst) st state)
+            (cond
+             (erp (return (mv erp st state)))
+             (t (setq lst (cdr lst)))))))
+     })
+
+     Note the @('mv-let').  It is syntactically illegal because its final
+     argument, namely the @('cond')-expression, uses @('return') and @('setq')
+     where ACL2 function names are required.  In writing the above, the user
+     has presumed that an @('mv-let') expression in a do-body term allows the
+     final argument to be a do-body term instead of an ACL2 term.  This
+     presumption is incorrect.  Instead, use @('progn') and @('mv-setq') to
+     field the values of a multi-valued function like @('transaction') and then
+     write the do-body term to process them.</li>
+
+ </ul>
+
+ <p>Here is a sample session log after introducing the correct definitions
+ above.  Note that the balance starts at 0, the user, employing the function
+ @('transaction'), adds 100 and then attempts to subtract 150.  An error is
+ signaled and the balance remains 100.  Then the user runs the
+ @('transaction-loop') function with a starting balance of 100 and attempts to
+ successively subtract 20, then 30, then 55, and then attempts to add 200.  The
+ loop terminates with an error on the 55 and leaves the balance at 50, never
+ processing the 200.</p>
+
+ @({
+ ACL2 !>(balance st)
+ 0
+ ACL2 !>(transaction 100 st state)
+ (NIL <st> <state>)
+ ACL2 !>(balance st)
+ 100
+ ACL2 !>(transaction -150 st state)
+
+
+ ACL2 Error in TRANSACTION:  The stobj's balance is 100 but the delta
+ is -150, so this transaction is not allowed!
+
+ (T <st> <state>)
+ ACL2 !>(balance st)
+ 100
+ ACL2 !>(transaction-loop '(-20 -30 -55 200) st state)
+
+
+ ACL2 Error in TRANSACTION:  The stobj's balance is 50 but the delta
+ is -55, so this transaction is not allowed!
+
+ (T <st> <state>)
+ ACL2 !>(balance st)
+ 50
+ })
+
+ ")
 
 (defxdoc do-not
   :parents (hints)
@@ -32106,7 +32466,10 @@ ld) and @(tsee include-book)"
 
  <p>Note that all the names are implicitly quoted.  If you wish to enable a
  computed list of names, @('lst'), use the theory expression @('(union-theories
- (current-theory :here) lst)').</p>")
+ (current-theory :here) lst)').</p>
+
+ <p>To see the runes currently disabled that are among those created when a
+ function symbol @('FN') is introduced, evaluate @('(disabledp 'FN)').</p>")
 
 (defxdoc enable-forcing
   :parents (force)
@@ -33389,17 +33752,18 @@ ld) and @(tsee include-book)"
  })
 
  <p>The examples above all print an error message to standard output saying
- that @('a') and @('b') are illegal inputs.  However, the first three abort
- evaluation after printing an error message (while logically returning
- @('nil'), though in ordinary evaluation the return value is never seen); while
- the last two return @('(mv t nil state)') after printing an error message.
- The result in each of the last two cases can be interpreted as an ``error''
- when programming with the ACL2 @(tsee state), something most ACL2 users will
- probably not want to do unless they are building systems of some sort; see
- @(see programming-with-state).  If state is not available in the current
- context then you will probably want to use a call other than the last to cause
- an error; for example, if you are returning two values, you may write
- @('(mv (er hard ...) nil)').</p>
+ that (the values of) @('a') and @('b') are illegal inputs.  However, the first
+ three &mdash; which we call <i>hard errors</i> &mdash; abort evaluation after
+ printing an error message (while logically returning @('nil'), though in
+ ordinary evaluation the return value is never seen); while the last two
+ &mdash; so-called <i>soft errors</i> &mdash; return an @(see error-triple),
+ @('(mv t nil state)'), after printing an error message.  The result in each of
+ the two soft error cases can be interpreted as an ``error'' when programming
+ with the ACL2 @(tsee state), something most ACL2 users will probably not want
+ to do unless they are building systems of some sort; see @(see
+ programming-with-state).  If state is not available in the current context
+ then you will probably want to cause a hard error; for example, if you are
+ returning two values, you may write @('(mv (er hard ...) nil)').</p>
 
  <p>The difference between the @('hard') and @('hard?') forms is one of guards.
  Use @('hard') if you want the call to generate a (clearly impossible) guard
@@ -33420,10 +33784,15 @@ ld) and @(tsee include-book)"
  <p>@('Er') is a macro, and the examples above expand to calls of ACL2
  functions; see below.  Also see @(see illegal), @(see hard-error), and @(see
  error1).  The @('hard?')/@('hard?!') forms have expansions that call the
- function, @(tsee hard-error), which has a @(see guard) of @('T'), while the
- @('hard')/@('hard!') forms have expansions that call the function, @(tsee
+ function @(tsee hard-error), which has a @(see guard) of @('T'), while the
+ @('hard')/@('hard!') forms have expansions that call the function @(tsee
  illegal), which has a guard that is logically @('NIL').  Those generate code
- that is in @(':')@(tsee logic) mode, as do variants of @('(er soft ...)').</p>
+ that is in @(':')@(tsee logic) mode, as do variants of @('(er soft ...)').
+ The soft error forms expand to calls of the function @(tsee error1), which
+ necessarily takes @(tsee state) as an explicit argument since it returns an
+ @(see error-triple).  The guard for the soft error forms is that of @(tsee
+ error1).  Note in particular that soft errors require the state to satisfy
+ certain restrictions beyond just the usual @('state-p') predicate.</p>
 
  <p>The general forms of the macros are as follows.  Their macroexpansions
  include code that avoids the printing of error messages when error output is
@@ -33677,10 +34046,26 @@ ld) and @(tsee include-book)"
 
  <p>@('Error1') can be interpreted as causing an ``error'' when programming
  with the ACL2 @(tsee state), something most ACL2 users will probably not want
- to do; see @(see ld-error-triples) and see @(see er-progn).  In order to cause
- errors with @(':')@(tsee logic) mode functions, see @(see hard-error) and see
- @(see illegal).  Better yet, see @(see er) for a macro that provides a unified
- way of signaling errors.</p>
+ to do; see @(see ld-error-triples) and see @(see er-progn).  However, @('error1')
+ is a guard verified @(tsee logic) mode function whose guard is</p>
+
+ @({
+ (AND (STATE-P STATE)
+      (STRINGP STR)
+      (ERROR1-STATE-P STATE)
+      (CHARACTER-ALISTP ALIST)
+      (OR (NULL SUMMARY) (STRINGP SUMMARY)))
+ })
+
+ <p>Note in particular that the state must not only satisfy the basic
+ recognizer, @('state-p'), for ACL2 states but must also satisfy
+ @('error1-state-p'), which includes additional restrictions ensuring that
+ @('error1') can print formatted output to the standard character output
+ channel, @(tsee standard-co), interpret the table maintained by @(tsee
+ set-inhibit-er), etc.  If the complexity of @(see error1)'s guard discourages
+ you from using it in guard-verified logic mode systems you may wish to cause a
+ @(see hard-error) with @(tsee illegal) or the more unified way of signaling
+ errors with the macro @(tsee er).</p>
 
  <p>As mentioned above, @('error1') always returns @('(mv t nil state)').  But
  if a call @('(error1 ctx summary str alist)') is encountered during
@@ -53719,7 +54104,10 @@ tables in the current Hons Space."
  @(':induct') hint is applied, then any attempt to push a subgoal for induction
  will fail (unless it too has an associated @(':induct') hint).</p>
 
- <p>To change the limit, see @(see set-induction-depth-limit).</p>")
+ <p>To change the limit, see @(see set-induction-depth-limit).</p>
+
+ <p>For another way to limit the lengths of proof attempts, see @(tsee
+ set-subgoal-loop-limits).</p>")
 
 (defxdoc induction-heuristics
   :parents (rule-classes)
@@ -55998,7 +56386,7 @@ tables in the current Hons Space."
   @({
   (defthm examples-of-orderedp$
     (and (orderedp$ '(1 3 5 7) '<)
-         (not (orderedp '(1 3 3 5 7) '<)))
+         (not (orderedp$ '(1 3 3 5 7) '<)))
     :rule-classes nil)
   })
 
@@ -66519,7 +66907,7 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
     (loop$ for i from 1 to imax
            append
            (loop$ for j from 1 to jmax
-                  collect (make-pair i j)))))
+                  collect (make-pair i j))))
 
   ACL2 Error [Translate] in ( DEFUN ALL-PAIRS-LOOP$ ...):  The body of
   a LAMBDA object, lambda$ term, or loop$ statement should be fully badged
@@ -66563,7 +66951,7 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
     (loop$ for i from 1 to imax
            append
            (loop$ for j from 1 to jmax
-                  collect (make-pair i j)))))
+                  collect (make-pair i j))))
 
   *** Key checkpoint at the top level: ***
 
@@ -66743,7 +67131,7 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
     (implies (and (natp imax)
                   (natp jmax))
              (equal (all-pairs-loop$ imax jmax)
-                    (all-pairs imax jmax)))))
+                    (all-pairs imax jmax))))
 
   *** Key checkpoint at the top level: ***
 
@@ -66804,7 +67192,7 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
                            (loop$-as (list (from-to-by 1 (car loop$-gvars) 1)))))
        (list jmax)
        (loop$-as (list (from-to-by i0 imax 1))))
-      (all-pairs-helper1 i0 imax jmax)))))
+      (all-pairs-helper1 i0 imax jmax))))
 
   *** Key checkpoint under a top-level induction: ***
 
@@ -66888,7 +67276,7 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
                            (loop$-as (list (from-to-by 1 (car loop$-gvars) 1)))))
        (list jmax)
        (loop$-as (list (from-to-by i0 imax 1))))
-      (all-pairs-helper1 i0 imax jmax)))))
+      (all-pairs-helper1 i0 imax jmax))))
 
   *** Key checkpoint at the top level: ***
 
@@ -66940,7 +67328,7 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
                   (natp jmax))
              (equal (all-pairs-loop$ imax jmax)
                     (all-pairs imax jmax)))
-    :hints ((\"Goal\" :do-not-induct t))))
+    :hints ((\"Goal\" :do-not-induct t)))
 
   *** Key checkpoints at the top level: ***
 
@@ -67021,7 +67409,7 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
 
   @({
   ; Include standard apply$ book.
-  (include-book \"projects/apply/top\" :dir :system)}
+  (include-book \"projects/apply/top\" :dir :system)
 
   ; Define and verify the guards of the recursive all-pairs.
   (defun make-pair (i j)
@@ -77045,7 +77433,7 @@ it."
   :long "<p>For this topic we assume that you already understand the basics of
  single-threaded objects in ACL2.  See @(see stobj), and in particular, see
  @(see defstobj), which notes that a stobj field can itself be a stobj, an
- array or hash-tablle of stobjs, or a @(see stobj-table).  The present @(see
+ array or hash-table of stobjs, or a @(see stobj-table).  The present @(see
  documentation) topic expands on that point.  However, we ignore stobj-table
  fields here; see @(see stobj-table) for such documentation.</p>
 
@@ -77227,12 +77615,14 @@ it."
  <p>The following form returns the result of updating the @('fld2') field of
  @('parent'), which is a stobj isomorphic to @('child'), to have a value of 3.
  Below we explain the terms ``bindings'', ``producer variables'', ``producer'',
- and ``consumer'', as well as how to understand this form.</p>
+ and ``consumer'', as well as how to understand this form.  (Note that
+ &ldquo;producer variables&rdquo; refers to a list of one or more
+ variables.)</p>
 
  @({
     (stobj-let
      ((child (fld2 parent)))  ; bindings
-     (child)                  ; producer variable(s)
+     (child)                  ; producer variables
      (update-fld 3 child)     ; producer
      (update-fld3 'a parent)) ; consumer
  })
@@ -77243,7 +77633,7 @@ it."
  <ul>
  <li>Bindings:<br/>
      <blockquote>Bind @('child') to @('(fld2 parent)').</blockquote></li>
- <li>Producer variable(s) and producer:<br/>
+ <li>Producer variables and producer:<br/>
      <blockquote>Then bind the variable, @('child'), to the value of
      the producer, @('(update-fld 3 child)').</blockquote></li>
  <li>Implicit update of parent:<br/>
@@ -77259,7 +77649,7 @@ it."
 
  @({
     (let ((child (fld2 parent))) ; bindings
-      (let ((child (update-fld 3 child))) ; bind producer vars to producer
+      (let ((child (update-fld 3 child))) ; bind producer variables to producer
         (let ((parent (update-fld2 child parent))) ; implicit update of parent
           (update-fld3 'a parent))))
  })
@@ -77671,7 +78061,7 @@ it."
  @({
     (let BINDINGS'
       (declare (ignorable . STOBJ-LET-BOUND-VARIABLES))
-      (mv-let PRODUCER-VARS
+      (mv-let PRODUCER-VARIABLES
               PRODUCER
               (let* UPDATES
                 CONSUMER)))
@@ -77848,7 +78238,7 @@ it."
  ; bindings:
     ((n$  (uenslot1 two-usuallyequal-nums))
      (n$2 (uenslot2 two-usuallyequal-nums)))
- ; producer variable:
+ ; producer variables:
     (n1 n2)
  ; producer:
     (mv (n$val n$) (n$val n$2))
@@ -108586,6 +108976,13 @@ it."
 ; deleted (as it is very likely no longer relevant): windows7.html,
 ; windows-gcl-jared.html, and installing-make.html.
 
+; Fixed a message printed by :pso that mistakenly referenced obsolete :DOC
+; topic set-saved-output when there is no saved output to print.  The message
+; now points to :DOC pso, and it also suggests turning on PROVE output.  Thanks
+; to Warren Hunt for reporting the buggy message.
+
+; Considerably improved the Essay on the Correctness of Abstract Stobjs.
+
   :parents (release-notes)
   :short "ACL2 Version  8.7 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -108623,6 +109020,15 @@ it."
  table &mdash; that is, for the @(':put') and @(':clear') operations &mdash;
  must have no free variables, even though variables @('WORLD') and @('ENS') are
  normally permitted.  See @(see table).</p>
+
+ <p>A new feature provides ways to stop certain infinite loops in the
+ waterfall.  It is now possible to specify a limit on how many times the
+ waterfall can produce a new subgoal along a branch.  It is also possible to
+ specify that the prover should check for ``simple'' loops in the waterfall.
+ The default setting for this new feature limits the branch length to 1000 and
+ enables checking for duplicate goals.  See @(tsee
+ set-subgoal-loop-limits) for details.  Thanks to Eric Smith for suggesting
+ that we consider supporting loop detection at the goal level.</p>
 
  <h3>Heuristic and Efficiency Improvements</h3>
 
@@ -108714,6 +109120,18 @@ it."
  is, using the @(':put') and @(':clear') operations.  However, @('ENS') was not
  being allowed in the key expression.  That has been fixed.</p>
 
+ <p>(SBCL only) Fixed a bug, for ACL2 hosted on SBCL, that was preventing
+ inlining of functions whose name ends in @('\"$INLINE\"'), such as those
+ generated by @(tsee defun-inline).  Thanks to Grant Jurgensen for reporting
+ this bug with a helpful example.</p>
+
+ <p>A @(tsee defabsstobj) event contains <i>function specs</i> that are each
+ either a symbol or a list of the form @('(fn :kwd1 val1 ... :kwdn valn)').
+ Each @('vali') must be a symbol, but when this was not the case, a raw Lisp
+ error could occur.  Now a clean error message is printed, and this requirement
+ on the @('vali') has been made explicit in the documentation for @(tsee
+ defabsstobj).</p>
+
  <h3>Changes at the System Level</h3>
 
  <p>Modifications have been made that allow ACL2 to be hosted on GCL Version
@@ -108770,6 +109188,10 @@ it."
  href='https://www.cs.utexas.edu/users/moore/acl2/manuals/latest/'>https://www.cs.utexas.edu/users/moore/acl2/manuals/latest/'</a>)
  have been replaced by references to the new one
  (<a href='https://acl2.org/doc/'>https://acl2.org/doc/</a>).</p>
+
+ <p>The documentation for @(tsee do-loop$) has been extended to illustrate how
+ to signal a soft error from within the body of a @('DO') @(tsee loop$)
+ expression.</p>
 
  <h3>EMACS Support</h3>
 
@@ -109603,7 +110025,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p><a href='https://franz.com/'>Allegro Common Lisp</a> is a commercial
  implementation.  It has been maintained for many years, but it generally runs
- ACL2 more slowly than most other implementations.</p>
+ ACL2 more slowly than most other implementations, and there are other issues;
+ see @(see allegro-cl).</p>
 
  <h3>Clozure Common Lisp (CCL)</h3>
 
@@ -112777,7 +113200,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p>ACL2 currently runs on <b>Unix</b>, <b>Linux</b>, <b>Windows</b>, and
  <b>Macintosh OS X</b> operating systems.</p>
 
- <p>It can generally be built in any of the following Common Lisps:</p>
+ <p>It can generally be built in any of the following Common Lisps (but see
+ @(see allegro-cl) for a caveat about Allegro Common Lisp):</p>
 
  <code>
    * <b>Allegro Common Lisp</b>,
@@ -115239,8 +115663,10 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  self-explanatory, but it is useful to see @(see linear) to learn about maximal
  terms (which, as one might guess, are stored under ``Max-term'').</p>
 
- <p>Currently, this function does not print congruence rules, equivalence
- rules, or refinement rules.</p>
+ <p>Currently, this function does not print @(see congruence) rules, @(see
+ equivalence) rules, or @(see refinement) rules.  Moreover, @(see induction)
+ rules that are created by recursive definitions will not show up with
+ @(':pr').</p>
 
  <p>The expert user might also wish to use @(tsee find-rules-of-rune).  See
  @(see find-rules-of-rune).</p>")
@@ -133825,7 +134251,7 @@ work on <tt>(q x)</tt>.</p>
  version number).
 
  @({
- tar xfj sbcl-2.2.10-source.tar.bz2
+ tar jxf sbcl-2.2.10-source.tar.bz2
  })</li>
 
  <li>Change to the new directory and build SBCL with options appropriate for
@@ -138340,6 +138766,156 @@ work on <tt>(q x)</tt>.</p>
 
  <p>The mode is stored in the defaults table, See @(see acl2-defaults-table).
  Thus, the mode may be set @(tsee local)ly in books.</p>")
+
+(defxdoc set-subgoal-loop-limits
+ :parents (miscellaneous)
+ :short "Set the maximum length and repetition count of the subgoal path"
+ :long "<p>The ACL2 ``waterfall'' (see @(see hints-and-the-waterfall)) produces
+ a tree of Goals and Subgoals.  Consider a path through this tree in which each
+ formula is an immediate descendent of the previous formula.  More precisely,
+ each element of the path records a goal formula (represented as a @(see
+ clause)), the name by which the user may refer to it, e.g., @('\"Goal''\"') or
+ @('\"Subgoal *1/2.3\"') (represented as a @(see clause-identifier)), the
+ clause processor that produced the formula, e.g., @('simplify-clause'),
+ @('eliminate-destructors-clause'), @('fertilize-clause'), etc., and the @(see
+ ttree) that records the @(see rune)s the processor used and other information
+ about what the processor did.  Finally, each path starts with the top-level
+ Goal or one of the cases produced by induction or a forcing round, and ends
+ with (i) the reduction of the current goal to true, (ii) the abandonment of the proof
+ attempt, or (iii) the addition of the current goal to the ``pool'' for a
+ subsequent attempt at an inductive proof.</p>
+
+ <p>@('Subgoal-loop-limits') is a user-settable parameter that can limit (a)
+ the maximum length of a path and (b) the maximum number of repetitions in the
+ path of a formula and the clause processor that produced it.  In particular,
+ @('subgoal-loop-limits') is a pair, @('(len . cnt)').  If @('len') is
+ @('nil'), there is no limit on the length of a path, otherwise proof attempts
+ are aborted if the length of any subgoal path exceeds @('len').  If @('cnt')
+ is @('nil'), no check for formula repetition is made, otherwise each new
+ subgoal formula (and its processor) is compared with @(tsee equal) to the
+ ancestors along the path.  A probable loop is signaled and the proof is
+ aborted if the number of occurrences exceeds @('cnt').</p>
+
+ <p>The initial setting of @('subgoal-loop-limits') is @('(1000 . 2)').  That
+ is, no proof can produce a path longer than a 1000 successive descendants or
+ with more than 2 repetitions of the same formula (and processor).</p>
+
+ <p>One might assume that a repetition count greater than 1 indicates a loop,
+ but that is not true.  Various ACL2 clause processors may see the same formula
+ at different points along a path and, guided by heuristics sensitive to what
+ happened the last time the formula was seen, do something different.</p>
+
+ <p>This function, @('set-subgoal-loop-limits'), sets the
+ @('subgoal-loop-limits').</p>
+
+ @({
+ Example Forms:
+ (set-subgoal-loop-limits nil) ; = (set-subgoal-loop-limits '(nil . nil))
+ (set-subgoal-loop-limits t)   ; = (set-subgoal-loop-limits '(nil . 2))
+ (set-subgoal-loop-limits 100) ; = (set-subgoal-loop-limits '(100 . 2))
+ (set-subgoal-loop-limits :default) ; = (set-subgoal-loop-limits '(100 . 2))
+ (set-subgoal-loop-limits '(100 . 5))
+
+ General Form:
+ (set-subgoal-loop-limits term)
+ })
+
+ <p>where @('term') should evaluate to a @(tsee cons) whose @(tsee car) is
+ either @('nil') or a natural number and whose @(tsee cdr) is @('nil') or a
+ non-0 natural number.  However, several abbreviations are allowed.</p>
+
+ <ul>
+
+ <li>If @('term') evaluates to @('nil'), then @('(nil . nil)') is used,
+ imposing no limit on the length of a path and disabling loop detection.</li>
+
+ <li>If @('term') evaluates to @('t'), then @('(nil . 3)') is used, imposing no
+ length limit but defining a loop to be 3 or more repetitions of a formula and
+ proof technique.</li>
+
+ <li>If @('term') evaluates to a natural number, @('n'), then the pair
+ constructed by @('(cons n 3)') is used, imposing a length limit of @('n') and
+ defining a loop to be 3 or more repetitions of a formula and proof
+ technique.</li>
+
+ <li>If @('term') evaluates to @(':DEFAULT'), then the pair @('(1000 . 2)') is
+ used, which sets the @('subgoal-loop-limits') to its initial value, imposing a
+ maximum path length of 1000 and a maximum repetition count of 2.</li>
+
+ </ul>
+
+ <p>When these limits are violated, an error occurs and the proof attempt is
+ abandoned.</p>
+
+ <p>Of course, there are loops other than the simple ones this feature enables!
+ For example, the available rules may cause the simplifier to transform a
+ subgoal into a bigger one, e.g., @('Goal') @('(p x)') may be transformed to
+ @('Goal'') @('(p (f x))'), which may then transform to @('Goal''') @('(p (f (f
+ x)))'), etc.  <i>The prover does not check for such loops.</i> However, such
+ loops are stopped by the path length limit.  (Internal rewrite loops, in which
+ control never exits the simplifier, are not stopped even by a short path
+ length.)  For other ways to restrict the prover, see @(see
+ set-rewrite-stack-limit), @(see with-prover-time-limit), @(see
+ with-prover-step-limit), @(see set-prover-step-limit), and @(see
+ set-induction-depth-limit).</p>
+
+ <p>If a proof aborts because of a probable loop and you suspect the prover is
+ not really in a loop, i.e., that further iteration will break the cycle and
+ make progress, use @('set-subgoal-loop-limits') to change the default 3 to a
+ bigger number and try the proof again!</p>
+
+ <p>Checking for simple loops will slow down the prover in proofs producing
+ very long subgoal paths.</p>
+
+ <p>Note: @('Set-subgoal-loop-limits') is an @(see event)!  It does not print
+ the usual event @(see summary) but nevertheless changes the ACL2 logical @(see
+ world) and is so recorded.  Moreover, its effect is to set the @(tsee
+ acl2-defaults-table), and hence its effect is @(tsee local) to the book or
+ @(tsee encapsulate) form containing it; see @(see acl2-defaults-table).</p>
+
+ <p>To see the current limit</p>
+
+ @({
+ (subgoal-loop-limits (w state))
+ })
+
+ <p>When a loop is detected an error is signaled naming the clause processor,
+ the repeated identical subgoals, and the runes used in each passage through
+ the loop.  One such error message is shown below.</p>
+
+ @({
+ ACL2 Error [Waterfall-loop] in ( THM ...): The clause processor
+ SIMPLIFY-CLAUSE has been applied to the same formula more than 2 times, namely
+ at Goal', Goal'10' and Goal'19'.  That suggests a loop in the waterfall.
+ Consequently, we are aborting!  The following list shows the runes used in
+ each passage through the loop between successive subgoals.
+
+ ((\"Goal'\" ((:EXECUTABLE-COUNTERPART BINARY-+)
+            (:REWRITE RULE1)
+            (:REWRITE RULE2)
+            (:REWRITE RULE3)
+            (:REWRITE RULE4))
+           \"Goal'10'\")
+  (\"Goal'10'\" ((:EXECUTABLE-COUNTERPART BINARY-+)
+               (:REWRITE RULE1)
+               (:REWRITE RULE2)
+               (:REWRITE RULE3)
+               (:REWRITE RULE4))
+              \"Goal'19'\")).
+
+ For more information see :DOC set-subgoal-loop-limits.
+ })
+
+ <p>In the above example, we see that @('\"Goal'\"') was transformed by
+ @('SIMPLIFY-CLAUSE'), using the runes listed, into @('\"Goal'10'\"').
+ Furthermore, the formulas of @('\"Goal'\"') and @('\"Goal'10'\"') are
+ identical.  We also see that @('SIMPLIFY-CLAUSE') then transformed
+ @('\"Goal'10'\"'), using the same runes, to the same formula again at
+ @('\"Goal'19'\"').</p>
+
+ <p>After the error, and if you so choose, you can use the utility @(tsee pso)
+ to display the (possibly gagged, see @(see set-gag-mode)) prover output
+ between the named subgoals.</p>")
 
 (defxdoc set-table-guard
   :parents (table events)
@@ -144394,6 +144970,18 @@ work on <tt>(q x)</tt>.</p>
 
  <p>When you are finished with that, use your browser's <b>Back Button</b> to
  return to @(see introduction-to-key-checkpoints).</p>")
+
+(defxdoc subgoal-loop-limits
+  :parents (miscellaneous)
+  :short "maximum length of the subgoal stack"
+  :long "@({
+ General Form:
+ (subgoal-loop-limits (w state))
+ })
+
+ <p>See @(tsee set-subgoal-loop-limits) for a discussion of how you can set
+ this parameter, which can be used to detect simple looping by the prover and
+ to cut off some forms of infinite looping.</p>")
 
 (defxdoc sublis
   :parents (alists acl2-built-ins)
@@ -155365,6 +155953,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   (INTEGER i j)          (AND (INTEGERP X)   ; See notes below.
                               (<= i X)
                               (<= X j))
+  LIST                   (LISTP X)
   (MEMBER x1 ... xn)     (MEMBER X '(x1 ... xn))
   (MOD i)                same as (INTEGER 0 i-1)
   NIL                    NIL
@@ -155386,7 +155975,7 @@ introduction-to-the-tau-system) for more information about Tau.</dd>
   (SATISFIES pred)       (pred X) ; Lisp requires a unary function, not a macro
   SIGNED-BYTE            (INTEGERP X)
   (SIGNED-BYTE i)        same as (INTEGER k m) where k=-2^(i-1), m=2^(i-1)-1
-  STANDARD-CHAR          (STANDARD-CHARP X)
+  STANDARD-CHAR          (STANDARD-CHAR-P X)
   STRING                 (STRINGP X)
   (STRING max)           (AND (STRINGP X) (EQUAL (LENGTH X) max))
   SYMBOL                 (SYMBOLP X)
