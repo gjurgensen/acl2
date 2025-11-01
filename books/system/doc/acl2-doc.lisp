@@ -108983,6 +108983,9 @@ it."
 
 ; Considerably improved the Essay on the Correctness of Abstract Stobjs.
 
+; Fixed "Unbound Fmt variable" error messages so that they print the promised
+; "fmt string below".  Thanks to Eric Smith for pointing out this bug.
+
   :parents (release-notes)
   :short "ACL2 Version  8.7 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -149121,10 +149124,9 @@ work on <tt>(q x)</tt>.</p>
 
  @({
   Examples of Terms:
+
   (cond ((caar x) (cons t x)) (t 0))   ; an untranslated term
-
   (if (car (car x)) (cons 't x) '0)    ; a translated term
-
   (car (cons x y) 'nil v)              ; a pseudo-term
  })
 
@@ -149172,12 +149174,12 @@ work on <tt>(q x)</tt>.</p>
 
  <p>The function @('termp'), which takes two arguments, an alleged term @('x')
  and a logical world @('w') (see @(see world)), recognizes terms of a given
- extension of the logic.  @('Termp') is defined in @(':')@(tsee program) mode.
- Its definition may be inspected with @(':')@(tsee pe) @('termp') for a
- complete specification of what we mean by ``term'' in the most strict sense.
- Most ACL2 term-processing functions deal with terms in this strict sense and
- use @('termp') as a @(see guard).  That is, the ``internal form'' of a term
- satisfies @('termp'), the strict sense of the word ``term.''</p>
+ extension of the logic.  Its definition may be inspected with @(':')@(tsee pe)
+ @('termp') for a complete specification of what we mean by ``term'' in the
+ most strict sense.  Most ACL2 term-processing functions deal with terms in
+ this strict sense and use @('termp') as a @(see guard).  That is, the
+ ``internal form'' of a term satisfies @('termp'), the strict sense of the word
+ ``term.''</p>
 
  <p><i>Untranslated Terms: What the User Types</i></p>
 
@@ -149187,10 +149189,10 @@ work on <tt>(q x)</tt>.</p>
  symbols.  Very roughly speaking, macros are functions that produce terms as
  their results.  Constants are symbols that are associated with quoted objects.
  Terms in this sugary syntax are ``translated'' to terms in the strict sense;
- the sugary syntax is more often called ``untranslated.''  Roughly speaking,
- translation just implements macroexpansion, the replacement of constant
- symbols by their quoted values, and the checking of all the rules governing
- the strict sense of ``term.''</p>
+ the sugary syntax is more often called ``untranslated.''  Translation includes
+ the process of macroexpansion as well as the replacement of constant symbols
+ by their quoted values, while checking all the rules governing the strict
+ sense of ``term.''</p>
 
  <p>More precisely, macro symbols are as described in the documentation for
  @(tsee defmacro).  A macro, @('mac'), can be thought of as a function,
@@ -149241,6 +149243,51 @@ work on <tt>(q x)</tt>.</p>
  <p>To better understand the mapping between untranslated terms and translated
  terms it is convenient to use the keyword command @(':')@(tsee trans) to see
  examples of translations.  See @(see trans) and also see @(see trans1).</p>
+
+ <p>Note that translation produces a translated term that need not obey code
+ restrictions: a translated term can be used in theorems but might not be
+ allowed in definitions (except in @(see non-executable) contexts; see @(see
+ defun-nx) and see @(see non-exec)).  Suppose for example that we make the
+ following definition, so that @('foo') returns two values (see @(see mv)).</p>
+
+ @({
+ (defun foo (x)
+   (mv x x))
+ })
+
+ <p>Now consider the following translation of a use of @(tsee mv-let).</p>
+
+ @({
+ ACL2 !>:trans (mv-let (a b) (foo x) (+ a b))
+
+ ((LAMBDA (MV)
+    ((LAMBDA (A B) (BINARY-+ A B))
+     (MV-NTH '0 MV)
+     (MV-NTH '1 MV)))
+  (FOO X))
+
+ => *
+
+ ACL2 !>
+ })
+
+ <p>The first definition below is legal.  But the second definition &mdash;
+ which uses the translation of the body of the first definition &mdash; is not
+ legal.  That's because a @(see lambda) application, as with any function
+ application, expects each of its arguments to represent a single value, but
+ the argument @('(foo x)') returns two values.</p>
+
+ @({
+ (defun legal-def (x)
+   (mv-let (a b) (foo x) (+ a b)))
+
+ (defun illegal-def (x)
+    ((LAMBDA (MV)
+       ((LAMBDA (A B) (BINARY-+ A B))
+        (MV-NTH '0 MV)
+        (MV-NTH '1 MV)))
+     (FOO X)))
+ })
 
  <p>Finally, we note that the theorem prover prints terms in untranslated form.
  But there can be more than one correct untranslated term corresponding to a
@@ -152744,6 +152791,11 @@ work on <tt>(q x)</tt>.</p>
  let) forms by @(tsee lambda) expressions, quoting constants, and so on.  See
  @(see term) for relevant background.</p>
 
+ <p>Note that the @('trans') command produces a @(tsee term) that need not obey
+ code restrictions: that term can be used in theorems but might not be allowed
+ in definitions (except in @(see non-executable) contexts; see @(see defun-nx)
+ and see @(see non-exec)).</p>
+
  <p>@('Trans') takes one argument, an alleged term in user syntax, and
  translates it, expanding the macros in it completely.  Either an error is
  caused or the internal syntax for the term (representing its formal meaning)
@@ -152790,7 +152842,7 @@ work on <tt>(q x)</tt>.</p>
 
 (defxdoc trans!
   :parents (macros)
-  :short "Print the translation of a form without code restrictions"
+  :short "Print the translation without code restrictions on the input"
   :long "@({
   Examples:
   :trans! (list a b c)
@@ -152822,6 +152874,11 @@ work on <tt>(q x)</tt>.</p>
  That is: when @('trans*') takes steps to convert an untranslated term to a
  translated term, it does so as though one is translating a theorem statement,
  not a definition body.</p>
+
+ <p>But like @('trans'), the @('trans*') command produces a @(tsee term) that
+ need not obey code restrictions: that term can be used in theorems but might
+ not be allowed in definitions (except in @(see non-executable) contexts; see
+ @(see defun-nx) and see @(see non-exec)).</p>
 
  <p>For discussion of how one may use a keyword command like @(':trans*') in
  place of calling the corresponding utility, in this case @('trans*'), see

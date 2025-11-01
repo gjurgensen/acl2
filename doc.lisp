@@ -22443,11 +22443,12 @@ Subtopics
 
   For a function symbol, [47mfn[0m, and a logical [world], [47mwrld[0m --- for
   example, the current world, [47m(w state)[0m --- evaluation of the form
-  [47m(constraint-info fn wrld)[0m returns [47m(mv flg c)[0m, where [47mc[0m is the list
-  of [constraint]s on [47mfn[0m (implicitly conjoined), and [47mflg[0m is [47mnil[0m if [47mfn[0m
-  is a defined function and otherwise is a function symbol with that
-  same list of constraints (possibly [47mfn[0m itself).  See [constraint]
-  for relevant background.
+  [47m(constraint-info fn wrld)[0m returns [47m(mv flg c)[0m, where [47mc[0m is the
+  defining axiom for [47mfn[0m if [47mflg[0m is [47mnil[0m, and otherwise [47mc[0m indicates the
+  [constraint]s on [47mfn[0m and [47mflg[0m is the function symbol whose
+  [47mconstraint-lst[0m property is [47mc[0m.  See [constraint] for relevant
+  background, and for further details see comments in the ACL2 source
+  code for [47mconstraint-info[0m.
 
   We illustrate with the following example.
 
@@ -22461,7 +22462,8 @@ Subtopics
       (defthm f1-prop (equal (f1 x) (f4 x))))
 
   Then we can see the results of [47mconstraint-info[0m on each introduced
-  function symbol, as follows.
+  function symbol, as follows.  (Some whitespace has been edited in
+  the result.)
 
     ACL2 !>(let ((wrld (w state)))
               (list
@@ -22470,16 +22472,13 @@ Subtopics
                'f2 (mv-let (flg2 c2) (constraint-info 'f2 wrld) (list flg2 c2))
                'f3 (mv-let (flg3 c3) (constraint-info 'f3 wrld) (list flg3 c3))
                'f4 (mv-let (flg4 c4) (constraint-info 'f4 wrld) (list flg4 c4))))
-    (RESULT F1
-            (F1 ((EQUAL (F4 X) (F3 X))
-                 (EQUAL (F1 X) (F4 X))))
+    (RESULT F1 (F1 ((EQUAL (F4 X) (F3 X))
+                    (EQUAL (F1 X) (F4 X))))
             F2 (NIL (EQUAL (F2 X) (F1 X)))
-            F3
-            (F1 ((EQUAL (F4 X) (F3 X))
-                 (EQUAL (F1 X) (F4 X))))
-            F4
-            (F1 ((EQUAL (F4 X) (F3 X))
-                 (EQUAL (F1 X) (F4 X)))))
+            F3 (F1 ((EQUAL (F4 X) (F3 X))
+                    (EQUAL (F1 X) (F4 X))))
+            F4 (F1 ((EQUAL (F4 X) (F3 X))
+                    (EQUAL (F1 X) (F4 X)))))
     ACL2 !>
 
   Notice that the flag (first result) for [47mf2[0m is [47mnil[0m, because even
@@ -22488,10 +22487,7 @@ Subtopics
   just after the [47mencapsulate[0m.  However, the definition of [47mf4[0m does
   affect (or ``infect''; see [subversive-recursions]) the
   constraints: it can't be moved to after the [47mencapsulate[0m because of
-  the [47mdefthm[0m after it.
-
-  Also see [constraint].  For more details, see comments in the
-  definition of [47mconstraint-info[0m in the ACL2 source code.")
+  the [47mdefthm[0m after it.")
  (CONTEXT (POINTERS) "See [ctx].")
  (CONTEXT-MESSAGE-PAIR
   (KESTREL-UTILITIES SYSTEM-UTILITIES-NON-BUILT-IN)
@@ -74686,7 +74682,7 @@ Subtopics
       Print the translation of a form
 
   [Trans!]
-      Print the translation of a form without code restrictions
+      Print the translation without code restrictions on the input
 
   [Trans*]
       Show intermediate expansion results for the translation of a form
@@ -148985,10 +148981,9 @@ Subtopics
   explanation of terms).
 
     Examples of Terms:
+
     (cond ((caar x) (cons t x)) (t 0))   ; an untranslated term
-
     (if (car (car x)) (cons 't x) '0)    ; a translated term
-
     (car (cons x y) 'nil v)              ; a pseudo-term
 
   In traditional first-order predicate calculus a ``term'' is a
@@ -149037,12 +149032,12 @@ Subtopics
 
   The function [47mtermp[0m, which takes two arguments, an alleged term [47mx[0m and
   a logical world [47mw[0m (see [world]), recognizes terms of a given
-  extension of the logic.  [47mTermp[0m is defined in [47m:[0m[47m[program][0m mode.  Its
-  definition may be inspected with [47m:[0m[47m[pe][0m [47mtermp[0m for a complete
-  specification of what we mean by ``term'' in the most strict sense.
-  Most ACL2 term-processing functions deal with terms in this strict
-  sense and use [47mtermp[0m as a [guard].  That is, the ``internal form''
-  of a term satisfies [47mtermp[0m, the strict sense of the word ``term.''
+  extension of the logic.  Its definition may be inspected with [47m:[0m[47m[pe][0m
+  [47mtermp[0m for a complete specification of what we mean by ``term'' in
+  the most strict sense.  Most ACL2 term-processing functions deal
+  with terms in this strict sense and use [47mtermp[0m as a [guard].  That
+  is, the ``internal form'' of a term satisfies [47mtermp[0m, the strict
+  sense of the word ``term.''
 
   [3mUntranslated Terms: What the User Types[0m
 
@@ -149053,10 +149048,10 @@ Subtopics
   functions that produce terms as their results.  Constants are
   symbols that are associated with quoted objects.  Terms in this
   sugary syntax are ``translated'' to terms in the strict sense; the
-  sugary syntax is more often called ``untranslated.'' Roughly
-  speaking, translation just implements macroexpansion, the
-  replacement of constant symbols by their quoted values, and the
-  checking of all the rules governing the strict sense of ``term.''
+  sugary syntax is more often called ``untranslated.'' Translation
+  includes the process of macroexpansion as well as the replacement
+  of constant symbols by their quoted values, while checking all the
+  rules governing the strict sense of ``term.''
 
   More precisely, macro symbols are as described in the documentation
   for [47m[defmacro][0m.  A macro, [47mmac[0m, can be thought of as a function,
@@ -149103,6 +149098,46 @@ Subtopics
   translated terms it is convenient to use the keyword command
   [47m:[0m[47m[trans][0m to see examples of translations.  See [trans] and also see
   [trans1].
+
+  Note that translation produces a translated term that need not obey
+  code restrictions: a translated term can be used in theorems but
+  might not be allowed in definitions (except in [non-executable]
+  contexts; see [defun-nx] and see [non-exec]).  Suppose for example
+  that we make the following definition, so that [47mfoo[0m returns two
+  values (see [mv]).
+
+    (defun foo (x)
+      (mv x x))
+
+  Now consider the following translation of a use of [47m[mv-let][0m.
+
+    ACL2 !>:trans (mv-let (a b) (foo x) (+ a b))
+
+    ((LAMBDA (MV)
+       ((LAMBDA (A B) (BINARY-+ A B))
+        (MV-NTH '0 MV)
+        (MV-NTH '1 MV)))
+     (FOO X))
+
+    => *
+
+    ACL2 !>
+
+  The first definition below is legal.  But the second definition ---
+  which uses the translation of the body of the first definition ---
+  is not legal.  That's because a [lambda] application, as with any
+  function application, expects each of its arguments to represent a
+  single value, but the argument [47m(foo x)[0m returns two values.
+
+    (defun legal-def (x)
+      (mv-let (a b) (foo x) (+ a b)))
+
+    (defun illegal-def (x)
+       ((LAMBDA (MV)
+          ((LAMBDA (A B) (BINARY-+ A B))
+           (MV-NTH '0 MV)
+           (MV-NTH '1 MV)))
+        (FOO X)))
 
   Finally, we note that the theorem prover prints terms in untranslated
   form.  But there can be more than one correct untranslated term
@@ -153635,6 +153670,11 @@ Remarks
   replacing [47m[let][0m forms by [47m[lambda][0m expressions, quoting constants,
   and so on.  See [term] for relevant background.
 
+  Note that the [47mtrans[0m command produces a [47m[term][0m that need not obey code
+  restrictions: that term can be used in theorems but might not be
+  allowed in definitions (except in [non-executable] contexts; see
+  [defun-nx] and see [non-exec]).
+
   [47mTrans[0m takes one argument, an alleged term in user syntax, and
   translates it, expanding the macros in it completely.  Either an
   error is caused or the internal syntax for the term (representing
@@ -153676,7 +153716,7 @@ Remarks
   For more, see [term].")
  (TRANS!
   (MACROS)
-  "Print the translation of a form without code restrictions
+  "Print the translation without code restrictions on the input
 
     Examples:
     :trans! (list a b c)
@@ -153707,6 +153747,11 @@ Remarks
   is: when [47mtrans*[0m takes steps to convert an untranslated term to a
   translated term, it does so as though one is translating a theorem
   statement, not a definition body.
+
+  But like [47mtrans[0m, the [47mtrans*[0m command produces a [47m[term][0m that need not
+  obey code restrictions: that term can be used in theorems but might
+  not be allowed in definitions (except in [non-executable] contexts;
+  see [defun-nx] and see [non-exec]).
 
   For discussion of how one may use a keyword command like [47m:trans*[0m in
   place of calling the corresponding utility, in this case [47mtrans*[0m,
