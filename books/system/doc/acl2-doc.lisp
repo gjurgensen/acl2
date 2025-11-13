@@ -52324,18 +52324,18 @@ tables in the current Hons Space."
  it will be tested and merged automatically into the @('master') branch if all
  tests pass.</p>
 
- <h3>Optional: Follow Best Practices for ACL2 Code</h3>
+ <h3>Suggested: Follow Best Practices for ACL2 Code</h3>
 
  <p>See @(see best-practices) for recommended code practices.</p>
 
- <h3>Optional: Document Your New Books</h3>
+ <h3>Suggested: Document Your New Books</h3>
 
  <p>Consider creating documentation using the @(tsee xdoc) system.  Then, to
  ensure your new topics appear in the manual, ensure they are included by
  @('books/doc/top.lisp'), perhaps via another book that it includes, such as
  @('books/projects/top-doc.lisp').</p>
 
- <h3>Optional: Update the Release Notes</h3>
+ <h3>Suggested: Update the Release Notes</h3>
 
  <p>Consider adding some high-level information about your changes to the
  Community Books' release notes &mdash; i.e., the appropriate @(see
