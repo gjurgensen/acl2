@@ -57996,13 +57996,14 @@ tables in the current Hons Space."
  ACL2 Demos, at the ``Demos'' link of the <a
  href='http://www.cs.utexas.edu/users/moore/acl2'>ACL2 home page</a>.</p>
 
- <p>Most users of ACL2 have bought the book</p>
+ <p>Many users of ACL2 have bought the book</p>
 
  <p><i>Computer-Aided Reasoning: An Approach</i>, Kaufmann, Manolios, and
  Moore, Kluwer Academic Publishers, June, 2000</p>
 
- <p>which is available <a href='http://www.lulu.com/content/1746161'>in
- paperback</a> from Lulu for approximately $20 (as of 2010).  That book
+ <p>which is <a href='https://www.lulu.com/shop/j-moore-and-panagiotis-manolios-and-matt-kaufmann/computer-aided-reasoning-an-approach/paperback/product-1p52nnn.html'>
+ available in
+ paperback</a> from Lulu for approximately $22 (as of 2025).  That book
  contains hundreds of exercises in programming, proof, and using The Method
  described here to prove theorems.  Solutions to the exercises are online, as
  are <a
@@ -58232,19 +58233,6 @@ tables in the current Hons Space."
 
  <p>We also recommend that you look at the ACL2 Demos mentioned in the @(see
  acl2-tutorial).</p>
-
- <p>Most users of ACL2 have bought the book</p>
-
- <p><i>Computer-Aided Reasoning: An Approach</i>, Kaufmann, Manolios, and
- Moore, Kluwer Academic Publishers, June, 2000</p>
-
- <p>which is <a href='http://www.lulu.com/content/1746161'>available in
- paperback from Lulu</a> for approximately $20 (as of 2010).  That book
- contains hundreds of exercises in programming, proof, and using The Method to
- prove theorems.  Solutions to the exercises are online.  See @(see
- pubs::pubs-books), which also includes information about its companion (also
- available on Lulu) describing applications of ACL2, some of which are from
- industry.</p>
 
  <p>Thank you for spending the time to get acquainted with the basics of the
  ACL2 theorem prover.  Don't hesitate to send further questions to the ACL2
