@@ -55889,23 +55889,59 @@ Subtopics
   for parallelism violations.  However, [47mhons-wash![0m requires a trust
   tag; see [defttag].")
  (HOW-TO-CONTRIBUTE
-  (ABOUT-ACL2)
+  (ABOUT-ACL2 COMMUNITY)
   "Guide to contributing code to ACL2.
 
   The main way to contribute code to ACL2 is to open a pull request
-  (PR) to the public {GitHub repository |
-  https://github.com/acl2/acl2}. This will involve first creating a
-  personal fork of the repository. Then, once you've committed your
-  changes and tested the build, you may open the PR to merge your
-  changes into the ACL2 repository. PRs should target the ``testing''
-  branch or similar ([3mnot[0m the ``master'' branch).
+  (PR) to the {ACL2 GitHub repository |
+  https://github.com/acl2/acl2}.  First create a personal fork of the
+  repository and commit your changes/additions there.  Then open a PR
+  to merge your changes into the main ACL2 repository.  Please ensure
+  your PR follows these guidelines:
 
 
-Checking the Build
+Required: Make Changes Only Within the [47mbooks/[0m Directory
 
-  You should run a regression build to ensure that your code changes
-  did not break the build. To do so, run the following [47mmake[0m command
-  in the ``books'' directory:
+  While the community is invited to submit contributions to the
+  Community Books (see [COMMUNITY-BOOKS]), source files outside of
+  the [47mbooks/[0m directory should not be modified, except by system
+  maintainers.
+
+  Suggestions for system changes can be emailed to {Matt Kaufmann |
+  mailto:kaufmann@cs.utexas.edu}. (Prospective system developers
+  should see the [developers-guide].)
+
+  New developments that do not clearly belong in an existing directory
+  are often put into the [47mprojects[0m subdirectory of [47mbooks/[0m.
+
+
+Required: Avoid Problematic Constructs
+
+  Avoid introducing code that may fail on machines/environments other
+  than your own.  In particular, avoid the following:
+
+    * Dependence on any files not included in your PR.  In particular, any
+      book that depends on an external tool, such as an SMT solver,
+      should include an appropriate [build::cert_param].
+
+    * Dependence on environment variables that will not be set in other
+      users' environments.
+
+    * Use of absolute pathnames (e.g., mentions of your home directory).
+      These are likely to cause problems for other users.  To bring
+      in other Community Books, use the [47m:dir :system[0m option of
+      [47m[include-book][0m.
+
+    * Constructs with timeouts that cause proof attempts to be aborted
+      after a short time.  These may cause failures on slower or
+      heavily loaded machines.
+
+
+Required: Check the Build
+
+  Before making your PR, you should run a regression to ensure that
+  your changes/additions do not break the build. To do so, run the
+  following [47mmake[0m command in the ``books'' directory:
 
     make -j 8 regression
 
@@ -55914,39 +55950,34 @@ Checking the Build
   lower number to align with your system. See [books-certification]
   for an extended discussion on community book certification.)
 
-  A successful regression build is a good indicator, but it may not
-  tell the whole story. Be careful to avoid introducing code which
-  may build on your local machine but fail in other environments.
-  E.g., via dependence on environment variables or absolute
-  pathnames, use of external tools without an appropriate
-  [build::cert_param], short timeouts which may fail on slower
-  machines, etc.
+
+Required: Change the Base Branch of your PR to [47mtesting[0m
+
+  When opening your PR to merge changes into the main ACL2 repository,
+  set the base branch to the [47mtesting[0m branch (or similar) ([3mnot[0m the
+  [47mmaster[0m branch).  Once your PR is accepted into the [47mtesting[0m branch,
+  it will be tested and merged automatically into the [47mmaster[0m branch
+  if all tests pass.
 
 
-Best Code Practices
+Suggested: Follow Best Practices for ACL2 Code
 
   See best-practices for recommended code practices.
 
 
-Update the Release Notes
+Suggested: Document Your New Books
+
+  Consider creating documentation using the [47m[xdoc][0m system.  Then, to
+  ensure your new topics appear in the manual, ensure they are
+  included by [47mbooks/doc/top.lisp[0m, perhaps via another book that it
+  includes, such as [47mbooks/projects/top-doc.lisp[0m.
+
+
+Suggested: Update the Release Notes
 
   Consider adding some high-level information about your changes to the
   Community Books' release notes --- i.e., the appropriate
   [release-notes-books] XDOC topic in [47mbooks/doc/relnotes.lisp[0m.
-
-
-``Off-Limits'' Source Files
-
-  The community is invited to submit code contributions to the
-  Community Books (see [COMMUNITY-BOOKS]). Source files outside of
-  the ``books'' directory should not be modified, except by system
-  maintainers.
-
-  Suggestions for system changes should be emailed to {Matt Kaufmann |
-  mailto:kaufmann@cs.utexas.edu}.
-
-  For those interested in development of the ACL2 core system, see the
-  [developers-guide].
 
 
 Resources for Git/GitHub
@@ -55958,14 +55989,14 @@ Resources for Git/GitHub
 
 Frequent Contributors
 
-  Frequent contributors may request to join the {GitHub project |
+  Frequent contributors may request to join the {ACL2 GitHub project |
   https://github.com/acl2/acl2}. Such contributors may push directly
   to various testing branches without opening a PR (although it is
   still good practice to open a PR when modifying a widely used book
   or one primarily authored by someone else).
 
-  To request to join the project, please send email to one of the
-  following individuals.
+  To request to join the project, email one of the following
+  individuals:
 
     * Eric Smith ([47meric.smith@kestrel.edu[0m)
 
@@ -55974,7 +56005,7 @@ Frequent Contributors
     * Sol Swords ([47msswords@gmail.com[0m)
 
   See also the [community] topic for other ways to connect with the
-  ACL2 community.")
+  ACL2 community, and ways to get help.")
  (HOW_LONG_DOES_IT_TAKE_TO_BECOME_AN_EFFECTIVE_USER{Q}
   (PAGES_WRITTEN_ESPECIALLY_FOR_THE_TOURS)
   "How Long Does It Take to Become an Effective User?
