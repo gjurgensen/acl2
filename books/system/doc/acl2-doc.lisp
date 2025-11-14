@@ -77174,7 +77174,7 @@ it."
 
 (defxdoc mv-nth
   :parents (mv acl2-built-ins)
-  :short "The mv-nth element (zero-based) of a list"
+  :short "The nth element (zero-based) of a multiply valued expression"
   :long "<p>@('(Mv-nth n l)') is the @('n')th element of @('l'), zero-based.
  If @('n') is greater than or equal to the length of @('l'), then @('mv-nth')
  returns @('nil').</p>
