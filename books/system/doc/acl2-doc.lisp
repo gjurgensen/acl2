@@ -19072,7 +19072,7 @@ subtree of X with T, without duplication.</p>
            (mv-let (flg1 x1 origin1)
              (constraint-info 'f1 wrld)
              (list flg1 x1 origin1))
-           'f2 
+           'f2
            (mv-let (flg2 x2 origin2)
              (constraint-info 'f2 wrld)
              (list flg2 x2 origin2))
@@ -135514,7 +135514,7 @@ work on <tt>(q x)</tt>.</p>
 
  @({
  (EXTRA-INFO :CONSTRAINT '((:THEOREM <term>) <fn-substitution>))
- }) 
+ })
 
  <p>Note that this occurrence of the word ``THEOREM'' is as a keyword and what
  follows it is a term rather than a name.  This stems from the use of the
