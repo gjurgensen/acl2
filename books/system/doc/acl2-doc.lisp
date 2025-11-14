@@ -52290,21 +52290,60 @@ tables in the current Hons Space."
  src='res/tours/flying.gif'></img></see></p>")
 
 (defxdoc how-to-contribute
-  :parents (about-acl2)
+  :parents (about-acl2 community)
   :short "Guide to contributing code to ACL2."
   :long "<p>The main way to contribute code to ACL2 is to open a pull request
- (PR) to the public <a href='https://github.com/acl2/acl2'>GitHub
- repository</a>. This will involve first creating a personal fork of the
- repository. Then, once you've committed your changes and tested the build, you
- may open the PR to merge your changes into the ACL2 repository. PRs should
- target the ``testing'' branch or similar (<i>not</i> the ``master''
- branch).</p>
+ (PR) to the <a href='https://github.com/acl2/acl2'>ACL2 GitHub
+ repository</a>.  First create a personal fork of the
+ repository and commit your changes/additions there.  Then open a
+ PR to merge your changes into the main ACL2 repository.  Please ensure
+ your PR follows these guidelines:</p>
 
- <h3>Checking the Build</h3>
+ <h3>Required: Make Changes Only Within the @('books/') Directory</h3>
 
- <p>You should run a regression build to ensure that your code changes did not
- break the build. To do so, run the following @('make') command in the
- ``books'' directory:</p>
+ <p>While the community is invited to submit contributions to the <see
+ topic='@(url community-books)'>Community Books</see>, source files outside of
+ the @('books/') directory should not be modified, except by system
+ maintainers.</p>
+
+ <p>Suggestions for system changes can be emailed to <a
+ href='mailto:kaufmann@cs.utexas.edu'>Matt Kaufmann</a>. (Prospective system
+ developers should see the @(see developers-guide).)</p>
+
+ <p>New developments that do not clearly belong in an existing directory
+ are often put into the @(tsee projects) subdirectory of @('books/').</p>
+
+ <h3>Required: Avoid Problematic Constructs</h3>
+
+ <p>Avoid introducing code that may fail on machines/environments
+  other than your own.  In particular, avoid the following:</p>
+
+         <ul>
+
+         <li>Dependence on any files not included in your PR.  In particular,
+         any book that depends on an external tool, such as an SMT solver,
+         should include an appropriate <see topic='@(url
+         build::cert_param)'>cert_param</see>.</li>
+
+         <li>Dependence on environment variables that will not be set in other
+         users' environments.</li>
+
+         <li>Use of absolute pathnames (e.g., mentions of your home directory).
+         These are likely to cause problems for other users.  To bring in other
+         Community Books, use the @(':dir :system') option of @(tsee
+         include-book).</li>
+
+         <li>Constructs with timeouts that cause proof attempts to be aborted
+         after a short time.  These may cause failures on slower or heavily
+         loaded machines.</li>
+
+         </ul>
+
+ <h3>Required: Check the Build</h3>
+
+ <p>Before making your PR, you should run a regression to ensure that
+ your changes/additions do not break the build. To do so, run the following
+ @('make') command in the ``books'' directory:</p>
 
  @({
    make -j 8 regression
@@ -52315,35 +52354,30 @@ tables in the current Hons Space."
  number to align with your system. See @(see books-certification) for an
  extended discussion on community book certification.)</p>
 
- <p>A successful regression build is a good indicator, but it may not tell the
- whole story. Be careful to avoid introducing code which may build on your
- local machine but fail in other environments. E.g., via dependence on
- environment variables or absolute pathnames, use of external tools without an
- appropriate <see topic='@(url build::cert_param)'>cert_param</see>, short
- timeouts which may fail on slower machines, etc.</p>
+ <h3>Required: Change the Base Branch of your PR to @('testing')</h3>
 
- <h3>Best Code Practices</h3>
+ <p>When opening your PR to merge changes into the main ACL2 repository, set
+ the base branch to the @('testing') branch (or similar) (<i>not</i> the
+ @('master') branch).  Once your PR is accepted into the @('testing') branch,
+ it will be tested and merged automatically into the @('master') branch if all
+ tests pass.</p>
+
+ <h3>Suggested: Follow Best Practices for ACL2 Code</h3>
 
  <p>See @(see best-practices) for recommended code practices.</p>
 
- <h3>Update the Release Notes</h3>
+ <h3>Suggested: Document Your New Books</h3>
+
+ <p>Consider creating documentation using the @(tsee xdoc) system.  Then, to
+ ensure your new topics appear in the manual, ensure they are included by
+ @('books/doc/top.lisp'), perhaps via another book that it includes, such as
+ @('books/projects/top-doc.lisp').</p>
+
+ <h3>Suggested: Update the Release Notes</h3>
 
  <p>Consider adding some high-level information about your changes to the
  Community Books' release notes &mdash; i.e., the appropriate @(see
  release-notes-books) XDOC topic in @('books/doc/relnotes.lisp').</p>
-
- <h3>``Off-Limits'' Source Files</h3>
-
- <p>The community is invited to submit code contributions to the <see
- topic='@(url community-books)'>Community Books</see>. Source files outside of
- the ``books'' directory should not be modified, except by system
- maintainers.</p>
-
- <p>Suggestions for system changes should be emailed to
- <a href='mailto:kaufmann@cs.utexas.edu'>Matt Kaufmann</a>.</p>
-
- <p>For those interested in development of the ACL2 core system, see
- the @(see developers-guide).</p>
 
  <h3>Resources for Git/GitHub</h3>
 
@@ -52353,13 +52387,13 @@ tables in the current Hons Space."
  <h3>Frequent Contributors</h3>
 
  <p>Frequent contributors may request to join the <a
- href='https://github.com/acl2/acl2'>GitHub project</a>. Such contributors may
+ href='https://github.com/acl2/acl2'>ACL2 GitHub project</a>. Such contributors may
  push directly to various testing branches without opening a PR (although it is
  still good practice to open a PR when modifying a widely used book or one
  primarily authored by someone else).</p>
 
- <p>To request to join the project, please send email to one of the following
- individuals.</p>
+ <p>To request to join the project, email one of the following
+ individuals:</p>
  <ul>
    <li>Eric Smith (@('eric.smith@kestrel.edu'))</li>
    <li>David Rager (@('ragerdl@gmail.com'))</li>
@@ -52367,7 +52401,7 @@ tables in the current Hons Space."
  </ul>
 
  <p>See also the @(see community) topic for other ways to connect with the ACL2
- community.</p>")
+ community, and ways to get help.</p>")
 
 (defxdoc |How To Find Out about ACL2 Functions|
   :parents (|Pages Written Especially for the Tours|)
