@@ -109139,6 +109139,36 @@ it."
  to Eric Smith for sending an example book for which to speed up @(tsee
  include-book).</p>
 
+ <p>When a function, constant, or macro was defined within an @(tsee
+ encapsulate) form, its definition was evaluated in Lisp with each pass of
+ evaluating the @('encapsulate') form, and similarly for the definition of its
+ executable-counterpart (see @(see evaluation)).  For CCL and SBCL, that
+ implies that such function definitions were compiled with each pass.  Now,
+ with a few exceptions, these definitions are saved in the first pass of
+ evaluating the @('encapsulate') form and retrieved, rather than re-evaluated,
+ in the second pass.  The exceptions include the following.
+
+ <ul>
+
+ <li>No definition is stored or retrieved that is within the scope of an
+ @('encapsulate') form with a non-empty list of @(see signature)s.</li>
+
+ <li>No definition of the executable-counterpart of a function symbol is
+ retrieved when that symbol has a non-redundant @(see logic)-mode definition in
+ the scope of @(tsee local) that was evaluated within the first pass of the
+ same @('encapsulate').</li>
+
+ <li>No @(see local) definition is stored that is within two or more nested
+ @('encapsulate') events.</li>
+
+ </ul>
+
+ Thanks to Eric Smith for asking if a function defined within an encapsulate
+ can be expected to be compiled twice, once for each pass of the encapsulate.
+ Implementation-level details are explained in the section entitled
+ &ldquo;Appendix 2: Extension for Encapsulate&rdquo; in the ACL2 source code
+ comment, &ldquo;Essay on Hash Table Support for Compilation&rdquo;.</p>
+
  <h3>Bug Fixes</h3>
 
  <p>Fixed a soundness bug in the @(see proof-builder) that could cause goals

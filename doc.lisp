@@ -3915,7 +3915,7 @@ Subtopics
       Converting [multiple-value] result to a single-value list
 
   [Mv-nth]
-      The mv-nth element (zero-based) of a list
+      The nth element (zero-based) of a multiply valued expression
 
   [Mv?]
       Return one or more values
@@ -61540,17 +61540,17 @@ Subtopics
   at the ACL2 Demos, at the ``Demos'' link of the {ACL2 home page |
   http://www.cs.utexas.edu/users/moore/acl2}.
 
-  Most users of ACL2 have bought the book
+  Many users of ACL2 have bought the book
 
   [3mComputer-Aided Reasoning: An Approach[0m, Kaufmann, Manolios, and Moore,
   Kluwer Academic Publishers, June, 2000
 
-  which is available {in paperback |
-  http://www.lulu.com/content/1746161} from Lulu for approximately
-  $20 (as of 2010).  That book contains hundreds of exercises in
-  programming, proof, and using The Method described here to prove
-  theorems.  Solutions to the exercises are online, as are
-  {appendices |
+  which is { available in paperback |
+  https://www.lulu.com/shop/j-moore-and-panagiotis-manolios-and-matt-kaufmann/computer-aided-reasoning-an-approach/paperback/product-1p52nnn.html}
+  from Lulu for approximately $22 (as of 2025).  That book contains
+  hundreds of exercises in programming, proof, and using The Method
+  described here to prove theorems.  Solutions to the exercises are
+  online, as are {appendices |
   http://link.springer.com/content/pdf/bbm%3A978-1-4615-4449-4%2F1.pdf}
   that focus on some practical usage aspects.  See pubs::pubs-books,
   which also includes information about its companion (also available
@@ -61778,19 +61778,6 @@ Subtopics
 
   We also recommend that you look at the ACL2 Demos mentioned in the
   [ACL2-tutorial].
-
-  Most users of ACL2 have bought the book
-
-  [3mComputer-Aided Reasoning: An Approach[0m, Kaufmann, Manolios, and Moore,
-  Kluwer Academic Publishers, June, 2000
-
-  which is {available in paperback from Lulu |
-  http://www.lulu.com/content/1746161} for approximately $20 (as of
-  2010).  That book contains hundreds of exercises in programming,
-  proof, and using The Method to prove theorems.  Solutions to the
-  exercises are online.  See pubs::pubs-books, which also includes
-  information about its companion (also available on Lulu) describing
-  applications of ACL2, some of which are from industry.
 
   Thank you for spending the time to get acquainted with the basics of
   the ACL2 theorem prover.  Don't hesitate to send further questions
@@ -80886,7 +80873,7 @@ Subtopics
       Converting [multiple-value] result to a single-value list
 
   [Mv-nth]
-      The mv-nth element (zero-based) of a list
+      The nth element (zero-based) of a multiply valued expression
 
   [Mv?]
       Return one or more values
@@ -81055,7 +81042,7 @@ Subtopics
       x)")
  (MV-NTH
   (MV ACL2-BUILT-INS)
-  "The mv-nth element (zero-based) of a list
+  "The nth element (zero-based) of a multiply valued expression
 
   [47m(Mv-nth n l)[0m is the [47mn[0mth element of [47ml[0m, zero-based.  If [47mn[0m is greater
   than or equal to the length of [47ml[0m, then [47mmv-nth[0m returns [47mnil[0m.
@@ -106280,6 +106267,34 @@ Heuristic and Efficiency Improvements
   [47m(defxdoc note-8-7 ...)[0m in [community-book]
   [47mbooks/system/doc/acl2-doc.lisp[0m.  Thanks to Eric Smith for sending
   an example book for which to speed up [47m[include-book][0m.
+
+  When a function, constant, or macro was defined within an
+  [47m[encapsulate][0m form, its definition was evaluated in Lisp with each
+  pass of evaluating the [47mencapsulate[0m form, and similarly for the
+  definition of its executable-counterpart (see [evaluation]).  For
+  CCL and SBCL, that implies that such function definitions were
+  compiled with each pass.  Now, with a few exceptions, these
+  definitions are saved in the first pass of evaluating the
+  [47mencapsulate[0m form and retrieved, rather than re-evaluated, in the
+  second pass.  The exceptions include the following.
+
+      * No definition is stored or retrieved that is within the scope of an
+        [47mencapsulate[0m form with a non-empty list of [signature]s.
+
+      * No definition of the executable-counterpart of a function symbol is
+        retrieved when that symbol has a non-redundant [logic]-mode
+        definition in the scope of [47m[local][0m that was evaluated within
+        the first pass of the same [47mencapsulate[0m.
+
+      * No [local] definition is stored that is within two or more nested
+        [47mencapsulate[0m events.
+
+  Thanks to Eric Smith for asking if a function defined within an
+  encapsulate can be expected to be compiled twice, once for each
+  pass of the encapsulate.  Implementation-level details are
+  explained in the section entitled ``Appendix 2: Extension for
+  Encapsulate'' in the ACL2 source code comment, ``Essay on Hash
+  Table Support for Compilation''.
 
 
 Bug Fixes
