@@ -146012,10 +146012,9 @@ Subtopics
   This clearly evaluates to [47mt[0m.  When a [47msyntaxp[0m test evaluates to true,
   we consider the [47msyntaxp[0m hypothesis to have been established; this
   is sound because logically [47m(syntaxp test)[0m is [47mt[0m regardless of [47mtest[0m.
-  If the test evaluates to [47mnil[0m (or fails to evaluate because of
-  [guard] violations) we act as though we cannot establish the
-  hypothesis and abandon the attempt to apply the rule; it is always
-  sound to give up.
+  If the test evaluates to [47mnil[0m, we act as though we cannot establish
+  the hypothesis and abandon the attempt to apply the rule; it is
+  always sound to give up.
 
   The acute reader will have noticed something odd about the form
 

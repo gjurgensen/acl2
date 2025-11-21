@@ -146066,9 +146066,9 @@ work on <tt>(q x)</tt>.</p>
  <p>This clearly evaluates to @('t').  When a @('syntaxp') test evaluates to
  true, we consider the @('syntaxp') hypothesis to have been established; this
  is sound because logically @('(syntaxp test)') is @('t') regardless of
- @('test').  If the test evaluates to @('nil') (or fails to evaluate because of
- @(see guard) violations) we act as though we cannot establish the hypothesis
- and abandon the attempt to apply the rule; it is always sound to give up.</p>
+ @('test').  If the test evaluates to @('nil'), we act as though we cannot
+ establish the hypothesis and abandon the attempt to apply the rule; it is
+ always sound to give up.</p>
 
  <p>The acute reader will have noticed something odd about the form</p>
 
