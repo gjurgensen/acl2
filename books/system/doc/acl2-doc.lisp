@@ -25460,7 +25460,7 @@ of @('term'). This can be retrieved with @(tsee getpropc).</p>
  *c* st)').  Also see @(see term), in particular the discussion there of
  untranslated terms, and see @(see nth-aliases-table).</p>
 
- <h3>Inspecting the Effects of a Defstobj</h3>
+ <h3>The Effects of a <tt>Defstobj</tt></h3>
 
  <p>Because the stobj functions are introduced as ``sub-events'' of the
  @('defstobj') the history commands @(':')@(tsee pe) and @(':')@(tsee pc) will
@@ -25479,6 +25479,11 @@ of @('term'). This can be retrieved with @(tsee getpropc).</p>
  functions that contain @('(DECLARE (STOBJ-INLINE-FN T))') will generate @(tsee
  defabbrev) forms because the @(':inline') keyword of @('defstobj') was
  supplied the value @('t').  The rest will generate @(tsee defun) forms.</p>
+
+ <p>Evaluation of a @('defstobj') event @(see disable)s the @(see
+ executable-counterpart) of the creator function.  This is useful for proofs,
+ since calls of that function always cause an error (albeit one which is
+ handled during proofs).</p>
 
  <p>A @('defstobj') is considered redundant only if it is syntactically
  identical to a previously executed @('defstobj').  Note that a redundant

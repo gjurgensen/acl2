@@ -28811,7 +28811,7 @@ Constants
   terms, and see [nth-aliases-table].
 
 
-Inspecting the Effects of a Defstobj
+The Effects of a [47mDefstobj[0m
 
   Because the stobj functions are introduced as ``sub-events'' of the
   [47mdefstobj[0m the history commands [47m:[0m[47m[pe][0m and [47m:[0m[47m[pc][0m will not print the
@@ -28828,6 +28828,11 @@ Inspecting the Effects of a Defstobj
   functions that contain [47m(DECLARE (STOBJ-INLINE-FN T))[0m will generate
   [47m[defabbrev][0m forms because the [47m:inline[0m keyword of [47mdefstobj[0m was
   supplied the value [47mt[0m.  The rest will generate [47m[defun][0m forms.
+
+  Evaluation of a [47mdefstobj[0m event [disable]s the
+  [executable-counterpart] of the creator function.  This is useful
+  for proofs, since calls of that function always cause an error
+  (albeit one which is handled during proofs).
 
   A [47mdefstobj[0m is considered redundant only if it is syntactically
   identical to a previously executed [47mdefstobj[0m.  Note that a redundant
