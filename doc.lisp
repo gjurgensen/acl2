@@ -28434,18 +28434,40 @@ Restrictions on the Field Descriptions in Defstobj
   more precise below about what we mean by ``expected.'' Below we
   present the restrictions on [47mtypei[0m and [47mvali[0m.
 
-  Remark on [47mSATISFIES[0m.  As suggested above, each type indicator may be
-  a legal [type-spec].  But for a type-spec [47m(SATISFIES pred)[0m, not
-  only must [47mpred[0m be unary --- it also must be a [guard]-verified
-  [47m:[0m[47m[logic][0m mode function whose guard is [47mt[0m.  For example, since the
-  guard of [47m[evenp][0m specifies an integer, the type-spec [47m(SATISFIES
-  evenp)[0m is not legal for a stobj field.  However, the following is
+  Remark on [47mSATISFIES[0m.  As suggested above, each type indicator must be
+  a legal [type-spec] or a stobj name.  But if it is a type-spec
+  involving [47m(SATISFIES pred)[0m, then not only must [47mpred[0m be a unary
+  [47m:[0m[47m[logic][0m mode function symbol, but the type-spec is subject to a
+  form of [guard] verification.  For example, the type-spec
+  [47m(SATISFIES evenp)[0m is not legal for a stobj field because the guard
+  generated for [47m(evenp x)[0m is [47m(integerp x)[0m.  However, the following is
   legal.
 
     (defun my-evenp (x)
       (declare (xargs :guard t))
       (and (integerp x) (evenp x)))
     (defstobj st (fld :type (satisfies my-evenp) :initially 4))
+
+  The following is also legal, as explained below.
+
+    (defstobj st (a :type (and integer (satisfies evenp)) :initially 0))
+
+  The type-spec displayed immediately above is legal because it
+  generates the term [47m(and (integerp x) (evenp x)[0m), which macroexpands
+  to [47m(if (integerp x) (evenp x) nil)[0m and hence can be trivially
+  guard-verified.
+
+  To understand this notion of trivial guard verification, first note
+  that every type-spec gives rise to a corresponding term in the
+  variable [47mx[0m, as in the example just above.  If the type-spec uses
+  [47mSATISFIES[0m, then the guard proof obligation for that term is subject
+  to the limited simplification used by [47m[verify-guards][0m with option
+  [47m:guard-simplify :limited[0m; see [verify-guards], specifically
+  regarding that option.  The requirement is that this limited
+  simplifcation completes the proof, without further simplification
+  or a call to the theorem prover.  This restriction to limited
+  simplification is probably not much of a restriction for typical
+  uses of [47mSATISFIES[0m in type-specs.  End of Remark on [47mSATISFIES[0m.
 
 
 Scalar Types
@@ -106203,6 +106225,9 @@ Changes to Existing Features
   that the terms are preferentially expanded is not new.  What's new
   is that ACL2 now lists all the accommodated terms.
 
+  When the [summary] prints ``Modified system attachments'', it now
+  sorts that information before printing it.
+
 
 New Features
 
@@ -106359,6 +106384,34 @@ Bug Fixes
   error could occur.  Now a clean error message is printed, and this
   requirement on the [47mvali[0m has been made explicit in the documentation
   for [47m[defabsstobj][0m.
+
+  ACL2 rejected some valid [47m:type[0m fields in defstobj forms.  This has
+  been fixed; see [defstobj], where the ``Remark on [47mSATISFIES[0m'' has
+  been extended to describe the requisite [guard] verification.
+  Thanks to J. David Taylor for reporting this issue (as Issue 1852
+  in the ACL2 GitHub repository) and including the following examples
+  that ACL2 rejected (but now accepts).
+
+      (defstobj st
+        (a :type (complex rational)
+           :initially #c(0 1)))
+
+      (defstobj st (a :type (string 1)
+                      :initially \"a\"))
+
+  The following additional example from Issue 1852 is still rejected,
+  because [47m[evenp][0m has a non-trivial [guard]; its argument must be an
+  integer.
+
+      (defstobj st (a :type (satisfies evenp)
+                      :initially 0))
+
+  However, the following variant produces a term, [47m(and (integerp x)
+  (evenp x))[0m, that is trivially guard-verifiable, so it is accepted
+  by ACL2 (but was not accepted before the bug fix).
+
+      (defstobj st (a :type (and integer (satisfies evenp))
+                      :initially 0))
 
 
 Changes at the System Level

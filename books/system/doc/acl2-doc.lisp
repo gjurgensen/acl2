@@ -25073,12 +25073,13 @@ of @('term'). This can be retrieved with @(tsee getpropc).</p>
  precise below about what we mean by ``expected.''  Below we present the
  restrictions on @('typei') and @('vali').</p>
 
- <p>Remark on @('SATISFIES').  As suggested above, each type indicator may be a
- legal @(see type-spec).  But for a type-spec @('(SATISFIES pred)'), not only
- must @('pred') be unary &mdash; it also must be a @(see guard)-verified
- @(':')@(tsee logic) mode function whose guard is @('t').  For example, since
- the guard of @(tsee evenp) specifies an integer, the type-spec @('(SATISFIES
- evenp)') is not legal for a stobj field.  However, the following is legal.</p>
+ <p>Remark on @('SATISFIES').  As suggested above, each type indicator must be
+ a legal @(see type-spec) or a stobj name.  But if it is a type-spec involving
+ @('(SATISFIES pred)'), then not only must @('pred') be a unary @(':')@(tsee
+ logic) mode function symbol, but the type-spec is subject to a form of @(see
+ guard) verification.  For example, the type-spec @('(SATISFIES evenp)') is not
+ legal for a stobj field because the guard generated for @('(evenp x)') is
+ @('(integerp x)').  However, the following is legal.</p>
 
  @({
  (defun my-evenp (x)
@@ -25086,6 +25087,27 @@ of @('term'). This can be retrieved with @(tsee getpropc).</p>
    (and (integerp x) (evenp x)))
  (defstobj st (fld :type (satisfies my-evenp) :initially 4))
  })
+
+ <p>The following is also legal, as explained below.</p>
+
+ @({
+ (defstobj st (a :type (and integer (satisfies evenp)) :initially 0))
+ })
+
+ <p>The type-spec displayed immediately above is legal because it generates the
+ term @('(and (integerp x) (evenp x)')), which macroexpands to @('(if (integerp
+ x) (evenp x) nil)') and hence can be trivially guard-verified.</p>
+
+ <p>To understand this notion of trivial guard verification, first note that
+ every type-spec gives rise to a corresponding term in the variable @('x'), as
+ in the example just above.  If the type-spec uses @('SATISFIES'), then the
+ guard proof obligation for that term is subject to the limited simplification
+ used by @(tsee verify-guards) with option @(':guard-simplify :limited'); see
+ @(see verify-guards), specifically regarding that option.  The requirement is
+ that this limited simplifcation completes the proof, without further
+ simplification or a call to the theorem prover.  This restriction to limited
+ simplification is probably not much of a restriction for typical uses of
+ @('SATISFIES') in type-specs.  End of Remark on @('SATISFIES').</p>
 
  <h3>Scalar Types</h3>
 
@@ -109048,6 +109070,9 @@ it."
 ; Fixed "Unbound Fmt variable" error messages so that they print the promised
 ; "fmt string below".  Thanks to Eric Smith for pointing out this bug.
 
+; The functions guard-clauses and guard-clauses-lst no longer take or return a
+; ttree (which had been returned unmodified).
+
   :parents (release-notes)
   :short "ACL2 Version  8.7 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -109076,6 +109101,9 @@ it."
  expanded by the simplifier when they arise in the subgoals produced by that
  induction.  The fact that the terms are preferentially expanded is not new.
  What's new is that ACL2 now lists all the accommodated terms.</p>
+
+ <p>When the @(see summary) prints &ldquo;Modified system attachments&rdquo;,
+ it now sorts that information before printing it.</p>
 
  <h3>New Features</h3>
 
@@ -109232,6 +109260,40 @@ it."
  error could occur.  Now a clean error message is printed, and this requirement
  on the @('vali') has been made explicit in the documentation for @(tsee
  defabsstobj).</p>
+
+ <p>ACL2 rejected some valid @(':type') fields in defstobj forms.  This has
+ been fixed; see @(see defstobj), where the &ldquo;Remark on
+ @('SATISFIES')&rdquo; has been extended to describe the requisite @(see guard)
+ verification.  Thanks to J. David Taylor for reporting this issue (as Issue
+ 1852 in the ACL2 GitHub repository) and including the following examples that
+ ACL2 rejected (but now accepts).
+
+ @({
+ (defstobj st
+   (a :type (complex rational)
+      :initially #c(0 1)))
+
+ (defstobj st (a :type (string 1)
+                 :initially \"a\"))
+ })
+
+ The following additional example from Issue 1852 is still rejected, because
+ @(tsee evenp) has a non-trivial @(see guard); its argument must be an
+ integer.
+
+ @({
+ (defstobj st (a :type (satisfies evenp)
+                 :initially 0))
+ })
+
+ However, the following variant produces a term, @('(and (integerp x) (evenp
+ x))'), that is trivially guard-verifiable, so it is accepted by ACL2 (but was
+ not accepted before the bug fix).
+
+ @({
+ (defstobj st (a :type (and integer (satisfies evenp))
+                 :initially 0))
+ })</p>
 
  <h3>Changes at the System Level</h3>
 
