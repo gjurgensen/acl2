@@ -109078,6 +109078,10 @@ it."
 ; The functions guard-clauses and guard-clauses-lst no longer take or return a
 ; ttree (which had been returned unmodified).
 
+; Fixed function find-rules-of-rune to work on runes introduced by defstobj.
+; This is related to the fix for :pr: both use a new function,
+; world-to-next-non-deeper-event, in place of world-to-next-event.
+
   :parents (release-notes)
   :short "ACL2 Version  8.7 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -109299,6 +109303,15 @@ it."
  (defstobj st (a :type (and integer (satisfies evenp))
                  :initially 0))
  })</p>
+
+ <p>Fixed a bug that was causing errors for @(see stobj)s introduced with
+ @(tsee defstobj) keyword argument @(':non-executable t') in the presence of
+ large arrays.  This should not have caused an error, since that keyword
+ argument prevents attempts at contructing the stobj (with its arrays).</p>
+
+ <p>Fixed a bug in @(':')@(tsee pr) to work on function symbols introduced by
+ @(tsee defstobj) (GitHub Issue 1851).  Thanks to David Taylor for reporting
+ this bug.</p>
 
  <h3>Changes at the System Level</h3>
 

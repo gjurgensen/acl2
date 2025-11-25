@@ -106418,6 +106418,16 @@ Bug Fixes
       (defstobj st (a :type (and integer (satisfies evenp))
                       :initially 0))
 
+  Fixed a bug that was causing errors for [stobj]s introduced with
+  [47m[defstobj][0m keyword argument [47m:non-executable t[0m in the presence of
+  large arrays.  This should not have caused an error, since that
+  keyword argument prevents attempts at contructing the stobj (with
+  its arrays).
+
+  Fixed a bug in [47m:[0m[47m[pr][0m to work on function symbols introduced by
+  [47m[defstobj][0m (GitHub Issue 1851).  Thanks to David Taylor for
+  reporting this bug.
+
 
 Changes at the System Level
 
