@@ -44,7 +44,7 @@
        are equal to ensure the order is total.")
     (xdoc::p
       "The goal of this order is to be largely uncorrelated with @(tsee <<).
-       Therefore, it is important that the hash function (@(tsee jenkins-hash))
+       Therefore, it is important that the hash function (@(tsee hash::jenkins))
        does not collide frequently and exhibits a strong "
       (xdoc::a :href
                "https://en.wikipedia.org/wiki/Avalanche_effect"

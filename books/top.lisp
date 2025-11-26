@@ -363,6 +363,8 @@ book that depends on Glucose being installed.</p>")
 (include-book "data-structures/top" :dir :system)
 (include-book "data-structures/memories/memory" :dir :system)
 
+(include-book "data/top" :dir :system)
+
 (include-book "coi/documentation" :dir :system)
 (include-book "clause-processors/pseudo-term-fty" :dir :system)
 

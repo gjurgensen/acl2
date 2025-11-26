@@ -13,7 +13,6 @@
 
 (include-book "defs")
 (include-book "binary-tree")
-(include-book "jenkins-hash")
 (include-book "total-order")
 (include-book "bst-order")
 (include-book "bst")
