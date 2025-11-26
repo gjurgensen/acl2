@@ -274,6 +274,8 @@
   (include-book "centaur/aig/top-doc" :dir :system)
   (include-book "std/util/termhints" :dir :system)
 
+  (include-book "data/top" :dir :system)
+
   ;; omitted from gl
   (include-book "centaur/misc/outer-local" :dir :system)
 

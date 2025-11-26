@@ -10,7 +10,7 @@
 
 (include-book "std/util/defrule" :dir :system)
 
-(include-book "jenkins-hash")
+(include-book "data/hash/jenkins" :dir :system)
 
 (set-induction-depth-limit 0)
 
@@ -24,10 +24,10 @@
   :long
   (xdoc::topstring
    (xdoc::p
-     "This is just a wrapper around @(tsee jenkins-hash). This function is
+     "This is just a wrapper around @(tsee hash::jenkins). This function is
       defined to allow us to easily switch hash functions if needed. To hash
       objects (e.g., for use with @(tsee heap<-with-hashes)), users should call
-      this function instead of @(tsee jenkins-hash)."))
-  (jenkins-hash x)
+      this function instead of @(tsee hash::jenkins)."))
+  (hash::jenkins x)
   :no-function t
   :inline t)
