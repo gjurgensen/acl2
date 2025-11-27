@@ -35,7 +35,7 @@
 (define setp (x)
   (declare (xargs :type-prescription (booleanp (setp x))))
   :parents (set)
-  :short "Recognizer for @(see set)s."
+  :short "Recognizer for @(see treeset)s."
   :long
   (xdoc::topstring
    (xdoc::p
@@ -91,7 +91,7 @@
 (define sfix ((set setp))
   :returns (set$ setp)
   :parents (set)
-  :short "Fixer for @(see set)s."
+  :short "Fixer for @(see treeset)s."
   (mbe :logic (if (setp set) set nil)
        :exec (the (or cons null) set)))
 
@@ -163,7 +163,7 @@
 (define emptyp ((set setp))
   (declare (xargs :type-prescription (booleanp (emptyp set))))
   :parents (set)
-  :short "Check if a @(see set) is empty."
+  :short "Check if a @(see treeset) is empty."
   (tree-emptyp (sfix set))
   :inline t)
 
@@ -206,7 +206,7 @@
 
 (define head ((set setp))
   :parents (set)
-  :short "Get an element of the nonempty @(see set)."
+  :short "Get an element of the nonempty @(see treeset)."
   :long
   (xdoc::topstring
    (xdoc::p
@@ -246,7 +246,7 @@
 (define left ((set setp))
   :returns (left setp)
   :parents (set)
-  :short "Get the \"left\" subset of the nonempty @(see set)."
+  :short "Get the \"left\" subset of the nonempty @(see treeset)."
   :long
   (xdoc::topstring
    (xdoc::p
@@ -331,7 +331,7 @@
 (define right ((set setp))
   :returns (right setp)
   :parents (set)
-  :short "Get the \"right\" subset of the nonempty @(see set)."
+  :short "Get the \"right\" subset of the nonempty @(see treeset)."
   :long
   (xdoc::topstring
    (xdoc::p

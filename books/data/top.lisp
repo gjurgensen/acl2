@@ -9,6 +9,7 @@
 (in-package "DATA")
 
 (include-book "hash/top")
+(include-book "treeset/top")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

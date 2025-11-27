@@ -42,9 +42,9 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defxdoc+ set
-  :parents (acl2::kestrel-books)
-  :short "A tree-based implementation of finite sets."
+(defxdoc+ treeset
+  :parents (data::data-lib)
+  :short "A tree-based implementation of ordered finite sets."
   :long
   (xdoc::topstring
     (xdoc::p
@@ -103,7 +103,7 @@
 
 (defxdoc+ implementation
   :parents (set)
-  :short "Implementation details of @(see set)s."
+  :short "Implementation details of @(see treeset)s."
   :long
   (xdoc::topstring
     (xdoc::p
