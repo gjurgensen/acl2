@@ -193,7 +193,7 @@
   ((set setp))
   (declare (xargs :type-prescription (natp (cardinality set))))
   :parents (set)
-  :short "The number of elements in a @(see set)."
+  :short "The number of elements in a @(see treeset)."
   :long
   (xdoc::topstring
    (xdoc::p

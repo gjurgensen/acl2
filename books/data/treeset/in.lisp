@@ -280,7 +280,7 @@
    (set setp))
   (declare (xargs :type-prescription (booleanp (in x set))))
   :parents (set)
-  :short "Determine if a value is a member of the @(see set)."
+  :short "Determine if a value is a member of the @(see treeset)."
   :long
   (xdoc::topstring
    (xdoc::p
