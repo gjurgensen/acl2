@@ -106431,6 +106431,9 @@ Bug Fixes
   Fixed a [proof-builder] bug that could occasionally cause two goals
   to exist with the same name.
 
+  The [47m:native[0m option of [47m[trace!][0m and [47m[trace$][0m did not work as one would
+  reasonably expect when SBCL is the host Lisp; now it does.
+
 
 Changes at the System Level
 
@@ -153437,29 +153440,7 @@ Subtopics
      (2 . 2)
      (1 . 1)
      (0 . 1))
-    ACL2 !>
-
-  Finally, we remark that using [47mtrace![0m can cause errors in situations
-  where tracing is automatically suspended and re-introduced.  This
-  is likely to be a rare occurrence, but consider the following
-  example.
-
-    (trace! (lexorder :native t :multiplicity 1))
-    (certify-book \"foo\" 0 t)
-
-  If the certify-book causes compilation, you may see an error such as
-  the following.
-
-    ACL2 Error in (CERTIFY-BOOK \"foo\" ...):  The keyword :NATIVE cannot
-    be used in a trace spec unless there is an active trust tag.  The trace
-    spec (LEXORDER :NATIVE T :MULTIPLICITY 1) is thus illegal.  Consider
-    using trace! instead.  The complete list of keywords that require a
-    trust tag for use in a trace spec is: (:NATIVE :DEF :MULTIPLICITY).
-
-  This error is harmless.  The function will appear, when calling
-  [47m(trace$)[0m, to remain traced, but in fact there will be no tracing
-  behavior, so you may want to call [47m[untrace$][0m on the function symbol
-  in question.")
+    ACL2 !>")
  (TRACE$
   (TRACE)
   "Trace function evaluations
@@ -153637,8 +153618,8 @@ Subtopics
   to trace a function that is defined in raw Lisp, then you can use
   option [47m:native[0m (see below), but then many other [47mtrace$[0m options will
   not be available to you: all of them except [47m:multiplicity[0m and
-  [47m:native[0m itself will be passed directly to the [47mtrace[0m utility of the
-  underlying Common Lisp.
+  [47m:native[0m itself will be passed, as described below, to the [47mtrace[0m
+  utility of the underlying Common Lisp.
 
   [47m:COND[0m, [47m:ENTRY[0m, and [47m:EXIT[0m
 
@@ -153813,23 +153794,18 @@ Advanced Options (alphabetical list)
   [47m:DEF[0m, [47m:MULTIPLICITY[0m
 
   ACL2's [47mtrace$[0m mechanism often needs to know the number of outputs of
-  a traced function, in the sense of [47m[mv][0m.  If you trace a function
-  that was not defined inside the ACL2 loop (hence you are using the
-  [47m:native[0m option), or if you provide an alternative definition using
-  option [47m:def[0m (see below) and the new definition changes the number
-  of values returned, then a natural number value for [47m:multiplicity[0m
-  informs the trace utility of the number of expected outputs of the
-  function being traced.  In the case that [47m:native[0m is supplied, the
-  effect of a non-[47mnil[0m [47m:multiplicity[0m value depends on the host Lisp.
-  In the case of Lisps for which ACL2 uses the built-in Lisp
-  mechanism for returning multiple values (see [mv]), which are CCL
-  and threaded SBCL as of June, 2010, [47m:multiplicity[0m is not needed and
-  is ignored with [47m:native t[0m.  For GCL and Allegro CL, [47m:multiplicity[0m
-  is used to generate a suitable [47m:exit[0m form if the [47m:exit[0m keyword was
-  not already supplied.  For the other Lisps, the [47m:multiplicity[0m value
-  is treated essentially as 1 whether it is supplied or not, because
-  we do not know how to pass suitable information based on this value
-  to the host Lisp's built-in tracing mechanism.
+  a traced function, in the sense of [47m[mv][0m.  If you provide an
+  alternative definition using option [47m:def[0m (see below) and the new
+  definition changes the number of values returned, then a natural
+  number value for [47m:multiplicity[0m informs the trace utility of the
+  number of expected outputs of the function being traced.  In the
+  case that [47m:native[0m is supplied, the [47m:multiplicity[0m option is ignored.
+  For GCL and Allegro CL, [47m:multiplicity[0m is used to generate a
+  suitable [47m:exit[0m form if the [47m:exit[0m keyword was not already supplied.
+  For the other Lisps, the [47m:multiplicity[0m value is treated essentially
+  as 1 whether it is supplied or not, because we do not know how to
+  pass suitable information based on this value to the host Lisp's
+  built-in tracing mechanism.
 
   Note that even supplying a [47m:multiplicity[0m option does not change the
   meaning of the variable [47mvalues[0m.  See the discussion of [47m:native[0m
@@ -153837,16 +153813,16 @@ Advanced Options (alphabetical list)
 
   A useful option can be to supply a definition as the value of [47m:def[0m.
   (Again, note that if [47m:native[0m is used, then all options other than
-  [47m:multiplicity[0m are passed directly to the underlying Lisp; in
-  particular, [47m:def[0m will have no effect with [47m:native[0m except in the
-  unlikely case that the raw Lisp provides some sort of support for
-  [47m:def[0m.)  Note that this definition should be like a [47m[defun][0m form,
-  but without the leading [47mdefun[0m symbol; and it should define the
-  function symbol being traced, with the same formal parameter list.
-  However, tracing of the ``executable-counterpart'' of a function
-  (see [evaluation] is not sensitive to the [47m:def[0m option; rather, if a
-  function has an executable-counterpart then that
-  executable-counterpart is traced.
+  [47m:multiplicity[0m are passed to the trace utility of the underlying
+  Lisp; in particular, [47m:def[0m will have no effect with [47m:native[0m except
+  in the unlikely case that the raw Lisp provides some sort of
+  support for [47m:def[0m.)  Note that this definition should be like a
+  [47m[defun][0m form, but without the leading [47mdefun[0m symbol; and it should
+  define the function symbol being traced, with the same formal
+  parameter list.  However, tracing of the ``executable-counterpart''
+  of a function (see [evaluation] is not sensitive to the [47m:def[0m
+  option; rather, if a function has an executable-counterpart then
+  that executable-counterpart is traced.
 
   [47m:EVISC-TUPLE[0m
 
@@ -153933,32 +153909,31 @@ Advanced Options (alphabetical list)
   [47m:NATIVE[0m
 
   If [47m:native[0m is supplied with a non-[47mnil[0m value, then the trace spec is
-  passed to the native Lisp trace (after removing the [47m:native[0m
-  option).  A trust tag (see [defttag]) is required in order to use
-  this option, because no syntactic check is made on the [47m:cond[0m,
-  [47m:entry[0m, or [47m:exit[0m forms --- arbitrary raw Lisp may occur in them!
+  passed to the native Lisp trace (after removing the [47m:native[0m and
+  [47m:multiplicity[0m options).  Each trace spec generates its own call of
+  Lisp [47mtrace[0m: directly in most cases, but if SBCL is the host Lisp
+  then the SBCL [47mtrace[0m syntax is accommodated by placing the the
+  function symbol last, after any keyword options.  A trust tag (see
+  [defttag]) is required in order to use the [47m:native[0m option, because
+  arbitrary raw Lisp may be executed by the options!
 
   Note that by ``native Lisp trace'' we mean the currently installed
   [47mtrace[0m.  As discussed briefly elsewhere (see [trace]), ACL2 has
   modified that trace to be more useful if the underlying host Lisp
-  is GCL, Allegro CL, or CCL (OpenMCL).  If you need the original
-  trace utility supplied for those Lisps, quit the ACL2 loop with [47m:q[0m
-  and call [47mold-trace[0m and [47mold-untrace[0m in raw Lisp where you would
-  otherwise call [47mtrace[0m and [47muntrace[0m.  Note that the original trace
-  utility supplied with a given Lisp will not hide the ACL2 logical
-  [world] or give special treatment to [stobj]s.
+  is GCL, Allegro CL, or CCL.  If you need the original trace utility
+  supplied for those Lisps, quit the ACL2 loop with [47m:q[0m and call
+  [47mold-trace[0m and [47mold-untrace[0m in raw Lisp where you would otherwise
+  call [47mtrace[0m and [47muntrace[0m.  Note that the original trace utility
+  supplied with a given Lisp will not hide the ACL2 logical [world]
+  or give special treatment to [stobj]s.
 
   It is important to understand that if [47m:native t[0m is specified, then
   all other options are interpreted by the native Lisp trace.  For
   example, that trace probably has no understanding of the use of
   [47m:fmt[0m described above for [47m:entry[0m or [47m:exit[0m.  Indeed, the native trace
   may not even accept any of [47m:cond[0m, [47m:entry[0m or [47m:exit[0m, let alone any of
-  the advanced options!  Moreover, if [47m:native t[0m is specified, then
-  even a [47m:multiplicity[0m option does not provide the meaning of the
-  variable [47mvalues[0m that one might desire.  In GCL for example, in the
-  case of an [47m[mv][0m return of a function defined only in raw Lisp (not
-  in ACL2), this variable will be bound to a list containing only the
-  first result.
+  the advanced options!  (But it may accept many options that are not
+  available with the non-native ACL2 [47mtrace$[0m.)
 
   [47m:NOTINLINE[0m
 

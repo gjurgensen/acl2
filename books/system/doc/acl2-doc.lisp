@@ -109316,6 +109316,9 @@ it."
  <p>Fixed a @(see proof-builder) bug that could occasionally cause two goals to
  exist with the same name.</p>
 
+ <p>The @(':native') option of @(tsee trace!) and @(tsee trace$) did not work
+ as one would reasonably expect when SBCL is the host Lisp; now it does.</p>
+
  <h3>Changes at the System Level</h3>
 
  <p>Modifications have been made that allow ACL2 to be hosted on GCL Version
@@ -152564,32 +152567,7 @@ work on <tt>(q x)</tt>.</p>
    (1 . 1)
    (0 . 1))
   ACL2 !>
- })
-
- <p>Finally, we remark that using @('trace!') can cause errors in situations
- where tracing is automatically suspended and re-introduced.  This is likely to
- be a rare occurrence, but consider the following example.</p>
-
- @({
-  (trace! (lexorder :native t :multiplicity 1))
-  (certify-book \"foo\" 0 t)
- })
-
- <p>If the certify-book causes compilation, you may see an error such as the
- following.</p>
-
- @({
-  ACL2 Error in (CERTIFY-BOOK \"foo\" ...):  The keyword :NATIVE cannot
-  be used in a trace spec unless there is an active trust tag.  The trace
-  spec (LEXORDER :NATIVE T :MULTIPLICITY 1) is thus illegal.  Consider
-  using trace! instead.  The complete list of keywords that require a
-  trust tag for use in a trace spec is: (:NATIVE :DEF :MULTIPLICITY).
- })
-
- <p>This error is harmless.  The function will appear, when calling
- @('(trace$)'), to remain traced, but in fact there will be no tracing
- behavior, so you may want to call @(tsee untrace$) on the function symbol in
- question.</p>")
+ })")
 
 (defxdoc trace$
   :parents (trace)
@@ -152777,8 +152755,8 @@ work on <tt>(q x)</tt>.</p>
  trace a function that is defined in raw Lisp, then you can use option
  @(':native') (see below), but then many other @('trace$') options will not be
  available to you: all of them except @(':multiplicity') and @(':native')
- itself will be passed directly to the @('trace') utility of the underlying
- Common Lisp.</p>
+ itself will be passed, as described below, to the @('trace') utility of the
+ underlying Common Lisp.</p>
 
  <p>@(':COND'), @(':ENTRY'), and @(':EXIT')</p>
 
@@ -152951,17 +152929,12 @@ work on <tt>(q x)</tt>.</p>
  <p>@(':DEF'), @(':MULTIPLICITY')</p>
 
  <p>ACL2's @('trace$') mechanism often needs to know the number of outputs of a
- traced function, in the sense of @(tsee mv).  If you trace a function that was
- not defined inside the ACL2 loop (hence you are using the @(':native')
- option), or if you provide an alternative definition using option @(':def')
- (see below) and the new definition changes the number of values returned, then
- a natural number value for @(':multiplicity') informs the trace utility of the
- number of expected outputs of the function being traced.  In the case that
- @(':native') is supplied, the effect of a non-@('nil') @(':multiplicity')
- value depends on the host Lisp.  In the case of Lisps for which ACL2 uses the
- built-in Lisp mechanism for returning multiple values (see @(see mv)), which
- are CCL and threaded SBCL as of June, 2010, @(':multiplicity') is not needed
- and is ignored with @(':native t').  For GCL and Allegro CL,
+ traced function, in the sense of @(tsee mv).  If you provide an alternative
+ definition using option @(':def') (see below) and the new definition changes
+ the number of values returned, then a natural number value for
+ @(':multiplicity') informs the trace utility of the number of expected outputs
+ of the function being traced.  In the case that @(':native') is supplied, the
+ @(':multiplicity') option is ignored.  For GCL and Allegro CL,
  @(':multiplicity') is used to generate a suitable @(':exit') form if the
  @(':exit') keyword was not already supplied.  For the other Lisps, the
  @(':multiplicity') value is treated essentially as 1 whether it is supplied or
@@ -152974,12 +152947,12 @@ work on <tt>(q x)</tt>.</p>
 
  <p>A useful option can be to supply a definition as the value of @(':def').
  (Again, note that if @(':native') is used, then all options other than
- @(':multiplicity') are passed directly to the underlying Lisp; in particular,
- @(':def') will have no effect with @(':native') except in the unlikely case
- that the raw Lisp provides some sort of support for @(':def').)  Note that
- this definition should be like a @(tsee defun) form, but without the leading
- @('defun') symbol; and it should define the function symbol being traced, with
- the same formal parameter list.  However, tracing of the
+ @(':multiplicity') are passed to the trace utility of the underlying Lisp; in
+ particular, @(':def') will have no effect with @(':native') except in the
+ unlikely case that the raw Lisp provides some sort of support for @(':def').)
+ Note that this definition should be like a @(tsee defun) form, but without the
+ leading @('defun') symbol; and it should define the function symbol being
+ traced, with the same formal parameter list.  However, tracing of the
  ``executable-counterpart'' of a function (see @(see evaluation) is not
  sensitive to the @(':def') option; rather, if a function has an
  executable-counterpart then that executable-counterpart is traced.</p>
@@ -153070,16 +153043,19 @@ work on <tt>(q x)</tt>.</p>
  <p>@(':NATIVE')</p>
 
  <p>If @(':native') is supplied with a non-@('nil') value, then the trace spec
- is passed to the native Lisp trace (after removing the @(':native') option).
- A trust tag (see @(see defttag)) is required in order to use this option,
- because no syntactic check is made on the @(':cond'), @(':entry'), or
- @(':exit') forms &mdash; arbitrary raw Lisp may occur in them!</p>
+ is passed to the native Lisp trace (after removing the @(':native') and
+ @(':multiplicity') options).  Each trace spec generates its own call of Lisp
+ @('trace'): directly in most cases, but if SBCL is the host Lisp then the SBCL
+ @('trace') syntax is accommodated by placing the the function symbol last,
+ after any keyword options.  A trust tag (see @(see defttag)) is required in
+ order to use the @(':native') option, because arbitrary raw Lisp may be
+ executed by the options!</p>
 
  <p>Note that by ``native Lisp trace'' we mean the currently installed
  @('trace').  As discussed briefly elsewhere (see @(see trace)), ACL2 has
  modified that trace to be more useful if the underlying host Lisp is GCL,
- Allegro CL, or CCL (OpenMCL).  If you need the original trace utility supplied
- for those Lisps, quit the ACL2 loop with @(':q') and call @('old-trace') and
+ Allegro CL, or CCL.  If you need the original trace utility supplied for those
+ Lisps, quit the ACL2 loop with @(':q') and call @('old-trace') and
  @('old-untrace') in raw Lisp where you would otherwise call @('trace') and
  @('untrace').  Note that the original trace utility supplied with a given Lisp
  will not hide the ACL2 logical @(see world) or give special treatment to @(see
@@ -153090,11 +153066,8 @@ work on <tt>(q x)</tt>.</p>
  trace probably has no understanding of the use of @(':fmt') described above
  for @(':entry') or @(':exit').  Indeed, the native trace may not even accept
  any of @(':cond'), @(':entry') or @(':exit'), let alone any of the advanced
- options!  Moreover, if @(':native t') is specified, then even a
- @(':multiplicity') option does not provide the meaning of the variable
- @('values') that one might desire.  In GCL for example, in the case of an
- @(tsee mv) return of a function defined only in raw Lisp (not in ACL2), this
- variable will be bound to a list containing only the first result.</p>
+ options!  (But it may accept many options that are not available with the
+ non-native ACL2 @('trace$').)</p>
 
  <p>@(':NOTINLINE')</p>
 
