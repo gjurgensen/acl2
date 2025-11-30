@@ -109313,6 +109313,9 @@ it."
  @(tsee defstobj) (GitHub Issue 1851).  Thanks to David Taylor for reporting
  this bug.</p>
 
+ <p>Fixed a @(see proof-builder) bug that could occasionally cause two goals to
+ exist with the same name.</p>
+
  <h3>Changes at the System Level</h3>
 
  <p>Modifications have been made that allow ACL2 to be hosted on GCL Version

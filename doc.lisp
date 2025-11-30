@@ -106428,6 +106428,9 @@ Bug Fixes
   [47m[defstobj][0m (GitHub Issue 1851).  Thanks to David Taylor for
   reporting this bug.
 
+  Fixed a [proof-builder] bug that could occasionally cause two goals
+  to exist with the same name.
+
 
 Changes at the System Level
 
