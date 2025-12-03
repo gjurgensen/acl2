@@ -109114,6 +109114,9 @@ it."
  <p>When the @(see summary) prints &ldquo;Modified system attachments&rdquo;,
  it now sorts that information before printing it.</p>
 
+ <p>Improved the error message when the package name is missing immediately
+ after `#!', as in #!(foo).</p>
+
  <h3>New Features</h3>
 
  <p>The new function symbol @('strict-table-guard') returns its single argument
@@ -109318,6 +109321,10 @@ it."
 
  <p>The @(':native') option of @(tsee trace!) and @(tsee trace$) did not work
  as one would reasonably expect when SBCL is the host Lisp; now it does.</p>
+
+ <p>Some ill-formed hard errors, for example from calls of @('er'), caused raw
+ Lisp errors.  This has been fixed.  Thanks to Eric Smith for reporting this
+ bug with an example.</p>
 
  <h3>Changes at the System Level</h3>
 
