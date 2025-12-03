@@ -106233,6 +106233,9 @@ Changes to Existing Features
   When the [summary] prints ``Modified system attachments'', it now
   sorts that information before printing it.
 
+  Improved the error message when the package name is missing
+  immediately after `#!', as in #!(foo).
+
 
 New Features
 
@@ -106433,6 +106436,10 @@ Bug Fixes
 
   The [47m:native[0m option of [47m[trace!][0m and [47m[trace$][0m did not work as one would
   reasonably expect when SBCL is the host Lisp; now it does.
+
+  Some ill-formed hard errors, for example from calls of [47mer[0m, caused raw
+  Lisp errors.  This has been fixed.  Thanks to Eric Smith for
+  reporting this bug with an example.
 
 
 Changes at the System Level
