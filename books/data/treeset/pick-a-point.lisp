@@ -15,22 +15,18 @@
 
 (include-book "std/osets/computed-hints" :dir :system)
 
-(include-book "in-defs")
 (include-book "set-defs")
+(include-book "in-defs")
 (include-book "subset-defs")
 
-(local (include-book "kestrel/built-ins/disable" :dir :system))
-(local (acl2::disable-most-builtin-logic-defuns))
-(local (acl2::disable-builtin-rewrite-rules-for-defaults))
-(set-induction-depth-limit 0)
+(local (include-book "std/basic/controlled-configuration" :dir :system))
+(local (acl2::controlled-configuration :hooks nil))
 
-(local (include-book "in"))
+(local (include-book "kestrel/utilities/ordinals" :dir :system))
+
 (local (include-book "set"))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(std::make-define-config
-  :no-function t)
+(local (include-book "in"))
+(local (include-book "subset"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -59,8 +55,7 @@
     (or (emptyp set)
         (and (set-predicate (head set))
              (all-predicate (left set))
-             (all-predicate (right set))))
-    :hints (("Goal" :in-theory (enable o< o-finp))))
+             (all-predicate (right set)))))
 
   (encapsulate
     (((all-hyps) => *)
@@ -84,13 +79,13 @@
                    (find-not (right set)))))
       :hints (("Goal" :in-theory (enable o< o-finp)))))
 
-  (defrulel find-not-type-prescription
-    (or (consp (find-not set))
-        (equal (find-not set)
-               nil))
-    :rule-classes :type-prescription
-    :induct t
-    :enable find-not)
+  ;; (defrulel find-not-type-prescription
+  ;;   (or (consp (find-not set))
+  ;;       (equal (find-not set)
+  ;;              nil))
+  ;;   :rule-classes :type-prescription
+  ;;   :induct t
+  ;;   :enable find-not)
 
   (defrulel in-of-head-of-find-not-when-not-emptyp-of-find-not
     (implies (not (emptyp (find-not set)))

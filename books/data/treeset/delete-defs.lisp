@@ -8,12 +8,10 @@
 
 (in-package "TREESET")
 
-(include-book "std/util/defredundant" :dir :system)
-
-(include-book "bst-order-defs")
-(include-book "join-defs")
+(include-book "internal/delete-defs")
 (include-book "set-defs")
 
+(local (include-book "std/util/defredundant" :dir :system))
 (local (include-book "delete"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -24,5 +22,5 @@
           delete1
           delete))
 
-(add-macro-alias delete1 delete1$inline)
-(add-macro-fn delete delete1$inline t)
+;; (add-macro-alias delete1 delete1$inline)
+;; (add-macro-fn delete delete1$inline t)

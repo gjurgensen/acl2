@@ -1,0 +1,763 @@
+; Copyright (C) 2025 Kestrel Institute (http://www.kestrel.edu)
+;
+; License: A 3-clause BSD license. See the LICENSE file distributed with ACL2.
+;
+; Author: Grant Jurgensen (grant@kestrel.edu)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(in-package "SEQ")
+
+(include-book "std/util/define" :dir :system)
+(include-book "std/util/defrule" :dir :system)
+
+(include-book "data/utilities/nat-defs" :dir :system)
+
+(include-book "ftree-defs")
+
+(local (include-book "std/basic/controlled-configuration" :dir :system))
+(local (acl2::controlled-configuration :hooks nil))
+
+(local (include-book "data/utilities/nat" :dir :system))
+(local (include-book "kestrel/arithmetic-light/fix" :dir :system))
+(local (include-book "kestrel/utilities/ordinals" :dir :system))
+
+(local (include-book "ftree"))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define elem-depth-p
+  ((depth natp)
+   elem)
+  (declare (xargs :split-types t)
+           (type unsigned-byte depth))
+  :returns (yes/no booleanp :rule-classes :type-prescription)
+  (or (nat-equal depth 0)
+      (let ((depth$ (- (nat-fix depth) 1)))
+        (and (nodep elem)
+             (elem-depth-p depth$ (node->fst elem))
+             (if (node2p elem)
+                 (elem-depth-p depth$ (node2->snd elem))
+               (and (elem-depth-p depth$ (node3->snd elem))
+                    (elem-depth-p depth$ (node3->thd elem)))))))
+  :measure (nfix depth))
+
+;;;;;;;;;;;;;;;;;;;;
+
+(in-theory (disable (:t elem-depth-p)))
+
+(defrule elem-depth-p-when-nat-equiv-congruence
+  (implies (nat-equiv depth0 depth1)
+           (equal (elem-depth-p depth0 elem)
+                  (elem-depth-p depth1 elem)))
+  :rule-classes :congruence
+  :enable (elem-depth-p
+           nfix))
+
+(defruled elem-depth-p-when-not-natp
+  (implies (not (natp depth))
+           (equal (elem-depth-p depth elem)
+                  t))
+  :enable elem-depth-p)
+
+(defrule elem-depth-p-when-not-natp-cheap
+  (implies (not (natp depth))
+           (equal (elem-depth-p depth elem)
+                  t))
+  :rule-classes ((:rewrite :backchain-limit-lst (0)))
+  :by elem-depth-p-when-not-natp)
+
+(defrule elem-depth-p-when-not-natp-type-prescription
+  (implies (not (natp depth))
+           (equal (elem-depth-p depth elem)
+                  t))
+  :rule-classes :type-prescription)
+
+(defrule elem-depth-p-of-0
+  (elem-depth-p 0 elem)
+  :enable elem-depth-p)
+
+(defruled nodep-when-depth-not-0-and-elem-depth-p
+  (implies (and (not (equal (nfix depth) 0))
+                (elem-depth-p depth node))
+           (nodep node))
+  :enable elem-depth-p)
+
+(defrule nodep-when-depth-not-0-and-elem-depth-p-cheap
+  (implies (and (elem-depth-p depth node)
+                (not (equal (nfix depth) 0)))
+           (nodep node))
+  :rule-classes ((:rewrite :backchain-limit-lst (0 nil)))
+  :by nodep-when-depth-not-0-and-elem-depth-p)
+
+(defrule elem-depth-p-weaken-depth
+  (implies (and (elem-depth-p m elem)
+                (< (nfix n) (nfix m)))
+           (elem-depth-p n elem))
+  :induct t
+  :enable (elem-depth-p
+           nfix))
+
+(defrule elem-depth-p-of-node->fst
+  (implies (elem-depth-p (+ 1 (nfix depth)) node)
+           (elem-depth-p depth (node->fst node)))
+  :enable elem-depth-p)
+
+(defrule elem-depth-p-of-node2->snd
+  (implies (and (node2p node)
+                (elem-depth-p (+ 1 (nfix depth)) node))
+           (elem-depth-p depth (node2->snd node)))
+  :enable elem-depth-p)
+
+(defrule elem-depth-p-of-node3->snd
+  (implies (and (not (node2p node))
+                (elem-depth-p (+ 1 (nfix depth)) node))
+           (elem-depth-p depth (node3->snd node)))
+  :enable elem-depth-p)
+
+(defrule elem-depth-p-of-node3->thd
+  (implies (and (not (node2p node))
+                (elem-depth-p (+ 1 (nfix depth)) node))
+           (elem-depth-p depth (node3->thd node)))
+  :enable elem-depth-p)
+
+(defrule elem-depth-p-of-node2
+  (equal (elem-depth-p depth (node2 len a b))
+         (or (equal (nfix depth) 0)
+             (and (elem-depth-p (- (nfix depth) 1) a)
+                  (elem-depth-p (- (nfix depth) 1) b))))
+  :enable elem-depth-p)
+
+(defrule elem-depth-p-of-node3
+  (equal (elem-depth-p depth (node3 len a b c))
+         (or (equal (nfix depth) 0)
+             (and (elem-depth-p (- (nfix depth) 1) a)
+                  (elem-depth-p (- (nfix depth) 1) b)
+                  (elem-depth-p (- (nfix depth) 1) c))))
+  :enable elem-depth-p)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define digit-depth-p
+  ((depth natp)
+   (digit digitp))
+  (declare (xargs :split-types t)
+           (type unsigned-byte depth)
+           (type cons digit))
+  :returns (yes/no booleanp :rule-classes :type-prescription)
+  (case (digit-case digit)
+    (1 (elem-depth-p depth (digit1->fst digit)))
+    (2 (and (elem-depth-p depth (digit2->fst digit))
+            (elem-depth-p depth (digit2->snd digit))))
+    (3 (and (elem-depth-p depth (digit3->fst digit))
+            (elem-depth-p depth (digit3->snd digit))
+            (elem-depth-p depth (digit3->thd digit))))
+    (otherwise (and (elem-depth-p depth (digit4->fst digit))
+                    (elem-depth-p depth (digit4->snd digit))
+                    (elem-depth-p depth (digit4->thd digit))
+                    (elem-depth-p depth (digit4->frth digit))))))
+
+;;;;;;;;;;;;;;;;;;;;
+
+(in-theory (disable (:t digit-depth-p)))
+
+(defrule digit-depth-p-when-nat-equiv-congruence
+  (implies (nat-equiv depth0 depth1)
+           (equal (digit-depth-p depth0 digit)
+                  (digit-depth-p depth1 digit)))
+  :rule-classes :congruence
+  :enable (digit-depth-p
+           nfix))
+
+(defrule digit-depth-p-when-digit-equal-congruence
+  (implies (digit-equal digit0 digit1)
+           (equal (digit-depth-p depth digit0)
+                  (digit-depth-p depth digit1)))
+  :rule-classes :congruence
+  :enable digit-depth-p)
+
+(defruled digit-depth-p-when-not-natp
+  (implies (not (natp depth))
+           (equal (digit-depth-p depth digit)
+                  t))
+  :enable digit-depth-p)
+
+(defrule digit-depth-p-when-not-natp-cheap
+  (implies (not (natp depth))
+           (equal (digit-depth-p depth digit)
+                  t))
+  :rule-classes ((:rewrite :backchain-limit-lst (0)))
+  :by digit-depth-p-when-not-natp)
+
+(defrule digit-depth-p-when-not-natp-type-prescription
+  (implies (not (natp depth))
+           (equal (digit-depth-p depth digit)
+                  t))
+  :rule-classes :type-prescription)
+
+(defrule digit-depth-p-of-0
+  (digit-depth-p 0 digit)
+  :enable digit-depth-p)
+
+(defrule digit-depth-p-weaken-depth
+  (implies (and (digit-depth-p m digit)
+                (< (nfix n) (nfix m)))
+           (digit-depth-p n digit))
+  :enable (digit-depth-p
+           nfix))
+
+(defrule elem-depth-p-of-digit1->fst
+  (implies (and (equal (digit-case digit) 1)
+                (digit-depth-p depth digit))
+           (elem-depth-p depth (digit1->fst digit)))
+  :enable digit-depth-p)
+
+(defrule elem-depth-p-of-digit2->fst
+  (implies (and (equal (digit-case digit) 2)
+                (digit-depth-p depth digit))
+           (elem-depth-p depth (digit2->fst digit)))
+  :enable digit-depth-p)
+
+(defrule elem-depth-p-of-digit2->snd
+  (implies (and (equal (digit-case digit) 2)
+                (digit-depth-p depth digit))
+           (elem-depth-p depth (digit2->snd digit)))
+  :enable digit-depth-p)
+
+(defrule elem-depth-p-of-digit3->fst
+  (implies (and (equal (digit-case digit) 3)
+                (digit-depth-p depth digit))
+           (elem-depth-p depth (digit3->fst digit)))
+  :enable digit-depth-p)
+
+(defrule elem-depth-p-of-digit3->snd
+  (implies (and (equal (digit-case digit) 3)
+                (digit-depth-p depth digit))
+           (elem-depth-p depth (digit3->snd digit)))
+  :enable digit-depth-p)
+
+(defrule elem-depth-p-of-digit3->thd
+  (implies (and (equal (digit-case digit) 3)
+                (digit-depth-p depth digit))
+           (elem-depth-p depth (digit3->thd digit)))
+  :enable digit-depth-p)
+
+(defrule elem-depth-p-of-digit4->fst
+  (implies (and (equal (digit-case digit) 4)
+                (digit-depth-p depth digit))
+           (elem-depth-p depth (digit4->fst digit)))
+  :enable digit-depth-p)
+
+(defrule elem-depth-p-of-digit4->snd
+  (implies (and (equal (digit-case digit) 4)
+                (digit-depth-p depth digit))
+           (elem-depth-p depth (digit4->snd digit)))
+  :enable digit-depth-p)
+
+(defrule elem-depth-p-of-digit4->thd
+  (implies (and (equal (digit-case digit) 4)
+                (digit-depth-p depth digit))
+           (elem-depth-p depth (digit4->thd digit)))
+  :enable digit-depth-p)
+
+(defrule elem-depth-p-of-digit4->frth
+  (implies (and (equal (digit-case digit) 4)
+                (digit-depth-p depth digit))
+           (elem-depth-p depth (digit4->frth digit)))
+  :enable digit-depth-p)
+
+(defrule digit-depth-p-of-digit1
+  (equal (digit-depth-p depth (digit1 len a))
+         (elem-depth-p depth a))
+  :enable digit-depth-p)
+
+(defrule digit-depth-p-of-digit2
+  (equal (digit-depth-p depth (digit2 len a b))
+         (and (elem-depth-p depth a)
+              (elem-depth-p depth b)))
+  :enable digit-depth-p)
+
+(defrule digit-depth-p-of-digit3
+  (equal (digit-depth-p depth (digit3 len a b c))
+         (and (elem-depth-p depth a)
+              (elem-depth-p depth b)
+              (elem-depth-p depth c)))
+  :enable digit-depth-p)
+
+(defrule digit-depth-p-of-digit4
+  (equal (digit-depth-p depth (digit4 len a b c d))
+         (and (elem-depth-p depth a)
+              (elem-depth-p depth b)
+              (elem-depth-p depth c)
+              (elem-depth-p depth d)))
+  :enable digit-depth-p)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define ftree-depth-p
+  ((depth natp)
+   (tree ftreep))
+  (declare (xargs :split-types t)
+           (type unsigned-byte depth)
+           (type list tree))
+  :returns (yes/no booleanp :rule-classes :type-prescription)
+  (or (ftree-empty-p tree)
+      (if (ftree-single-p tree)
+          (elem-depth-p depth (ftree-single->elem tree))
+        (and (digit-depth-p depth (ftree-deep->prefix tree))
+             (digit-depth-p depth (ftree-deep->suffix tree))
+             (ftree-depth-p (+ (nat-fix depth) 1)
+                                  (ftree-deep->middle tree)))))
+  :measure (acl2-count tree))
+
+;;;;;;;;;;;;;;;;;;;;
+
+(in-theory (disable (:t ftree-depth-p)))
+
+(defrule ftree-depth-p-when-nat-equiv-congruence
+  (implies (nat-equiv depth0 depth1)
+           (equal (ftree-depth-p depth0 tree)
+                  (ftree-depth-p depth1 tree)))
+  :rule-classes :congruence
+  :expand ((ftree-depth-p depth0 tree)
+           (ftree-depth-p depth1 tree))
+  :enable (ftree-depth-p
+           nfix))
+
+(defrule ftree-depth-p-when-ftree-equal-congruence
+  (implies (ftree-equal tree0 tree1)
+           (equal (ftree-depth-p depth tree0)
+                  (ftree-depth-p depth tree1)))
+  :rule-classes :congruence
+  :expand ((ftree-depth-p depth tree0)
+           (ftree-depth-p depth tree1)))
+
+(defrule elem-depth-p-of-ftree-single->elem
+  (implies (and (ftree-depth-p depth tree)
+                (ftree-single-p tree))
+           (elem-depth-p depth (ftree-single->elem tree)))
+  :enable ftree-depth-p)
+
+(defrule digit-depth-p-of-ftree-deep->prefix
+  (implies (and (ftree-depth-p depth tree)
+                (not (ftree-empty-p tree))
+                (not (ftree-single-p tree)))
+           (digit-depth-p depth (ftree-deep->prefix tree)))
+  :enable ftree-depth-p)
+
+(defrule digit-depth-p-of-ftree-deep->suffix
+  (implies (and (ftree-depth-p depth tree)
+                (not (ftree-empty-p tree))
+                (not (ftree-single-p tree)))
+           (digit-depth-p depth (ftree-deep->suffix tree)))
+  :enable ftree-depth-p)
+
+(defrule ftree-depth-p-of-ftree-deep->middle
+  (implies (and (< 0 (nfix depth))
+                (ftree-depth-p (- (nfix depth) 1) tree)
+                (not (ftree-empty-p tree))
+                (not (ftree-single-p tree)))
+           (ftree-depth-p depth (ftree-deep->middle tree)))
+  :enable ftree-depth-p)
+
+(defrule ftree-depth-p-of-nil
+  (ftree-depth-p depth nil)
+  :enable ftree-depth-p)
+
+(defrule ftree-depth-p-of-ftree-single
+  (equal (ftree-depth-p depth (ftree-single a))
+         (elem-depth-p depth a))
+  :enable ftree-depth-p)
+
+(defrule ftree-depth-p-of-ftree-deep
+  (equal (ftree-depth-p depth (ftree-deep len prefix middle suffix))
+         (and (digit-depth-p depth prefix)
+              (ftree-depth-p (+ (nat-fix depth) 1) middle)
+              (digit-depth-p depth suffix)))
+  :enable ftree-depth-p)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define elem-len
+  ((depth natp)
+   elem)
+  :guard (elem-depth-p depth elem)
+  (declare (xargs :split-types t)
+           (type unsigned-byte depth))
+  :returns (len natp :rule-classes :type-prescription)
+  (if (nat-equal depth 0)
+      1
+    (let ((depth$ (- (nat-fix depth) 1)))
+      (+ (elem-len depth$ (node->fst elem))
+         (if (node2p elem)
+             (elem-len depth$ (node2->snd elem))
+           (+ (elem-len depth$ (node3->snd elem))
+              (elem-len depth$ (node3->thd elem)))))))
+  :measure (nfix depth))
+
+;;;;;;;;;;;;;;;;;;;;
+
+(in-theory (disable (:t elem-len)))
+
+(defrule elem-len-when-nat-equiv-congruence
+  (implies (nat-equiv depth0 depth1)
+           (equal (elem-len depth0 elem)
+                  (elem-len depth1 elem)))
+  :rule-classes :congruence
+  :enable (elem-len
+           nfix))
+
+(defruled elem-len-when-not-natp
+  (implies (not (natp depth))
+           (equal (elem-len depth elem)
+                  1))
+  :enable elem-len)
+
+(defrule elem-len-when-not-natp-cheap
+  (implies (not (natp depth))
+           (equal (elem-len depth elem)
+                  1))
+  :rule-classes ((:rewrite :backchain-limit-lst (0)))
+  :by elem-len-when-not-natp)
+
+(defrule elem-len-of-0
+  (equal (elem-len 0 elem)
+         1)
+  :enable elem-len)
+
+(defrule elem-len-of-node2
+  (equal (elem-len depth (node2 len a b))
+         (if (equal (nfix depth) 0)
+             1
+           (+ (elem-len (- (nfix depth) 1) a)
+              (elem-len (- (nfix depth) 1) b))))
+  :enable elem-len)
+
+(defrule elem-len-of-node3
+  (equal (elem-len depth (node3 len a b c))
+         (if (equal (nfix depth) 0)
+             1
+           (+ (elem-len (- (nfix depth) 1) a)
+              (elem-len (- (nfix depth) 1) b)
+              (elem-len (- (nfix depth) 1) c))))
+  :enable elem-len)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define digit-len
+  ((depth natp)
+   (digit digitp))
+  (declare (xargs :split-types t)
+           (type unsigned-byte depth)
+           (type cons digit))
+  :guard (digit-depth-p depth digit)
+  :returns (len natp :rule-classes :type-prescription)
+  (case (digit-case digit)
+    (1 (elem-len depth (digit1->fst digit)))
+    (2 (+ (elem-len depth (digit2->fst digit))
+          (elem-len depth (digit2->snd digit))))
+    (3 (+ (elem-len depth (digit3->fst digit))
+          (elem-len depth (digit3->snd digit))
+          (elem-len depth (digit3->thd digit))))
+    (otherwise (+ (elem-len depth (digit4->fst digit))
+                  (elem-len depth (digit4->snd digit))
+                  (elem-len depth (digit4->thd digit))
+                  (elem-len depth (digit4->frth digit))))))
+
+;;;;;;;;;;;;;;;;;;;;
+
+(in-theory (disable (:t digit-len)))
+
+(defrule digit-len-when-nat-equiv-congruence
+  (implies (nat-equiv depth0 depth1)
+           (equal (digit-len depth0 digit)
+                  (digit-len depth1 digit)))
+  :rule-classes :congruence
+  :enable digit-len
+  :disable acl2::nat-equiv$inline)
+
+(defrule digit-len-when-digit-equal-congruence
+  (implies (digit-equal digit0 digit1)
+           (equal (digit-len depth digit0)
+                  (digit-len depth digit1)))
+  :rule-classes :congruence
+  :enable digit-len)
+
+(defrule digit-len-of-digit1
+  (equal (digit-len depth (digit1 len a))
+         (elem-len depth a))
+  :enable digit-len)
+
+(defrule digit-len-of-digit2
+  (equal (digit-len depth (digit2 len a b))
+         (+ (elem-len depth a)
+            (elem-len depth b)))
+  :enable digit-len)
+
+(defrule digit-len-of-digit3
+  (equal (digit-len depth (digit3 len a b c))
+         (+ (elem-len depth a)
+            (elem-len depth b)
+            (elem-len depth c)))
+  :enable digit-len)
+
+(defrule digit-len-of-digit4
+  (equal (digit-len depth (digit4 len a b c d))
+         (+ (elem-len depth a)
+            (elem-len depth b)
+            (elem-len depth c)
+            (elem-len depth d)))
+  :enable digit-len)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define ftree-len
+  ((depth natp)
+   (tree ftreep))
+  (declare (xargs :split-types t)
+           (type unsigned-byte depth)
+           (type list tree))
+  :guard (ftree-depth-p depth tree)
+  :returns (len natp :rule-classes :type-prescription)
+  (if (ftree-empty-p tree)
+      0
+    (if (ftree-single-p tree)
+        (elem-len depth (ftree-single->elem tree))
+      (+ (digit-len depth (ftree-deep->prefix tree))
+         (digit-len depth (ftree-deep->suffix tree))
+         (ftree-len (+ (nat-fix depth) 1) (ftree-deep->middle tree)))))
+  :measure (acl2-count tree))
+
+;;;;;;;;;;;;;;;;;;;;
+
+(in-theory (disable (:t ftree-len)))
+
+(defrule ftree-len-when-nat-equiv-congruence
+  (implies (nat-equiv depth0 depth1)
+           (equal (ftree-len depth0 tree)
+                  (ftree-len depth1 tree)))
+  :rule-classes :congruence
+  :expand ((ftree-len depth0 tree)
+           (ftree-len depth1 tree))
+  :disable acl2::nat-equiv$inline)
+
+(defrule ftree-len-when-ftree-equal-congruence
+  (implies (ftree-equal tree0 tree1)
+           (equal (ftree-len depth tree0)
+                  (ftree-len depth tree1)))
+  :rule-classes :congruence
+  :expand ((ftree-len depth tree0)
+           (ftree-len depth tree1)))
+
+(defrule ftree-len-of-nil
+  (equal (ftree-len depth nil)
+         0)
+  :enable ftree-len)
+
+(defrule ftree-len-of-ftree-single
+  (equal (ftree-len depth (ftree-single a))
+         (elem-len depth a))
+  :enable ftree-len)
+
+(defrule ftree-len-of-ftree-deep
+  (equal (ftree-len depth (ftree-deep len prefix middle suffix))
+         (+ (digit-len depth prefix)
+            (ftree-len (+ (nat-fix depth) 1) middle)
+            (digit-len depth suffix)))
+  :enable ftree-len)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; (define elem-well-formed?
+;;   ((depth natp)
+;;    elem)
+;;   (declare (xargs :split-types t)
+;;            (type unsigned-byte depth))
+;;   :returns (len? (or (not len?) (natp len?)) :rule-classes :type-prescription)
+;;   ;; TODO: optimize (like in the below commented-out version)
+;;   (and (elem-depth-p depth elem)
+;;        (mbe :logic (and (implies (not (equal (nfix depth) 0))
+;;                                  (equal (node->len elem) (elem-len depth elem)))
+;;                         (elem-len depth elem))
+;;             :exec  (if (nat-equal depth 0)
+;;                        1
+;;                      (let ((elem-len (elem-len depth elem)))
+;;                        (and (equal (node->len elem) elem-len)
+;;                             elem-len))))))
+
+#|
+(define elem-well-formed?
+  ((depth natp)
+   elem)
+  (declare (xargs :split-types t)
+           (type unsigned-byte depth))
+  :returns (len? (or (not len?) (natp len?)) :rule-classes :type-prescription)
+  (mbe :logic (and (elem-depth-p depth elem)
+                   (implies (not (equal (nfix depth) 0))
+                            (equal (node->len elem) (elem-len depth elem)))
+                   (elem-len depth elem))
+       :exec
+       (if (nat-equal depth 0)
+           1
+         (let ((depth$ (- (nat-fix depth) 1)))
+           (and (nodep elem)
+                (let ((fst-len? (elem-well-formed? depth$ (node->fst elem))))
+                  (and fst-len?
+                       (if (node2p elem)
+                           (let ((snd-len? (elem-well-formed? depth$ (node2->snd elem))))
+                             (and snd-len?
+                                  (equal (node->len elem) (+ fst-len? snd-len?))
+                                  (node->len elem)))
+                         (let ((snd-len? (elem-well-formed? depth$ (node3->snd elem))))
+                           (and snd-len?
+                                (let ((thd-len? (elem-well-formed? depth$ (node3->thd elem))))
+                                  (and thd-len?
+                                       (equal (node->len elem) (+ fst-len? snd-len? thd-len?))
+                                       (node->len elem))))))))))))
+  :guard-hints (("Goal" :in-theory (enable elem-depth-p
+                                           elem-len)
+                        :expand (elem-depth-p depth elem))))
+|#
+
+;;;;;;;;;;;;;;;;;;;;
+
+;; (in-theory (disable (:t elem-well-formed?)))
+;;
+;; (defrule elem-well-formed?-when-nat-equiv-congruence
+;;   (implies (nat-equiv depth0 depth1)
+;;            (equal (elem-well-formed? depth0 elem)
+;;                   (elem-well-formed? depth1 elem)))
+;;   :rule-classes :congruence
+;;   :enable (elem-well-formed?
+;;            nfix))
+;;
+;; (defruled elem-well-formed?-when-not-natp
+;;   (implies (not (natp depth))
+;;            (equal (elem-well-formed? depth elem)
+;;                   1))
+;;   :enable elem-well-formed?)
+;;
+;; (defrule elem-well-formed?-when-not-natp-cheap
+;;   (implies (not (natp depth))
+;;            (equal (elem-well-formed? depth elem)
+;;                   1))
+;;   :rule-classes ((:rewrite :backchain-limit-lst (0)))
+;;   :by elem-well-formed?-when-not-natp)
+;;
+;; (defrule elem-well-formed?-of-0
+;;   (equal (elem-well-formed? 0 elem)
+;;          1)
+;;   :enable elem-well-formed?)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define elem-well-formed-p
+  ((depth natp)
+   elem)
+  (declare (xargs :split-types t)
+           (type unsigned-byte depth))
+  :returns (yes/no booleanp :rule-classes :type-prescription)
+  (and (elem-depth-p depth elem)
+       (or (nat-equal depth 0)
+           (and .
+                (equal (node->len elem) (elem-len depth elem)))))
+
+;;;;;;;;;;;;;;;;;;;;
+
+(in-theory (disable (:t elem-well-formed-p)))
+
+(defrule elem-well-formed-p-when-nat-equiv-congruence
+  (implies (nat-equiv depth0 depth1)
+           (equal (elem-well-formed-p depth0 elem)
+                  (elem-well-formed-p depth1 elem)))
+  :rule-classes :congruence
+  :enable (elem-well-formed-p
+           nfix))
+
+(defruled elem-well-formed-p-when-not-natp
+  (implies (not (natp depth))
+           (equal (elem-well-formed-p depth elem)
+                  t))
+  :enable elem-well-formed-p)
+
+(defrule elem-well-formed-p-when-not-natp-cheap
+  (implies (not (natp depth))
+           (equal (elem-well-formed-p depth elem)
+                  t))
+  :rule-classes ((:rewrite :backchain-limit-lst (0)))
+  :by elem-well-formed-p-when-not-natp)
+
+(defrule elem-well-formed-p-when-not-natp-type-prescription
+  (implies (not (natp depth))
+           (equal (elem-well-formed-p depth elem)
+                  t))
+  :rule-classes :type-prescription)
+
+(defrule elem-well-formed-p-of-0
+  (elem-well-formed-p 0 elem)
+  :enable elem-well-formed-p)
+
+(defruled nodep-when-depth-not-0-and-elem-well-formed-p
+  (implies (and (not (equal (nfix depth) 0))
+                (elem-well-formed-p depth node))
+           (nodep node))
+  :enable elem-well-formed-p)
+
+(defrule nodep-when-depth-not-0-and-elem-well-formed-p-cheap
+  (implies (and (elem-well-formed-p depth node)
+                (not (equal (nfix depth) 0)))
+           (nodep node))
+  :rule-classes ((:rewrite :backchain-limit-lst (0 nil)))
+  :by nodep-when-depth-not-0-and-elem-well-formed-p)
+
+(defrule elem-well-formed-p-of-node->fst
+  (implies (elem-well-formed-p (+ 1 (nfix depth)) node)
+           (elem-well-formed-p depth (node->fst node)))
+  :enable elem-well-formed-p)
+
+(defrule elem-well-formed-p-of-node2->snd
+  (implies (and (node2p node)
+                (elem-well-formed-p (+ 1 (nfix depth)) node))
+           (elem-well-formed-p depth (node2->snd node)))
+  :enable elem-well-formed-p)
+
+(defrule elem-well-formed-p-of-node3->snd
+  (implies (and (not (node2p node))
+                (elem-well-formed-p (+ 1 (nfix depth)) node))
+           (elem-well-formed-p depth (node3->snd node)))
+  :enable elem-well-formed-p)
+
+(defrule elem-well-formed-p-of-node3->thd
+  (implies (and (not (node2p node))
+                (elem-well-formed-p (+ 1 (nfix depth)) node))
+           (elem-well-formed-p depth (node3->thd node)))
+  :enable elem-well-formed-p)
+
+(defrule elem-well-formed-p-of-node2
+  (equal (elem-well-formed-p depth (node2 len a b))
+         (or (equal (nfix depth) 0)
+             (and (elem-well-formed-p (- (nfix depth) 1) a)
+                  (elem-well-formed-p (- (nfix depth) 1) b))))
+  :enable elem-well-formed-p)
+
+(defrule elem-well-formed-p-of-node3
+  (equal (elem-well-formed-p depth (node3 len a b c))
+         (or (equal (nfix depth) 0)
+             (and (elem-well-formed-p (- (nfix depth) 1) a)
+                  (elem-well-formed-p (- (nfix depth) 1) b)
+                  (elem-well-formed-p (- (nfix depth) 1) c))))
+  :enable elem-well-formed-p)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; TODO: in the optimized version, probably do it at the same time as the
+;; digitp check.
+(define digit-well-formed?
+  ((depth natp)
+   (digit digitp))
+  (declare (xargs :split-types t)
+           (type unsigned-byte depth))
+  :returns (len? (or (not len?) (natp len?)) :rule-classes :type-prescription)
+  (and (digit-depth-p depth digit)
+       (equal (digit->len digit) (digit-len depth digit))
+       (digit->len digit))

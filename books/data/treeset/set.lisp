@@ -12,28 +12,22 @@
 (include-book "std/util/defrule" :dir :system)
 (include-book "xdoc/constructors" :dir :system)
 
-(include-book "binary-tree-defs")
-(include-book "bst-defs")
-(include-book "heap-defs")
+(include-book "internal/tree-defs")
+(include-book "internal/bst-defs")
+(include-book "internal/heap-defs")
 
-(local (include-book "kestrel/built-ins/disable" :dir :system))
-(local (acl2::disable-most-builtin-logic-defuns))
-(local (acl2::disable-builtin-rewrite-rules-for-defaults))
-(set-induction-depth-limit 0)
+(local (include-book "std/basic/controlled-configuration" :dir :system))
+(local (acl2::controlled-configuration :hooks nil))
 
-(local (include-book "binary-tree"))
-(local (include-book "bst"))
-(local (include-book "heap"))
+(local (include-book "kestrel/utilities/ordinals" :dir :system))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(std::make-define-config
-  :no-function t)
+(local (include-book "internal/tree"))
+(local (include-book "internal/bst"))
+(local (include-book "internal/heap"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define setp (x)
-  (declare (xargs :type-prescription (booleanp (setp x))))
   :parents (set)
   :short "Recognizer for @(see treeset)s."
   :long
@@ -42,159 +36,151 @@
      "Time complexity: @($O(n^2)$) (Note: the current implementation is
       inefficient. This should eventually be @($O(n)$) once we introduce a more
       efficient binary search tree property check via an @(tsee mbe).)"))
-  (and (binary-tree-p x)
-       (bst-p x)
+  :returns (yes/no booleanp :rule-classes (:rewrite :type-prescription))
+  (and (treep x)
+       (bstp x)
        (heapp x)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;
 
-(defrule setp-compound-recognizer
-  (if (setp set)
-      (or (consp set)
-          (equal set nil))
-    (not (equal set nil)))
-  :rule-classes :compound-recognizer
-  :enable setp)
+(in-theory (disable (:t setp)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defrule binary-tree-p-when-setp-forward-chaining
-  (implies (setp set)
-           (binary-tree-p set))
-  :rule-classes :forward-chaining
-  :enable setp)
-
-(defrule bst-p-when-setp-forward-chaining
-  (implies (setp set)
-           (bst-p set))
-  :rule-classes :forward-chaining
-  :enable setp)
-
-(defrule heapp-when-setp-forward-chaining
-  (implies (setp set)
-           (heapp set))
-  :rule-classes :forward-chaining
-  :enable setp)
-
-(defrule setp-of-tree-left-when-setp
-  (implies (setp set)
-           (setp (tree-left set)))
-  :enable setp)
-
-(defrule setp-of-tree-right-when-setp
-  (implies (setp set)
-           (setp (tree-right set)))
-  :enable setp)
+;; Exposes implementation
+;; (defrule setp-compound-recognizer
+;;   (if (setp set)
+;;       (or (consp set)
+;;           (equal set nil))
+;;     (not (equal set nil)))
+;;   :rule-classes :compound-recognizer
+;;   :enable setp)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define sfix ((set setp))
-  :returns (set$ setp)
+(define empty ()
+  :returns (set setp)
+  nil
+  :inline t)
+
+;;;;;;;;;;;;;;;;;;;;
+
+(in-theory (disable (:t empty) (:e empty)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define fix ((set setp))
   :parents (set)
   :short "Fixer for @(see treeset)s."
-  (mbe :logic (if (setp set) set nil)
-       :exec (the (or cons null) set)))
+  :returns (set$ setp)
+  (mbe :logic (if (setp set)
+                  set
+                (empty))
+       :exec (the list set))
+  :inline t
+  :guard-hints (("Goal" :in-theory (enable setp))))
 
-(defrule sfix-when-setp
+;;;;;;;;;;;;;;;;;;;;
+
+(in-theory (disable (:t fix)))
+
+(defrule fix-when-setp
   (implies (setp set)
-           (equal (sfix set)
+           (equal (fix set)
                   set))
-  :enable sfix)
+  :enable fix)
 
-(defruled sfix-when-not-setp
+(defruled fix-when-not-setp
   (implies (not (setp set))
-           (equal (sfix set)
-                  nil))
-  :enable sfix)
+           (equal (fix set)
+                  (empty)))
+  :enable fix)
 
-(defrule sfix-when-not-setp-cheap
+(defrule fix-when-not-setp-cheap
   (implies (not (setp set))
-           (equal (sfix set)
-                  nil))
+           (equal (fix set)
+                  (empty)))
   :rule-classes ((:rewrite :backchain-limit-lst (0)))
-  :enable sfix-when-not-setp)
+  :by fix-when-not-setp)
 
-(defrule sfix-when-tree-equiv-congruence
-  (implies (tree-equiv x y)
-           (equal (sfix x)
-                  (sfix y)))
-  :rule-classes :congruence
-  :enable (tree-equiv
-           sfix
-           setp))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defrule bst-p-of-sfix
-  (bst-p (sfix set))
-  :enable sfix)
-
-(defrule heapp-of-sfix
-  (heapp (sfix set))
-  :enable sfix)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; TODO: rename to "equiv"? (set is implied by the package)
-(define set-equiv
+(define equiv
   ((x setp)
    (y setp))
-  (declare (xargs :type-prescription (booleanp (set-equiv x y))))
   :parents (set)
-  :short "Equivalence up to @(tsee sfix)."
-  (equal (sfix x)
-         (sfix y))
+  :short "Equivalence up to @(tsee fix)."
+  :returns (yes/no booleanp :rule-classes (:rewrite :type-prescription))
+  (equal (fix x)
+         (fix y))
   :inline t
 
   ///
-  (defequiv set-equiv))
+  (defequiv equiv))
 
-(defrule sfix-under-set-equiv
-  (set-equiv (sfix set)
-             set)
-  :enable (set-equiv
-           sfix))
+;;;;;;;;;;;;;;;;;;;;
 
-(defrule tree-fix-under-set-equiv
-  (set-equiv (tree-fix set)
-             set)
-  :enable set-equiv)
+(in-theory (disable (:t equiv)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defrule fix-under-equiv
+  (equiv (fix set)
+         set)
+  :enable equiv)
+
+(defrule fix-when-equiv-congruence
+  (implies (equiv set0 set1)
+           (equal (fix set0)
+                  (fix set1)))
+  :rule-classes :congruence
+  :enable equiv)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define emptyp ((set setp))
-  (declare (xargs :type-prescription (booleanp (emptyp set))))
   :parents (set)
   :short "Check if a @(see treeset) is empty."
-  (tree-emptyp (sfix set))
-  :inline t)
+  :returns (yes/no booleanp :rule-classes (:rewrite :type-prescription))
+  (tree-empty-p (fix set))
+  :inline t
+  :guard-hints (("Goal" :in-theory (enable setp))))
 
-(defrule emptyp-when-set-equiv
-  (implies (set-equiv x y)
-           (equal (emptyp x)
-                  (emptyp y)))
+;;;;;;;;;;;;;;;;;;;;
+
+(in-theory (disable (:t emptyp)))
+
+(defrule emptyp-when-equiv-congruence
+  (implies (equiv set0 set1)
+           (equal (emptyp set0)
+                  (emptyp set1)))
   :rule-classes :congruence
-  :enable (emptyp
-           set-equiv))
+  :enable emptyp)
 
-(defruled sfix-when-emptyp
-  (implies (emptyp set)
-           (equal (sfix set)
-                  nil))
-  :enable (emptyp
-           sfix
-           tree-emptyp))
+(defrule emptyp-of-empty
+  (emptyp (empty))
+  :enable empty)
 
-(defrule sfix-when-emptyp-cheap
+(defruled fix-when-emptyp
   (implies (emptyp set)
-           (equal (sfix set)
-                  nil))
+           (equal (fix set)
+                  (empty)))
+  :enable (emptyp
+           fix
+           tree-empty-p
+           setp
+           empty))
+
+(defrule fix-when-emptyp-cheap
+  (implies (emptyp set)
+           (equal (fix set)
+                  (empty)))
   :rule-classes ((:rewrite :backchain-limit-lst (0)))
-  :enable sfix-when-emptyp)
+  :enable fix-when-emptyp)
 
 (defrule setp-when-not-emptyp-forward-chaining
   (implies (not (emptyp set))
            (setp set))
   :rule-classes :forward-chaining
-  :enable emptyp)
+  :enable (emptyp
+           setp
+           empty))
 
 ;; TODO: Should this also be a regular rewrite rule?
 (defrule emptyp-when-not-setp-forward-chaining
@@ -202,7 +188,7 @@
            (emptyp set))
   :rule-classes :forward-chaining)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define head ((set setp))
   :parents (set)
@@ -217,22 +203,28 @@
       @(tsee right) to fold over the set. Under the hood, this is the root
       element of the underlying tree, which will be the unique maximum value
       with respect to @(tsee heap<)."))
-  (tree-head (sfix set))
-  :inline t)
+  :guard (not (emptyp set))
+  (tagged-element->elem (tree->head (fix set)))
+  :inline t
+  :guard-hints (("Goal" :in-theory (enable setp
+                                           emptyp))))
 
-(defrule head-when-set-equiv
-  (implies (set-equiv x y)
-           (equal (head x)
-                  (head y)))
+;;;;;;;;;;;;;;;;;;;;
+
+(defrule head-when-equiv-congruence
+  (implies (equiv set0 set1)
+           (equal (head set0)
+                  (head set1)))
   :rule-classes :congruence
-  :enable (head
-           set-equiv))
+  :enable head)
 
 (defruled head-when-emptyp
   (implies (emptyp set)
            (equal (head set)
                   nil))
-  :enable head)
+  :enable (head
+           emptyp
+           irr-tagged-element))
 
 (defrule head-when-emptyp-cheap
   (implies (emptyp set)
@@ -244,7 +236,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define left ((set setp))
-  :returns (left setp)
   :parents (set)
   :short "Get the \"left\" subset of the nonempty @(see treeset)."
   :long
@@ -257,23 +248,40 @@
       right) subset. Concretely, it is the subset for which all elements are
       @(tsee bst<) the @(tsee head). In terms of the underlying tree
       representation, this is the left subtree."))
-  (tree-left (sfix set))
-  :inline t)
+  :returns (left setp
+                 :hints (("Goal" :in-theory (enable setp
+                                                    fix
+                                                    empty))))
+  (tree->left (fix set))
+  :inline t
+  :guard-hints (("Goal" :in-theory (enable setp))))
 
-(defrule left-type-prescription
-  (setp (left set))
-  :rule-classes ((:type-prescription :typed-term (left set))))
+;;;;;;;;;;;;;;;;;;;;
+
+(in-theory (disable (:t left)))
+
+;; (defrule left-type-prescription
+;;   (setp (left set))
+;;   :rule-classes ((:type-prescription :typed-term (left set))))
+
+(defrule left-when-equiv-congruence
+  (implies (equiv set0 set1)
+           (equal (left set0)
+                  (left set1)))
+  :rule-classes :congruence
+  :enable left)
 
 (defruled left-when-emptyp
   (implies (emptyp set)
            (equal (left set)
-                  nil))
-  :enable left)
+                  (empty)))
+  :enable (left
+           empty))
 
 (defrule left-when-emptyp-cheap
   (implies (emptyp set)
            (equal (left set)
-                  nil))
+                  (empty)))
   :rule-classes ((:rewrite :backchain-limit-lst (0)))
   :enable left-when-emptyp)
 
@@ -288,14 +296,16 @@
            (equal (equal (left x) x)
                   (emptyp x)))
   :enable (left
-           emptyp))
+           emptyp
+           setp))
 
 (defrule acl2-count-of-left-linear
   (<= (acl2-count (left set))
       (acl2-count set))
   :rule-classes :linear
   :enable (left
-           sfix))
+           fix
+           empty))
 
 (defrule acl2-count-of-left-when-not-emptyp-linear
   (implies (not (emptyp set))
@@ -304,32 +314,12 @@
   :rule-classes :linear
   :enable (emptyp
            left
-           sfix))
-
-(defrule bst<-of-head-of-left-and-head
-  (implies (not (emptyp (left set)))
-           (bst< (head (left set))
-                 (head set)))
-  :enable (head
-           left
-           emptyp
-           sfix
-           setp))
-
-(defrule heap<-of-head-of-left-and-head
-  (implies (and (not (emptyp (left tree))))
-           (heap< (head (left tree))
-                  (head tree)))
-  :enable (head
-           left
-           emptyp
-           sfix
-           setp))
+           fix
+           empty))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define right ((set setp))
-  :returns (right setp)
   :parents (set)
   :short "Get the \"right\" subset of the nonempty @(see treeset)."
   :long
@@ -342,23 +332,40 @@
       left) subset. Concretely, it is the subset for which the @(tsee head) is
       @(tsee bst<) all elements. In terms of the underlying tree representation,
       this is the right subtree."))
-  (tree-right (sfix set))
-  :inline t)
+  :returns (right setp
+                  :hints (("Goal" :in-theory (enable setp
+                                                     fix
+                                                     empty))))
+  (tree->right (fix set))
+  :inline t
+  :guard-hints (("Goal" :in-theory (enable setp))))
 
-(defrule right-type-prescription
-  (setp (right set))
-  :rule-classes ((:type-prescription :typed-term (right set))))
+;;;;;;;;;;;;;;;;;;;;
+
+(in-theory (disable (:t right)))
+
+;; (defrule right-type-prescription
+;;   (setp (right set))
+;;   :rule-classes ((:type-prescription :typed-term (right set))))
+
+(defrule right-when-equiv-congruence
+  (implies (equiv set0 set1)
+           (equal (right set0)
+                  (right set1)))
+  :rule-classes :congruence
+  :enable right)
 
 (defruled right-when-emptyp
   (implies (emptyp set)
            (equal (right set)
-                  nil))
-  :enable right)
+                  (empty)))
+  :enable (right
+           empty))
 
 (defrule right-when-emptyp-cheap
   (implies (emptyp set)
            (equal (right set)
-                  nil))
+                  (empty)))
   :rule-classes ((:rewrite :backchain-limit-lst (0)))
   :enable right-when-emptyp)
 
@@ -373,14 +380,16 @@
            (equal (equal (right x) x)
                   (emptyp x)))
   :enable (right
-           emptyp))
+           emptyp
+           setp))
 
 (defrule acl2-count-of-right-linear
   (<= (acl2-count (right set))
       (acl2-count set))
   :rule-classes :linear
   :enable (right
-           sfix))
+           fix
+           empty))
 
 (defrule acl2-count-of-right-when-not-emptyp-linear
   (implies (not (emptyp set))
@@ -389,46 +398,8 @@
   :rule-classes :linear
   :enable (emptyp
            right
-           sfix))
-
-(defrule bst<-of-head-and-head-of-right
-  (implies (not (emptyp (right set)))
-           (bst< (head set)
-                 (head (right set))))
-  :enable (head
-           right
-           emptyp
-           sfix
-           setp))
-
-(defrule heap<-of-head-and-head-of-right
-  (implies (and (not (emptyp (right tree))))
-           (heap< (head (right tree))
-                  (head tree)))
-  :enable (head
-           right
-           emptyp
-           sfix
-           setp))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defrule setp-of-tree-node
-  (equal (setp (tree-node head left right))
-         (and (setp (tree-fix left))
-              (setp (tree-fix right))
-              (bst<-all-l left head)
-              (bst<-all-r head right)
-              (heap<-all-l left head)
-              (heap<-all-l right head)))
-  :enable (setp
-           bst-p
-           heapp
-           sfix
-           head
-           left
-           right
-           emptyp))
+           fix
+           empty))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -440,7 +411,6 @@
             (right (set-induct (right set))))
         (declare (ignore left right))
         t))
-  :hints (("Goal" :in-theory (enable o< o-finp)))
   :verify-guards nil)
 
 (in-theory (enable (:i set-induct)))
@@ -468,7 +438,6 @@
             (right (set-bi-induct (right x) (right y))))
         (declare (ignore left right))
         t))
-  :hints (("Goal" :in-theory (enable o< o-finp)))
   :verify-guards nil)
 
 (in-theory (enable (:i set-bi-induct)))
@@ -480,7 +449,8 @@
   :returns (list true-listp)
   :parents (set)
   :short "Create a list of values from a set."
-  (tree-post-order (sfix set)))
+  (tree-post-order (fix set))
+  :guard-hints (("Goal" :in-theory (enable setp))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -497,8 +467,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defthy set-extra-rules
-  '(sfix-when-not-setp
-    sfix-when-emptyp
+  '(fix-when-not-setp
+    fix-when-emptyp
     head-when-emptyp
     left-when-emptyp
     right-when-emptyp

@@ -15,5 +15,9 @@
 (defpkg "DATA"
   (union-eq '(*fixnum-bits*
               defxdoc+
+              int-equiv
+              nat-equiv
               )
-            *std-pkg-symbols*))
+            (set-difference-eq *std-pkg-symbols*
+                               '#!std(list-fix
+                                      ))))

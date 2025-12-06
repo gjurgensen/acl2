@@ -1,0 +1,467 @@
+; Copyright (C) 2025 Kestrel Institute (http://www.kestrel.edu)
+;
+; License: A 3-clause BSD license. See the LICENSE file distributed with ACL2.
+;
+; Author: Grant Jurgensen (grant@kestrel.edu)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(in-package "SEQ")
+
+(include-book "std/util/define" :dir :system)
+(include-book "std/util/defrule" :dir :system)
+
+(include-book "ftree-defs")
+(include-book "well-formed-p-defs")
+
+(local (include-book "std/basic/controlled-configuration" :dir :system))
+(local (acl2::controlled-configuration :hooks nil))
+
+(local (include-book "kestrel/arithmetic-light/fix" :dir :system))
+
+(local (include-book "kestrel/utilities/ordinals" :dir :system))
+
+(local (include-book "ftree"))
+(local (include-book "well-formed-p"))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define digit-push-node-front
+  ((a nodep)
+   (digit digitp))
+  :guard (mbe :logic (not (equal (digit-case digit) 4))
+              :exec (not (= (the (integer 1 4) (digit-case digit)) 4)))
+  :returns (digit$ digitp :rule-classes (:rewrite :type-prescription))
+  (let ((len (+ (the unsigned-byte (digit->len digit))
+                (the unsigned-byte (node->len a)))))
+    (case (digit-case digit)
+      (1 (digit len a (digit1->fst digit)))
+      (2 (digit len a (digit2->fst digit) (digit2->snd digit)))
+      (3 (digit len a (digit3->fst digit) (digit3->snd digit) (digit3->thd digit)))
+      (otherwise (the nil (digit-fix digit)))))
+  :inline t)
+
+;;;;;;;;;;;;;;;;;;;;
+
+(in-theory (disable (:t digit-push-node-front)))
+
+(defrule digit-push-node-front-when-digit-equal-congruence
+  (implies (digit-equal digit0 digit1)
+           (equal (digit-push-node-front a digit0)
+                  (digit-push-node-front a digit1)))
+  :rule-classes :congruence
+  :enable digit-push-node-front)
+
+(defrule digit-case-of-digit-push-node-front-min-linear
+  (<= 2 (digit-case (digit-push-node-front a digit)))
+  :rule-classes :linear
+  :enable digit-push-node-front)
+
+(defrule digit-depth-p-of-digit-push-node-front
+  (implies (and (digit-depth-p depth digit)
+                (elem-depth-p depth a))
+           (digit-depth-p depth (digit-push-node-front a digit)))
+  :enable (digit-push-node-front
+           digit-depth-p))
+
+(defrule digit-len-invariant-p-of-digit-push-node-node-front
+  (implies (and (digit-len-invariant-p depth digit)
+                (elem-len-invariant-p depth a)
+                (not (equal (nfix depth) 0)))
+           (digit-len-invariant-p depth (digit-push-node-front a digit)))
+  :expand ((elem-len-invariant-p depth a))
+  :enable (digit-push-node-front
+           digit-len-invariant-p
+           digit-len
+           nfix))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define digit-push-front
+  (a
+   (digit digitp))
+  :guard (mbe :logic (not (equal (digit-case digit) 4))
+              :exec (not (= (the (integer 1 4) (digit-case digit)) 4)))
+  :returns (digit$ digitp :rule-classes (:rewrite :type-prescription))
+  (let ((len (+ (the unsigned-byte (digit->len digit)) 1)))
+    (case (digit-case digit)
+      (1 (digit len a (digit1->fst digit)))
+      (2 (digit len a (digit2->fst digit) (digit2->snd digit)))
+      (3 (digit len a (digit3->fst digit) (digit3->snd digit) (digit3->thd digit)))
+      (otherwise (the nil (digit-fix digit)))))
+  :inline t)
+
+;;;;;;;;;;;;;;;;;;;;
+
+(in-theory (disable (:t digit-push-front)))
+
+(defrule digit-push-front-when-digit-equal-congruence
+  (implies (digit-equal digit0 digit1)
+           (equal (digit-push-front a digit0)
+                  (digit-push-front a digit1)))
+  :rule-classes :congruence
+  :enable digit-push-front)
+
+(defrule digit-case-of-digit-push-front-min-linear
+  (<= 2 (digit-case (digit-push-front a digit)))
+  :rule-classes :linear
+  :enable digit-push-front)
+
+(defrule digit-depth-p-of-digit-push-front
+  (implies (and (digit-depth-p depth digit)
+                (elem-depth-p depth a))
+           (digit-depth-p depth (digit-push-front a digit)))
+  :enable (digit-push-front
+           digit-depth-p))
+
+(defrule digit-len-invariant-p-of-digit-push-front
+  (implies (digit-len-invariant-p 0 digit)
+           (digit-len-invariant-p 0 (digit-push-front a digit)))
+  :enable (digit-push-front
+           digit-len-invariant-p
+           nfix
+           digit-len))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define ftree-push-node-front
+  ((a nodep)
+   (tree ftreep))
+  :guard (ftree-depth-p 1 tree)
+  :returns (tree$ ftreep)
+  (cond ((ftree-empty-p tree)
+         (ftree-single a))
+        ((ftree-single-p tree)
+         (ftree-deep$ (digit$node a)
+                      nil
+                      (digit$node (ftree-single->elem tree))))
+        (t
+         (let* ((prefix (ftree-deep->prefix tree)))
+           (if (= (mbe :logic (digit-case prefix)
+                       :exec (the (integer 1 4) (digit-case prefix)))
+                  4)
+               (ftree-deep$ (digit$node a (digit4->fst prefix))
+                            (ftree-push-node-front
+                              (node$node (digit4->snd prefix)
+                                         (digit4->thd prefix)
+                                         (digit4->frth prefix))
+                              (ftree-deep->middle tree))
+                            (ftree-deep->suffix tree))
+             (ftree-deep$ (digit-push-node-front a prefix)
+                          (ftree-deep->middle tree)
+                          (ftree-deep->suffix tree))))))
+  ;; Verified below
+  :verify-guards nil)
+
+;;;;;;;;;;;;;;;;;;;;
+
+(in-theory (disable (:t ftree-push-node-front)))
+
+(defrule ftree-push-node-front-type-prescription
+  (consp (ftree-push-node-front a tree))
+  :rule-classes :type-prescription
+  :expand (ftree-push-node-front a tree))
+
+(defrule ftree-push-node-front-when-ftree-equal-congruence
+  (implies (ftree-equal tree0 tree1)
+           (equal (ftree-push-node-front a tree0)
+                  (ftree-push-node-front a tree1)))
+  :rule-classes :congruence
+  :expand ((ftree-push-node-front a tree0)
+           (ftree-push-node-front a tree1)))
+
+(defrule ftree-empty-p-of-ftree-push-node-front
+  (not (ftree-empty-p (ftree-push-node-front a tree)))
+  :expand (ftree-push-node-front a tree))
+
+(defrule ftree-depth-p-of-ftree-push-node-front
+  (implies (and (ftree-depth-p depth tree)
+                (elem-depth-p depth a)
+                (not (equal (nfix depth) 0)))
+           (ftree-depth-p depth (ftree-push-node-front a tree)))
+  :induct t
+  :enable (ftree-push-node-front
+           ftree-depth-p
+           nfix
+           ))
+
+(defrule .
+  .
+  :enable )
+
+
+;; MOVE
+;; (defrule elem-len-invariant-p-when-arg1-not-0-cheap
+;;   (implies (not (equal (nfix depth) 0))
+;;            (equal (elem-len-invariant-p depth elem)
+;;                   (and (elem-len-invariant-p (- (nfix depth) 1)
+;;                                              (node->fst elem))
+;;                        (if (node2p elem)
+;;                            (elem-len-invariant-p (- (nfix depth) 1)
+;;                                                  (node2->snd elem))
+;;                          (and (elem-len-invariant-p (- (nfix depth) 1)
+;;                                                     (node3->snd elem))
+;;                               (elem-len-invariant-p (- (nfix depth) 1)
+;;                                                     (node3->thd elem))))
+;;                        (equal (node->len elem)
+;;                               (elem-len depth elem)))))
+;;   :rule-classes ((:rewrite :backchain-limit-lst (0)))
+;;   :enable elem-len-invariant-p)
+
+(rule
+  (implies
+    (and (not (ftree-empty-p tree))
+         (not (ftree-single-p tree))
+         (equal (digit-case (ftree-deep->prefix tree))
+                1)
+         (elem-len-invariant-p depth
+                               (digit1->fst (ftree-deep->prefix tree)))
+         (equal (digit->len (ftree-deep->prefix tree))
+                (digit-len depth (ftree-deep->prefix tree)))
+         (equal (digit-case (ftree-deep->suffix tree))
+                1)
+         (elem-len-invariant-p depth
+                               (digit1->fst (ftree-deep->suffix tree)))
+         (equal (digit->len (ftree-deep->suffix tree))
+                (digit-len depth (ftree-deep->suffix tree)))
+         (ftree-len-invariant-p (+ 1 depth)
+                                (ftree-deep->middle tree))
+         (equal (ftree-deep->len tree)
+                (+ (digit->len (ftree-deep->prefix tree))
+                   (digit->len (ftree-deep->suffix tree))
+                   (ftree-len (+ 1 depth)
+                              (ftree-deep->middle tree))))
+         (elem-len-invariant-p depth a)
+         (integerp depth)
+         (<= 0 depth)
+         (not (equal depth 0))
+         (ftree-depth-p 1 tree))
+    (equal (+ (ftree-deep->len tree) (node->len a))
+           (+ (digit->len (ftree-deep->suffix tree))
+              (ftree-len (+ 1 depth)
+                         (ftree-deep->middle tree))
+              (digit-len depth
+                         (digit-push-node-front a (ftree-deep->prefix
+                                                    tree))))))
+  ;; :expand (elem-len-invariant-p depth a)
+  :enable (ftree-push-node-front
+           ftree-len-invariant-p
+           digit-len-invariant-p
+           nfix
+           ftree-len
+           digit-len
+           ))
+
+;;;;;;;;;;
+
+(defrule ftree-len-invariant-p-of-ftree-push-node-front
+  (implies (and (ftree-len-invariant-p depth tree)
+                (elem-len-invariant-p depth a)
+                (not (equal (nfix depth) 0))
+                (ftree-depth-p 1 tree)
+                )
+           (ftree-len-invariant-p depth (ftree-push-node-front a tree)))
+  :induct t
+  :enable (ftree-push-node-front
+           ftree-len-invariant-p
+           nfix
+           ftree-len
+
+           ;; digit-len-invariant-p
+           ;; elem-len-invariant-p
+           ;; digit-len
+           ;; elem-len
+           ))
+
+;; (defrule ftree-well-formed-p-of-ftree-push-node-front
+;;   (implies (and (ftree-well-formed-p depth tree)
+;;                 (node?-depth-p depth a))
+;;            (ftree-well-formed-p depth (ftree-push-front a tree)))
+;;   :induct t
+;;   :enable (ftree-push-front
+;;            ftree-well-formed-p
+;;            nfix))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define ftree-push-front
+  (a
+   (tree ftreep))
+  :returns (tree$ ftreep)
+  (cond ((ftree-empty-p tree)
+         (ftree-single a))
+        ((ftree-single-p tree)
+         (ftree-deep (digit a)
+                     nil
+                     (digit (ftree-single->elem tree))))
+        (t
+         (let ((prefix (ftree-deep->prefix tree)))
+           (if (= (mbe :logic (digit-case prefix)
+                       :exec (the (integer 1 4) (digit-case prefix)))
+                  4)
+               (ftree-deep (digit a (digit->fst prefix))
+                           (ftree-push-front
+                             (node (digit->snd prefix)
+                                   (digit->thd prefix)
+                                   (digit->frth prefix))
+                             (ftree-deep->middle tree))
+                           (ftree-deep->suffix tree))
+             (ftree-deep (digit-push-front a prefix)
+                         (ftree-deep->middle tree)
+                         (ftree-deep->suffix tree))))))
+  :verify-guards :after-returns)
+
+;;;;;;;;;;;;;;;;;;;;
+
+(in-theory (disable (:t ftree-push-front)))
+
+(defrule ftree-push-front-type-prescription
+  (consp (ftree-push-front a tree))
+  :rule-classes :type-prescription
+  :expand (ftree-push-front a tree))
+
+(defrule ftree-push-front-when-ftree-equal-congruence
+  (implies (ftree-equal tree0 tree1)
+           (equal (ftree-push-front a tree0)
+                  (ftree-push-front a tree1)))
+  :rule-classes :congruence
+  :expand ((ftree-push-front a tree0)
+           (ftree-push-front a tree1)))
+
+(defrule ftree-empty-p-of-ftree-push-front
+  (not (ftree-empty-p (ftree-push-front a tree)))
+  :expand (ftree-push-front a tree))
+
+(defrule ftree-well-formed-p-of-ftree-push-front
+  (implies (and (ftree-well-formed-p depth tree)
+                (node?-depth-p depth a))
+           (ftree-well-formed-p depth (ftree-push-front a tree)))
+  :induct t
+  :enable (ftree-push-front
+           ftree-well-formed-p
+           nfix))
+
+;; (defrule ftree-well-formed-p-of-0-and-ftree-push-front
+;;   (implies (ftree-well-formed-p 0 tree)
+;;            (ftree-well-formed-p 0 (ftree-push-front a tree))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; TODO: optimize
+(define digit-push-back
+  (a
+   (digit digitp))
+  :guard (mbe :logic (not (equal (digit-case digit) 4))
+              :exec (not (= (the (integer 1 4) (digit-case digit)) 4)))
+  :returns (digit$ digitp :rule-classes (:rewrite :type-prescription))
+  (case (digit-case digit)
+    (1 (digit (digit->fst digit) a))
+    (2 (digit (digit->fst digit) (digit->snd digit) a))
+    (3 (digit (digit->fst digit) (digit->snd digit) (digit->thd digit) a))
+    (otherwise (the nil (digit-fix digit))))
+  :inline t)
+
+;;;;;;;;;;;;;;;;;;;;
+
+(in-theory (disable (:t digit-push-back)))
+
+(defrule digit-push-back-when-digit-equal-congruence
+  (implies (digit-equal digit0 digit1)
+           (equal (digit-push-back a digit0)
+                  (digit-push-back a digit1)))
+  :rule-classes :congruence
+  :enable digit-push-back)
+
+(defrule digit-case-of-digit-push-back-min-linear
+  (<= 2 (digit-case (digit-push-back a digit)))
+  :rule-classes :linear
+  :enable digit-push-back)
+
+(defrule digit-depth-p-of-digit-push-back
+  (implies (and (digit-depth-p depth digit)
+                (node?-depth-p depth a))
+           (digit-depth-p depth (digit-push-back a digit)))
+  :enable (digit-push-back
+           digit-depth-p))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define ftree-push-back
+  (a
+   (tree ftreep))
+  :returns (tree$ ftreep)
+  (cond ((ftree-empty-p tree)
+         (ftree-single a))
+        ((ftree-single-p tree)
+         (ftree-deep (digit (ftree-single->elem tree))
+                     nil
+                     (digit a)))
+        (t
+         (let ((suffix (ftree-deep->suffix tree)))
+           (if (= (mbe :logic (digit-case suffix)
+                       :exec (the (integer 1 4) (digit-case suffix)))
+                  4)
+               (ftree-deep (ftree-deep->prefix tree)
+                           (ftree-push-back
+                             (node (digit->fst suffix)
+                                   (digit->snd suffix)
+                                   (digit->thd suffix))
+                             (ftree-deep->middle tree))
+                           (digit (digit->frth suffix) a))
+             (ftree-deep (ftree-deep->prefix tree)
+                         (ftree-deep->middle tree)
+                         (digit-push-back a suffix))))))
+  :verify-guards :after-returns)
+
+;;;;;;;;;;;;;;;;;;;;
+
+(in-theory (disable (:t ftree-push-back)))
+
+(defrule ftree-push-back-type-prescription
+  (consp (ftree-push-back a tree))
+  :rule-classes :type-prescription
+  :expand (ftree-push-back a tree))
+
+(defrule ftree-push-back-when-ftree-equal-congruence
+  (implies (ftree-equal tree0 tree1)
+           (equal (ftree-push-back a tree0)
+                  (ftree-push-back a tree1)))
+  :rule-classes :congruence
+  :expand ((ftree-push-back a tree0)
+           (ftree-push-back a tree1)))
+
+(defrule ftree-empty-p-of-ftree-push-back
+  (not (ftree-empty-p (ftree-push-back a tree)))
+  :expand (ftree-push-back a tree))
+
+(defrule ftree-well-formed-p-of-ftree-push-back
+  (implies (and (ftree-well-formed-p depth tree)
+                (node?-depth-p depth a))
+           (ftree-well-formed-p depth (ftree-push-back a tree)))
+  :induct t
+  :enable (ftree-push-back
+           ftree-well-formed-p
+           nfix))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+#|
+(define ftree-push-back-list
+  ((list true-listp)
+   (tree ftreep))
+  (if (endp list)
+      (ftree-fix tree)
+    (ftree-push-back-list (rest list)
+                          (ftree-push-back (first list)
+                                            tree))))
+
+(define ftree-from-list
+  ((list true-listp))
+  (ftree-push-back-list list nil)
+  :inline t)
+
+;; Oh, this should really be based on push-back
+(ftree-from-list '(a b c d e f g h i j k l m n o p q r s t u v w x y z))
+;; (include-book "to-list")
+;; (ftree-to-list (ftree-from-list '(a b c d e f g h i j k l m n o p q r s t u v w x y z)))
+|#

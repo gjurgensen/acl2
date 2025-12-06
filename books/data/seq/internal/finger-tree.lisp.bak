@@ -1,0 +1,473 @@
+; Copyright (C) 2025 Kestrel Institute (http://www.kestrel.edu)
+;
+; License: A 3-clause BSD license. See the LICENSE file distributed with ACL2.
+;
+; Author: Grant Jurgensen (grant@kestrel.edu)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(in-package "SEQ")
+
+(include-book "std/util/define" :dir :system)
+(include-book "std/util/defrule" :dir :system)
+
+(local (include-book "std/basic/controlled-configuration" :dir :system))
+(local (acl2::controlled-configuration :hooks nil))
+
+(local (include-book "kestrel/utilities/ordinals" :dir :system))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Representation:
+;; nil for "empty".
+;; Otherwise, cons of constructor boolean and data
+;; 1. t for single
+;; 2. nil for deep
+
+;; Note that lack of type parameterization makes this a bit different than the
+;; usual algebraic type
+;; Note that in the first level, single has elements.
+;; On second level, single has node of elements
+;; On third level, single has node of node of elements.
+;; Thus, I think we want a node-n-p type, which checks height.
+;; The cdr of single is (node-n-p n (cdr .)), where n is from
+;; (finger-tree-n-p n x).
+;; I'll also note that finger-tree-p is n=0. Also, for any x such that
+;; (finger-tree-n-p n x), and m < n, (finger-tree-n-p m x).
+
+;; Reference implementation
+;; https://hackage.haskell.org/package/containers-0.6.0.1/docs/src/Data.Sequence.Internal.html#FingerTree
+;; - Note that they add size fields to nodes and deep
+;;   - I'm not exactly sure what size is, but I'm assuming it is number of elements
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; TODO: Would this be more efficient as a list?
+;; (define digitp (x)
+;;   :returns (yes/no booleanp :rule-classes (:rewrite :type-prescription))
+;;   (and (consp x)
+;;        (let ((count (car (the cons x))))
+;;          (or (eql count 1)
+;;              (and (consp (cdr x))
+;;                   (or (eql count 2)
+;;                       (and (consp (cddr x))
+;;                            (or (eql count 3)
+;;                                (and (consp (cdddr x))
+;;                                     (eql count 4))))))))))
+
+;; This is now just a true-list with the length on the front
+(define digitp (x)
+  :returns (yes/no booleanp :rule-classes (:rewrite :type-prescription))
+  (and (consp x)
+       (consp (cdr x))
+       (let ((count (car (the cons x))))
+         (or (eql count 1)
+             (and (consp (cddr x))
+                  (or (eql count 2)
+                      (and (consp (cdddr x))
+                           (or (eql count 3)
+                               (and (consp (cddddr x))
+                                    (eql count 4))))))))))
+
+;;;;;;;;;;;;;;;;;;;;
+
+(in-theory (disable (:t digitp)))
+
+(defrule digitp-compound-recognizer
+  (implies (digitp x)
+           (consp x))
+  :rule-classes :compound-recognizer
+  :enable digitp)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define digit-fix ((digit digitp))
+  :returns (digit$ digitp :rule-classes (:rewrite :type-prescription))
+  (mbe :logic (if (digitp digit)
+                  digit
+                (list 1 nil))
+       :exec (the cons digit))
+  :inline t)
+
+;;;;;;;;;;;;;;;;;;;;
+
+(defrule digit-fix-when-digitp
+  (implies (digitp digit)
+           (equal (digit-fix digit)
+                  digit))
+  :enable digit-fix)
+
+(defruled digit-fix-when-not-digitp
+  (implies (not (digitp digit))
+           (equal (digit-fix digit)
+                  (list 1 nil)))
+  :enable digit-fix)
+
+(defrule digit-fix-when-not-digitp-cheap
+  (implies (not (digitp digit))
+           (equal (digit-fix digit)
+                  (list 1 nil)))
+  :rule-classes ((:rewrite :backchain-limit-lst (0)))
+  :by digit-fix-when-not-digitp)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define digit-equal ((x digitp) (y digitp))
+  :returns (yes/no booleanp :rule-classes (:rewrite :type-prescription))
+  (mbe :logic (equal (digit-fix x) (digit-fix y))
+       :exec (and (= (the (integer 1 4) (car x)) (the (integer 1 4) (car y)))
+                  (equal (cdr x) (cdr y))))
+  :inline t
+  :guard-hints (("Goal" :in-theory (enable digitp))))
+
+;;;;;;;;;;;;;;;;;;;;
+
+(in-theory (disable (:t digit-equal)))
+
+(defequiv digit-equal
+  :hints (("Goal" :in-theory (enable digit-equal))))
+
+(defrule digit-fix-when-digit-equal-congruence
+  (implies (digit-equal digit0 digit1)
+           (equal (digit-fix digit0)
+                  (digit-fix digit1)))
+  :rule-classes :congruence
+  :enable digit-equal)
+
+(defrule digit-fix-under-digit-equal
+  (digit-equal (digit-fix digit)
+               digit)
+  :enable digit-equal)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define digit-case ((digit digitp))
+  :returns (case posp
+                 :rule-classes :type-prescription
+                 :hints (("Goal" :in-theory (enable digit-fix digitp))))
+  (the (integer 1 4) (car (digit-fix digit)))
+  :inline t
+  :guard-hints (("Goal" :in-theory (enable digitp))))
+
+;;;;;;;;;;;;;;;;;;;;
+
+(in-theory (disable (:t digit-case)))
+
+(defrule digit-case-when-digit-equal-congruence
+  (implies (digit-equal digit0 digit1)
+           (equal (digit-case digit0)
+                  (digit-case digit1)))
+  :rule-classes :congruence
+  :enable digit-case)
+
+(defrule digit-case-max-linear
+  (<= (digit-case digit)
+      4)
+  :rule-classes :linear
+  :enable (digit-case
+           digit-fix
+           digitp))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define digit->fst ((digit digitp))
+  (cadr (digit-fix digit))
+  :inline t
+  :guard-hints (("Goal" :in-theory (enable digitp))))
+
+;;;;;;;;;;;;;;;;;;;;
+
+(defrule digit->fst-when-digit-equal-congruence
+  (implies (digit-equal digit0 digit1)
+           (equal (digit->fst digit0)
+                  (digit->fst digit1)))
+  :rule-classes :congruence
+  :enable digit->fst)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define digit->snd ((digit digitp))
+  :guard (mbe :logic (< 1 (digit-case digit))
+              :exec (< 1 (the (integer 1 4) (digit-case digit))))
+  (caddr (digit-fix digit))
+  :inline t
+  :guard-hints (("Goal" :in-theory (enable digitp digit-case))))
+
+;;;;;;;;;;;;;;;;;;;;
+
+(defrule digit->snd-when-digit-equal-congruence
+  (implies (digit-equal digit0 digit1)
+           (equal (digit->snd digit0)
+                  (digit->snd digit1)))
+  :rule-classes :congruence
+  :enable digit->snd)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define digit->thd ((digit digitp))
+  :guard (mbe :logic (< 2 (digit-case digit))
+              :exec (< 2 (the (integer 1 4) (digit-case digit))))
+  (cadddr (digit-fix digit))
+  :inline t
+  :guard-hints (("Goal" :in-theory (enable digitp digit-case))))
+
+;;;;;;;;;;;;;;;;;;;;
+
+(defrule digit->thd-when-digit-equal-congruence
+  (implies (digit-equal digit0 digit1)
+           (equal (digit->thd digit0)
+                  (digit->thd digit1)))
+  :rule-classes :congruence
+  :enable digit->thd)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define digit->frth ((digit digitp))
+  :guard (mbe :logic (= 4 (digit-case digit))
+              :exec (= 4 (the (integer 1 4) (digit-case digit))))
+  (car (cddddr (digit-fix digit)))
+  :inline t
+  :guard-hints (("Goal" :in-theory (enable digitp digit-case))))
+
+;;;;;;;;;;;;;;;;;;;;
+
+(defrule digit->frth-when-digit-equal-congruence
+  (implies (digit-equal digit0 digit1)
+           (equal (digit->frth digit0)
+                  (digit->frth digit1)))
+  :rule-classes :congruence
+  :enable digit->frth)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define digit-one (a)
+  :returns (digit digitp
+                  :hints (("Goal" :in-theory (enable digitp))))
+  (list 1 a))
+
+(define digit-two (a b)
+  :returns (digit digitp
+                  :hints (("Goal" :in-theory (enable digitp))))
+  (list 2 a b))
+
+(define digit-three (a b c)
+  :returns (digit digitp
+                  :hints (("Goal" :in-theory (enable digitp))))
+  (list 3 a b c))
+
+(define digit-four (a b c d)
+  :returns (digit digitp
+                  :hints (("Goal" :in-theory (enable digitp))))
+  (list 3 a b c d))
+
+(defmacro digit (&rest args)
+  (case (len args)
+    (1 `(digit-one ,@args))
+    (2 `(digit-two ,@args))
+    (3 `(digit-three ,@args))
+    (4 `(digit-four ,@args))
+    (otherwise
+      (er hard 'digit "Illegal number of arguments: ~x0." (len args)))))
+
+;;;;;;;;;;;;;;;;;;;;
+
+(defrule digit->fst-of-digit-one
+  (equal (digit->fst (digit-one a))
+         a)
+  :enable (digit->fst
+           digit-one
+           digitp))
+
+(defrule digit->fst-of-digit-two
+  (equal (digit->fst (digit-two a b))
+         a)
+  :enable (digit->fst
+           digit-two
+           digitp))
+
+(defrule digit->fst-of-digit-three
+  (equal (digit->fst (digit-three a b c))
+         a)
+  :enable (digit->fst
+           digit-three
+           digitp))
+
+(defrule digit->fst-of-digit-four
+  (equal (digit->fst (digit-four a b c d))
+         a)
+  :enable (digit->fst
+           digit-four
+           digitp))
+
+(defrule digit->snd-of-digit-two
+  (equal (digit->snd (digit-two a b))
+         b)
+  :enable (digit->snd
+           digit-two
+           digitp))
+
+(defrule digit->snd-of-digit-three
+  (equal (digit->snd (digit-three a b c))
+         b)
+  :enable (digit->snd
+           digit-three
+           digitp))
+
+(defrule digit->snd-of-digit-four
+  (equal (digit->snd (digit-four a b c d))
+         b)
+  :enable (digit->snd
+           digit-four
+           digitp))
+
+(defrule digit->thd-of-digit-three
+  (equal (digit->thd (digit-three a b c))
+         c)
+  :enable (digit->thd
+           digit-three
+           digitp))
+
+(defrule digit->thd-of-digit-four
+  (equal (digit->thd (digit-four a b c d))
+         c)
+  :enable (digit->thd
+           digit-four
+           digitp))
+
+(defrule digit->frth-of-digit-four
+  (equal (digit->frth (digit-four a b c d))
+         d)
+  :enable (digit->frth
+           digit-four
+           digitp))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Similar to digit, except elements need to be either arbitrary (if depth=0)
+;; or nodes of depth=depth-1.
+(define node-with-depth-p
+  ((depth natp)
+   x)
+  :returns (yes/no booleanp :rule-classes (:rewrite :type-prescription))
+  (and (consp x)
+       (consp (cdr x))
+       (consp (cddr x))
+       (if (car x)
+           ;; node2
+           (and (eq x t)
+                (if (mbe :logic (equal (nfix depth) 0)
+                         :exec (= (the unsigned-byte depth) 0))
+                    t
+                  (let ((n$ (- (mbe :logic (nfix depth)
+                                    :exec (the unsigned-byte depth))
+                               1)))
+                    (and (node-with-depth-p n$ (cadr x))
+                         (node-with-depth-p n$ (caddr x))))))
+         ;; node3
+         (and (consp (cdddr x))
+              (if (mbe :logic (equal (nfix depth) 0)
+                       :exec (= (the unsigned-byte depth) 0))
+                  t
+                (let ((n$ (- (mbe :logic (nfix depth)
+                                  :exec (the unsigned-byte depth))
+                             1)))
+                  (and (node-with-depth-p n$ (cadr x))
+                       (node-with-depth-p n$ (caddr x))
+                       (node-with-depth-p n$ (cadddr x))))))))
+  :measure (acl2-count x)
+  :guard-hints (("Goal" :in-theory (enable nfix))))
+
+;;;;;;;;;;;;;;;;;;;;
+
+(in-theory (disable (:t node-with-depth-p)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define node-with-depth-fix
+  ((depth natp)
+   (node (node-with-depth-p depth node)))
+  :returns (node$ (node-with-depth-p depth node$)
+                  :rule-classes (:rewrite :type-prescription))
+  (mbe :logic (if (node-with-depth-p depth node)
+                  node
+                (list t (node-fix .) (node-fix .)))
+       :exec (the cons digit))
+  :inline t)
+
+;;;;;;;;;;;;;;;;;;;;
+
+(defrule digit-fix-when-digitp
+  (implies (digitp digit)
+           (equal (digit-fix digit)
+                  digit))
+  :enable digit-fix)
+
+(defruled digit-fix-when-not-digitp
+  (implies (not (digitp digit))
+           (equal (digit-fix digit)
+                  (list 1 nil)))
+  :enable digit-fix)
+
+(defrule digit-fix-when-not-digitp-cheap
+  (implies (not (digitp digit))
+           (equal (digit-fix digit)
+                  (list 1 nil)))
+  :rule-classes ((:rewrite :backchain-limit-lst (0)))
+  :by digit-fix-when-not-digitp)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define digit-equal ((x digitp) (y digitp))
+  :returns (yes/no booleanp :rule-classes (:rewrite :type-prescription))
+  (mbe :logic (equal (digit-fix x) (digit-fix y))
+       :exec (and (= (the (integer 1 4) (car x)) (the (integer 1 4) (car y)))
+                  (equal (cdr x) (cdr y))))
+  :inline t
+  :guard-hints (("Goal" :in-theory (enable digitp))))
+
+;;;;;;;;;;;;;;;;;;;;
+
+(in-theory (disable (:t digit-equal)))
+
+(defequiv digit-equal
+  :hints (("Goal" :in-theory (enable digit-equal))))
+
+(defrule digit-fix-when-digit-equal-congruence
+  (implies (digit-equal digit0 digit1)
+           (equal (digit-fix digit0)
+                  (digit-fix digit1)))
+  :rule-classes :congruence
+  :enable digit-equal)
+
+(defrule digit-fix-under-digit-equal
+  (digit-equal (digit-fix digit)
+               digit)
+  :enable digit-equal)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define finger-tree-with-depth-p ((depth natp) x)
+  (if (consp x)
+      (if (car x)
+          ;; Single
+          (and (eq (car x) t)
+               (node-with-depth-p depth (cdr x)))
+        ;; Deep
+        (and (digitp (cadr x))
+             (digitp (caddr x))
+             (finger-tree-with-depth-p
+               (mbe :logic (+ 1 (nfix depth))
+                    :exec (+ 1 (the unsigned-byte depth)))
+               (cdddr x))))
+    t))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define finger-tree-p (x)
+  (if (consp x)
+      (if (car x)
+          (eq (car x) t)
+        (and (digitp (cadr x))
+             (? (caddr x))
+             (digitp (cdddr x))))
+    t))

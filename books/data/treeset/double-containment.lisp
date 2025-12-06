@@ -10,29 +10,26 @@
 
 (include-book "std/util/defrule" :dir :system)
 
-(include-book "in-defs")
+(include-book "data/utilities/total-order-defs" :dir :system)
+
 (include-book "set-defs")
+(include-book "in-defs")
 (include-book "subset-defs")
-(include-book "total-order")
 
-(local (include-book "kestrel/built-ins/disable" :dir :system))
-(local (acl2::disable-most-builtin-logic-defuns))
-(local (acl2::disable-builtin-rewrite-rules-for-defaults))
-(set-induction-depth-limit 0)
+(local (include-book "std/basic/controlled-configuration" :dir :system))
+(local (acl2::controlled-configuration :hooks nil))
 
-(local (include-book "binary-tree"))
-(local (include-book "bst"))
-(local (include-book "bst-order"))
-(local (include-book "heap"))
-(local (include-book "heap-order"))
-(local (include-book "in"))
-(local (include-book "pick-a-point"))
+(local (include-book "data/utilities/total-order-defs" :dir :system))
+
+(local (include-book "internal/tree"))
+(local (include-book "internal/bst"))
+(local (include-book "internal/bst-order"))
+(local (include-book "internal/heap"))
+(local (include-book "internal/heap-order"))
+(local (include-book "internal/in"))
 (local (include-book "set"))
 (local (include-book "subset"))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(local (in-theory (disable <<-rules)))
+(local (include-book "pick-a-point"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

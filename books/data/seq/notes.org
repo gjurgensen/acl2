@@ -1,0 +1,8 @@
+* TODO
+;; - seq wrappers to front and pop
+;; - back definitions for pop and drop and back
+;; - improved to-list
+;;   - One option would be to use pop. That would be fine, but it is slightly more efficient to not do that I think.
+;;     - The seq version should be in terms of front and drop though.
+- scrap current to-list and replace with pop-based version
+- add singleton to push

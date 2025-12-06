@@ -7,3 +7,5 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (in-package "TREESET")
+
+(include-book "data/hash/portcullis" :dir :system)

@@ -12,29 +12,28 @@
 (include-book "std/util/defrule" :dir :system)
 (include-book "xdoc/constructors" :dir :system)
 
-(include-book "in-defs")
+(include-book "internal/subset-defs")
 (include-book "set-defs")
+(include-book "in-defs")
 
-(local (include-book "kestrel/built-ins/disable" :dir :system))
-(local (acl2::disable-most-builtin-logic-defuns))
-(local (acl2::disable-builtin-rewrite-rules-for-defaults))
-(set-induction-depth-limit 0)
+(local (include-book "std/basic/controlled-configuration" :dir :system))
+(local (acl2::controlled-configuration :hooks nil))
 
-(local (include-book "binary-tree"))
-(local (include-book "in"))
+(local (include-book "kestrel/utilities/ordinals" :dir :system))
+
+(local (include-book "internal/tree"))
+;; (local (include-book "internal/bst"))
+;; (local (include-book "internal/heap"))
+;; (local (include-book "internal/in"))
+(local (include-book "internal/subset"))
 (local (include-book "set"))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(std::make-define-config
-  :no-function t)
+(local (include-book "in"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define subset
   ((x setp)
    (y setp))
-  (declare (xargs :type-prescription (booleanp (subset x y))))
   :parents (set)
   :short "Check if one set is a subset of the other."
   :long
@@ -43,117 +42,138 @@
      "Time complexity: @($O(n\\log(m))$) (Note: the current implementation is
       inefficient. This should eventually be @($O(n\\log(m/n))$), where
       @($n < m$). This may be implemented similar to @(tsee diff).)"))
-  (or (emptyp x)
-      (and (in (head x) y)
-           (subset (left x) y)
-           (subset (right x) y)))
-  :hints (("Goal" :in-theory (enable o< o-finp))))
+  :returns (yes/no booleanp :rule-classes :type-prescription)
+  (tree-subset-p (fix x) (fix y))
+  :guard-hints (("Goal" :in-theory (enable setp))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;
+
+(in-theory (disable (:t subset)))
+
+(defrule subset-when-equiv-of-arg1-congruence
+  (implies (equiv x0 x1)
+           (equal (subset x0 y)
+                  (subset x1 y)))
+  :rule-classes :congruence
+  :enable subset)
+
+(defrule subset-when-equiv-of-arg2-congruence
+  (implies (equiv y0 y1)
+           (equal (subset x y0)
+                  (subset x y1)))
+  :rule-classes :congruence
+  :enable subset)
 
 (defrule subset-when-emptyp-of-arg1
   (implies (emptyp x)
            (subset x y))
-  :enable subset)
+  :enable (subset
+           emptyp
+           empty))
 
 (defrule subset-when-emptyp-of-arg2
   (implies (emptyp y)
            (equal (subset x y)
                   (emptyp x)))
-  :enable subset)
+  :enable (subset
+           emptyp))
 
 ;; TODO: disable by default?
 (defrule in-when-in-and-subset
-  ;; (implies (and (in a y)
-  ;;               (subset y x))
-  (implies (and (subset y x)
-                (in a y))
-           (in a x))
-  :induct t
+  ;; (implies (and (in a x)
+  ;;               (subset x y))
+  (implies (and (subset x y)
+                (in a x))
+           (in a y))
   :enable (subset
-           in
-           head
-           left
-           right))
+           in))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;
 
 (defruled subset-when-subset-of-arg1-and-left
   (implies (subset x (left y))
            (subset x y))
-  :induct t
-  :enable subset)
+  :enable (subset
+           left
+           fix
+           empty))
 
 (defrule subset-when-subset-of-arg1-and-left-forward-chaining
   (implies (subset x (left y))
            (subset x y))
   :rule-classes :forward-chaining
-  :enable subset-when-subset-of-arg1-and-left)
+  :by subset-when-subset-of-arg1-and-left)
 
 (defruled subset-when-subset-of-arg1-and-right
   (implies (subset x (right y))
            (subset x y))
-  :induct t
-  :enable subset)
+  :enable (subset
+           right
+           fix
+           empty))
 
 (defrule subset-when-subset-of-arg1-and-right-forward-chaining
   (implies (subset x (right y))
            (subset x y))
   :rule-classes :forward-chaining
-  :enable subset-when-subset-of-arg1-and-right)
+  :by subset-when-subset-of-arg1-and-right)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;
 
 (defruled subset-of-left-when-when-subset
   (implies (subset x y)
            (subset (left x) y))
-  :enable subset)
+  :enable (subset
+           left
+           fix
+           empty))
 
 (defrule subset-of-left-when-when-subset-cheap
   (implies (subset x y)
            (subset (left x) y))
   :rule-classes ((:rewrite :backchain-limit-lst (0)))
-  :enable subset-of-left-when-when-subset)
+  :by subset-of-left-when-when-subset)
 
 (defruled subset-of-right-when-when-subset
   (implies (subset x y)
            (subset (right x) y))
-  :enable subset)
+  :enable (subset
+           right
+           fix
+           empty))
 
 (defrule subset-of-right-when-when-subset-cheap
   (implies (subset x y)
            (subset (right x) y))
   :rule-classes ((:rewrite :backchain-limit-lst (0)))
-  :enable subset-of-right-when-when-subset)
+  :by subset-of-right-when-when-subset)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;
 
-(encapsulate ()
-  (defrulel subset-of-left-subset-of-right
-    (and (subset (left x) x)
-         (subset (right x) x))
-    :induct (set-induct x)
-    :enable (subset
-             in-when-in-of-left
-             in-when-in-of-right))
+(defrule subset-of-left
+  (subset (left x) x)
+  :enable (subset
+           left
+           fix
+           empty))
 
-  (defrule subset-of-left
-    (subset (left x) x))
-
-  (defrule subset-of-right
-    (subset (right x) x)))
+(defrule subset-of-right
+  (subset (right x) x)
+  :enable (subset
+           right
+           fix
+           empty))
 
 (defrule subset-reflexivity
   (subset x x)
   :enable subset)
 
-;; Note: antisymmetry is proved in double-containment.lisp
+;; TODO: antisymmetry
 
 (defrule subset-transitivity
   (implies (and (subset x y)
                 (subset y z))
            (subset x z))
-  :induct t
   :enable subset)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -162,18 +182,17 @@
   (implies (and (not (emptyp x))
                 (not (in (head x) y)))
            (not (subset x y)))
-  :disable in-when-in-and-subset
-  :use ((:instance in-when-in-and-subset
-                   (a (head x))
-                   (x y)
-                   (y x))))
+  :enable (subset
+           in
+           head
+           emptyp))
 
 (defrule subset-when-not-in-of-head-cheap
   (implies (and (not (in (head x) y))
                 (not (emptyp x)))
            (not (subset x y)))
   :rule-classes ((:rewrite :backchain-limit-lst (0 nil)))
-  :enable subset-when-not-in-of-head)
+  :by subset-when-not-in-of-head)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

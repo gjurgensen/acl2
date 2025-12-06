@@ -8,30 +8,30 @@
 
 (in-package "TREESET")
 
-(include-book "std/util/defredundant" :dir :system)
+(include-book "internal/tree-defs")
+(include-book "internal/bst-defs")
+(include-book "internal/heap-defs")
 
-(include-book "binary-tree-defs")
-(include-book "bst-defs")
-(include-book "heap-defs")
-
+(local (include-book "std/util/defredundant" :dir :system))
 (local (include-book "set"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (std::defredundant
   :names (setp
-          sfix
-          set-equiv
+          empty
+          fix
+          equiv
           emptyp
           head
           left
           right
           to-list))
 
-(add-macro-alias set-equiv set-equiv$inline)
-(add-macro-alias emptyp emptyp$inline)
-(add-macro-alias head head$inline)
-(add-macro-alias left left$inline)
-(add-macro-alias right right$inline)
+;; (add-macro-alias set-equiv set-equiv$inline)
+;; (add-macro-alias emptyp emptyp$inline)
+;; (add-macro-alias head head$inline)
+;; (add-macro-alias left left$inline)
+;; (add-macro-alias right right$inline)
 
-(defequiv set-equiv)
+(defequiv equiv)

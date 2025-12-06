@@ -1,0 +1,184 @@
+; Copyright (C) 2025 Kestrel Institute (http://www.kestrel.edu)
+;
+; License: A 3-clause BSD license. See the LICENSE file distributed with ACL2.
+;
+; Author: Grant Jurgensen (grant@kestrel.edu)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(in-package "SEQ")
+
+(include-book "std/util/define" :dir :system)
+(include-book "std/util/defrule" :dir :system)
+
+(include-book "ftree-defs")
+(include-book "well-formed-p-defs")
+
+(local (include-book "std/basic/controlled-configuration" :dir :system))
+(local (acl2::controlled-configuration :hooks nil))
+
+(local (include-book "kestrel/utilities/ordinals" :dir :system))
+
+(local (include-book "ftree"))
+(local (include-book "well-formed-p"))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define digit-tail
+  ((digit digitp))
+  (case (digit-case digit)
+    (1 nil)
+    (2 (digit (digit->snd digit)))
+    (3 (digit (digit->snd digit) (digit->thd digit)))
+    (4 (digit (digit->snd digit) (digit->thd digit) (digit->frth digit)))
+    (otherwise (the nil (digit-fix digit))))
+  :inline t)
+
+;;;;;;;;;;;;;;;;;;;;
+
+(in-theory (disable (:t digit-tail)))
+
+(defrule digit-tail-type-prescription
+  (or (consp (digit-tail digit))
+      (equal (digit-tail digit) nil))
+  :rule-classes :type-prescription
+  :enable digit-tail)
+
+(defrule digit-tail-when-digit-equal-congruence
+  (implies (digit-equal digit0 digit1)
+           (equal (digit-tail digit0)
+                  (digit-tail digit1)))
+  :rule-classes :congruence
+  :enable digit-tail)
+
+(defrule digitp-of-digit-tail
+  (equal (digitp (digit-tail digit))
+         (not (equal (digit-case digit) 1)))
+  :enable digit-tail)
+
+(defrule digit-tail-under-iff
+  (iff (digit-tail digit)
+       (not (equal (digit-case digit) 1)))
+  :enable digit-tail)
+
+(defrule digit-depth-p-of-digit-tail
+  (implies (and (not (equal (digit-case digit) 1))
+                (digit-depth-p depth digit))
+           (digit-depth-p depth (digit-tail digit)))
+  :enable digit-tail)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define digit-to-ftree
+  ((digit digitp))
+  :returns (tree ftreep)
+  (case (digit-case digit)
+    (1 (ftree-single (digit->fst digit)))
+    (2 (ftree-deep (digit (digit->fst digit))
+                   nil
+                   (digit (digit->snd digit))))
+    (3 (ftree-deep (digit (digit->fst digit)
+                          (digit->snd digit))
+                   nil
+                   (digit (digit->thd digit))))
+    ;; (4 (ftree-deep (digit (digit->fst digit)
+    ;;                       (digit->snd digit)
+    ;;                       (digit->thd digit))
+    ;;                nil
+    ;;                (digit (digit->frth digit))))
+    (4 (ftree-deep (digit (digit->fst digit)
+                          (digit->snd digit))
+                   nil
+                   (digit (digit->thd digit)
+                          (digit->frth digit))))
+    (otherwise (the nil (digit-fix digit)))))
+
+;;;;;;;;;;;;;;;;;;;;
+
+(in-theory (disable (:t digit-to-ftree)))
+
+(defrule digit-to-ftree-type-prescription
+  (consp (digit-to-ftree digit))
+  :rule-classes :type-prescription
+  :enable digit-to-ftree)
+
+(defrule digit-to-ftree-when-digit-equal-congruence
+  (implies (digit-equal digit0 digit1)
+           (equal (digit-to-ftree digit0)
+                  (digit-to-ftree digit1)))
+  :rule-classes :congruence
+  :enable digit-to-ftree)
+
+(defrule ftree-empty-p-of-digit-to-ftree
+  (not (ftree-empty-p (digit-to-ftree digit)))
+  :enable digit-to-ftree)
+
+(defrule ftree-well-formedp-of-digit-to-ftree
+  (implies (digit-depth-p depth digit)
+           (ftree-well-formed-p depth (digit-to-ftree digit)))
+  :enable digit-to-ftree)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define ftree-pop-front ((tree ftreep))
+  :guard (not (ftree-empty-p tree))
+  :returns (mv front
+               (tree$ ftreep :rule-classes (:rewrite :type-prescription)))
+  (if (mbt (not (ftree-empty-p tree)))
+      (if (ftree-single-p tree)
+          (mv (ftree-single->elem tree) nil)
+        (let* ((prefix (ftree-deep->prefix tree))
+               (tail-prefix? (digit-tail prefix))
+               (middle (ftree-deep->middle tree)))
+          (mv (digit->fst prefix)
+              (if tail-prefix?
+                  (ftree-deep tail-prefix? middle (ftree-deep->suffix tree))
+                (if (ftree-empty-p middle)
+                    (digit-to-ftree (ftree-deep->suffix tree))
+                  (mv-let (front$ middle$)
+                          (ftree-pop-front middle)
+                    (ftree-deep (digit front$) middle$ (ftree-deep->suffix tree))))))))
+    (mv nil (ftree-fix tree)))
+  :verify-guards :after-returns)
+
+;;;;;;;;;;;;;;;;;;;;
+
+(defrule ftree-pop-front-when-ftree-equal-congruence
+  (implies (ftree-equal tree0 tree1)
+           (equal (ftree-pop-front tree0)
+                  (ftree-pop-front tree1)))
+  :rule-classes :congruence
+  :expand ((ftree-pop-front tree0)
+           (ftree-pop-front tree1)))
+
+(defruled node?-depth-p-and-ftree-well-formed-p-of-ftree-pop-front
+  (implies (and (ftree-well-formed-p depth tree)
+                (not (ftree-empty-p tree)))
+           (and (node?-depth-p depth (mv-nth 0 (ftree-pop-front tree)))
+                (ftree-well-formed-p depth (mv-nth 1 (ftree-pop-front tree)))))
+  :induct t
+  :enable (ftree-pop-front
+           ftree-well-formed-p
+           nfix))
+
+(defrule node?-depth-p-of-ftree-pop-front
+  (implies (and (ftree-well-formed-p depth tree)
+                (not (ftree-empty-p tree)))
+           (node?-depth-p depth (mv-nth 0 (ftree-pop-front tree))))
+  :use node?-depth-p-and-ftree-well-formed-p-of-ftree-pop-front)
+
+(defrule ftree-well-formed-p-of-ftree-pop-front
+  (implies (and (ftree-well-formed-p depth tree)
+                (not (ftree-empty-p tree)))
+           (ftree-well-formed-p depth (mv-nth 1 (ftree-pop-front tree))))
+  :use node?-depth-p-and-ftree-well-formed-p-of-ftree-pop-front)
+
+(defrule ftree-well-formed-p-0-of-ftree-pop-front
+  (implies (ftree-well-formed-p 0 tree)
+           (ftree-well-formed-p 0 (mv-nth 1 (ftree-pop-front tree))))
+  :cases ((ftree-empty-p tree))
+  :enable ftree-pop-front)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; TODO: pop-back
