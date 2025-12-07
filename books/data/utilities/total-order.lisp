@@ -6,15 +6,18 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(in-package "TREESET")
+(in-package "DATA")
 
-(include-book "internal/diff-defs")
-(include-book "set-defs")
-
-(local (include-book "std/util/defredundant" :dir :system))
-(local (include-book "diff"))
+(include-book "misc/total-order" :dir :system)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(std::defredundant
-  :names (diff))
+(defthy <<-rules
+  #!ACL2
+  '(<<-irreflexive
+    <<-asymmetric
+    <<-transitive
+    <<-trichotomy
+    <<-implies-lexorder))
+
+(in-theory (disable <<-rules))

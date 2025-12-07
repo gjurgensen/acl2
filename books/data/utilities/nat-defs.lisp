@@ -6,20 +6,20 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(in-package "TREESET")
+(in-package "DATA")
 
-(include-book "std/util/defredundant" :dir :system)
-
-(include-book "hash")
-(include-book "total-order")
-
-(local (include-book "bst-order"))
+(local (include-book "std/util/defredundant" :dir :system))
+(local (include-book "nat"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (std::defredundant
-  :names (bst<
-          bst<-with-hashes))
+  :names (nat-fix
+          int-equiv
+          acl2::nat-equiv$inline
+          nat-equiv
+          nat-equal
+          ))
 
-(add-macro-alias bst< bst<$inline)
-(add-macro-alias bst<-with-hashes bst<-with-hashes$inline)
+(defequiv nat-equiv
+  :package :equiv)

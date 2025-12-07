@@ -8,13 +8,13 @@
 
 (in-package "TREESET")
 
-(include-book "internal/diff-defs")
-(include-book "set-defs")
+(include-book "data/hash/jenkins-defs" :dir :system)
 
 (local (include-book "std/util/defredundant" :dir :system))
-(local (include-book "diff"))
+
+(local (include-book "hash"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (std::defredundant
-  :names (diff))
+  :names (hash))

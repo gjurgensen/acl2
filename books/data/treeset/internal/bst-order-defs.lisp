@@ -8,13 +8,18 @@
 
 (in-package "TREESET")
 
-(include-book "internal/diff-defs")
-(include-book "set-defs")
+(include-book "data/utilities/total-order-defs" :dir :system)
+
+(include-book "../hash-defs")
 
 (local (include-book "std/util/defredundant" :dir :system))
-(local (include-book "diff"))
+(local (include-book "bst-order"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (std::defredundant
-  :names (diff))
+  :names (bst<
+          bst<-with-hashes))
+
+;; (add-macro-alias bst< bst<$inline)
+;; (add-macro-alias bst<-with-hashes bst<-with-hashes$inline)

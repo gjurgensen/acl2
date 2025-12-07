@@ -13,26 +13,26 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defpkg "TREESET"
-  (set-difference-eq
-    (union-eq '(defxdoc+
-                defmacro+)
-              *std-pkg-symbols*)
-    (union-eq '(set-equiv)
-              #!STD
-              '(setp
-                sfix
-                emptyp
-                head
-                insert
-                in
-                subset
-                delete
-                union
-                intersect
-                difference
-                cardinality
-                pick-a-point-subset-strategy
-                double-containment
-                min
-                max
-                ))))
+  (union-eq '(define-sk
+              defmacro+
+              defxdoc+
+              )
+            (set-difference-eq *std-pkg-symbols*
+                               #!STD
+                               '(cardinality
+                                 delete
+                                 difference
+                                 double-containment
+                                 emptyp
+                                 fix
+                                 head
+                                 in
+                                 insert
+                                 intersect
+                                 max
+                                 min
+                                 pick-a-point-subset-strategy
+                                 setp
+                                 subset
+                                 union
+                                 ))))

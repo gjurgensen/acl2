@@ -8,13 +8,15 @@
 
 (in-package "TREESET")
 
-(include-book "internal/diff-defs")
-(include-book "set-defs")
+(include-book "tree-defs")
+(include-book "bst-order-defs")
 
 (local (include-book "std/util/defredundant" :dir :system))
-(local (include-book "diff"))
+(local (include-book "bst"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (std::defredundant
-  :names (diff))
+  :names (bst<-all-l
+          bst<-all-r
+          bstp))

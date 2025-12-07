@@ -8,22 +8,18 @@
 
 (in-package "TREESET")
 
-(include-book "std/util/defredundant" :dir :system)
-
-(include-book "binary-tree-defs")
-(include-book "join-defs")
+(include-book "internal/intersect-defs")
 (include-book "set-defs")
-(include-book "split-defs")
 
+(local (include-book "std/util/defredundant" :dir :system))
 (local (include-book "intersect"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (std::defredundant
-  :names (tree-intersect
-          intersect-macro-loop
+  :names (intersect-macro-loop
           binary-intersect
           intersect))
 
-(add-macro-alias binary-intersect binary-intersect$inline)
-(add-macro-fn intersect binary-intersect$inline t)
+;; (add-macro-alias binary-intersect binary-intersect$inline)
+;; (add-macro-fn intersect binary-intersect$inline t)

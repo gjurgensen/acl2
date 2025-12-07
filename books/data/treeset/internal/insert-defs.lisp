@@ -8,13 +8,17 @@
 
 (in-package "TREESET")
 
-(include-book "internal/diff-defs")
-(include-book "set-defs")
+(include-book "data/utilities/fixed-size-words/u32-defs" :dir :system)
+
+(include-book "../hash-defs")
+(include-book "bst-order")
+(include-book "heap-order")
+(include-book "rotate-defs")
 
 (local (include-book "std/util/defredundant" :dir :system))
-(local (include-book "diff"))
+(local (include-book "insert"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (std::defredundant
-  :names (diff))
+  :names (tree-insert))

@@ -8,21 +8,19 @@
 
 (in-package "TREESET")
 
-(include-book "std/util/defredundant" :dir :system)
-
-(include-book "binary-tree-defs")
+(include-book "internal/tree-defs")
+(include-book "internal/union-defs")
 (include-book "set-defs")
-(include-book "split-defs")
 
+(local (include-book "std/util/defredundant" :dir :system))
 (local (include-book "union"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (std::defredundant
-  :names (tree-union
-          union-macro-loop
+  :names (union-macro-loop
           binary-union
           union))
 
-(add-macro-alias binary-union binary-union$inline)
-(add-macro-fn union binary-union$inline t)
+;; (add-macro-alias binary-union binary-union$inline)
+;; (add-macro-fn union binary-union$inline t)

@@ -6,19 +6,20 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(in-package "TREESET")
+(in-package "DATA")
 
-(include-book "std/util/defredundant" :dir :system)
-
-(include-book "binary-tree-defs")
-(include-book "heap-order-defs")
-
-(local (include-book "join"))
+(local (include-book "std/util/defredundant" :dir :system))
+(local (include-book "true-list"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (std::defredundant
-  :names (tree-join
-          tree-join-at))
+  :names (acl2::list-fix
+          list-fix
+          acl2::fast-list-equiv
+          list-equiv
+          list-equal
+          ))
 
-(add-macro-alias tree-join-at tree-join-at$inline)
+(defequiv list-equiv
+  :package :equiv)

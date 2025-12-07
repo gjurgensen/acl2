@@ -8,14 +8,16 @@
 
 (in-package "TREESET")
 
-(include-book "std/util/defredundant" :dir :system)
-
-(include-book "in-defs")
+(include-book "internal/subset-defs")
 (include-book "set-defs")
+(include-book "in-defs")
 
+(local (include-book "std/util/defredundant" :dir :system))
 (local (include-book "subset"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (std::defredundant
-  :names (subset))
+  :names (subset
+          subset-sk-witness
+          subset-sk))

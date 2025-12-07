@@ -1,0 +1,172 @@
+; Copyright (C) 2025 Kestrel Institute (http://www.kestrel.edu)
+;
+; License: A 3-clause BSD license. See the LICENSE file distributed with ACL2.
+;
+; Author: Grant Jurgensen (grant@kestrel.edu)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(in-package "TREESET")
+
+(include-book "std/util/define" :dir :system)
+(include-book "std/util/defrule" :dir :system)
+(include-book "xdoc/constructors" :dir :system)
+
+(include-book "tree-defs")
+(include-book "heap-order-defs")
+(include-book "in-defs")
+(include-book "join-defs")
+(include-book "split-defs")
+(include-book "subset-defs")
+(include-book "union-defs")
+
+(local (include-book "std/basic/controlled-configuration" :dir :system))
+(local (acl2::controlled-configuration :hooks nil))
+
+(local (include-book "kestrel/utilities/ordinals" :dir :system))
+
+(local (include-book "../hash"))
+(local (include-book "tree"))
+(local (include-book "bst-order"))
+(local (include-book "bst"))
+(local (include-book "heap"))
+(local (include-book "heap-order"))
+(local (include-book "in"))
+(local (include-book "join"))
+(local (include-book "split"))
+(local (include-book "union"))
+(local (include-book "subset"))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define tree-diff
+  ((x treep)
+   (y treep))
+  :parents (implementation)
+  :short "Take the difference of two treaps."
+  :returns (tree treep)
+  (cond ((or (tree-empty-p x)
+             (tree-empty-p y))
+         (tree-fix x))
+        ((mbe :logic (heap< (tagged-element->elem (tree->head x))
+                            (tagged-element->elem (tree->head y)))
+              :exec (heap<-with-hashes (tagged-element->elem (tree->head x))
+                                       (tagged-element->elem (tree->head y))
+                                       (tagged-element->hash (tree->head x))
+                                       (tagged-element->hash (tree->head y))))
+         (mv-let (in left right)
+                 (tree-split (tagged-element->elem (tree->head y)) x)
+           (declare (ignore in))
+           (let ((left (tree-diff left (tree->left y)))
+                 (right (tree-diff right (tree->right y))))
+             (mbe :logic (tree-join-at (tagged-element->elem (tree->head y))
+                                       left right)
+                  :exec (tree-join left right)))))
+        (t
+         (mv-let (in left right)
+                 (tree-split (tagged-element->elem (tree->head x)) y)
+           (let ((left (tree-diff (tree->left x) left))
+                 (right (tree-diff (tree->right x) right)))
+             (if in
+                 (mbe :logic (tree-join-at (tagged-element->elem (tree->head x))
+                                           left right)
+                      :exec (tree-join left right))
+               (tree-node (tree->head x) left right))))))
+  :measure (+ (acl2-count x)
+              (acl2-count y))
+  :verify-guards :after-returns
+  :guard-hints (("Goal" :in-theory (enable tree-join-at))))
+
+;;;;;;;;;;;;;;;;;;;;
+
+(in-theory (disable (:t tree-diff)))
+
+(defrule tree-diff-type-prescription
+  (or (consp (tree-diff x y))
+      (equal (tree-diff x y) nil))
+  :rule-classes :type-prescription
+  :induct t
+  :enable tree-diff)
+
+(defrule tree-diff-when-tree-equiv-of-arg1-congruence
+  (implies (tree-equiv x0 x1)
+           (equal (tree-diff x0 z)
+                  (tree-diff x1 z)))
+  :rule-classes :congruence
+  :induct t
+  :enable tree-diff)
+
+(defrule tree-diff-when-tree-equiv-of-arg2-congruence
+  (implies (tree-equiv y0 y1)
+           (equal (tree-diff x y0)
+                  (tree-diff x y1)))
+  :rule-classes :congruence
+  :induct t
+  :enable tree-diff)
+
+;;;;;;;;;;;;;;;;;;;;
+
+(defrule tree-empty-p-of-tree-diff-when-tree-empty-p-of-arg1
+  (implies (tree-empty-p x)
+           (tree-empty-p (tree-diff x y)))
+  :enable tree-diff)
+
+(defrule tree-empty-p-of-tree-diff-when-tree-empty-p-of-arg2
+  (implies (tree-empty-p y)
+           (equal (tree-diff x y)
+                  (tree-fix x)))
+  :enable tree-diff)
+
+;;;;;;;;;;;;;;;;;;;;
+
+(defrule tree-in-of-tree-diff
+  (implies (and (bstp x)
+                (bstp y))
+           (equal (tree-in a (tree-diff x y))
+                  (and (tree-in a x)
+                       (not (tree-in a y)))))
+  :induct t
+  :enable (tree-diff
+           bst<-rules))
+
+;;;;;;;;;;;;;;;;;;;;
+
+(defrule bst<-all-l-of-tree-diff-when-bst<-all-l-of-arg1
+  (implies (bst<-all-l x a)
+           (bst<-all-l (tree-diff x y) a))
+  :induct t
+  :enable tree-diff)
+
+(defrule bst<-all-r-of-arg1-and-tree-diff-when-bst-<-all-r-of-arg1-and-arg2
+  (implies (bst<-all-r a x)
+           (bst<-all-r a (tree-diff x y)))
+  :induct t
+  :enable tree-diff)
+
+;;;;;;;;;;;;;;;;;;;;
+
+(defrule bstp-of-tree-diff-when-bstp
+  (implies (and (bstp x)
+                (bstp y))
+           (bstp (tree-diff x y)))
+  :induct t
+  :enable tree-diff)
+
+;;;;;;;;;;;;;;;;;;;;
+
+(defrule heap<-all-l-of-tree-diff
+  (implies (heap<-all-l x a)
+           (heap<-all-l (tree-diff x y) a))
+  :induct t
+  :enable tree-diff)
+
+;;;;;;;;;;;;;;;;;;;;
+
+(defrule heapp-of-tree-diff-when-bstp-and-heapp
+  (implies (and (bstp x)
+                (bstp y)
+                (heapp x)
+                (heapp y))
+           (heapp (tree-diff x y)))
+  :induct t
+  :enable tree-diff)

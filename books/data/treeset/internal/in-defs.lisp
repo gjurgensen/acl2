@@ -8,18 +8,17 @@
 
 (in-package "TREESET")
 
-(include-book "std/util/defredundant" :dir :system)
+(include-book "tree-defs")
+(include-book "bst-defs")
+(include-book "heap-defs")
 
-(include-book "total-order")
-(include-book "hash")
-
-(local (include-book "heap-order"))
+(local (include-book "std/util/defredundant" :dir :system))
+(local (include-book "in"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (std::defredundant
-  :names (heap<-with-hashes
-          heap<))
+  :names (tree-in
+          tree-search-in))
 
-(add-macro-alias heap<-with-hashes heap<-with-hashes$inline)
-(add-macro-alias heap< heap<$inline)
+;; (add-macro-alias in in$inline)

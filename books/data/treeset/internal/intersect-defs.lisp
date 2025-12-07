@@ -8,13 +8,14 @@
 
 (in-package "TREESET")
 
-(include-book "internal/diff-defs")
-(include-book "set-defs")
+(include-book "tree-defs")
+(include-book "join-defs")
+(include-book "split-defs")
 
 (local (include-book "std/util/defredundant" :dir :system))
-(local (include-book "diff"))
+(local (include-book "intersect"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (std::defredundant
-  :names (diff))
+  :names (tree-intersect))

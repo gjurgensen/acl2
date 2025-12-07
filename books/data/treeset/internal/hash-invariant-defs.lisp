@@ -8,13 +8,13 @@
 
 (in-package "TREESET")
 
-(include-book "internal/diff-defs")
-(include-book "set-defs")
+(include-book "../hash-defs")
+(include-book "tree-defs")
 
 (local (include-book "std/util/defredundant" :dir :system))
-(local (include-book "diff"))
+(local (include-book "hash-invariant"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (std::defredundant
-  :names (diff))
+  :names (hash-invariant-p))

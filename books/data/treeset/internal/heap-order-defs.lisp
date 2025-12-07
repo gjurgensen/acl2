@@ -8,11 +8,18 @@
 
 (in-package "TREESET")
 
-(include-book "std/util/defredundant" :dir :system)
+(include-book "data/utilities/total-order-defs" :dir :system)
 
-(local (include-book "sum-acl2-count"))
+(include-book "../hash-defs")
+
+(local (include-book "std/util/defredundant" :dir :system))
+(local (include-book "heap-order"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (std::defredundant
-  :names (sum-acl2-count))
+  :names (heap<-with-hashes
+          heap<))
+
+;; (add-macro-alias heap<-with-hashes heap<-with-hashes$inline)
+;; (add-macro-alias heap< heap<$inline)

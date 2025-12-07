@@ -8,15 +8,14 @@
 
 (in-package "TREESET")
 
-(include-book "std/util/defredundant" :dir :system)
+(include-book "tree-defs")
+(include-book "heap-order-defs")
+(include-book "split-defs")
 
-(include-book "bst-order-defs")
-(include-book "binary-tree-defs")
-(include-book "rotate-defs")
-
-(local (include-book "split"))
+(local (include-book "std/util/defredundant" :dir :system))
+(local (include-book "union"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (std::defredundant
-  :names (tree-split))
+  :names (tree-union))

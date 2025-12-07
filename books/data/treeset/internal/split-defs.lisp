@@ -8,19 +8,14 @@
 
 (in-package "TREESET")
 
-(include-book "std/util/defredundant" :dir :system)
+(include-book "tree-defs")
+(include-book "bst-order-defs")
+(include-book "rotate-defs")
 
-(include-book "set-defs")
-(include-book "cardinality-defs")
-(include-book "in-defs")
-
-(local (include-book "rotate"))
+(local (include-book "std/util/defredundant" :dir :system))
+(local (include-book "split"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (std::defredundant
-  :names (rotate-left
-          rotate-right))
-
-(add-macro-alias rotate-left rotate-left$inline)
-(add-macro-alias rotate-right rotate-right$inline)
+  :names (tree-split))

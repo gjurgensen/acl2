@@ -6,18 +6,14 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(in-package "TREESET")
+(in-package "DATA")
 
-(include-book "std/util/defredundant" :dir :system)
-
-(include-book "binary-tree-defs")
-(include-book "heap-order-defs")
-
-(local (include-book "heap"))
+(local (include-book "std/util/defredundant" :dir :system))
+(local (include-book "total-order"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (std::defredundant
-  :names (heap<-all-l
-          fast-nonempty-heapp
-          heapp))
+  :names #!ACL2(fast-<<
+                <<
+                ))

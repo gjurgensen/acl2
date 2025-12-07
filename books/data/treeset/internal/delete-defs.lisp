@@ -8,16 +8,14 @@
 
 (in-package "TREESET")
 
-(include-book "misc/total-order" :dir :system)
+(include-book "tree-defs")
+(include-book "bst-order-defs")
+(include-book "join-defs")
+
+(local (include-book "std/util/defredundant" :dir :system))
+(local (include-book "delete"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; We'd prefer not to introduce these rules on include, but it would be worse
-;; to interfere with another include-book by disabling them.
-(defthy <<-rules
-  #!ACL2
-  '(<<-irreflexive
-    <<-asymmetric
-    <<-transitive
-    <<-trichotomy
-    <<-implies-lexorder))
+(std::defredundant
+  :names (tree-delete))

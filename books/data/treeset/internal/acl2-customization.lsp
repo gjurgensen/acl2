@@ -6,6 +6,9 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(in-package "TREESET")
+(ld "~/acl2-customization.lsp" :ld-missing-input-ok t)
+(ld "../package.lsp")
 
-(include-book "data/hash/portcullis" :dir :system)
+(reset-prehistory)
+
+(in-package "TREESET")

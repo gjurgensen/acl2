@@ -8,13 +8,18 @@
 
 (in-package "TREESET")
 
-(include-book "internal/diff-defs")
-(include-book "set-defs")
+(include-book "data/utilities/nat-defs" :dir :system)
+
+(include-book "tree-defs")
 
 (local (include-book "std/util/defredundant" :dir :system))
-(local (include-book "diff"))
+(local (include-book "count"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (std::defredundant
-  :names (diff))
+  :names (tree-nodes-count-acc
+          tree-nodes-count
+          ))
+
+;; (add-macro-alias tree-nodes-count tree-nodes-count$inline)

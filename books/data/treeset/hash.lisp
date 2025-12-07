@@ -8,11 +8,14 @@
 
 (in-package "TREESET")
 
-(include-book "std/util/defrule" :dir :system)
+(include-book "std/util/define" :dir :system)
 
-(include-book "data/hash/jenkins" :dir :system)
+(include-book "data/hash/jenkins-defs" :dir :system)
 
-(set-induction-depth-limit 0)
+(local (include-book "std/basic/controlled-configuration" :dir :system))
+(local (acl2::controlled-configuration :hooks nil))
+
+(local (include-book "data/hash/jenkins" :dir :system))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -29,5 +32,4 @@
       objects (e.g., for use with @(tsee heap<-with-hashes)), users should call
       this function instead of @(tsee hash::jenkins)."))
   (hash::jenkins x)
-  :no-function t
   :inline t)

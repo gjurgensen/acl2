@@ -13,22 +13,18 @@
 (include-book "xdoc/constructors" :dir :system)
 (include-book "xdoc/defxdoc-plus" :dir :system)
 
-(include-book "total-order")
-(include-book "hash")
+(include-book "data/utilities/fixed-size-words/u32-defs" :dir :system)
+(include-book "data/utilities/total-order-defs" :dir :system)
 
-(local (include-book "kestrel/built-ins/disable" :dir :system))
-(local (acl2::disable-most-builtin-logic-defuns))
-(local (acl2::disable-builtin-rewrite-rules-for-defaults))
-(set-induction-depth-limit 0)
+(include-book "../hash-defs")
 
-;; (local (include-book "kestrel/arithmetic-light/mod" :dir :system))
+(local (include-book "std/basic/controlled-configuration" :dir :system))
+(local (acl2::controlled-configuration :hooks nil))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(local (include-book "data/utilities/fixed-size-words/u32" :dir :system))
+(local (include-book "data/utilities/total-order" :dir :system))
 
-(local (in-theory (disable <<-rules)))
-
-(std::make-define-config
-  :no-function t)
+(local (include-book "../hash"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -57,17 +53,18 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
-(define heap<-with-hashes (x y hash-x hash-y)
-  :guard (and (unsigned-byte-p 32 hash-x)
-              (unsigned-byte-p 32 hash-y)
-              (int= (hash x) hash-x)
-              (int= (hash y) hash-y))
-  (declare (type (unsigned-byte 32) hash-x)
-           (type (unsigned-byte 32) hash-y)
+(define heap<-with-hashes
+  (x
+   y
+   (hash-x (unsigned-byte-p 32 hash-x))
+   (hash-y (unsigned-byte-p 32 hash-x)))
+  :guard (mbe :logic (and (equal (hash x) hash-x)
+                          (equal (hash y) hash-y))
+              :exec (and (data::u32-equal (hash x) hash-x)
+                         (data::u32-equal (hash y) hash-y)))
+  (declare (type (unsigned-byte 32) hash-x hash-y)
            (xargs :type-prescription
-                  (booleanp (heap<-with-hashes x y hash-x hash-y)))
-           (optimize (speed 3) (safety 0)))
+                  (booleanp (heap<-with-hashes x y hash-x hash-y))))
   :short "Variant of @(tsee heap<) which uses pre-computed hashes."
   :long
   (xdoc::topstring
@@ -89,48 +86,37 @@
      "This performs just one call of @('(hash y)') instead of two."))
   (mbe :logic (or (< (hash x) (hash y))
                   (and (equal (hash x) (hash y))
-                       ;; (if (equal (mod (hash x) 2) 0)
-                       ;;     (<< x y)
-                       ;;   (<< y x))
-                       (<< x y)
-                       ))
-       :exec (or (< hash-x hash-y)
-                 (and (int= hash-x hash-y)
-                      ;; We could opt to change direction of << based on the
-                      ;; hash value, but collisions occur so rarely that it
-                      ;; does not seem to matter.
-                      ;; (if (int= (mod hash-x 2) 0)
-                      ;;     (<< x y)
-                      ;;   (<< y x))
-                      (<< x y)
-                      )))
-  :inline t)
+                       (<< x y)))
+       :exec (or (< (the (unsigned-byte 32) hash-x)
+                    (the (unsigned-byte 32) hash-y))
+                 (and (data::u32-equal hash-x hash-y)
+                      (<< x y))))
+  :inline t
+  :guard-hints (("Goal" :in-theory (enable data::u32-equal))))
 
 (define heap< (x y)
-  (declare (xargs :type-prescription (booleanp (heap< x y)))
-           (optimize (speed 3) (safety 0)))
+  (declare (xargs :type-prescription (booleanp (heap< x y))))
   :parents nil
   (let ((hash-x (hash x))
         (hash-y (hash y)))
-    (declare (type (unsigned-byte 32) hash-x)
-             (type (unsigned-byte 32) hash-y))
+    (declare (type (unsigned-byte 32) hash-x hash-y))
     (heap<-with-hashes x y hash-x hash-y))
   :inline t)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;
 
 (defrule heap<-irreflexive
   (not (heap< x x))
   :enable (heap<
            heap<-with-hashes
-           <<-rules))
+           data::<<-rules))
 
 (defruled heap<-asymmetric
   (implies (heap< x y)
            (not (heap< y x)))
   :enable (heap<
            heap<-with-hashes
-           <<-rules))
+           data::<<-rules))
 
 (defruled heap<-transitive
   (implies (and (heap< x y)
@@ -138,7 +124,7 @@
            (heap< x z))
   :enable (heap<
            heap<-with-hashes
-           <<-rules))
+           data::<<-rules))
 
 (defruled heap<-trichotomy
   (implies (and (not (heap< y x))
@@ -146,9 +132,9 @@
            (heap< x y))
   :enable (heap<
            heap<-with-hashes
-           <<-rules))
+           data::<<-rules))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;
 
 (defrule heap<-with-hashes-becomes-heap<
   (equal (heap<-with-hashes x y hash-x hash-y)
@@ -159,7 +145,7 @@
 (theory-invariant (incompatible! (:definition heap<$inline)
                                  (:rewrite heap<-with-hashes-becomes-heap<)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defthy heap<-rules
   '(heap<-irreflexive

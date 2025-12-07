@@ -8,16 +8,16 @@
 
 (in-package "TREESET")
 
-(include-book "std/util/defredundant" :dir :system)
+(include-book "tree-defs")
+(include-book "heap-defs")
 
-(include-book "binary-tree-defs")
-(include-book "bst-order-defs")
-
-(local (include-book "bst"))
+(local (include-book "std/util/defredundant" :dir :system))
+(local (include-book "join"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (std::defredundant
-  :names (bst<-all-l
-          bst<-all-r
-          bst-p))
+  :names (tree-join
+          tree-join-at))
+
+;; (add-macro-alias tree-join-at tree-join-at$inline)

@@ -8,16 +8,16 @@
 
 (in-package "TREESET")
 
-(include-book "std/util/defredundant" :dir :system)
-
+(include-book "internal/tree-defs")
+(include-book "internal/in-defs")
 (include-book "set-defs")
 
+(local (include-book "std/util/defredundant" :dir :system))
 (local (include-book "in"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (std::defredundant
-  :names (tree-in
-          in))
+  :names (in))
 
-(add-macro-alias in in$inline)
+;; (add-macro-alias in in$inline)

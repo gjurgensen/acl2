@@ -12,20 +12,16 @@
 (include-book "std/util/defrule" :dir :system)
 (include-book "xdoc/constructors" :dir :system)
 
-(include-book "hash")
-(include-book "total-order")
+(include-book "data/utilities/total-order-defs" :dir :system)
 
-(local (include-book "kestrel/built-ins/disable" :dir :system))
-(local (acl2::disable-most-builtin-logic-defuns))
-(local (acl2::disable-builtin-rewrite-rules-for-defaults))
-(set-induction-depth-limit 0)
+(include-book "../hash-defs")
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(local (include-book "std/basic/controlled-configuration" :dir :system))
+(local (acl2::controlled-configuration :hooks nil))
 
-(local (in-theory (disable <<-rules)))
+(local (include-book "data/utilities/total-order" :dir :system))
 
-(std::make-define-config
-  :no-function t)
+(local (include-book "../hash"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -44,27 +40,27 @@
 (defruled bst<-irreflexive
   (not (bst< x x))
   :enable (bst<
-           <<-rules))
+           data::<<-rules))
 
 (defruled bst<-asymmetric
   (implies (bst< y x)
            (not (bst< x y)))
   :enable (bst<
-           <<-rules))
+           data::<<-rules))
 
 (defruled bst<-transitive
   (implies (and (bst< x y)
                 (bst< y z))
            (bst< x z))
   :enable (bst<
-           <<-rules))
+           data::<<-rules))
 
 (defruled bst<-trichotomy
   (implies (and (not (bst< y x))
                 (not (equal x y)))
            (bst< x y))
   :enable (bst<
-           <<-rules))
+           data::<<-rules))
 
 ;;;;;;;;;;;;;;;;;;;;
 
