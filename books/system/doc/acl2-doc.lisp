@@ -25073,12 +25073,13 @@ of @('term'). This can be retrieved with @(tsee getpropc).</p>
  precise below about what we mean by ``expected.''  Below we present the
  restrictions on @('typei') and @('vali').</p>
 
- <p>Remark on @('SATISFIES').  As suggested above, each type indicator may be a
- legal @(see type-spec).  But for a type-spec @('(SATISFIES pred)'), not only
- must @('pred') be unary &mdash; it also must be a @(see guard)-verified
- @(':')@(tsee logic) mode function whose guard is @('t').  For example, since
- the guard of @(tsee evenp) specifies an integer, the type-spec @('(SATISFIES
- evenp)') is not legal for a stobj field.  However, the following is legal.</p>
+ <p>Remark on @('SATISFIES').  As suggested above, each type indicator must be
+ a legal @(see type-spec) or a stobj name.  But if it is a type-spec involving
+ @('(SATISFIES pred)'), then not only must @('pred') be a unary @(':')@(tsee
+ logic) mode function symbol, but the type-spec is subject to a form of @(see
+ guard) verification.  For example, the type-spec @('(SATISFIES evenp)') is not
+ legal for a stobj field because the guard generated for @('(evenp x)') is
+ @('(integerp x)').  However, the following is legal.</p>
 
  @({
  (defun my-evenp (x)
@@ -25086,6 +25087,27 @@ of @('term'). This can be retrieved with @(tsee getpropc).</p>
    (and (integerp x) (evenp x)))
  (defstobj st (fld :type (satisfies my-evenp) :initially 4))
  })
+
+ <p>The following is also legal, as explained below.</p>
+
+ @({
+ (defstobj st (a :type (and integer (satisfies evenp)) :initially 0))
+ })
+
+ <p>The type-spec displayed immediately above is legal because it generates the
+ term @('(and (integerp x) (evenp x)')), which macroexpands to @('(if (integerp
+ x) (evenp x) nil)') and hence can be trivially guard-verified.</p>
+
+ <p>To understand this notion of trivial guard verification, first note that
+ every type-spec gives rise to a corresponding term in the variable @('x'), as
+ in the example just above.  If the type-spec uses @('SATISFIES'), then the
+ guard proof obligation for that term is subject to the limited simplification
+ used by @(tsee verify-guards) with option @(':guard-simplify :limited'); see
+ @(see verify-guards), specifically regarding that option.  The requirement is
+ that this limited simplifcation completes the proof, without further
+ simplification or a call to the theorem prover.  This restriction to limited
+ simplification is probably not much of a restriction for typical uses of
+ @('SATISFIES') in type-specs.  End of Remark on @('SATISFIES').</p>
 
  <h3>Scalar Types</h3>
 
@@ -25438,7 +25460,7 @@ of @('term'). This can be retrieved with @(tsee getpropc).</p>
  *c* st)').  Also see @(see term), in particular the discussion there of
  untranslated terms, and see @(see nth-aliases-table).</p>
 
- <h3>Inspecting the Effects of a Defstobj</h3>
+ <h3>The Effects of a <tt>Defstobj</tt></h3>
 
  <p>Because the stobj functions are introduced as ``sub-events'' of the
  @('defstobj') the history commands @(':')@(tsee pe) and @(':')@(tsee pc) will
@@ -25457,6 +25479,11 @@ of @('term'). This can be retrieved with @(tsee getpropc).</p>
  functions that contain @('(DECLARE (STOBJ-INLINE-FN T))') will generate @(tsee
  defabbrev) forms because the @(':inline') keyword of @('defstobj') was
  supplied the value @('t').  The rest will generate @(tsee defun) forms.</p>
+
+ <p>Evaluation of a @('defstobj') event @(see disable)s the @(see
+ executable-counterpart) of the creator function.  This is useful for proofs,
+ since calls of that function always cause an error (albeit one which is
+ handled during proofs).</p>
 
  <p>A @('defstobj') is considered redundant only if it is syntactically
  identical to a previously executed @('defstobj').  Note that a redundant
@@ -30218,8 +30245,8 @@ ld) and @(tsee include-book)"
  :df is #d0.0 and the value of any stobj component is the last latched
  value of that stobj.
 
- ACL2 Error in TOP-LEVEL:  Evaluation aborted.  To debug see :DOC print-
- gv, see :DOC trace, and see :DOC wet.
+ ACL2 Error [Evaluation] in TOP-LEVEL: Evaluation aborted.  To debug
+ see :DOC print- gv, see :DOC trace, and see :DOC wet.
 
  ACL2 !>
  })
@@ -62854,10 +62881,11 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
  })
 
  <p>The solution is generally to @(see disable) the @(see
- executable-counterpart) of the offending function, as suggested by the example
- below (essentially provided by Sol Swords).  As of this writing (in July,
- 2025), the only way to get an unexpected &ldquo;live&rdquo; @(see stobj) is by
- the use of @(tsee swap-stobjs), as illustrated below.</p>
+ executable-counterpart) of the offending function.  As of this writing (in
+ July, 2025), the only way to get an unexpected &ldquo;live&rdquo; @(see stobj)
+ is by the use of @(tsee swap-stobjs), as suggested by the example shown
+ below (essentially provided by Sol Swords) &mdash; which results in a
+ different error message, shown below, than the one above.</p>
 
  <p>First introduce a pair of congruent @(see stobj)s.</p>
 
@@ -62879,22 +62907,55 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
        st)))
  })
 
- <p>The following proof attempt causes the error message displayed above.</p>
+ <p>Here is a proof attempt that results in a raw Lisp error due to a live
+ stobj being introduced by @(tsee swap-stobjs).</p>
 
  @({
- (thm (not (equal (st-init '(1)) '(nil))))
+ ACL2 !>(thm (not (equal (st-init '(1)) '(nil))))
+
+ ***********************************************
+ Note:  SWAP-STOBJS has been called on stobjs named ST1 and ST,
+ where the value of ST1 is a live stobj but the value of ST is not.
+ This is an error, as such calls are unsupported; see :DOC swap-stobjs.
+ Advanced users may find it helpful to evaluate the form
+ (set-debugger-enable :bt)
+ to see a backtrace of calls leading to this error;
+ see :DOC set-debugger-enable.
+   Will attempt to exit the proof in progress;
+   otherwise, the next interrupt will abort the proof.
+   For an immediate abort see :DOC abort-soft.
+ ***********************************************
+
+ The message above might explain the error.  If not, and
+ if you didn't cause an explicit interrupt (Control-C),
+ then it may help to see :DOC raw-lisp-error.
+
+ To enable breaks into the debugger (also see :DOC acl2-customization):
+ (SET-DEBUGGER-ENABLE T)
+
+ Summary
+ Form:  ( THM ...)
+ Rules: NIL
+ Time:  0.00 seconds (prove: 0.00, print: 0.00, other: 0.00)
+
+ *** Note: No checkpoints to print. ***
+
+ ACL2 Error [Failure] in ( THM ...):  See :DOC failure.
+
+ ******** FAILED ********
+ ACL2 !>
  })
 
  <p>In fact, that formula is not a theorem!  Through Version  8.6, ACL2
- mistakenly proved this theorem by evaluating the indicated call of
+ mistakenly proved this alleged theorem by evaluating the indicated call of
  @('st-init') to obtain an actual Lisp array, because of how ACL2 handles @(see
- stobj)s in Lisp.  But now ACL2 produces the error displayed above.</p>
+ stobj)s in Lisp.  But now ACL2 produces the error displayed just above.</p>
 
  <p>The error is avoided if we @(see disable) the @(see executable-counterpart)
- of the offending function mentioned in the error message, @('st-init').
- Indeed, the following theorem, which contradicts the false claim above and
- disables the offending executable-counterpart, shows that the logical value of
- @('(st-init '(1))') is indeed @(''(nil)').</p>
+ of the offending function, @('st-init').  Indeed, the following theorem, which
+ contradicts the false claim above and disables the offending
+ executable-counterpart, shows that the logical value of @('(st-init '(1))') is
+ indeed @(''(nil)').</p>
 
  @({
  (thm (equal (st-init '(1)) '(nil))
@@ -109048,6 +109109,13 @@ it."
 ; Fixed "Unbound Fmt variable" error messages so that they print the promised
 ; "fmt string below".  Thanks to Eric Smith for pointing out this bug.
 
+; The functions guard-clauses and guard-clauses-lst no longer take or return a
+; ttree (which had been returned unmodified).
+
+; Fixed function find-rules-of-rune to work on runes introduced by defstobj.
+; This is related to the fix for :pr: both use a new function,
+; world-to-next-non-deeper-event, in place of world-to-next-event.
+
   :parents (release-notes)
   :short "ACL2 Version  8.7 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -109076,6 +109144,12 @@ it."
  expanded by the simplifier when they arise in the subgoals produced by that
  induction.  The fact that the terms are preferentially expanded is not new.
  What's new is that ACL2 now lists all the accommodated terms.</p>
+
+ <p>When the @(see summary) prints &ldquo;Modified system attachments&rdquo;,
+ it now sorts that information before printing it.</p>
+
+ <p>Improved the error message when the package name is missing immediately
+ after `#!', as in #!(foo).</p>
 
  <h3>New Features</h3>
 
@@ -109178,7 +109252,11 @@ it."
  <p>Fixed a soundness bug based on the use of @(tsee swap-stobjs) on two @(see
  stobj)s of which one is &ldquo;live&rdquo;.  See @(see live-stobj-in-proof).
  Thanks to Sol Swords for reporting this bug, including an example and analysis
- of possible fixes in his report.</p>
+ of possible fixes in his report.  (Technical Note.  We have added code to
+ check for live @(see stobj)s in proofs, which was sufficient to fix the bug.
+ But the situation described above is caught by a change to @('swap-stobjs'),
+ which now signals an error in the relevant case (exactly one live stobj
+ input).)</p>
 
  <p>Fixed a soundness bug due to the interaction of @(see stobj)s and @(tsee
  defattach).  The fundamental problem was that @('defattach') events can cause
@@ -109232,6 +109310,113 @@ it."
  error could occur.  Now a clean error message is printed, and this requirement
  on the @('vali') has been made explicit in the documentation for @(tsee
  defabsstobj).</p>
+
+ <p>ACL2 rejected some valid @(':type') fields in defstobj forms.  This has
+ been fixed; see @(see defstobj), where the &ldquo;Remark on
+ @('SATISFIES')&rdquo; has been extended to describe the requisite @(see guard)
+ verification.  Thanks to J. David Taylor for reporting this issue (as Issue
+ 1852 in the ACL2 GitHub repository) and including the following examples that
+ ACL2 rejected (but now accepts).
+
+ @({
+ (defstobj st
+   (a :type (complex rational)
+      :initially #c(0 1)))
+
+ (defstobj st (a :type (string 1)
+                 :initially \"a\"))
+ })
+
+ The following additional example from Issue 1852 is still rejected, because
+ @(tsee evenp) has a non-trivial @(see guard); its argument must be an
+ integer.
+
+ @({
+ (defstobj st (a :type (satisfies evenp)
+                 :initially 0))
+ })
+
+ However, the following variant produces a term, @('(and (integerp x) (evenp
+ x))'), that is trivially guard-verifiable, so it is accepted by ACL2 (but was
+ not accepted before the bug fix).
+
+ @({
+ (defstobj st (a :type (and integer (satisfies evenp))
+                 :initially 0))
+ })</p>
+
+ <p>Fixed a bug that was causing errors for @(see stobj)s introduced with
+ @(tsee defstobj) keyword argument @(':non-executable t') in the presence of
+ large arrays.  This should not have caused an error, since that keyword
+ argument prevents attempts at contructing the stobj (with its arrays).</p>
+
+ <p>Fixed a bug in @(':')@(tsee pr) to work on function symbols introduced by
+ @(tsee defstobj) (GitHub Issue 1851).  Thanks to David Taylor for reporting
+ this bug.</p>
+
+ <p>Fixed a @(see proof-builder) bug that could occasionally cause two goals to
+ exist with the same name.</p>
+
+ <p>The @(':native') option of @(tsee trace!) and @(tsee trace$) did not work
+ as one would reasonably expect when SBCL is the host Lisp; now it does.</p>
+
+ <p>Some ill-formed hard errors, for example from calls of @('er'), caused raw
+ Lisp errors.  This has been fixed.  Thanks to Eric Smith for reporting this
+ bug with an example.</p>
+
+ <p>@('DO') @(tsee Loop$) expressions (see @(see do-loop$)) are now allowed
+ that have no @('WITH') clauses.  Formerly, an expression @('(loop$ do ...)')
+ caused an error with a rather nonsensical message.</p>
+
+ <p>For a @('DO') @(tsee loop$) expression returning a @(see stobj) that
+ participates in its measure, it was possible to get an inappropriate runtime
+ measure error.  (An example appears in a comment in the definition of @(tsee
+ do$) in the ACL2 sources.)  This bug has been fixed by modifying the
+ definition of @(tsee do$) to respect singled-threadedness.</p>
+
+ <p>A @('DO') @(tsee loop$) expression returning a @(see stobj) could cause a
+ confusing error; see ACL2 source function @('chk-for-live-stobj') for an
+ example.  This bug has been fixed so that no error occurs.</p>
+
+ <p>ACL2 did an incomplete job of excluding certain forms from being evaluated
+ in the top-level loop, including calls of @(tsee swap-stobjs), parallelism
+ primitives (@(tsee pand), @(tsee por), @(tsee pargs), and @(tsee plet)) when
+ parallel evaluation is enabled (ACL2(p) only), and @(tsee return-last) calls.
+ For example, no error was signalled by the following, even though the two
+ stobjs were not swapped (as shown below).
+
+ @({
+ (defstobj st1 (fld1))
+ (defstobj st2 (fld2) :congruent-to st1)
+ (update-fld1 1 st1)
+ (update-fld2 2 st2)
+ (assert-event (and (equal (fld1 st1) 1) (equal (fld2 st2) 2)))
+ ; The following is equivalent to (swap-stobjs st1 st2), and it
+ ; now causes an error but it did not cause an error in Version 8.6:
+ (mv-let (st1 st2) (swap-stobjs st1 st2) (mv st1 st2))
+ ; The following succeeds, showing that st1 and st2 were not actually swapped:
+ (assert-event (and (equal (fld1 st1) 1) (equal (fld2 st2) 2)))
+ })
+
+ This bug has been fixed.</p>
+
+ <p>@(csee Stobj) creators are once again disallowed in execution contexts (but
+ are still allowed in theorems).  This requirement was relaxed (perhaps
+ inadvertently) in Version  8.5.  The following example shows a problem with
+ relaxing that restriction, as these events are accepted in Versions  8.5 and
+ 8.6, but no longer.</p>
+
+ @({
+ (defstobj st fld)
+ ; Admitted in Versions 8.5 and 8.6, but no longer:
+ (defun foo () (declare (xargs :guard t)) (create-st))
+ (update-fld 3 st)
+ (assert-event (equal (fld st) 3))
+ ; Should not change global value of st:
+ (foo)
+ ; But (fld st) has indeed changed:
+ (assert-event (equal (fld st) nil))
+ })
 
  <h3>Changes at the System Level</h3>
 
@@ -145686,9 +145871,9 @@ work on <tt>(q x)</tt>.</p>
   :long "<p>See @(see stobj) for relevant background on single-threaded
  objects.</p>
 
- <p>The macro call @('(swap-stobjs st1 st2)') is allowed exactly when @('st1')
- and @('st2') are congruent @(see stobj)s.  The logical meaning is simply to
- return the two stobjs in reverse order, @('(list st2 st1)'):</p>
+ <p>The macro call @('(swap-stobjs st1 st2)') is allowed when @('st1') and
+ @('st2') are congruent @(see stobj)s.  The logical meaning is simply to return
+ the two stobjs in reverse order, @('(list st2 st1)'):</p>
 
  @(def swap-stobjs)
 
@@ -145721,7 +145906,18 @@ work on <tt>(q x)</tt>.</p>
  examples illustrate that @('swap-stobjs') has the expected effect even when
  stobjs are involved that are bound by @(tsee with-local-stobj) or @(tsee
  stobj-let).  It also explains subtle interaction with @(tsee trans-eval).  For
- another example, see @('books/demos/swap-stobj-fields.lisp')</p>")
+ another example, see @('books/demos/swap-stobj-fields.lisp').</p>
+
+ <p>In the example above, we call @('foo') rather than calling @('swap-stobjs')
+ directly.  That is because @('swap-stobjs') calls must not be made directly in
+ the top-level loop.  Instead, put those calls in function bodies or in
+ theorems.</p>
+
+ <p>Both inputs to @('swap-stobjs') are required to be @(see stobj)s.  However,
+ the usual tracking of stobjs is relaxed during proofs.  See @(see
+ live-stobj-in-proof) for an error caused by @(tsee swap-stobjs) during a proof
+ when exactly one of the arguments is truly a stobj (i.e., a so-called
+ &ldquo;live&rdquo; stobj).</p>")
 
 (defxdoc symbol-alistp
   :parents (alists acl2-built-ins)
@@ -146066,9 +146262,9 @@ work on <tt>(q x)</tt>.</p>
  <p>This clearly evaluates to @('t').  When a @('syntaxp') test evaluates to
  true, we consider the @('syntaxp') hypothesis to have been established; this
  is sound because logically @('(syntaxp test)') is @('t') regardless of
- @('test').  If the test evaluates to @('nil') (or fails to evaluate because of
- @(see guard) violations) we act as though we cannot establish the hypothesis
- and abandon the attempt to apply the rule; it is always sound to give up.</p>
+ @('test').  If the test evaluates to @('nil'), we act as though we cannot
+ establish the hypothesis and abandon the attempt to apply the rule; it is
+ always sound to give up.</p>
 
  <p>The acute reader will have noticed something odd about the form</p>
 
@@ -152481,32 +152677,7 @@ work on <tt>(q x)</tt>.</p>
    (1 . 1)
    (0 . 1))
   ACL2 !>
- })
-
- <p>Finally, we remark that using @('trace!') can cause errors in situations
- where tracing is automatically suspended and re-introduced.  This is likely to
- be a rare occurrence, but consider the following example.</p>
-
- @({
-  (trace! (lexorder :native t :multiplicity 1))
-  (certify-book \"foo\" 0 t)
- })
-
- <p>If the certify-book causes compilation, you may see an error such as the
- following.</p>
-
- @({
-  ACL2 Error in (CERTIFY-BOOK \"foo\" ...):  The keyword :NATIVE cannot
-  be used in a trace spec unless there is an active trust tag.  The trace
-  spec (LEXORDER :NATIVE T :MULTIPLICITY 1) is thus illegal.  Consider
-  using trace! instead.  The complete list of keywords that require a
-  trust tag for use in a trace spec is: (:NATIVE :DEF :MULTIPLICITY).
- })
-
- <p>This error is harmless.  The function will appear, when calling
- @('(trace$)'), to remain traced, but in fact there will be no tracing
- behavior, so you may want to call @(tsee untrace$) on the function symbol in
- question.</p>")
+ })")
 
 (defxdoc trace$
   :parents (trace)
@@ -152694,8 +152865,8 @@ work on <tt>(q x)</tt>.</p>
  trace a function that is defined in raw Lisp, then you can use option
  @(':native') (see below), but then many other @('trace$') options will not be
  available to you: all of them except @(':multiplicity') and @(':native')
- itself will be passed directly to the @('trace') utility of the underlying
- Common Lisp.</p>
+ itself will be passed, as described below, to the @('trace') utility of the
+ underlying Common Lisp.</p>
 
  <p>@(':COND'), @(':ENTRY'), and @(':EXIT')</p>
 
@@ -152868,17 +153039,12 @@ work on <tt>(q x)</tt>.</p>
  <p>@(':DEF'), @(':MULTIPLICITY')</p>
 
  <p>ACL2's @('trace$') mechanism often needs to know the number of outputs of a
- traced function, in the sense of @(tsee mv).  If you trace a function that was
- not defined inside the ACL2 loop (hence you are using the @(':native')
- option), or if you provide an alternative definition using option @(':def')
- (see below) and the new definition changes the number of values returned, then
- a natural number value for @(':multiplicity') informs the trace utility of the
- number of expected outputs of the function being traced.  In the case that
- @(':native') is supplied, the effect of a non-@('nil') @(':multiplicity')
- value depends on the host Lisp.  In the case of Lisps for which ACL2 uses the
- built-in Lisp mechanism for returning multiple values (see @(see mv)), which
- are CCL and threaded SBCL as of June, 2010, @(':multiplicity') is not needed
- and is ignored with @(':native t').  For GCL and Allegro CL,
+ traced function, in the sense of @(tsee mv).  If you provide an alternative
+ definition using option @(':def') (see below) and the new definition changes
+ the number of values returned, then a natural number value for
+ @(':multiplicity') informs the trace utility of the number of expected outputs
+ of the function being traced.  In the case that @(':native') is supplied, the
+ @(':multiplicity') option is ignored.  For GCL and Allegro CL,
  @(':multiplicity') is used to generate a suitable @(':exit') form if the
  @(':exit') keyword was not already supplied.  For the other Lisps, the
  @(':multiplicity') value is treated essentially as 1 whether it is supplied or
@@ -152891,12 +153057,12 @@ work on <tt>(q x)</tt>.</p>
 
  <p>A useful option can be to supply a definition as the value of @(':def').
  (Again, note that if @(':native') is used, then all options other than
- @(':multiplicity') are passed directly to the underlying Lisp; in particular,
- @(':def') will have no effect with @(':native') except in the unlikely case
- that the raw Lisp provides some sort of support for @(':def').)  Note that
- this definition should be like a @(tsee defun) form, but without the leading
- @('defun') symbol; and it should define the function symbol being traced, with
- the same formal parameter list.  However, tracing of the
+ @(':multiplicity') are passed to the trace utility of the underlying Lisp; in
+ particular, @(':def') will have no effect with @(':native') except in the
+ unlikely case that the raw Lisp provides some sort of support for @(':def').)
+ Note that this definition should be like a @(tsee defun) form, but without the
+ leading @('defun') symbol; and it should define the function symbol being
+ traced, with the same formal parameter list.  However, tracing of the
  ``executable-counterpart'' of a function (see @(see evaluation) is not
  sensitive to the @(':def') option; rather, if a function has an
  executable-counterpart then that executable-counterpart is traced.</p>
@@ -152987,16 +153153,19 @@ work on <tt>(q x)</tt>.</p>
  <p>@(':NATIVE')</p>
 
  <p>If @(':native') is supplied with a non-@('nil') value, then the trace spec
- is passed to the native Lisp trace (after removing the @(':native') option).
- A trust tag (see @(see defttag)) is required in order to use this option,
- because no syntactic check is made on the @(':cond'), @(':entry'), or
- @(':exit') forms &mdash; arbitrary raw Lisp may occur in them!</p>
+ is passed to the native Lisp trace (after removing the @(':native') and
+ @(':multiplicity') options).  Each trace spec generates its own call of Lisp
+ @('trace'): directly in most cases, but if SBCL is the host Lisp then the SBCL
+ @('trace') syntax is accommodated by placing the the function symbol last,
+ after any keyword options.  A trust tag (see @(see defttag)) is required in
+ order to use the @(':native') option, because arbitrary raw Lisp may be
+ executed by the options!</p>
 
  <p>Note that by ``native Lisp trace'' we mean the currently installed
  @('trace').  As discussed briefly elsewhere (see @(see trace)), ACL2 has
  modified that trace to be more useful if the underlying host Lisp is GCL,
- Allegro CL, or CCL (OpenMCL).  If you need the original trace utility supplied
- for those Lisps, quit the ACL2 loop with @(':q') and call @('old-trace') and
+ Allegro CL, or CCL.  If you need the original trace utility supplied for those
+ Lisps, quit the ACL2 loop with @(':q') and call @('old-trace') and
  @('old-untrace') in raw Lisp where you would otherwise call @('trace') and
  @('untrace').  Note that the original trace utility supplied with a given Lisp
  will not hide the ACL2 logical @(see world) or give special treatment to @(see
@@ -153007,11 +153176,8 @@ work on <tt>(q x)</tt>.</p>
  trace probably has no understanding of the use of @(':fmt') described above
  for @(':entry') or @(':exit').  Indeed, the native trace may not even accept
  any of @(':cond'), @(':entry') or @(':exit'), let alone any of the advanced
- options!  Moreover, if @(':native t') is specified, then even a
- @(':multiplicity') option does not provide the meaning of the variable
- @('values') that one might desire.  In GCL for example, in the case of an
- @(tsee mv) return of a function defined only in raw Lisp (not in ACL2), this
- variable will be bound to a list containing only the first result.</p>
+ options!  (But it may accept many options that are not available with the
+ non-native ACL2 @('trace$').)</p>
 
  <p>@(':NOTINLINE')</p>
 

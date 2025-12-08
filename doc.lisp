@@ -28434,18 +28434,40 @@ Restrictions on the Field Descriptions in Defstobj
   more precise below about what we mean by ``expected.'' Below we
   present the restrictions on [47mtypei[0m and [47mvali[0m.
 
-  Remark on [47mSATISFIES[0m.  As suggested above, each type indicator may be
-  a legal [type-spec].  But for a type-spec [47m(SATISFIES pred)[0m, not
-  only must [47mpred[0m be unary --- it also must be a [guard]-verified
-  [47m:[0m[47m[logic][0m mode function whose guard is [47mt[0m.  For example, since the
-  guard of [47m[evenp][0m specifies an integer, the type-spec [47m(SATISFIES
-  evenp)[0m is not legal for a stobj field.  However, the following is
+  Remark on [47mSATISFIES[0m.  As suggested above, each type indicator must be
+  a legal [type-spec] or a stobj name.  But if it is a type-spec
+  involving [47m(SATISFIES pred)[0m, then not only must [47mpred[0m be a unary
+  [47m:[0m[47m[logic][0m mode function symbol, but the type-spec is subject to a
+  form of [guard] verification.  For example, the type-spec
+  [47m(SATISFIES evenp)[0m is not legal for a stobj field because the guard
+  generated for [47m(evenp x)[0m is [47m(integerp x)[0m.  However, the following is
   legal.
 
     (defun my-evenp (x)
       (declare (xargs :guard t))
       (and (integerp x) (evenp x)))
     (defstobj st (fld :type (satisfies my-evenp) :initially 4))
+
+  The following is also legal, as explained below.
+
+    (defstobj st (a :type (and integer (satisfies evenp)) :initially 0))
+
+  The type-spec displayed immediately above is legal because it
+  generates the term [47m(and (integerp x) (evenp x)[0m), which macroexpands
+  to [47m(if (integerp x) (evenp x) nil)[0m and hence can be trivially
+  guard-verified.
+
+  To understand this notion of trivial guard verification, first note
+  that every type-spec gives rise to a corresponding term in the
+  variable [47mx[0m, as in the example just above.  If the type-spec uses
+  [47mSATISFIES[0m, then the guard proof obligation for that term is subject
+  to the limited simplification used by [47m[verify-guards][0m with option
+  [47m:guard-simplify :limited[0m; see [verify-guards], specifically
+  regarding that option.  The requirement is that this limited
+  simplifcation completes the proof, without further simplification
+  or a call to the theorem prover.  This restriction to limited
+  simplification is probably not much of a restriction for typical
+  uses of [47mSATISFIES[0m in type-specs.  End of Remark on [47mSATISFIES[0m.
 
 
 Scalar Types
@@ -28789,7 +28811,7 @@ Constants
   terms, and see [nth-aliases-table].
 
 
-Inspecting the Effects of a Defstobj
+The Effects of a [47mDefstobj[0m
 
   Because the stobj functions are introduced as ``sub-events'' of the
   [47mdefstobj[0m the history commands [47m:[0m[47m[pe][0m and [47m:[0m[47m[pc][0m will not print the
@@ -28806,6 +28828,11 @@ Inspecting the Effects of a Defstobj
   functions that contain [47m(DECLARE (STOBJ-INLINE-FN T))[0m will generate
   [47m[defabbrev][0m forms because the [47m:inline[0m keyword of [47mdefstobj[0m was
   supplied the value [47mt[0m.  The rest will generate [47m[defun][0m forms.
+
+  Evaluation of a [47mdefstobj[0m event [disable]s the
+  [executable-counterpart] of the creator function.  This is useful
+  for proofs, since calls of that function always cause an error
+  (albeit one which is handled during proofs).
 
   A [47mdefstobj[0m is considered redundant only if it is syntactically
   identical to a previously executed [47mdefstobj[0m.  Note that a redundant
@@ -33206,7 +33233,10 @@ Subtopics
                                  (apply$-guard do-fn '(nil))
                                  (apply$-guard finally-fn '(nil))
                                  (weak-dolia-p dolia))))
-     (let* ((triple (true-list-fix (apply$ do-fn (list alist))))
+     (let* ((stobj-values-p (not (all-nils (true-list-fix values))))
+            (old-measure-value (and stobj-values-p
+                                    (apply$ measure-fn (list alist))))
+            (triple (true-list-fix (apply$ do-fn (list alist))))
             (exit-token (car triple))
             (val (cadr triple))
             (new-alist (caddr triple)))
@@ -33219,7 +33249,8 @@ Subtopics
           (val (cadr triple)))
          (if (eq exit-token :return) val nil)))
        ((l< (lex-fix (apply$ measure-fn (list new-alist)))
-            (lex-fix (apply$ measure-fn (list alist))))
+            (lex-fix (if stobj-values-p old-measure-value
+                       (apply$ measure-fn (list alist)))))
         (do$ measure-fn new-alist
              do-fn finally-fn values dolia))
        (t
@@ -33251,7 +33282,8 @@ Subtopics
            untrans-measure untrans-do-loop$ nil
            (eviscerate-do$-alist alist all-stobj-names)
            (eviscerate-do$-alist new-alist all-stobj-names)
-           (apply$ measure-fn (list alist))
+           (if stobj-values-p old-measure-value
+             (apply$ measure-fn (list alist)))
            (apply$ measure-fn (list new-alist))
            values))
          (loop$-default-values values new-alist))))))
@@ -33727,8 +33759,8 @@ INFORMAL INTRODUCTION
     :df is #d0.0 and the value of any stobj component is the last latched
     value of that stobj.
 
-    ACL2 Error in TOP-LEVEL:  Evaluation aborted.  To debug see :DOC print-
-    gv, see :DOC trace, and see :DOC wet.
+    ACL2 Error [Evaluation] in TOP-LEVEL: Evaluation aborted.  To debug
+    see :DOC print- gv, see :DOC trace, and see :DOC wet.
 
     ACL2 !>
 
@@ -34176,7 +34208,10 @@ SEMANTICS
                                  (apply$-guard do-fn '(nil))
                                  (apply$-guard finally-fn '(nil))
                                  (weak-dolia-p dolia))))
-     (let* ((triple (true-list-fix (apply$ do-fn (list alist))))
+     (let* ((stobj-values-p (not (all-nils (true-list-fix values))))
+            (old-measure-value (and stobj-values-p
+                                    (apply$ measure-fn (list alist))))
+            (triple (true-list-fix (apply$ do-fn (list alist))))
             (exit-token (car triple))
             (val (cadr triple))
             (new-alist (caddr triple)))
@@ -34189,7 +34224,8 @@ SEMANTICS
           (val (cadr triple)))
          (if (eq exit-token :return) val nil)))
        ((l< (lex-fix (apply$ measure-fn (list new-alist)))
-            (lex-fix (apply$ measure-fn (list alist))))
+            (lex-fix (if stobj-values-p old-measure-value
+                       (apply$ measure-fn (list alist)))))
         (do$ measure-fn new-alist
              do-fn finally-fn values dolia))
        (t
@@ -34221,7 +34257,8 @@ SEMANTICS
            untrans-measure untrans-do-loop$ nil
            (eviscerate-do$-alist alist all-stobj-names)
            (eviscerate-do$-alist new-alist all-stobj-names)
-           (apply$ measure-fn (list alist))
+           (if stobj-values-p old-measure-value
+             (apply$ measure-fn (list alist)))
            (apply$ measure-fn (list new-alist))
            values))
          (loop$-default-values values new-alist))))))
@@ -67077,10 +67114,11 @@ Subtopics
     ***********************************************
 
   The solution is generally to [disable] the [executable-counterpart]
-  of the offending function, as suggested by the example below
-  (essentially provided by Sol Swords).  As of this writing (in July,
-  2025), the only way to get an unexpected ``live'' [stobj] is by the
-  use of [47m[swap-stobjs][0m, as illustrated below.
+  of the offending function.  As of this writing (in July, 2025), the
+  only way to get an unexpected ``live'' [stobj] is by the use of
+  [47m[swap-stobjs][0m, as suggested by the example shown below (essentially
+  provided by Sol Swords) --- which results in a different error
+  message, shown below, than the one above.
 
   First introduce a pair of congruent [stobj]s.
 
@@ -67097,20 +67135,54 @@ Subtopics
           (swap-stobjs st1 st)
           st)))
 
-  The following proof attempt causes the error message displayed above.
+  Here is a proof attempt that results in a raw Lisp error due to a
+  live stobj being introduced by [47m[swap-stobjs][0m.
 
-    (thm (not (equal (st-init '(1)) '(nil))))
+    ACL2 !>(thm (not (equal (st-init '(1)) '(nil))))
+
+    ***********************************************
+    Note:  SWAP-STOBJS has been called on stobjs named ST1 and ST,
+    where the value of ST1 is a live stobj but the value of ST is not.
+    This is an error, as such calls are unsupported; see :DOC swap-stobjs.
+    Advanced users may find it helpful to evaluate the form
+    (set-debugger-enable :bt)
+    to see a backtrace of calls leading to this error;
+    see :DOC set-debugger-enable.
+      Will attempt to exit the proof in progress;
+      otherwise, the next interrupt will abort the proof.
+      For an immediate abort see :DOC abort-soft.
+    ***********************************************
+
+    The message above might explain the error.  If not, and
+    if you didn't cause an explicit interrupt (Control-C),
+    then it may help to see :DOC raw-lisp-error.
+
+    To enable breaks into the debugger (also see :DOC acl2-customization):
+    (SET-DEBUGGER-ENABLE T)
+
+    Summary
+    Form:  ( THM ...)
+    Rules: NIL
+    Time:  0.00 seconds (prove: 0.00, print: 0.00, other: 0.00)
+
+    *** Note: No checkpoints to print. ***
+
+    ACL2 Error [Failure] in ( THM ...):  See :DOC failure.
+
+    ******** FAILED ********
+    ACL2 !>
 
   In fact, that formula is not a theorem!  Through Version 8.6, ACL2
-  mistakenly proved this theorem by evaluating the indicated call of
-  [47mst-init[0m to obtain an actual Lisp array, because of how ACL2 handles
-  [stobj]s in Lisp.  But now ACL2 produces the error displayed above.
+  mistakenly proved this alleged theorem by evaluating the indicated
+  call of [47mst-init[0m to obtain an actual Lisp array, because of how ACL2
+  handles [stobj]s in Lisp.  But now ACL2 produces the error
+  displayed just above.
 
   The error is avoided if we [disable] the [executable-counterpart] of
-  the offending function mentioned in the error message, [47mst-init[0m.
-  Indeed, the following theorem, which contradicts the false claim
-  above and disables the offending executable-counterpart, shows that
-  the logical value of [47m(st-init '(1))[0m is indeed [47m'(nil)[0m.
+  the offending function, [47mst-init[0m.  Indeed, the following theorem,
+  which contradicts the false claim above and disables the offending
+  executable-counterpart, shows that the logical value of [47m(st-init
+  '(1))[0m is indeed [47m'(nil)[0m.
 
     (thm (equal (st-init '(1)) '(nil))
          :hints((\"Goal\" :in-theory (disable (:e st-init)))))")
@@ -106203,6 +106275,12 @@ Changes to Existing Features
   that the terms are preferentially expanded is not new.  What's new
   is that ACL2 now lists all the accommodated terms.
 
+  When the [summary] prints ``Modified system attachments'', it now
+  sorts that information before printing it.
+
+  Improved the error message when the package name is missing
+  immediately after `#!', as in #!(foo).
+
 
 New Features
 
@@ -106306,7 +106384,11 @@ Bug Fixes
   Fixed a soundness bug based on the use of [47m[swap-stobjs][0m on two
   [stobj]s of which one is ``live''.  See [live-stobj-in-proof].
   Thanks to Sol Swords for reporting this bug, including an example
-  and analysis of possible fixes in his report.
+  and analysis of possible fixes in his report.  (Technical Note.  We
+  have added code to check for live [stobj]s in proofs, which was
+  sufficient to fix the bug.  But the situation described above is
+  caught by a change to [47mswap-stobjs[0m, which now signals an error in
+  the relevant case (exactly one live stobj input).)
 
   Fixed a soundness bug due to the interaction of [stobj]s and
   [47m[defattach][0m.  The fundamental problem was that [47mdefattach[0m events can
@@ -106359,6 +106441,104 @@ Bug Fixes
   error could occur.  Now a clean error message is printed, and this
   requirement on the [47mvali[0m has been made explicit in the documentation
   for [47m[defabsstobj][0m.
+
+  ACL2 rejected some valid [47m:type[0m fields in defstobj forms.  This has
+  been fixed; see [defstobj], where the ``Remark on [47mSATISFIES[0m'' has
+  been extended to describe the requisite [guard] verification.
+  Thanks to J. David Taylor for reporting this issue (as Issue 1852
+  in the ACL2 GitHub repository) and including the following examples
+  that ACL2 rejected (but now accepts).
+
+      (defstobj st
+        (a :type (complex rational)
+           :initially #c(0 1)))
+
+      (defstobj st (a :type (string 1)
+                      :initially \"a\"))
+
+  The following additional example from Issue 1852 is still rejected,
+  because [47m[evenp][0m has a non-trivial [guard]; its argument must be an
+  integer.
+
+      (defstobj st (a :type (satisfies evenp)
+                      :initially 0))
+
+  However, the following variant produces a term, [47m(and (integerp x)
+  (evenp x))[0m, that is trivially guard-verifiable, so it is accepted
+  by ACL2 (but was not accepted before the bug fix).
+
+      (defstobj st (a :type (and integer (satisfies evenp))
+                      :initially 0))
+
+  Fixed a bug that was causing errors for [stobj]s introduced with
+  [47m[defstobj][0m keyword argument [47m:non-executable t[0m in the presence of
+  large arrays.  This should not have caused an error, since that
+  keyword argument prevents attempts at contructing the stobj (with
+  its arrays).
+
+  Fixed a bug in [47m:[0m[47m[pr][0m to work on function symbols introduced by
+  [47m[defstobj][0m (GitHub Issue 1851).  Thanks to David Taylor for
+  reporting this bug.
+
+  Fixed a [proof-builder] bug that could occasionally cause two goals
+  to exist with the same name.
+
+  The [47m:native[0m option of [47m[trace!][0m and [47m[trace$][0m did not work as one would
+  reasonably expect when SBCL is the host Lisp; now it does.
+
+  Some ill-formed hard errors, for example from calls of [47mer[0m, caused raw
+  Lisp errors.  This has been fixed.  Thanks to Eric Smith for
+  reporting this bug with an example.
+
+  [47mDO[0m [47m[Loop$][0m expressions (see [do-loop$]) are now allowed that have no
+  [47mWITH[0m clauses.  Formerly, an expression [47m(loop$ do ...)[0m caused an
+  error with a rather nonsensical message.
+
+  For a [47mDO[0m [47m[loop$][0m expression returning a [stobj] that participates in
+  its measure, it was possible to get an inappropriate runtime
+  measure error.  (An example appears in a comment in the definition
+  of [47m[do$][0m in the ACL2 sources.)  This bug has been fixed by
+  modifying the definition of [47m[do$][0m to respect singled-threadedness.
+
+  A [47mDO[0m [47m[loop$][0m expression returning a [stobj] could cause a confusing
+  error; see ACL2 source function [47mchk-for-live-stobj[0m for an example.
+  This bug has been fixed so that no error occurs.
+
+  ACL2 did an incomplete job of excluding certain forms from being
+  evaluated in the top-level loop, including calls of [47m[swap-stobjs][0m,
+  parallelism primitives ([47m[pand][0m, [47m[por][0m, [47m[pargs][0m, and [47m[plet][0m) when
+  parallel evaluation is enabled (ACL2(p) only), and [47m[return-last][0m
+  calls.  For example, no error was signalled by the following, even
+  though the two stobjs were not swapped (as shown below).
+
+      (defstobj st1 (fld1))
+      (defstobj st2 (fld2) :congruent-to st1)
+      (update-fld1 1 st1)
+      (update-fld2 2 st2)
+      (assert-event (and (equal (fld1 st1) 1) (equal (fld2 st2) 2)))
+      ; The following is equivalent to (swap-stobjs st1 st2), and it
+      ; now causes an error but it did not cause an error in Version 8.6:
+      (mv-let (st1 st2) (swap-stobjs st1 st2) (mv st1 st2))
+      ; The following succeeds, showing that st1 and st2 were not actually swapped:
+      (assert-event (and (equal (fld1 st1) 1) (equal (fld2 st2) 2)))
+
+  This bug has been fixed.
+
+  [Stobj] creators are once again disallowed in execution contexts (but
+  are still allowed in theorems).  This requirement was relaxed
+  (perhaps inadvertently) in Version 8.5.  The following example
+  shows a problem with relaxing that restriction, as these events are
+  accepted in Versions 8.5 and 8.6, but no longer.
+
+    (defstobj st fld)
+    ; Admitted in Versions 8.5 and 8.6, but no longer:
+    (defun foo () (declare (xargs :guard t)) (create-st))
+    (update-fld 3 st)
+    (assert-event (equal (fld st) 3))
+    ; Should not change global value of st:
+    (foo)
+    ; But (fld st) has indeed changed:
+    (assert-event (equal (fld st) nil))
 
 
 Changes at the System Level
@@ -145564,14 +145744,16 @@ GitHub Distributions
 
   See [stobj] for relevant background on single-threaded objects.
 
-  The macro call [47m(swap-stobjs st1 st2)[0m is allowed exactly when [47mst1[0m and
-  [47mst2[0m are congruent [stobj]s.  The logical meaning is simply to
-  return the two stobjs in reverse order, [47m(list st2 st1)[0m:
+  The macro call [47m(swap-stobjs st1 st2)[0m is allowed when [47mst1[0m and [47mst2[0m are
+  congruent [stobj]s.  The logical meaning is simply to return the
+  two stobjs in reverse order, [47m(list st2 st1)[0m:
 
   [31;1mMacro: [0m<swap-stobjs>
 
     (defmacro swap-stobjs (x y)
-      (cons 'mv (cons y (cons x 'nil))))
+      (cons 'progn$
+            (cons (cons 'mv (cons y (cons x 'nil)))
+                  'nil)))
 
   However, for purposes of tracking single-threadedness, the result [47m(mv
   st2 st1)[0m of [47m(swap-stobjs st1 st2)[0m is treated as a list of new
@@ -145602,7 +145784,18 @@ GitHub Distributions
   even when stobjs are involved that are bound by [47m[with-local-stobj][0m
   or [47m[stobj-let][0m.  It also explains subtle interaction with
   [47m[trans-eval][0m.  For another example, see
-  [47mbooks/demos/swap-stobj-fields.lisp[0m")
+  [47mbooks/demos/swap-stobj-fields.lisp[0m.
+
+  In the example above, we call [47mfoo[0m rather than calling [47mswap-stobjs[0m
+  directly.  That is because [47mswap-stobjs[0m calls must not be made
+  directly in the top-level loop.  Instead, put those calls in
+  function bodies or in theorems.
+
+  Both inputs to [47mswap-stobjs[0m are required to be [stobj]s.  However, the
+  usual tracking of stobjs is relaxed during proofs.  See
+  [live-stobj-in-proof] for an error caused by [47m[swap-stobjs][0m during a
+  proof when exactly one of the arguments is truly a stobj (i.e., a
+  so-called ``live'' stobj).")
  (SYMBOL-ALISTP
   (ALISTS ACL2-BUILT-INS)
   "Recognizer for association lists with symbols as keys
@@ -146012,10 +146205,9 @@ Subtopics
   This clearly evaluates to [47mt[0m.  When a [47msyntaxp[0m test evaluates to true,
   we consider the [47msyntaxp[0m hypothesis to have been established; this
   is sound because logically [47m(syntaxp test)[0m is [47mt[0m regardless of [47mtest[0m.
-  If the test evaluates to [47mnil[0m (or fails to evaluate because of
-  [guard] violations) we act as though we cannot establish the
-  hypothesis and abandon the attempt to apply the rule; it is always
-  sound to give up.
+  If the test evaluates to [47mnil[0m, we act as though we cannot establish
+  the hypothesis and abandon the attempt to apply the rule; it is
+  always sound to give up.
 
   The acute reader will have noticed something odd about the form
 
@@ -153367,29 +153559,7 @@ Subtopics
      (2 . 2)
      (1 . 1)
      (0 . 1))
-    ACL2 !>
-
-  Finally, we remark that using [47mtrace![0m can cause errors in situations
-  where tracing is automatically suspended and re-introduced.  This
-  is likely to be a rare occurrence, but consider the following
-  example.
-
-    (trace! (lexorder :native t :multiplicity 1))
-    (certify-book \"foo\" 0 t)
-
-  If the certify-book causes compilation, you may see an error such as
-  the following.
-
-    ACL2 Error in (CERTIFY-BOOK \"foo\" ...):  The keyword :NATIVE cannot
-    be used in a trace spec unless there is an active trust tag.  The trace
-    spec (LEXORDER :NATIVE T :MULTIPLICITY 1) is thus illegal.  Consider
-    using trace! instead.  The complete list of keywords that require a
-    trust tag for use in a trace spec is: (:NATIVE :DEF :MULTIPLICITY).
-
-  This error is harmless.  The function will appear, when calling
-  [47m(trace$)[0m, to remain traced, but in fact there will be no tracing
-  behavior, so you may want to call [47m[untrace$][0m on the function symbol
-  in question.")
+    ACL2 !>")
  (TRACE$
   (TRACE)
   "Trace function evaluations
@@ -153567,8 +153737,8 @@ Subtopics
   to trace a function that is defined in raw Lisp, then you can use
   option [47m:native[0m (see below), but then many other [47mtrace$[0m options will
   not be available to you: all of them except [47m:multiplicity[0m and
-  [47m:native[0m itself will be passed directly to the [47mtrace[0m utility of the
-  underlying Common Lisp.
+  [47m:native[0m itself will be passed, as described below, to the [47mtrace[0m
+  utility of the underlying Common Lisp.
 
   [47m:COND[0m, [47m:ENTRY[0m, and [47m:EXIT[0m
 
@@ -153743,23 +153913,18 @@ Advanced Options (alphabetical list)
   [47m:DEF[0m, [47m:MULTIPLICITY[0m
 
   ACL2's [47mtrace$[0m mechanism often needs to know the number of outputs of
-  a traced function, in the sense of [47m[mv][0m.  If you trace a function
-  that was not defined inside the ACL2 loop (hence you are using the
-  [47m:native[0m option), or if you provide an alternative definition using
-  option [47m:def[0m (see below) and the new definition changes the number
-  of values returned, then a natural number value for [47m:multiplicity[0m
-  informs the trace utility of the number of expected outputs of the
-  function being traced.  In the case that [47m:native[0m is supplied, the
-  effect of a non-[47mnil[0m [47m:multiplicity[0m value depends on the host Lisp.
-  In the case of Lisps for which ACL2 uses the built-in Lisp
-  mechanism for returning multiple values (see [mv]), which are CCL
-  and threaded SBCL as of June, 2010, [47m:multiplicity[0m is not needed and
-  is ignored with [47m:native t[0m.  For GCL and Allegro CL, [47m:multiplicity[0m
-  is used to generate a suitable [47m:exit[0m form if the [47m:exit[0m keyword was
-  not already supplied.  For the other Lisps, the [47m:multiplicity[0m value
-  is treated essentially as 1 whether it is supplied or not, because
-  we do not know how to pass suitable information based on this value
-  to the host Lisp's built-in tracing mechanism.
+  a traced function, in the sense of [47m[mv][0m.  If you provide an
+  alternative definition using option [47m:def[0m (see below) and the new
+  definition changes the number of values returned, then a natural
+  number value for [47m:multiplicity[0m informs the trace utility of the
+  number of expected outputs of the function being traced.  In the
+  case that [47m:native[0m is supplied, the [47m:multiplicity[0m option is ignored.
+  For GCL and Allegro CL, [47m:multiplicity[0m is used to generate a
+  suitable [47m:exit[0m form if the [47m:exit[0m keyword was not already supplied.
+  For the other Lisps, the [47m:multiplicity[0m value is treated essentially
+  as 1 whether it is supplied or not, because we do not know how to
+  pass suitable information based on this value to the host Lisp's
+  built-in tracing mechanism.
 
   Note that even supplying a [47m:multiplicity[0m option does not change the
   meaning of the variable [47mvalues[0m.  See the discussion of [47m:native[0m
@@ -153767,16 +153932,16 @@ Advanced Options (alphabetical list)
 
   A useful option can be to supply a definition as the value of [47m:def[0m.
   (Again, note that if [47m:native[0m is used, then all options other than
-  [47m:multiplicity[0m are passed directly to the underlying Lisp; in
-  particular, [47m:def[0m will have no effect with [47m:native[0m except in the
-  unlikely case that the raw Lisp provides some sort of support for
-  [47m:def[0m.)  Note that this definition should be like a [47m[defun][0m form,
-  but without the leading [47mdefun[0m symbol; and it should define the
-  function symbol being traced, with the same formal parameter list.
-  However, tracing of the ``executable-counterpart'' of a function
-  (see [evaluation] is not sensitive to the [47m:def[0m option; rather, if a
-  function has an executable-counterpart then that
-  executable-counterpart is traced.
+  [47m:multiplicity[0m are passed to the trace utility of the underlying
+  Lisp; in particular, [47m:def[0m will have no effect with [47m:native[0m except
+  in the unlikely case that the raw Lisp provides some sort of
+  support for [47m:def[0m.)  Note that this definition should be like a
+  [47m[defun][0m form, but without the leading [47mdefun[0m symbol; and it should
+  define the function symbol being traced, with the same formal
+  parameter list.  However, tracing of the ``executable-counterpart''
+  of a function (see [evaluation] is not sensitive to the [47m:def[0m
+  option; rather, if a function has an executable-counterpart then
+  that executable-counterpart is traced.
 
   [47m:EVISC-TUPLE[0m
 
@@ -153863,32 +154028,31 @@ Advanced Options (alphabetical list)
   [47m:NATIVE[0m
 
   If [47m:native[0m is supplied with a non-[47mnil[0m value, then the trace spec is
-  passed to the native Lisp trace (after removing the [47m:native[0m
-  option).  A trust tag (see [defttag]) is required in order to use
-  this option, because no syntactic check is made on the [47m:cond[0m,
-  [47m:entry[0m, or [47m:exit[0m forms --- arbitrary raw Lisp may occur in them!
+  passed to the native Lisp trace (after removing the [47m:native[0m and
+  [47m:multiplicity[0m options).  Each trace spec generates its own call of
+  Lisp [47mtrace[0m: directly in most cases, but if SBCL is the host Lisp
+  then the SBCL [47mtrace[0m syntax is accommodated by placing the the
+  function symbol last, after any keyword options.  A trust tag (see
+  [defttag]) is required in order to use the [47m:native[0m option, because
+  arbitrary raw Lisp may be executed by the options!
 
   Note that by ``native Lisp trace'' we mean the currently installed
   [47mtrace[0m.  As discussed briefly elsewhere (see [trace]), ACL2 has
   modified that trace to be more useful if the underlying host Lisp
-  is GCL, Allegro CL, or CCL (OpenMCL).  If you need the original
-  trace utility supplied for those Lisps, quit the ACL2 loop with [47m:q[0m
-  and call [47mold-trace[0m and [47mold-untrace[0m in raw Lisp where you would
-  otherwise call [47mtrace[0m and [47muntrace[0m.  Note that the original trace
-  utility supplied with a given Lisp will not hide the ACL2 logical
-  [world] or give special treatment to [stobj]s.
+  is GCL, Allegro CL, or CCL.  If you need the original trace utility
+  supplied for those Lisps, quit the ACL2 loop with [47m:q[0m and call
+  [47mold-trace[0m and [47mold-untrace[0m in raw Lisp where you would otherwise
+  call [47mtrace[0m and [47muntrace[0m.  Note that the original trace utility
+  supplied with a given Lisp will not hide the ACL2 logical [world]
+  or give special treatment to [stobj]s.
 
   It is important to understand that if [47m:native t[0m is specified, then
   all other options are interpreted by the native Lisp trace.  For
   example, that trace probably has no understanding of the use of
   [47m:fmt[0m described above for [47m:entry[0m or [47m:exit[0m.  Indeed, the native trace
   may not even accept any of [47m:cond[0m, [47m:entry[0m or [47m:exit[0m, let alone any of
-  the advanced options!  Moreover, if [47m:native t[0m is specified, then
-  even a [47m:multiplicity[0m option does not provide the meaning of the
-  variable [47mvalues[0m that one might desire.  In GCL for example, in the
-  case of an [47m[mv][0m return of a function defined only in raw Lisp (not
-  in ACL2), this variable will be bound to a list containing only the
-  first result.
+  the advanced options!  (But it may accept many options that are not
+  available with the non-native ACL2 [47mtrace$[0m.)
 
   [47m:NOTINLINE[0m
 
