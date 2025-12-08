@@ -444,13 +444,13 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define to-list
-  ((set setp))
-  :returns (list true-listp)
-  :parents (set)
-  :short "Create a list of values from a set."
-  (tree-post-order (fix set))
-  :guard-hints (("Goal" :in-theory (enable setp))))
+;; (define to-list
+;;   ((set setp))
+;;   :returns (list true-listp)
+;;   :parents (set)
+;;   :short "Create a list of values from a set."
+;;   (tree-post-order (fix set))
+;;   :guard-hints (("Goal" :in-theory (enable setp))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

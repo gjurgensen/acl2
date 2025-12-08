@@ -1,0 +1,265 @@
+; Copyright (C) 2025 Kestrel Institute (http://www.kestrel.edu)
+;
+; License: A 3-clause BSD license. See the LICENSE file distributed with ACL2.
+;
+; Author: Grant Jurgensen (grant@kestrel.edu)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(in-package "TREESET")
+
+(include-book "std/util/define" :dir :system)
+(include-book "std/util/defrule" :dir :system)
+(include-book "xdoc/constructors" :dir :system)
+
+(include-book "data/utilities/oset-defs" :dir :system)
+
+(include-book "internal/in-order-defs")
+(include-book "set-defs")
+(include-book "cardinality-defs")
+(include-book "in-defs")
+(include-book "insert-defs")
+(include-book "delete-defs")
+(include-book "union-defs")
+(include-book "diff-defs")
+(include-book "intersect-defs")
+
+(local (include-book "std/basic/controlled-configuration" :dir :system))
+(local (acl2::controlled-configuration :hooks nil))
+
+(local (include-book "std/osets/top" :dir :system))
+
+(local (include-book "internal/tree"))
+(local (include-book "internal/in-order"))
+(local (include-book "internal/in"))
+(local (include-book "internal/insert"))
+(local (include-book "internal/delete"))
+(local (include-book "internal/union"))
+(local (include-book "internal/diff"))
+(local (include-book "internal/intersect"))
+(local (include-book "set"))
+(local (include-book "cardinality"))
+(local (include-book "in"))
+(local (include-book "insert"))
+(local (include-book "delete"))
+(local (include-book "union"))
+(local (include-book "diff"))
+(local (include-book "intersect"))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define to-oset ((set setp))
+  :returns (oset set::setp
+                 :hints (("Goal" :in-theory (enable fix
+                                                    setp
+                                                    empty))))
+  (tree-in-order (fix set))
+  :inline t
+  :guard-hints (("Goal" :in-theory (enable setp))))
+
+;;;;;;;;;;;;;;;;;;;;
+
+(in-theory (disable (:t to-oset)))
+
+(defrule to-oset-type-prescription
+  (or (consp (to-oset set))
+      (equal (to-oset set) nil))
+  :rule-classes :type-prescription
+  :enable to-oset)
+
+(defrule to-oset-when-equiv-congruence
+  (implies (equiv set0 set1)
+           (equal (to-oset set0)
+                  (to-oset set1)))
+  :rule-classes :congruence
+  :enable to-oset)
+
+;;;;;;;;;;;;;;;;;;;;
+
+(defrule in-of-to-oset
+  (equal (set::in x (to-oset set))
+         (in x set))
+  :enable (to-oset
+           in
+           fix
+           setp
+           empty))
+
+(defruled to-oset-when-emptyp
+  (implies (emptyp set)
+           (equal (to-oset set)
+                  nil))
+  :enable (to-oset
+           empty))
+
+(defrule to-oset-when-emptyp-cheap
+  (implies (emptyp set)
+           (equal (to-oset set)
+                  nil))
+  :rule-classes ((:rewrite :backchain-limit-lst (0)))
+  :by to-oset-when-emptyp)
+
+(defrule to-oset-of-empty
+  (equal (to-oset (empty))
+         nil)
+  :enable to-oset-when-emptyp)
+
+(defrule cardinality-of-to-oset
+  (equal (set::cardinality (to-oset set))
+         (cardinality set))
+  :enable (to-oset
+           cardinality
+           fix
+           setp
+           empty))
+
+(defrule to-oset-of-insert
+  (equal (to-oset (insert x set))
+         (set::insert x (to-oset set)))
+  :enable (to-oset
+           insert
+           fix
+           setp
+           empty))
+
+(defrule to-oset-of-delete
+  (equal (to-oset (delete x set))
+         (set::delete x (to-oset set)))
+  :enable (to-oset
+           delete
+           fix
+           setp
+           empty))
+
+(defrule to-oset-of-union
+  (equal (to-oset (union x y))
+         (set::union (to-oset x)
+                     (to-oset y)))
+  :enable (to-oset
+           union
+           fix
+           setp
+           empty))
+
+(defrule to-oset-of-diff
+  (equal (to-oset (diff x y))
+         (set::difference (to-oset x)
+                          (to-oset y)))
+  :enable (to-oset
+           diff
+           fix
+           setp
+           empty))
+
+(defrule to-oset-of-intersect
+  (equal (to-oset (intersect x y))
+         (set::intersect (to-oset x)
+                         (to-oset y)))
+  :enable (to-oset
+           intersect
+           fix
+           setp
+           empty))
+
+(defrule to-oset-of-from-list
+  (equal (to-oset (from-list list))
+         (mergesort list))
+  :enable (;; set::double-containment
+           set::expensive-rules))
+
+;; TODO: define a theory to force reasoning about treesets as osets.
+;; Perhaps by rewriting any x to (from-list (to-oset x)) when x is a treeset
+;; (with backchain limit 1 or something like that.)
+;; The issue is that we can't rewrite an arbitrary variable
+;; Perhaps a computed hint where the user specifically identifies which
+;; variables are treesets that should be rewritten as such. The computed hint
+;; could have a special theory just for that goal (with things like "from-list
+;; of to-oset" disabled), and then we resume after that. It may be hard to
+;; debug.
+;; Actually, what I think the principled thing to do would be to rewrite x with
+;; (from-list (to-oset x)), but then *generalize* (to-oset x) to some arbitrary
+;; x$ recognized by set::setp. Could this use the :generalize rule-class?
+
+;; (defruled from-list-of-to-oset-generalize
+;;   (implies ()
+;;            ())
+;;   :rule-classes :congruence)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(local (include-book "subset"))
+
+;; MOVE
+(defruled member-equal-under-iff-when-setp
+  (implies (set::setp oset)
+           (iff (member-equal x oset)
+                (set::in x oset)))
+  :enable set::in-to-member)
+
+(defrule from-list-of-to-oset
+  (equal (from-list (to-oset set))
+         (fix set))
+  :enable (double-containment
+           pick-a-point
+           member-equal-under-iff-when-setp))
+
+;; (defrule in-of-from-list
+;;   (equal (in x (from-list list))
+;;          (set::in x (mergesort list)))
+;;   :enable from-list)
+
+;; TODO
+;; (defrule cardinality-of-from-list
+;;   (equal (cardinality (from-list list))
+;;          (set::cardinality (mergesort list)))
+;;   :enable ())
+
+(defrule insert-of-from-list
+  (equal (insert x (from-list list))
+         (from-list (set::insert x (mergesort list))))
+  :enable (double-containment
+           pick-a-point
+           member-equal-under-iff-when-setp))
+
+(defrule delete-of-from-list
+  (equal (delete x (from-list list))
+         (from-list (set::delete x (mergesort list))))
+  :enable (double-containment
+           pick-a-point
+           member-equal-under-iff-when-setp))
+
+(defrule union-of-from-list
+  (equal (union (from-list x)
+                (from-list y))
+         (from-list (set::union (mergesort x)
+                                (mergesort y))))
+  :enable (double-containment
+           pick-a-point
+           member-equal-under-iff-when-setp))
+
+(defrule diff-of-from-list
+  (equal (diff (from-list x)
+               (from-list y))
+         (from-list (set::difference (mergesort x)
+                                     (mergesort y))))
+  :enable (double-containment
+           pick-a-point
+           member-equal-under-iff-when-setp))
+
+(defrule diff-of-from-list
+  (equal (diff (from-list x)
+               (from-list y))
+         (from-list (set::difference (mergesort x)
+                                     (mergesort y))))
+  :enable (double-containment
+           pick-a-point
+           member-equal-under-iff-when-setp))
+
+(defrule intersect-of-from-list
+  (equal (intersect (from-list x)
+                    (from-list y))
+         (from-list (set::intersect (mergesort x)
+                                    (mergesort y))))
+  :enable (double-containment
+           pick-a-point
+           member-equal-under-iff-when-setp))

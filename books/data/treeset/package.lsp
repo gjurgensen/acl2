@@ -8,6 +8,7 @@
 
 (in-package "ACL2")
 
+(include-book "data/portcullis" :dir :system)
 (include-book "std/portcullis" :dir :system)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

@@ -34,9 +34,10 @@
           tree->right
           tree-node
           tree-listp
-          tree-pre-order
-          tree-in-order
-          tree-post-order))
+          ;; tree-pre-order
+          ;; tree-in-order
+          ;; tree-post-order
+          ))
 
 ;; (add-macro-alias tree-fix tree-fix$inline)
 ;; (add-macro-alias tree-equiv tree-equiv$inline)

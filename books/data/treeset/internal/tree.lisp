@@ -840,45 +840,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; TODO: a faster, tail-recursive implementation
-(define tree-pre-order
-  ((tree treep))
-  :returns (list true-listp)
-  :short "Create a pre-order list of values from a tree."
-  (if (tree-empty-p tree)
-      nil
-    (cons (tree->head tree)
-          (append (tree-pre-order (tree->left tree))
-                  (tree-pre-order (tree->right tree))))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; TODO: a faster, tail-recursive implementation
-(define tree-in-order
-  ((tree treep))
-  :returns (list true-listp)
-  :short "Create an in-order list of values from a tree."
-  (if (tree-empty-p tree)
-      nil
-    (append (tree-in-order (tree->left tree))
-            (cons (tree->head tree)
-                  (tree-in-order (tree->right tree))))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; TODO: a faster, tail-recursive implementation
-(define tree-post-order
-  ((tree treep))
-  :returns (list true-listp)
-  :short "Create a post-order list of values from a tree."
-  (if (tree-empty-p tree)
-      nil
-    (append (tree-pre-order (tree->left tree))
-            (append (tree-post-order (tree->right tree))
-                    (list (tree->head tree))))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 (defthy tree-extra-rules
   '(tree-fix-when-not-treep
     tree-fix-when-tree-empty-p

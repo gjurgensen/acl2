@@ -6,15 +6,17 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(in-package "DATA")
+(in-package "TREESET")
+
+(include-book "data/utilities/true-list-defs" :dir :system)
+
+(include-book "tree-defs")
 
 (local (include-book "std/util/defredundant" :dir :system))
-(local (include-book "total-order"))
+(local (include-book "in-order"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (std::defredundant
-  :names #!ACL2(fast-<<
-                <<
-                fast-lexorder
-                ))
+  :names (tree-in-order-acc
+          tree-in-order))

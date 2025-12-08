@@ -25,8 +25,7 @@
           emptyp
           head
           left
-          right
-          to-list))
+          right))
 
 ;; (add-macro-alias set-equiv set-equiv$inline)
 ;; (add-macro-alias emptyp emptyp$inline)

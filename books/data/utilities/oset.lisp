@@ -8,13 +8,16 @@
 
 (in-package "DATA")
 
-(local (include-book "std/util/defredundant" :dir :system))
-(local (include-book "total-order"))
+(include-book "std/osets/top" :dir :system)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(std::defredundant
-  :names #!ACL2(fast-<<
-                <<
-                fast-lexorder
-                ))
+(defthy <<-rules
+  #!ACL2
+  '(<<-irreflexive
+    <<-asymmetric
+    <<-transitive
+    <<-trichotomy
+    <<-implies-lexorder))
+
+(in-theory (disable <<-rules))

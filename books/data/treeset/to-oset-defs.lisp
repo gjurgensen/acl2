@@ -8,19 +8,13 @@
 
 (in-package "TREESET")
 
-(include-book "hash-defs")
+(include-book "internal/in-order-defs")
 (include-book "set-defs")
-(include-book "in-defs")
-(include-book "cardinality-defs")
-(include-book "subset-defs")
-(include-book "insert-defs")
-(include-book "delete-defs")
-(include-book "union-defs")
-(include-book "intersect-defs")
-(include-book "diff-defs")
-(include-book "to-oset-defs")
+
+(local (include-book "std/util/defredundant" :dir :system))
+(local (include-book "to-oset"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; This books contains all the relevant treeset definitions without the
-;; theorems.
+(std::defredundant
+  :names (to-oset))
