@@ -30245,8 +30245,8 @@ ld) and @(tsee include-book)"
  :df is #d0.0 and the value of any stobj component is the last latched
  value of that stobj.
 
- ACL2 Error in TOP-LEVEL:  Evaluation aborted.  To debug see :DOC print-
- gv, see :DOC trace, and see :DOC wet.
+ ACL2 Error [Evaluation] in TOP-LEVEL: Evaluation aborted.  To debug
+ see :DOC print- gv, see :DOC trace, and see :DOC wet.
 
  ACL2 !>
  })
@@ -62881,10 +62881,11 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
  })
 
  <p>The solution is generally to @(see disable) the @(see
- executable-counterpart) of the offending function, as suggested by the example
- below (essentially provided by Sol Swords).  As of this writing (in July,
- 2025), the only way to get an unexpected &ldquo;live&rdquo; @(see stobj) is by
- the use of @(tsee swap-stobjs), as illustrated below.</p>
+ executable-counterpart) of the offending function.  As of this writing (in
+ July, 2025), the only way to get an unexpected &ldquo;live&rdquo; @(see stobj)
+ is by the use of @(tsee swap-stobjs), as suggested by the example shown
+ below (essentially provided by Sol Swords) &mdash; which results in a
+ different error message, shown below, than the one above.</p>
 
  <p>First introduce a pair of congruent @(see stobj)s.</p>
 
@@ -62906,22 +62907,55 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
        st)))
  })
 
- <p>The following proof attempt causes the error message displayed above.</p>
+ <p>Here is a proof attempt that results in a raw Lisp error due to a live
+ stobj being introduced by @(tsee swap-stobjs).</p>
 
  @({
- (thm (not (equal (st-init '(1)) '(nil))))
+ ACL2 !>(thm (not (equal (st-init '(1)) '(nil))))
+
+ ***********************************************
+ Note:  SWAP-STOBJS has been called on stobjs named ST1 and ST,
+ where the value of ST1 is a live stobj but the value of ST is not.
+ This is an error, as such calls are unsupported; see :DOC swap-stobjs.
+ Advanced users may find it helpful to evaluate the form
+ (set-debugger-enable :bt)
+ to see a backtrace of calls leading to this error;
+ see :DOC set-debugger-enable.
+   Will attempt to exit the proof in progress;
+   otherwise, the next interrupt will abort the proof.
+   For an immediate abort see :DOC abort-soft.
+ ***********************************************
+
+ The message above might explain the error.  If not, and
+ if you didn't cause an explicit interrupt (Control-C),
+ then it may help to see :DOC raw-lisp-error.
+
+ To enable breaks into the debugger (also see :DOC acl2-customization):
+ (SET-DEBUGGER-ENABLE T)
+
+ Summary
+ Form:  ( THM ...)
+ Rules: NIL
+ Time:  0.00 seconds (prove: 0.00, print: 0.00, other: 0.00)
+
+ *** Note: No checkpoints to print. ***
+
+ ACL2 Error [Failure] in ( THM ...):  See :DOC failure.
+
+ ******** FAILED ********
+ ACL2 !>
  })
 
  <p>In fact, that formula is not a theorem!  Through Version  8.6, ACL2
- mistakenly proved this theorem by evaluating the indicated call of
+ mistakenly proved this alleged theorem by evaluating the indicated call of
  @('st-init') to obtain an actual Lisp array, because of how ACL2 handles @(see
- stobj)s in Lisp.  But now ACL2 produces the error displayed above.</p>
+ stobj)s in Lisp.  But now ACL2 produces the error displayed just above.</p>
 
  <p>The error is avoided if we @(see disable) the @(see executable-counterpart)
- of the offending function mentioned in the error message, @('st-init').
- Indeed, the following theorem, which contradicts the false claim above and
- disables the offending executable-counterpart, shows that the logical value of
- @('(st-init '(1))') is indeed @(''(nil)').</p>
+ of the offending function, @('st-init').  Indeed, the following theorem, which
+ contradicts the false claim above and disables the offending
+ executable-counterpart, shows that the logical value of @('(st-init '(1))') is
+ indeed @(''(nil)').</p>
 
  @({
  (thm (equal (st-init '(1)) '(nil))
@@ -109218,7 +109252,11 @@ it."
  <p>Fixed a soundness bug based on the use of @(tsee swap-stobjs) on two @(see
  stobj)s of which one is &ldquo;live&rdquo;.  See @(see live-stobj-in-proof).
  Thanks to Sol Swords for reporting this bug, including an example and analysis
- of possible fixes in his report.</p>
+ of possible fixes in his report.  (Technical Note.  We have added code to
+ check for live @(see stobj)s in proofs, which was sufficient to fix the bug.
+ But the situation described above is caught by a change to @('swap-stobjs'),
+ which now signals an error in the relevant case (exactly one live stobj
+ input).)</p>
 
  <p>Fixed a soundness bug due to the interaction of @(see stobj)s and @(tsee
  defattach).  The fundamental problem was that @('defattach') events can cause
@@ -109325,6 +109363,60 @@ it."
  <p>Some ill-formed hard errors, for example from calls of @('er'), caused raw
  Lisp errors.  This has been fixed.  Thanks to Eric Smith for reporting this
  bug with an example.</p>
+
+ <p>@('DO') @(tsee Loop$) expressions (see @(see do-loop$)) are now allowed
+ that have no @('WITH') clauses.  Formerly, an expression @('(loop$ do ...)')
+ caused an error with a rather nonsensical message.</p>
+
+ <p>For a @('DO') @(tsee loop$) expression returning a @(see stobj) that
+ participates in its measure, it was possible to get an inappropriate runtime
+ measure error.  (An example appears in a comment in the definition of @(tsee
+ do$) in the ACL2 sources.)  This bug has been fixed by modifying the
+ definition of @(tsee do$) to respect singled-threadedness.</p>
+
+ <p>A @('DO') @(tsee loop$) expression returning a @(see stobj) could cause a
+ confusing error; see ACL2 source function @('chk-for-live-stobj') for an
+ example.  This bug has been fixed so that no error occurs.</p>
+
+ <p>ACL2 did an incomplete job of excluding certain forms from being evaluated
+ in the top-level loop, including calls of @(tsee swap-stobjs), parallelism
+ primitives (@(tsee pand), @(tsee por), @(tsee pargs), and @(tsee plet)) when
+ parallel evaluation is enabled (ACL2(p) only), and @(tsee return-last) calls.
+ For example, no error was signalled by the following, even though the two
+ stobjs were not swapped (as shown below).
+
+ @({
+ (defstobj st1 (fld1))
+ (defstobj st2 (fld2) :congruent-to st1)
+ (update-fld1 1 st1)
+ (update-fld2 2 st2)
+ (assert-event (and (equal (fld1 st1) 1) (equal (fld2 st2) 2)))
+ ; The following is equivalent to (swap-stobjs st1 st2), and it
+ ; now causes an error but it did not cause an error in Version 8.6:
+ (mv-let (st1 st2) (swap-stobjs st1 st2) (mv st1 st2))
+ ; The following succeeds, showing that st1 and st2 were not actually swapped:
+ (assert-event (and (equal (fld1 st1) 1) (equal (fld2 st2) 2)))
+ })
+
+ This bug has been fixed.</p>
+
+ <p>@(csee Stobj) creators are once again disallowed in execution contexts (but
+ are still allowed in theorems).  This requirement was relaxed (perhaps
+ inadvertently) in Version  8.5.  The following example shows a problem with
+ relaxing that restriction, as these events are accepted in Versions  8.5 and
+ 8.6, but no longer.</p>
+
+ @({
+ (defstobj st fld)
+ ; Admitted in Versions 8.5 and 8.6, but no longer:
+ (defun foo () (declare (xargs :guard t)) (create-st))
+ (update-fld 3 st)
+ (assert-event (equal (fld st) 3))
+ ; Should not change global value of st:
+ (foo)
+ ; But (fld st) has indeed changed:
+ (assert-event (equal (fld st) nil))
+ })
 
  <h3>Changes at the System Level</h3>
 
@@ -145779,9 +145871,9 @@ work on <tt>(q x)</tt>.</p>
   :long "<p>See @(see stobj) for relevant background on single-threaded
  objects.</p>
 
- <p>The macro call @('(swap-stobjs st1 st2)') is allowed exactly when @('st1')
- and @('st2') are congruent @(see stobj)s.  The logical meaning is simply to
- return the two stobjs in reverse order, @('(list st2 st1)'):</p>
+ <p>The macro call @('(swap-stobjs st1 st2)') is allowed when @('st1') and
+ @('st2') are congruent @(see stobj)s.  The logical meaning is simply to return
+ the two stobjs in reverse order, @('(list st2 st1)'):</p>
 
  @(def swap-stobjs)
 
@@ -145814,7 +145906,18 @@ work on <tt>(q x)</tt>.</p>
  examples illustrate that @('swap-stobjs') has the expected effect even when
  stobjs are involved that are bound by @(tsee with-local-stobj) or @(tsee
  stobj-let).  It also explains subtle interaction with @(tsee trans-eval).  For
- another example, see @('books/demos/swap-stobj-fields.lisp')</p>")
+ another example, see @('books/demos/swap-stobj-fields.lisp').</p>
+
+ <p>In the example above, we call @('foo') rather than calling @('swap-stobjs')
+ directly.  That is because @('swap-stobjs') calls must not be made directly in
+ the top-level loop.  Instead, put those calls in function bodies or in
+ theorems.</p>
+
+ <p>Both inputs to @('swap-stobjs') are required to be @(see stobj)s.  However,
+ the usual tracking of stobjs is relaxed during proofs.  See @(see
+ live-stobj-in-proof) for an error caused by @(tsee swap-stobjs) during a proof
+ when exactly one of the arguments is truly a stobj (i.e., a so-called
+ &ldquo;live&rdquo; stobj).</p>")
 
 (defxdoc symbol-alistp
   :parents (alists acl2-built-ins)

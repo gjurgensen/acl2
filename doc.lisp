@@ -33233,7 +33233,10 @@ Subtopics
                                  (apply$-guard do-fn '(nil))
                                  (apply$-guard finally-fn '(nil))
                                  (weak-dolia-p dolia))))
-     (let* ((triple (true-list-fix (apply$ do-fn (list alist))))
+     (let* ((stobj-values-p (not (all-nils (true-list-fix values))))
+            (old-measure-value (and stobj-values-p
+                                    (apply$ measure-fn (list alist))))
+            (triple (true-list-fix (apply$ do-fn (list alist))))
             (exit-token (car triple))
             (val (cadr triple))
             (new-alist (caddr triple)))
@@ -33246,7 +33249,8 @@ Subtopics
           (val (cadr triple)))
          (if (eq exit-token :return) val nil)))
        ((l< (lex-fix (apply$ measure-fn (list new-alist)))
-            (lex-fix (apply$ measure-fn (list alist))))
+            (lex-fix (if stobj-values-p old-measure-value
+                       (apply$ measure-fn (list alist)))))
         (do$ measure-fn new-alist
              do-fn finally-fn values dolia))
        (t
@@ -33278,7 +33282,8 @@ Subtopics
            untrans-measure untrans-do-loop$ nil
            (eviscerate-do$-alist alist all-stobj-names)
            (eviscerate-do$-alist new-alist all-stobj-names)
-           (apply$ measure-fn (list alist))
+           (if stobj-values-p old-measure-value
+             (apply$ measure-fn (list alist)))
            (apply$ measure-fn (list new-alist))
            values))
          (loop$-default-values values new-alist))))))
@@ -33754,8 +33759,8 @@ INFORMAL INTRODUCTION
     :df is #d0.0 and the value of any stobj component is the last latched
     value of that stobj.
 
-    ACL2 Error in TOP-LEVEL:  Evaluation aborted.  To debug see :DOC print-
-    gv, see :DOC trace, and see :DOC wet.
+    ACL2 Error [Evaluation] in TOP-LEVEL: Evaluation aborted.  To debug
+    see :DOC print- gv, see :DOC trace, and see :DOC wet.
 
     ACL2 !>
 
@@ -34203,7 +34208,10 @@ SEMANTICS
                                  (apply$-guard do-fn '(nil))
                                  (apply$-guard finally-fn '(nil))
                                  (weak-dolia-p dolia))))
-     (let* ((triple (true-list-fix (apply$ do-fn (list alist))))
+     (let* ((stobj-values-p (not (all-nils (true-list-fix values))))
+            (old-measure-value (and stobj-values-p
+                                    (apply$ measure-fn (list alist))))
+            (triple (true-list-fix (apply$ do-fn (list alist))))
             (exit-token (car triple))
             (val (cadr triple))
             (new-alist (caddr triple)))
@@ -34216,7 +34224,8 @@ SEMANTICS
           (val (cadr triple)))
          (if (eq exit-token :return) val nil)))
        ((l< (lex-fix (apply$ measure-fn (list new-alist)))
-            (lex-fix (apply$ measure-fn (list alist))))
+            (lex-fix (if stobj-values-p old-measure-value
+                       (apply$ measure-fn (list alist)))))
         (do$ measure-fn new-alist
              do-fn finally-fn values dolia))
        (t
@@ -34248,7 +34257,8 @@ SEMANTICS
            untrans-measure untrans-do-loop$ nil
            (eviscerate-do$-alist alist all-stobj-names)
            (eviscerate-do$-alist new-alist all-stobj-names)
-           (apply$ measure-fn (list alist))
+           (if stobj-values-p old-measure-value
+             (apply$ measure-fn (list alist)))
            (apply$ measure-fn (list new-alist))
            values))
          (loop$-default-values values new-alist))))))
@@ -67104,10 +67114,11 @@ Subtopics
     ***********************************************
 
   The solution is generally to [disable] the [executable-counterpart]
-  of the offending function, as suggested by the example below
-  (essentially provided by Sol Swords).  As of this writing (in July,
-  2025), the only way to get an unexpected ``live'' [stobj] is by the
-  use of [47m[swap-stobjs][0m, as illustrated below.
+  of the offending function.  As of this writing (in July, 2025), the
+  only way to get an unexpected ``live'' [stobj] is by the use of
+  [47m[swap-stobjs][0m, as suggested by the example shown below (essentially
+  provided by Sol Swords) --- which results in a different error
+  message, shown below, than the one above.
 
   First introduce a pair of congruent [stobj]s.
 
@@ -67124,20 +67135,54 @@ Subtopics
           (swap-stobjs st1 st)
           st)))
 
-  The following proof attempt causes the error message displayed above.
+  Here is a proof attempt that results in a raw Lisp error due to a
+  live stobj being introduced by [47m[swap-stobjs][0m.
 
-    (thm (not (equal (st-init '(1)) '(nil))))
+    ACL2 !>(thm (not (equal (st-init '(1)) '(nil))))
+
+    ***********************************************
+    Note:  SWAP-STOBJS has been called on stobjs named ST1 and ST,
+    where the value of ST1 is a live stobj but the value of ST is not.
+    This is an error, as such calls are unsupported; see :DOC swap-stobjs.
+    Advanced users may find it helpful to evaluate the form
+    (set-debugger-enable :bt)
+    to see a backtrace of calls leading to this error;
+    see :DOC set-debugger-enable.
+      Will attempt to exit the proof in progress;
+      otherwise, the next interrupt will abort the proof.
+      For an immediate abort see :DOC abort-soft.
+    ***********************************************
+
+    The message above might explain the error.  If not, and
+    if you didn't cause an explicit interrupt (Control-C),
+    then it may help to see :DOC raw-lisp-error.
+
+    To enable breaks into the debugger (also see :DOC acl2-customization):
+    (SET-DEBUGGER-ENABLE T)
+
+    Summary
+    Form:  ( THM ...)
+    Rules: NIL
+    Time:  0.00 seconds (prove: 0.00, print: 0.00, other: 0.00)
+
+    *** Note: No checkpoints to print. ***
+
+    ACL2 Error [Failure] in ( THM ...):  See :DOC failure.
+
+    ******** FAILED ********
+    ACL2 !>
 
   In fact, that formula is not a theorem!  Through Version 8.6, ACL2
-  mistakenly proved this theorem by evaluating the indicated call of
-  [47mst-init[0m to obtain an actual Lisp array, because of how ACL2 handles
-  [stobj]s in Lisp.  But now ACL2 produces the error displayed above.
+  mistakenly proved this alleged theorem by evaluating the indicated
+  call of [47mst-init[0m to obtain an actual Lisp array, because of how ACL2
+  handles [stobj]s in Lisp.  But now ACL2 produces the error
+  displayed just above.
 
   The error is avoided if we [disable] the [executable-counterpart] of
-  the offending function mentioned in the error message, [47mst-init[0m.
-  Indeed, the following theorem, which contradicts the false claim
-  above and disables the offending executable-counterpart, shows that
-  the logical value of [47m(st-init '(1))[0m is indeed [47m'(nil)[0m.
+  the offending function, [47mst-init[0m.  Indeed, the following theorem,
+  which contradicts the false claim above and disables the offending
+  executable-counterpart, shows that the logical value of [47m(st-init
+  '(1))[0m is indeed [47m'(nil)[0m.
 
     (thm (equal (st-init '(1)) '(nil))
          :hints((\"Goal\" :in-theory (disable (:e st-init)))))")
@@ -106339,7 +106384,11 @@ Bug Fixes
   Fixed a soundness bug based on the use of [47m[swap-stobjs][0m on two
   [stobj]s of which one is ``live''.  See [live-stobj-in-proof].
   Thanks to Sol Swords for reporting this bug, including an example
-  and analysis of possible fixes in his report.
+  and analysis of possible fixes in his report.  (Technical Note.  We
+  have added code to check for live [stobj]s in proofs, which was
+  sufficient to fix the bug.  But the situation described above is
+  caught by a change to [47mswap-stobjs[0m, which now signals an error in
+  the relevant case (exactly one live stobj input).)
 
   Fixed a soundness bug due to the interaction of [stobj]s and
   [47m[defattach][0m.  The fundamental problem was that [47mdefattach[0m events can
@@ -106440,6 +106489,56 @@ Bug Fixes
   Some ill-formed hard errors, for example from calls of [47mer[0m, caused raw
   Lisp errors.  This has been fixed.  Thanks to Eric Smith for
   reporting this bug with an example.
+
+  [47mDO[0m [47m[Loop$][0m expressions (see [do-loop$]) are now allowed that have no
+  [47mWITH[0m clauses.  Formerly, an expression [47m(loop$ do ...)[0m caused an
+  error with a rather nonsensical message.
+
+  For a [47mDO[0m [47m[loop$][0m expression returning a [stobj] that participates in
+  its measure, it was possible to get an inappropriate runtime
+  measure error.  (An example appears in a comment in the definition
+  of [47m[do$][0m in the ACL2 sources.)  This bug has been fixed by
+  modifying the definition of [47m[do$][0m to respect singled-threadedness.
+
+  A [47mDO[0m [47m[loop$][0m expression returning a [stobj] could cause a confusing
+  error; see ACL2 source function [47mchk-for-live-stobj[0m for an example.
+  This bug has been fixed so that no error occurs.
+
+  ACL2 did an incomplete job of excluding certain forms from being
+  evaluated in the top-level loop, including calls of [47m[swap-stobjs][0m,
+  parallelism primitives ([47m[pand][0m, [47m[por][0m, [47m[pargs][0m, and [47m[plet][0m) when
+  parallel evaluation is enabled (ACL2(p) only), and [47m[return-last][0m
+  calls.  For example, no error was signalled by the following, even
+  though the two stobjs were not swapped (as shown below).
+
+      (defstobj st1 (fld1))
+      (defstobj st2 (fld2) :congruent-to st1)
+      (update-fld1 1 st1)
+      (update-fld2 2 st2)
+      (assert-event (and (equal (fld1 st1) 1) (equal (fld2 st2) 2)))
+      ; The following is equivalent to (swap-stobjs st1 st2), and it
+      ; now causes an error but it did not cause an error in Version 8.6:
+      (mv-let (st1 st2) (swap-stobjs st1 st2) (mv st1 st2))
+      ; The following succeeds, showing that st1 and st2 were not actually swapped:
+      (assert-event (and (equal (fld1 st1) 1) (equal (fld2 st2) 2)))
+
+  This bug has been fixed.
+
+  [Stobj] creators are once again disallowed in execution contexts (but
+  are still allowed in theorems).  This requirement was relaxed
+  (perhaps inadvertently) in Version 8.5.  The following example
+  shows a problem with relaxing that restriction, as these events are
+  accepted in Versions 8.5 and 8.6, but no longer.
+
+    (defstobj st fld)
+    ; Admitted in Versions 8.5 and 8.6, but no longer:
+    (defun foo () (declare (xargs :guard t)) (create-st))
+    (update-fld 3 st)
+    (assert-event (equal (fld st) 3))
+    ; Should not change global value of st:
+    (foo)
+    ; But (fld st) has indeed changed:
+    (assert-event (equal (fld st) nil))
 
 
 Changes at the System Level
@@ -145645,14 +145744,16 @@ GitHub Distributions
 
   See [stobj] for relevant background on single-threaded objects.
 
-  The macro call [47m(swap-stobjs st1 st2)[0m is allowed exactly when [47mst1[0m and
-  [47mst2[0m are congruent [stobj]s.  The logical meaning is simply to
-  return the two stobjs in reverse order, [47m(list st2 st1)[0m:
+  The macro call [47m(swap-stobjs st1 st2)[0m is allowed when [47mst1[0m and [47mst2[0m are
+  congruent [stobj]s.  The logical meaning is simply to return the
+  two stobjs in reverse order, [47m(list st2 st1)[0m:
 
   [31;1mMacro: [0m<swap-stobjs>
 
     (defmacro swap-stobjs (x y)
-      (cons 'mv (cons y (cons x 'nil))))
+      (cons 'progn$
+            (cons (cons 'mv (cons y (cons x 'nil)))
+                  'nil)))
 
   However, for purposes of tracking single-threadedness, the result [47m(mv
   st2 st1)[0m of [47m(swap-stobjs st1 st2)[0m is treated as a list of new
@@ -145683,7 +145784,18 @@ GitHub Distributions
   even when stobjs are involved that are bound by [47m[with-local-stobj][0m
   or [47m[stobj-let][0m.  It also explains subtle interaction with
   [47m[trans-eval][0m.  For another example, see
-  [47mbooks/demos/swap-stobj-fields.lisp[0m")
+  [47mbooks/demos/swap-stobj-fields.lisp[0m.
+
+  In the example above, we call [47mfoo[0m rather than calling [47mswap-stobjs[0m
+  directly.  That is because [47mswap-stobjs[0m calls must not be made
+  directly in the top-level loop.  Instead, put those calls in
+  function bodies or in theorems.
+
+  Both inputs to [47mswap-stobjs[0m are required to be [stobj]s.  However, the
+  usual tracking of stobjs is relaxed during proofs.  See
+  [live-stobj-in-proof] for an error caused by [47m[swap-stobjs][0m during a
+  proof when exactly one of the arguments is truly a stobj (i.e., a
+  so-called ``live'' stobj).")
  (SYMBOL-ALISTP
   (ALISTS ACL2-BUILT-INS)
   "Recognizer for association lists with symbols as keys
