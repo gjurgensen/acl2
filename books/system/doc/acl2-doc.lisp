@@ -68415,7 +68415,9 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
       (DO$
        (LAMBDA$ (ALIST)
                 (ACL2-COUNT (CDR (ASSOC-EQ-SAFE 'I ALIST))))
-       (CONS (CONS 'I N) (cons 'ans ans0)) ; note generalization of 0!
+       (CONS (CONS 'I N)
+             (cons (cons 'ans ans0)
+                   nil)) ; note generalization of 0!
        (LAMBDA$
         (ALIST)
         (IF (INTEGERP (CDR (ASSOC-EQ-SAFE 'I ALIST)))
@@ -68444,11 +68446,11 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
 
   <p>The UPPERCASE part above was just copied from the checkpoint and then the
   pair in the initial alist binding @('ANS'), which was @(''(ANS . 0)'), was
-  replaced by @('(cons 'ans ans0)').  So while it looks messy, it's not hard to
-  enter.  Furthermore, it saves us from having to figure out the normal form
-  &mdash; it's already in the checkpoint.  The @('DO$') term in this version of
-  @('lemma1') is just the formal translation of the generalized @('DO')
-  @('loop$') we wrote in the earlier version of @('lemma1').</p>
+  replaced by @('(cons (cons 'ans ans0) nil)').  So while it looks messy, it's
+  not hard to enter.  Furthermore, it saves us from having to figure out the
+  normal form &mdash; it's already in the checkpoint.  The @('DO$') term in
+  this version of @('lemma1') is just the formal translation of the generalized
+  @('DO') @('loop$') we wrote in the earlier version of @('lemma1').</p>
 
   <p>Next we prove &ldquo;lemma 2&rdquo; equating the recursive function with
   the (generalized) specification.  This theorem does not involve @('loop$')
@@ -68512,8 +68514,8 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
                            do
                            (if (zp i)
                                (return ans)
-  			   (progn (setq ans (+ 1 ans))
-  				  (setq i (- i 1)))))
+                           (progn (setq ans (+ 1 ans))
+                                  (setq i (- i 1)))))
                     n)))
   })
 
@@ -143076,7 +143078,7 @@ work on <tt>(q x)</tt>.</p>
                       (setq tail (cdr tail))))))
   })
 
-  <p>The experienced ACL2 user would not attept to prove that @('(rev-loop$
+  <p>The experienced ACL2 user would not attempt to prove that @('(rev-loop$
   x)') is @('(rev x)') by induction!  The problem is the same as before: the
   @('nil') initialization of the iterative variable @('a') in the @('do')
   @('loop$') does not permit an appropriate inductive hypothesis.  Instead, the
@@ -143286,7 +143288,7 @@ work on <tt>(q x)</tt>.</p>
   })
 
   <p>The function counts @('j') up from @('0') until it is equal to @('k'),
-  while @('cdr')ing @('x').  It returns @('good') if it @('j') reaches @('k')
+  while @('cdr')ing @('x').  It returns @('good') if @('j') reaches @('k')
   before the list is exhausted, and returns @('bad') otherwise.  Thus, this is
   a theorem.</p>
 
@@ -143330,8 +143332,8 @@ work on <tt>(q x)</tt>.</p>
   stays fixed, which is necessary if the generalized hypothesis is going to
   survive induction.</p>
 
-  <p>Following Lesson 2, we normalized the body.  We replaced the @('(endp x)') by @('(not (consp x))')
-  and normalized the resulting @('IF') nest.</p>
+  <p>Following Lesson 2, we normalized the body.  We replaced the @('(endp x)')
+  by @('(not (consp x))') and normalized the resulting @('IF') nest.</p>
 
   <p>The lemma is proved automatically by ACL2, using the induction suggested
   by the @('loop$').</p>
@@ -143389,7 +143391,7 @@ work on <tt>(q x)</tt>.</p>
                     (LIST (CONS 'X (CDR (ASSOC-EQ-SAFE 'X ALIST)))
                           (CONS 'J (CDR (ASSOC-EQ-SAFE 'J ALIST)))
                           (CONS 'K (CDR (ASSOC-EQ-SAFE 'K ALIST))))))
-              (NIL) NIL)
+              '(NIL) NIL)
   Rhs:     'GOOD
   Backchain-limit-lst: NIL
   Subclass: BACKCHAIN
@@ -143427,7 +143429,7 @@ work on <tt>(q x)</tt>.</p>
            (LIST (CONS 'X (CDR (ASSOC-EQ-SAFE 'X ALIST)))
                  (CONS 'J (CDR (ASSOC-EQ-SAFE 'J ALIST)))
                  (CONS 'K (CDR (ASSOC-EQ-SAFE 'K ALIST))))))
-     (NIL) NIL)
+     '(NIL) NIL)
   })
 
   <p>Note that the @('Lhs') matches the actual term, when @('J') is
@@ -143482,13 +143484,13 @@ work on <tt>(q x)</tt>.</p>
   <p>Note that the inclusion of the new &ldquo;@('with k = k')&rdquo; does not
   add any new subterms to the translation, it merely allows assignment to a
   previously used but never assigned variable.  The order of the @('with')
-  clauses determines the order of the alists being constructed, so this pay
+  clauses determines the order of the alists being constructed, so pay
   attention to where @(''k') is bound in the alists.  Also note that the new
-  @('setq') does not add any new subterms to the translation, just affects the
-  final value of @(''k') on that branch of the @('if') tree.  Finally note that
-  we phrase the @('loop$') this way in the lemma <i>without changing how we
-  write the @('loop$') in the @('defun').</i>  Writing the @('loop$') this way in
-  the @('defun') would add an unnecessary @('setq') in the Common Lisp
+  @('setq') does not add any new subterms to the translation; it just affects
+  the final value of @(''k') on that branch of the @('if') tree.  Finally note
+  that we phrase the @('loop$') this way in the lemma <i>without changing how
+  we write the @('loop$') in the @('defun').</i> Writing the @('loop$') this
+  way in the @('defun') would add an unnecessary @('setq') in the Common Lisp
   execution.  But there is no need to change how we write the @('loop$') in the
   defun.  This lemma matches what comes up when we prove things about the
   @('loop$') in the @('defun').</p>
@@ -143566,7 +143568,7 @@ work on <tt>(q x)</tt>.</p>
         (derived-fn lo (- j 1)))).
   })
 
-  <p>That derived function doesn't terminate.</p>
+  <p>That derived function doesn't necessarily terminate.</p>
 
   <p>Now let's try to prove that the @('loop$') always returns @(''good').
   Note that it doesn't matter if we include guards in the conjecture or not.
@@ -143684,9 +143686,9 @@ work on <tt>(q x)</tt>.</p>
   hidden hypothesis problem.</p>
 
   <p>Note that the derived function from the @('loop$') in the hint doesn't
-  terminate either (because no mention is made that @('J') is a natural).  But
-  the induction-time proof obligation is provable because it is still augmented
-  by @('(INTEGERP J)') and @('(<= 0 J)') as before.</p>
+  necessarily terminate either (because no mention is made that @('J') is a
+  natural).  But the induction-time proof obligation is provable because it is
+  still augmented by @('(INTEGERP J)') and @('(<= 0 J)') as before.</p>
 
   <h3>Avoiding Some Specially Defined Hint Functions</h3>
 

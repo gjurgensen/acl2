@@ -73012,7 +73012,9 @@ LP16: Proving Theorems about [47mDO[0m [47mLoop$[0ms
         (DO$
          (LAMBDA$ (ALIST)
                   (ACL2-COUNT (CDR (ASSOC-EQ-SAFE 'I ALIST))))
-         (CONS (CONS 'I N) (cons 'ans ans0)) ; note generalization of 0!
+         (CONS (CONS 'I N)
+               (cons (cons 'ans ans0)
+                     nil)) ; note generalization of 0!
          (LAMBDA$
           (ALIST)
           (IF (INTEGERP (CDR (ASSOC-EQ-SAFE 'I ALIST)))
@@ -73040,11 +73042,12 @@ LP16: Proving Theorems about [47mDO[0m [47mLoop$[0ms
 
   The UPPERCASE part above was just copied from the checkpoint and then
   the pair in the initial alist binding [47mANS[0m, which was [47m'(ANS . 0)[0m,
-  was replaced by [47m(cons 'ans ans0)[0m.  So while it looks messy, it's
-  not hard to enter.  Furthermore, it saves us from having to figure
-  out the normal form --- it's already in the checkpoint.  The [47mDO$[0m
-  term in this version of [47mlemma1[0m is just the formal translation of
-  the generalized [47mDO[0m [47mloop$[0m we wrote in the earlier version of [47mlemma1[0m.
+  was replaced by [47m(cons (cons 'ans ans0) nil)[0m.  So while it looks
+  messy, it's not hard to enter.  Furthermore, it saves us from
+  having to figure out the normal form --- it's already in the
+  checkpoint.  The [47mDO$[0m term in this version of [47mlemma1[0m is just the
+  formal translation of the generalized [47mDO[0m [47mloop$[0m we wrote in the
+  earlier version of [47mlemma1[0m.
 
   Next we prove ``lemma 2'' equating the recursive function with the
   (generalized) specification.  This theorem does not involve [47mloop$[0m
@@ -73103,8 +73106,8 @@ LP16: Proving Theorems about [47mDO[0m [47mLoop$[0ms
                              do
                              (if (zp i)
                                  (return ans)
-    			   (progn (setq ans (+ 1 ans))
-    				  (setq i (- i 1)))))
+                             (progn (setq ans (+ 1 ans))
+                                    (setq i (- i 1)))))
                       n)))
 
   For more details about rewriting [47mlambda[0m objects you can leave the
@@ -142776,7 +142779,7 @@ Generalizing the Initial Values
                 (progn (setq a (cons (car tail) a))
                         (setq tail (cdr tail))))))
 
-  The experienced ACL2 user would not attept to prove that [47m(rev-loop$
+  The experienced ACL2 user would not attempt to prove that [47m(rev-loop$
   x)[0m is [47m(rev x)[0m by induction!  The problem is the same as before: the
   [47mnil[0m initialization of the iterative variable [47ma[0m in the [47mdo[0m [47mloop$[0m does
   not permit an appropriate inductive hypothesis.  Instead, the user
@@ -142973,7 +142976,7 @@ The Secret [47mSetq[0m Problem
                              (setq j (+ 1 j)))))))
 
   The function counts [47mj[0m up from [47m0[0m until it is equal to [47mk[0m, while [47mcdr[0ming
-  [47mx[0m.  It returns [47mgood[0m if it [47mj[0m reaches [47mk[0m before the list is exhausted,
+  [47mx[0m.  It returns [47mgood[0m if [47mj[0m reaches [47mk[0m before the list is exhausted,
   and returns [47mbad[0m otherwise.  Thus, this is a theorem.
 
     (defthm secret-setq-problem-main
@@ -143070,7 +143073,7 @@ The Secret [47mSetq[0m Problem
                       (LIST (CONS 'X (CDR (ASSOC-EQ-SAFE 'X ALIST)))
                             (CONS 'J (CDR (ASSOC-EQ-SAFE 'J ALIST)))
                             (CONS 'K (CDR (ASSOC-EQ-SAFE 'K ALIST))))))
-                (NIL) NIL)
+                '(NIL) NIL)
     Rhs:     'GOOD
     Backchain-limit-lst: NIL
     Subclass: BACKCHAIN
@@ -143106,7 +143109,7 @@ The Secret [47mSetq[0m Problem
              (LIST (CONS 'X (CDR (ASSOC-EQ-SAFE 'X ALIST)))
                    (CONS 'J (CDR (ASSOC-EQ-SAFE 'J ALIST)))
                    (CONS 'K (CDR (ASSOC-EQ-SAFE 'K ALIST))))))
-       (NIL) NIL)
+       '(NIL) NIL)
 
   Note that the [47mLhs[0m matches the actual term, when [47mJ[0m is instantiated
   with [47m0[0m, [3mexcept[0m in one place: the alist constructed in the [47m(LIST
@@ -143159,8 +143162,8 @@ The Secret [47mSetq[0m Problem
   new subterms to the translation, it merely allows assignment to a
   previously used but never assigned variable.  The order of the [47mwith[0m
   clauses determines the order of the alists being constructed, so
-  this pay attention to where [47m'k[0m is bound in the alists.  Also note
-  that the new [47msetq[0m does not add any new subterms to the translation,
+  pay attention to where [47m'k[0m is bound in the alists.  Also note that
+  the new [47msetq[0m does not add any new subterms to the translation; it
   just affects the final value of [47m'k[0m on that branch of the [47mif[0m tree.
   Finally note that we phrase the [47mloop$[0m this way in the lemma [3mwithout
   changing how we write the [47mloop$[0m[3m in the [47mdefun[0m[3m.[0m Writing the [47mloop$[0m
@@ -143242,7 +143245,7 @@ The Hidden Hypothesis Problem
           'good
           (derived-fn lo (- j 1)))).
 
-  That derived function doesn't terminate.
+  That derived function doesn't necessarily terminate.
 
   Now let's try to prove that the [47mloop$[0m always returns [47m'good[0m.  Note
   that it doesn't matter if we include guards in the conjecture or
@@ -143353,9 +143356,10 @@ The Hidden Hypothesis Problem
   the hidden hypothesis problem.
 
   Note that the derived function from the [47mloop$[0m in the hint doesn't
-  terminate either (because no mention is made that [47mJ[0m is a natural).
-  But the induction-time proof obligation is provable because it is
-  still augmented by [47m(INTEGERP J)[0m and [47m(<= 0 J)[0m as before.
+  necessarily terminate either (because no mention is made that [47mJ[0m is
+  a natural).  But the induction-time proof obligation is provable
+  because it is still augmented by [47m(INTEGERP J)[0m and [47m(<= 0 J)[0m as
+  before.
 
 
 Avoiding Some Specially Defined Hint Functions
