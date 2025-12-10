@@ -30008,6 +30008,31 @@ ld) and @(tsee include-book)"
  @('st') is a known stobj.  In fact, stobjs are not allowed to be declared in
  @('WITH') clauses (and that is not necessary for assigning to them).</p>
 
+ <p>Note that it is possible to write @('DO') loops without any @('WITH')
+ clauses, provided a stobj is being manipulated and measured in the body.  For
+ example, using the stobj declared in the previous example,</p>
+
+ @({
+ (loop$ do
+        :values (st)
+        :measure (acl2-count (fld st))
+        (if (endp (fld st))
+            (return st)
+            (if (equal 3 (car (fld st)))
+                (return st)
+                (setq st (update-fld (cdr (fld st)) st)))))
+ })
+
+ <p>is acceptable.  In Common Lisp, @('(loop$ do <body>)') loops until a
+ @('return') is executed and so to be admissible in ACL2 some @(':measure')
+ must be specified (unless there is @('return') on every branch through
+ @('<body>')).  If there are no @('WITH') clauses, stobjs are the only objects
+ that might be measured to explain termination, and ACL2 cannot guess effective
+ measures of stobjs.</p>
+
+ <p>To see some advice about proving inductive theorems about @('DO') loops
+ measured by stobjs, see @(see stating-and-proving-lemmas-about-loop$s).</p>
+
  <p><b>The @('OF-TYPE') Keyword</b></p>
 
  <p>So far our examples have all involved @('loop$') expressions that are
@@ -62881,11 +62906,11 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
  })
 
  <p>The solution is generally to @(see disable) the @(see
- executable-counterpart) of the offending function.  As of this writing (in
- July, 2025), the only way to get an unexpected &ldquo;live&rdquo; @(see stobj)
- is by the use of @(tsee swap-stobjs), as suggested by the example shown
- below (essentially provided by Sol Swords) &mdash; which results in a
- different error message, shown below, than the one above.</p>
+ executable-counterpart) of the offending function.  It may well be that the
+ only way to get an unexpected &ldquo;live&rdquo; @(see stobj) is by the use of
+ @(tsee swap-stobjs), as suggested by the example shown below (essentially
+ provided by Sol Swords) &mdash; which results in a different error message,
+ shown below, than the one above.</p>
 
  <p>First introduce a pair of congruent @(see stobj)s.</p>
 
@@ -143269,6 +143294,110 @@ work on <tt>(q x)</tt>.</p>
   @('defun') of @('rev-loop$') but lemma deals with the normalized form of that
   body.</p>
 
+  <p>Here is another example, this one involving a @('do') loop without any
+  @('WITH') clauses.  That in itself causes no special proof problems, but as
+  noted in @(see do-loop$), it necessitates the use of a stobj in the body and
+  that raises issues similar to those just mentioned.  So below we introduce a
+  stobj, @('st'), with one field, @('fld').  We define @(tsee warrant)s for
+  both @('fld') and @('update-fld'), and then we define a function,
+  @('stobj-mem'), that uses a @('do') loop to determine whether a given element
+  occurs in the field, simultaneously shortening the list in the field so that
+  its @('car') is the element in question.  Here is the setup.</p>
+
+  @({
+  (defstobj st fld)
+  (defwarrant fld)
+  (defwarrant update-fld)
+
+  (defun stobj-mem (e st)
+    (declare (xargs :stobjs (st)
+                    :guard (true-listp (fld st))))
+    (loop$ do
+           :values (st)
+           :guard (and (stp st)
+                       (true-listp (fld st)))
+           :measure (acl2-count (fld st))
+           (if (endp (fld st))
+               (return st)
+               (if (equal e (car (fld st)))
+                   (return st)
+                   (setq st (update-fld (cdr (fld st)) st))))))
+  })
+
+  <p>Note that there is no @('WITH') clause but the size of @('(fld st)') is
+  decreasing.</p>
+
+  <p>Suppose we want to prove that after running @('(stobj-mem e st)') on proper
+  input, the final value of @('fld') is equal to @('(member e (fld st))').  The
+  desired formal statement is</p>
+
+  @({
+  (defthm stobj-mem-correct
+    (implies (and (stp st)
+                  (true-listp (fld st))
+                  (warrant fld update-fld))
+             (let ((st1 (stobj-mem e st)))
+               (and (stp st1)
+                    (equal (fld st1)
+                           (member e (fld st))))))
+    :hints ...)
+  })
+
+  <p>Note that in the theorem we use @('st1') to denote the final value of the
+  stobj whose initial value is @('st').  We have to provide the warrants for the
+  accessor and updater used in the body of the @('loop$').</p>
+
+  <p>This theorem is a little tricky to prove because we're proving a
+  conjunction and after the @('(stobj-mem e st)') and the @('(stp st)') expand
+  we get several conjectures, each of which requires induction.  It is simply
+  easier to prove that the @('loop$') in @('stobj-mem') has the desired
+  property and then use that lemma.  So we first prove:</p>
+
+  @({
+  (defthm stobj-mem-correct-lemma
+    (implies (and (stp st)
+                  (true-listp (fld st))
+                  (warrant fld update-fld))
+             (let ((st1 (loop$ do
+                               :values (st)
+                               :guard (and (stp st)
+                                           (true-listp (fld st)))
+                               :measure (acl2-count (fld st))
+                               (if (consp (fld st))
+                                   (if (equal e (car (fld st)))
+                                       (return st)
+                                       (setq st (update-fld (cdr (fld st)) st)))
+                                   (return st)))))
+               (and (stp st1)
+                    (equal (fld st1)
+                           (member e (fld st)))))))
+  })
+
+  <p>But note that we expanded the @('endp') in the statement of this lemma because
+  @('endp') is built-in in a way that causes it often to expand even when disabled
+  (as is actually noted in a warning message if we'd left the @('endp') in place).
+  We also normalized the resulting @('(if (not (consp (fld st))) ...)') as explained
+  in Lesson 2 above.</p>
+
+  <p>Now we'd like to prove the desired theorem about @('stobj-mem'), expecting that
+  function to expand and then the lemma to hit it and complete the proof.  But
+  that won't work without a little more help!  The problem is that the lemma
+  mentions @('stp'), @('fld'), and @('update-fld') in its left-hand side and those
+  are non-recursively defined functions that will expand.  So to make the lemma
+  match the rewritten main theorem we must disable those three functions.</p>
+
+  @({
+  (defthm stobj-mem-correct
+    (implies (and (stp st)
+                  (true-listp (fld st))
+                  (warrant fld update-fld))
+             (let ((st1 (stobj-mem e st)))
+               (and (stp st1)
+                    (equal (fld st1)
+                           (member e (fld st))))))
+    :hints ((\"Goal\" :in-theory (disable stp fld update-fld))))
+  })
+
   <h3>The Secret @('Setq') Problem</h3>
 
   <p>Another issue that comes up when posing lemmas about @('loop$')s is called
@@ -143486,11 +143615,11 @@ work on <tt>(q x)</tt>.</p>
   previously used but never assigned variable.  The order of the @('with')
   clauses determines the order of the alists being constructed, so pay
   attention to where @(''k') is bound in the alists.  Also note that the new
-  @('setq') does not add any new subterms to the translation; it just affects
-  the final value of @(''k') on that branch of the @('if') tree.  Finally note
-  that we phrase the @('loop$') this way in the lemma <i>without changing how
-  we write the @('loop$') in the @('defun').</i> Writing the @('loop$') this
-  way in the @('defun') would add an unnecessary @('setq') in the Common Lisp
+  @('setq') does not add any new subterms to the translation; it just affects the
+  final value of @(''k') on that branch of the @('if') tree.  Finally note that
+  we phrase the @('loop$') this way in the lemma <i>without changing how we
+  write the @('loop$') in the @('defun').</i>  Writing the @('loop$') this way in
+  the @('defun') would add an unnecessary @('setq') in the Common Lisp
   execution.  But there is no need to change how we write the @('loop$') in the
   defun.  This lemma matches what comes up when we prove things about the
   @('loop$') in the @('defun').</p>
