@@ -18,4 +18,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (std::defredundant
-  :names (tree-union))
+  :names (tree-union
+          acl2-number-tree-union
+          symbol-tree-union
+          eqlable-tree-union))

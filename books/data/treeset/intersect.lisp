@@ -20,56 +20,125 @@
 (local (include-book "std/basic/controlled-configuration" :dir :system))
 (local (acl2::controlled-configuration :hooks nil))
 
+(local (include-book "kestrel/alists-light/assoc-equal" :dir :system))
+(local (include-book "kestrel/alists-light/symbol-alistp" :dir :system))
+
+(local (include-book "kestrel/utilities/ordinals" :dir :system))
+
+(local (include-book "std/system/partition-rest-and-keyword-args" :dir :system))
+
 (local (include-book "internal/tree"))
 (local (include-book "internal/intersect"))
-;; (local (include-book "internal/in"))
+(local (include-book "internal/in"))
 (local (include-book "set"))
 (local (include-book "in"))
 (local (include-book "subset"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defsection intersect
-  :parents (set)
-  :short "An @($n$)-ary set intersection."
-  :long
-  (xdoc::topstring
-    (xdoc::p
-      "Time complexity: @($O(n\\log(m/n))$) (for binary intersection, where @($n < m$))."))
-
-  (define binary-intersect
-    ((x setp)
-     (y setp))
-    :returns (set setp
-                  :hints (("Goal" :in-theory (enable setp
-                                                     fix
-                                                     empty))))
-    (tree-intersect (fix x) (fix y))
-    :inline t
-    :guard-hints (("Goal" :in-theory (enable setp))))
-
-  ;;;;;;;;;;;;;;;;;;;;
-
-  (define intersect-macro-loop
-    ((list true-listp))
-    :guard (and (consp list)
-                (consp (rest list)))
-    (if (endp (rest (rest list)))
-        (list 'binary-intersect
-              (first list)
-              (second list))
-      (list 'binary-intersect
+(define intersect-macro-loop
+  (intersect
+   (list true-listp))
+  :guard (and (consp list)
+              (consp (rest list))
+              (member-eq intersect
+                         '(intersect$inline intersect-= intersect-eq
+                           intersect-eql)))
+  (if (endp (rest (rest list)))
+      (list intersect
             (first list)
-            (intersect-macro-loop (rest list))))
-    :hints (("Goal" :in-theory (enable o< o-finp acl2-count))))
+            (second list))
+    (list intersect
+          (first list)
+          (intersect-macro-loop intersect (rest list))))
+  :hints (("Goal" :in-theory (enable acl2-count))))
 
-  (defmacro intersect (x y &rest rst)
-    (declare (xargs :guard t))
-    (intersect-macro-loop (list* x y rst)))
+(define intersect-macro-fn
+  ((list true-listp))
+  (mv-let (erp rest alist)
+          (partition-rest-and-keyword-args list '(:test))
+    (cond (erp
+           (er hard? 'intersect "Arguments are ill-formed: ~x0" list))
+          ((or (not (consp rest))
+               (not (consp (rest rest))))
+           (er hard? 'intersect "Too few arguments: ~x0" list))
+          (t (let ((test? (assoc-eq :test alist)))
+               (if test?
+                   (let ((test (cdr test?)))
+                     (case test
+                       (equal (intersect-macro-loop 'intersect$inline rest))
+                       (=     (intersect-macro-loop 'intersect-=      rest))
+                       (eq    (intersect-macro-loop 'intersect-eq     rest))
+                       (eql   (intersect-macro-loop 'intersect-eql    rest))
+                       (otherwise
+                        (er hard? 'intersect
+                            "Keyword argument :test should have one of the ~
+                             following values: equal, =, eq, or eql.~%~
+                             Instead, it has value: ~x0" test))))
+                 (intersect-macro-loop 'intersect$inline rest))))))
+  :guard-hints (("Goal" :in-theory (enable acl2::alistp-when-symbol-alistp))))
 
-  (add-macro-fn intersect binary-intersect$inline t)
+;; TODO: custom macro for rest + :test keyword argument
+(defmacro intersect (&rest forms)
+  (declare (xargs :guard t))
+  (intersect-macro-fn forms))
 
-  "@(def intersect)")
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; (defsection intersect
+;;   :parents (set)
+;;   :short "An @($n$)-ary set intersection."
+;;   :long
+;;   (xdoc::topstring
+;;     (xdoc::p
+;;       "Time complexity: @($O(n\\log(m/n))$) (for binary intersection, where @($n < m$))."))
+;;
+;;   (define binary-intersect
+;;     ((x setp)
+;;      (y setp))
+;;     :returns (set setp
+;;                   :hints (("Goal" :in-theory (enable setp
+;;                                                      fix
+;;                                                      empty))))
+;;     (tree-intersect (fix x) (fix y))
+;;     :inline t
+;;     :guard-hints (("Goal" :in-theory (enable setp))))
+;;
+;;   ;;;;;;;;;;;;;;;;;;;;
+;;
+;;   (define intersect-macro-loop
+;;     ((list true-listp))
+;;     :guard (and (consp list)
+;;                 (consp (rest list)))
+;;     (if (endp (rest (rest list)))
+;;         (list 'binary-intersect
+;;               (first list)
+;;               (second list))
+;;       (list 'binary-intersect
+;;             (first list)
+;;             (intersect-macro-loop (rest list))))
+;;     :hints (("Goal" :in-theory (enable o< o-finp acl2-count))))
+;;
+;;   (defmacro intersect (x y &rest rst)
+;;     (declare (xargs :guard t))
+;;     (intersect-macro-loop (list* x y rst)))
+;;
+;;   (add-macro-fn intersect binary-intersect$inline t)
+;;
+;;   "@(def intersect)")
+
+(define intersect$inline
+  ((x setp)
+   (y setp))
+  :returns (set setp
+                :hints (("Goal" :in-theory (enable setp
+                                                   fix
+                                                   empty))))
+  (tree-intersect (fix x) (fix y))
+  :guard-hints (("Goal" :in-theory (enable setp)))
+
+  ///
+  (add-macro-fn intersect intersect$inline t))
 
 ;;;;;;;;;;;;;;;;;;;;
 
@@ -140,3 +209,42 @@
          (intersect x y))
   :enable (double-containment
            pick-a-point))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define intersect-=
+  ((x acl2-number-setp)
+   (y acl2-number-setp))
+  (mbe :logic (intersect x y)
+       :exec (acl2-number-tree-intersect x y))
+  :enabled t
+  :inline t
+  :guard-hints (("Goal" :in-theory (enable setp
+                                           set-all-acl2-numberp
+                                           intersect))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define intersect-eq
+  ((x symbol-setp)
+   (y symbol-setp))
+  (mbe :logic (intersect x y)
+       :exec (symbol-tree-intersect x y))
+  :enabled t
+  :inline t
+  :guard-hints (("Goal" :in-theory (enable setp
+                                           set-all-symbolp
+                                           intersect))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define intersect-eql
+  ((x eqlable-setp)
+   (y eqlable-setp))
+  (mbe :logic (intersect x y)
+       :exec (eqlable-tree-intersect x y))
+  :enabled t
+  :inline t
+  :guard-hints (("Goal" :in-theory (enable setp
+                                           set-all-eqlablep
+                                           intersect))))

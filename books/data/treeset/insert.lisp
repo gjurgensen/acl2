@@ -12,6 +12,9 @@
 (include-book "std/util/defrule" :dir :system)
 (include-book "xdoc/constructors" :dir :system)
 
+(include-book "data/utilities/fixed-size-words/u32-defs" :dir :system)
+(include-book "data/utilities/oset-defs" :dir :system)
+
 (include-book "internal/insert-defs")
 (include-book "hash-defs")
 (include-book "set-defs")
@@ -21,7 +24,15 @@
 (local (include-book "std/basic/controlled-configuration" :dir :system))
 (local (acl2::controlled-configuration :hooks nil))
 
+(local (include-book "data/utilities/fixed-size-words/u32" :dir :system))
+
+(local (include-book "kestrel/alists-light/assoc-equal" :dir :system))
+(local (include-book "kestrel/alists-light/symbol-alistp" :dir :system))
+
 (local (include-book "kestrel/utilities/ordinals" :dir :system))
+
+(local (include-book "std/osets/top" :dir :system))
+(local (include-book "std/system/partition-rest-and-keyword-args" :dir :system))
 
 (local (include-book "internal/tree"))
 (local (include-book "internal/bst-order"))
@@ -33,47 +44,105 @@
 (local (include-book "set"))
 (local (include-book "cardinality"))
 (local (include-book "in"))
+(local (include-book "subset"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; TODO: add option for provided hash
-(defsection insert
-  :parents (set)
-  :short "Add a value (or multiples values) to the set."
-  :long
-  (xdoc::topstring
-    (xdoc::p
-      "Time complexity: @($O(\\log(n))$)."))
-
-  (define insert1
-    (x
-     (set setp))
-    :returns (set$ setp
-                   :hints (("Goal" :in-theory (enable setp
-                                                      fix
-                                                      empty))))
-    (tree-insert x (hash x) (fix set))
-    :inline t
-    :guard-hints (("Goal" :in-theory (enable setp))))
-
-  (define insert-macro-loop
-    ((list true-listp))
-    :guard (and (consp list)
-                (consp (rest list)))
-    (if (endp (rest (rest list)))
-        (list 'insert1
-              (first list)
-              (second list))
-      (list 'insert1
+(define insert-macro-loop
+  (insert
+   (list true-listp))
+  :guard (and (consp list)
+              (consp (rest list))
+              (member-eq insert
+                         '(insert$inline insert-= insert-eq insert-eql)))
+  (if (endp (rest (rest list)))
+      (list insert
             (first list)
-            (insert-macro-loop (rest list))))
-    :hints (("Goal" :in-theory (enable acl2-count))))
+            (second list))
+    (list insert
+          (first list)
+          (insert-macro-loop insert (rest list))))
+  :hints (("Goal" :in-theory (enable acl2-count))))
 
-  (defmacro insert (x y &rest rst)
-    (declare (xargs :guard t))
-    (insert-macro-loop (list* x y rst)))
+(define insert-macro-fn
+  ((list true-listp))
+  (mv-let (erp rest alist)
+          (partition-rest-and-keyword-args list '(:test))
+    (cond (erp
+           (er hard? 'insert "Arguments are ill-formed: ~x0" list))
+          ((or (not (consp rest))
+               (not (consp (rest rest))))
+           (er hard? 'insert "Too few arguments: ~x0" list))
+          (t (let ((test? (assoc-eq :test alist)))
+               (if test?
+                   (let ((test (cdr test?)))
+                     (case test
+                       (equal (insert-macro-loop 'insert$inline rest))
+                       (= (insert-macro-loop 'insert-= rest))
+                       (eq (insert-macro-loop 'insert-eq rest))
+                       (eql (insert-macro-loop 'insert-eql rest))
+                       (otherwise
+                        (er hard? 'insert
+                            "Keyword argument :test should have one of the ~
+                             following values: equal, =, eq, or eql.~%~
+                             Instead, it has value: ~x0" test))))
+                 (insert-macro-loop 'insert$inline rest))))))
+  :guard-hints (("Goal" :in-theory (enable acl2::alistp-when-symbol-alistp))))
 
-  (add-macro-fn insert insert1$inline t))
+;; TODO: custom macro for rest + :test keyword argument
+(defmacro insert (&rest forms)
+  (declare (xargs :guard t))
+  (insert-macro-fn forms))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; TODO: add back this topic
+
+;; (defsection insert
+;;   :parents (set)
+;;   :short "Add a value (or multiples values) to the set."
+;;   :long
+;;   (xdoc::topstring
+;;     (xdoc::p
+;;       "Time complexity: @($O(\\log(n))$)."))
+;;
+;;   (define insert-macro-loop
+;;     ((list true-listp))
+;;     :guard (and (consp list)
+;;                 (consp (rest list)))
+;;     (if (endp (rest (rest list)))
+;;         (list 'insert1
+;;               (first list)
+;;               (second list))
+;;       (list 'insert1
+;;             (first list)
+;;             (insert-macro-loop (rest list))))
+;;     :hints (("Goal" :in-theory (enable acl2-count))))
+;;
+;;   ;; TODO: custom macro for rest + :test keyword argument
+;;   (defmacro insert (x y &rest rst)
+;;     (declare (xargs :guard t))
+;;     (insert-macro-loop (list* x y rst)))
+;;
+;;   (add-macro-fn insert insert1$inline t))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Note: we don't want to use define's `:inline t` feature here, because that
+;; would introduce a macro alias attached to insert$inline that will conflict
+;; with the one we wish to provide.
+(define insert$inline
+  (x
+   (set setp))
+  :returns (set$ setp
+                 :hints (("Goal" :in-theory (enable setp
+                                                    fix
+                                                    empty))))
+  (tree-insert x (hash x) (fix set))
+  :guard-hints (("Goal" :in-theory (enable setp)))
+
+  ///
+  (add-macro-fn insert insert$inline t))
 
 ;;;;;;;;;;;;;;;;;;;;
 
@@ -109,13 +178,11 @@
            setp
            empty))
 
-;; TODO
-;; (defrule insert-commutative
-;;   (equal (insert y x set)
-;;          (insert x y set))
-;;   :enable (double-containment
-;;            pick-a-point
-;;            subset))
+(defrule insert-commutative
+  (equal (insert y x set)
+         (insert x y set))
+  :enable (double-containment
+           pick-a-point))
 
 ;;;;;;;;;;;;;;;;;;;;
 
@@ -260,3 +327,60 @@
 ;;   :enable from-list)
 
 ;; TODO: cardinality
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define from-oset ((oset set::setp))
+  (from-list (set::sfix oset)))
+
+;; TODO
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define insert-=
+  ((x acl2-numberp)
+   (set acl2-number-setp))
+  (mbe :logic (insert x set)
+       :exec (acl2-number-tree-insert x (hash x) (fix set)))
+  :enabled t
+  :inline t
+  :guard-hints (("Goal" :in-theory (enable setp
+                                           set-all-acl2-numberp
+                                           insert))))
+
+(define insert-eq
+  ((x symbolp)
+   (set symbol-setp))
+  (mbe :logic (insert x set)
+       :exec (symbol-tree-insert x (hash x) (fix set)))
+  :enabled t
+  :inline t
+  :guard-hints (("Goal" :in-theory (enable setp
+                                           set-all-symbolp
+                                           insert))))
+(define insert-eql
+  ((x eqlablep)
+   (set eqlable-setp))
+  (mbe :logic (insert x set)
+       :exec (eqlable-tree-insert x (hash x) (fix set)))
+  :enabled t
+  :inline t
+  :guard-hints (("Goal" :in-theory (enable setp
+                                           set-all-eqlablep
+                                           insert))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define insert-with-hash
+  (x
+   (hash (unsigned-byte-p 32 hash))
+   (set setp))
+  :guard (mbe :logic (equal (hash x) hash)
+              :exec (data::u32-equal (hash x) hash))
+  (mbe :logic (insert x set)
+       :exec (tree-insert x hash set))
+  :enabled t
+  :inline t
+  :guard-hints (("Goal" :in-theory (enable data::u32-equal
+                                           setp
+                                           insert))))

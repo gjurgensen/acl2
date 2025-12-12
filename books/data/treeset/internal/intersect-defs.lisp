@@ -18,4 +18,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (std::defredundant
-  :names (tree-intersect))
+  :names (tree-intersect
+          acl2-number-tree-intersect
+          symbol-tree-intersect
+          eqlable-tree-intersect
+          ))

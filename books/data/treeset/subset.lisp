@@ -30,7 +30,17 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define subset
+(defmacro subset (x set &key (test 'equal))
+  (declare (xargs :guard (member-eq test '(equal = eq eql))))
+  (case test
+    (equal `(subset$inline ,x ,set))
+    (=     `(in-=          ,x ,set))
+    (eq    `(in-eq         ,x ,set))
+    (eql   `(in-eql        ,x ,set))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define subset$inline
   ((x setp)
    (y setp))
   :parents (set)
@@ -43,7 +53,10 @@
       where @($n < m$). This may be implemented similar to @(tsee diff).)"))
   :returns (yes/no booleanp :rule-classes :type-prescription)
   (tree-subset-p (fix x) (fix y))
-  :guard-hints (("Goal" :in-theory (enable setp))))
+  :guard-hints (("Goal" :in-theory (enable setp)))
+
+  ///
+  (add-macro-fn subset subset$inline))
 
 ;;;;;;;;;;;;;;;;;;;;
 
@@ -296,6 +309,45 @@
 (defthy pick-a-point
   '(subset-becomes-subset-sk
     subset-sk))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define subset-=
+  ((x acl2-number-setp)
+   (y acl2-number-setp))
+  (mbe :logic (subset x y)
+       :exec (tree-subset-p x y))
+  :enabled t
+  :inline t
+  :guard-hints (("Goal" :in-theory (enable setp
+                                           set-all-acl2-numberp
+                                           subset))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define subset-eq
+  ((x symbol-setp)
+   (y symbol-setp))
+  (mbe :logic (subset x y)
+       :exec (tree-subset-p x y))
+  :enabled t
+  :inline t
+  :guard-hints (("Goal" :in-theory (enable setp
+                                           set-all-symbolp
+                                           subset))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define subset-eql
+  ((x eqlable-setp)
+   (y eqlable-setp))
+  (mbe :logic (subset x y)
+       :exec (tree-subset-p x y))
+  :enabled t
+  :inline t
+  :guard-hints (("Goal" :in-theory (enable setp
+                                           set-all-eqlablep
+                                           subset))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

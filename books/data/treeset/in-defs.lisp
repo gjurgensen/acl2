@@ -18,6 +18,11 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (std::defredundant
-  :names (in))
+  :names (in$inline
+          in
+          in-=
+          in-eq
+          in-eql
+          ))
 
 ;; (add-macro-alias in in$inline)

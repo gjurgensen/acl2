@@ -601,6 +601,186 @@
   :use tree-split-of-tree->head
   :disable tree-split-of-tree->head)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defrule tree-all-acl2-numberp-of-tree-split.left
+  (implies (tree-all-acl2-numberp tree)
+           (tree-all-acl2-numberp (mv-nth 1 (tree-split x tree))))
+  :induct t
+  :enable (tree-split
+           tree-all-acl2-numberp))
+
+(defrule tree-all-acl2-numberp-of-tree-split.right
+  (implies (tree-all-acl2-numberp tree)
+           (tree-all-acl2-numberp (mv-nth 2 (tree-split x tree))))
+  :induct t
+  :enable (tree-split
+           tree-all-acl2-numberp))
+
+;;;;;;;;;;;;;;;;;;;;
+
+(defrule tree-all-symbolp-of-tree-split.left
+  (implies (tree-all-symbolp tree)
+           (tree-all-symbolp (mv-nth 1 (tree-split x tree))))
+  :induct t
+  :enable (tree-split
+           tree-all-symbolp))
+
+(defrule tree-all-symbolp-of-tree-split.right
+  (implies (tree-all-symbolp tree)
+           (tree-all-symbolp (mv-nth 2 (tree-split x tree))))
+  :induct t
+  :enable (tree-split
+           tree-all-symbolp))
+
+;;;;;;;;;;;;;;;;;;;;
+
+(defrule tree-all-eqlablep-of-tree-split.left
+  (implies (tree-all-eqlablep tree)
+           (tree-all-eqlablep (mv-nth 1 (tree-split x tree))))
+  :induct t
+  :enable (tree-split
+           tree-all-eqlablep))
+
+(defrule tree-all-eqlablep-of-tree-split.right
+  (implies (tree-all-eqlablep tree)
+           (tree-all-eqlablep (mv-nth 2 (tree-split x tree))))
+  :induct t
+  :enable (tree-split
+           tree-all-eqlablep))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define acl2-number-tree-split
+  ((x acl2-numberp)
+   (tree acl2-number-treep))
+  (mbe :logic (tree-split x tree)
+       :exec
+       (cond ((tree-empty-p tree)
+              (mv nil nil nil))
+             ((= x (tagged-element->elem (tree->head tree)))
+              (mv t (tree->left tree) (tree->right tree)))
+             ((acl2-number-bst< x (tagged-element->elem (tree->head tree)))
+              (mv-let (in left$ right$)
+                      (acl2-number-tree-split x (tree->left tree))
+                (mbe :logic (let ((tree$
+                                    (rotate-right
+                                      (tree-node (tree->head tree)
+                                                 (tree-node x left$ right$)
+                                                 (tree->right tree)))))
+                              (mv in (tree->left tree$) (tree->right tree$)))
+                     :exec (mv in
+                               left$
+                               (tree-node (tree->head tree)
+                                          right$
+                                          (tree->right tree))))))
+             (t
+              (mv-let (in left$ right$)
+                      (acl2-number-tree-split x (tree->right tree))
+                (mbe :logic (let ((tree$
+                                    (rotate-left
+                                      (tree-node (tree->head tree)
+                                                 (tree->left tree)
+                                                 (tree-node x left$ right$)))))
+                              (mv in (tree->left tree$) (tree->right tree$)))
+                     :exec (mv in
+                               (tree-node (tree->head tree)
+                                          (tree->left tree)
+                                          left$)
+                               right$))))))
+  :enabled t
+  :guard-hints (("Goal" :in-theory (enable tree-split
+                                           acl2-number-tree-split
+                                           tree-all-acl2-numberp))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define symbol-tree-split
+  ((x symbolp)
+   (tree symbol-treep))
+  (mbe :logic (tree-split x tree)
+       :exec
+       (cond ((tree-empty-p tree)
+              (mv nil nil nil))
+             ((eq x (tagged-element->elem (tree->head tree)))
+              (mv t (tree->left tree) (tree->right tree)))
+             ((symbol-bst< x (tagged-element->elem (tree->head tree)))
+              (mv-let (in left$ right$)
+                      (symbol-tree-split x (tree->left tree))
+                (mbe :logic (let ((tree$
+                                    (rotate-right
+                                      (tree-node (tree->head tree)
+                                                 (tree-node x left$ right$)
+                                                 (tree->right tree)))))
+                              (mv in (tree->left tree$) (tree->right tree$)))
+                     :exec (mv in
+                               left$
+                               (tree-node (tree->head tree)
+                                          right$
+                                          (tree->right tree))))))
+             (t
+              (mv-let (in left$ right$)
+                      (symbol-tree-split x (tree->right tree))
+                (mbe :logic (let ((tree$
+                                    (rotate-left
+                                      (tree-node (tree->head tree)
+                                                 (tree->left tree)
+                                                 (tree-node x left$ right$)))))
+                              (mv in (tree->left tree$) (tree->right tree$)))
+                     :exec (mv in
+                               (tree-node (tree->head tree)
+                                          (tree->left tree)
+                                          left$)
+                               right$))))))
+  :enabled t
+  :guard-hints (("Goal" :in-theory (enable tree-split
+                                           symbol-tree-split
+                                           tree-all-symbolp))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define eqlable-tree-split
+  ((x eqlablep)
+   (tree eqlable-treep))
+  (mbe :logic (tree-split x tree)
+       :exec
+       (cond ((tree-empty-p tree)
+              (mv nil nil nil))
+             ((eql x (tagged-element->elem (tree->head tree)))
+              (mv t (tree->left tree) (tree->right tree)))
+             ((eqlable-bst< x (tagged-element->elem (tree->head tree)))
+              (mv-let (in left$ right$)
+                      (eqlable-tree-split x (tree->left tree))
+                (mbe :logic (let ((tree$
+                                    (rotate-right
+                                      (tree-node (tree->head tree)
+                                                 (tree-node x left$ right$)
+                                                 (tree->right tree)))))
+                              (mv in (tree->left tree$) (tree->right tree$)))
+                     :exec (mv in
+                               left$
+                               (tree-node (tree->head tree)
+                                          right$
+                                          (tree->right tree))))))
+             (t
+              (mv-let (in left$ right$)
+                      (eqlable-tree-split x (tree->right tree))
+                (mbe :logic (let ((tree$
+                                    (rotate-left
+                                      (tree-node (tree->head tree)
+                                                 (tree->left tree)
+                                                 (tree-node x left$ right$)))))
+                              (mv in (tree->left tree$) (tree->right tree$)))
+                     :exec (mv in
+                               (tree-node (tree->head tree)
+                                          (tree->left tree)
+                                          left$)
+                               right$))))))
+  :enabled t
+  :guard-hints (("Goal" :in-theory (enable tree-split
+                                           eqlable-tree-split
+                                           tree-all-eqlablep))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defthy tree-split-extra-rules

@@ -256,6 +256,63 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(define acl2-number-tree-subset-p
+  ((x acl2-number-treep)
+   (y acl2-number-treep))
+  :guard (bstp y)
+  (mbe :logic (tree-subset-p x y)
+       :exec
+       (or (tree-empty-p x)
+           (and (mbe :logic (tree-in (tagged-element->elem (tree->head x)) y)
+                     :exec (acl2-number-tree-search-in
+                             (tagged-element->elem (tree->head x)) y))
+                (acl2-number-tree-subset-p (tree->left x) y)
+                (acl2-number-tree-subset-p (tree->right x) y))))
+  :enabled t
+  :guard-hints (("Goal" :in-theory (enable tree-subset-p
+                                           acl2-number-tree-subset-p
+                                           tree-all-acl2-numberp))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define symbol-tree-subset-p
+  ((x symbol-treep)
+   (y symbol-treep))
+  :guard (bstp y)
+  (mbe :logic (tree-subset-p x y)
+       :exec
+       (or (tree-empty-p x)
+           (and (mbe :logic (tree-in (tagged-element->elem (tree->head x)) y)
+                     :exec (symbol-tree-search-in
+                             (tagged-element->elem (tree->head x)) y))
+                (symbol-tree-subset-p (tree->left x) y)
+                (symbol-tree-subset-p (tree->right x) y))))
+  :enabled t
+  :guard-hints (("Goal" :in-theory (enable tree-subset-p
+                                           symbol-tree-subset-p
+                                           tree-all-symbolp))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define eqlable-tree-subset-p
+  ((x eqlable-treep)
+   (y eqlable-treep))
+  :guard (bstp y)
+  (mbe :logic (tree-subset-p x y)
+       :exec
+       (or (tree-empty-p x)
+           (and (mbe :logic (tree-in (tagged-element->elem (tree->head x)) y)
+                     :exec (eqlable-tree-search-in
+                             (tagged-element->elem (tree->head x)) y))
+                (eqlable-tree-subset-p (tree->left x) y)
+                (eqlable-tree-subset-p (tree->right x) y))))
+  :enabled t
+  :guard-hints (("Goal" :in-theory (enable tree-subset-p
+                                           eqlable-tree-subset-p
+                                           tree-all-eqlablep))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defthy tree-subset-p-extra-rules
   '(tree-subset-p-when-tree-subset-p-of-arg1-and-tree->left
     tree-subset-p-when-tree-subset-p-of-arg1-and-tree->right

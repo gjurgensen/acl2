@@ -403,6 +403,9 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; TODO: probably remove these. I don't think we want to expose the
+;; implementation view. At the same time, remove left/right.
+
 (define set-induct (set)
   :parents (set)
   :short "Induct over the structure of a set."
@@ -444,25 +447,58 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; (define to-list
-;;   ((set setp))
-;;   :returns (list true-listp)
-;;   :parents (set)
-;;   :short "Create a list of values from a set."
-;;   (tree-post-order (fix set))
-;;   :guard-hints (("Goal" :in-theory (enable setp))))
+;; Variants matching the equality primitives
+
+(define set-all-acl2-numberp ((set setp))
+  :returns (yes/no booleanp :rule-classes :type-prescription)
+  (tree-all-acl2-numberp (fix set))
+  :guard-hints (("Goal" :in-theory (enable setp))))
+
+;;;;;;;;;;;;;;;;;;;;
+
+(in-theory (disable (:t set-all-acl2-numberp)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; TODO: theorems
-;; - no-duplicatesp
-;; - connect member-equal to in under iff
-;; - empty to null
+(define set-all-symbolp ((set setp))
+  :returns (yes/no booleanp :rule-classes :type-prescription)
+  (tree-all-symbolp (fix set))
+  :guard-hints (("Goal" :in-theory (enable setp))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;
 
-;; TODO: to-oset
-;; (With the current bst<, this is just an in-order traversal.)
+(in-theory (disable (:t set-all-symbolp)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define set-all-eqlablep ((set setp))
+  :returns (yes/no booleanp :rule-classes :type-prescription)
+  (tree-all-eqlablep (fix set))
+  :guard-hints (("Goal" :in-theory (enable setp))))
+
+;;;;;;;;;;;;;;;;;;;;
+
+(in-theory (disable (:t set-all-eqlablep)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; TODO: more efficient implementations (check setp and contents
+;; simultaneously).
+
+(define acl2-number-setp (x)
+  (and (setp x)
+       (set-all-acl2-numberp x))
+  :enabled t)
+
+(define symbol-setp (x)
+  (and (setp x)
+       (set-all-symbolp x))
+  :enabled t)
+
+(define eqlable-setp (x)
+  (and (setp x)
+       (set-all-eqlablep x))
+  :enabled t)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

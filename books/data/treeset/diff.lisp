@@ -34,7 +34,18 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define diff
+(defmacro diff (x y &key (test 'equal))
+  (declare (xargs :guard (member-eq test '(equal = eq eql))))
+  (case test
+    (equal `(diff$inline ,x ,y))
+    (=     `(diff-=      ,x ,y))
+    (eq    `(diff-eq     ,x ,y))
+    (eql   `(diff-eql    ,x ,y))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; TODO: doc should be on diff
+(define diff$inline
   ((x setp)
    (y setp))
   :parents (set)
@@ -48,7 +59,10 @@
                                                    fix
                                                    empty))))
   (tree-diff (fix x) (fix y))
-  :guard-hints (("Goal" :in-theory (enable setp))))
+  :guard-hints (("Goal" :in-theory (enable setp)))
+
+  ///
+  (add-macro-fn diff diff$inline))
 
 ;;;;;;;;;;;;;;;;;;;;
 
@@ -114,3 +128,36 @@
          (diff x (union y z)))
   :enable (double-containment
            pick-a-point))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define diff-=
+  ((x acl2-number-setp)
+   (y acl2-number-setp))
+  (mbe :logic (diff x y)
+       :exec (acl2-number-tree-diff x y))
+  :guard-hints (("Goal" :in-theory (enable setp
+                                           set-all-acl2-numberp
+                                           diff))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define diff-eq
+  ((x symbol-setp)
+   (y symbol-setp))
+  (mbe :logic (diff x y)
+       :exec (symbol-tree-diff x y))
+  :guard-hints (("Goal" :in-theory (enable setp
+                                           set-all-symbolp
+                                           diff))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define diff-eql
+  ((x eqlable-setp)
+   (y eqlable-setp))
+  (mbe :logic (diff x y)
+       :exec (eqlable-tree-diff x y))
+  :guard-hints (("Goal" :in-theory (enable setp
+                                           set-all-eqlablep
+                                           diff))))

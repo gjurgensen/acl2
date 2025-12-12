@@ -19,4 +19,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (std::defredundant
-  :names (tree-diff))
+  :names (tree-diff
+          acl2-number-tree-diff
+          symbol-tree-diff
+          eqlable-tree-diff
+          ))

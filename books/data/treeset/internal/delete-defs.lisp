@@ -18,4 +18,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (std::defredundant
-  :names (tree-delete))
+  :names (tree-delete
+          acl2-number-tree-delete
+          symbol-tree-delete
+          eqlable-tree-delete
+          ))

@@ -34,9 +34,12 @@
           tree->right
           tree-node
           tree-listp
-          ;; tree-pre-order
-          ;; tree-in-order
-          ;; tree-post-order
+          tree-all-acl2-numberp
+          tree-all-symbolp
+          tree-all-eqlablep
+          acl2-number-treep
+          symbol-treep
+          eqlable-treep
           ))
 
 ;; (add-macro-alias tree-fix tree-fix$inline)

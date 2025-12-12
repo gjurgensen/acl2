@@ -21,4 +21,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (std::defredundant
-  :names (tree-insert))
+  :names (tree-insert
+          acl2-number-tree-insert
+          symbol-tree-insert
+          eqlable-tree-insert))

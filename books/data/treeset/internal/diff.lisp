@@ -170,3 +170,119 @@
            (heapp (tree-diff x y)))
   :induct t
   :enable tree-diff)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define acl2-number-tree-diff
+  ((x acl2-number-treep)
+   (y acl2-number-treep))
+  (mbe :logic (tree-diff x y)
+       :exec
+       (cond ((or (tree-empty-p x)
+                  (tree-empty-p y))
+              x)
+             ((mbe :logic (heap< (tagged-element->elem (tree->head x))
+                                 (tagged-element->elem (tree->head y)))
+                   :exec (heap<-with-hashes
+                           (tagged-element->elem (tree->head x))
+                           (tagged-element->elem (tree->head y))
+                           (tagged-element->hash (tree->head x))
+                           (tagged-element->hash (tree->head y))))
+              (mv-let (in left right)
+                      (acl2-number-tree-split
+                        (tagged-element->elem (tree->head y)) x)
+                (declare (ignore in))
+                (let ((left (acl2-number-tree-diff left (tree->left y)))
+                      (right (acl2-number-tree-diff right (tree->right y))))
+                  (tree-join left right))))
+             (t
+              (mv-let (in left right)
+                      (acl2-number-tree-split
+                        (tagged-element->elem (tree->head x)) y)
+                (let ((left (tree-diff (tree->left x) left))
+                      (right (tree-diff (tree->right x) right)))
+                  (if in
+                      (tree-join left right)
+                    (tree-node (tree->head x) left right)))))))
+  :enabled t
+  :guard-hints (("Goal" :in-theory (enable tree-diff
+                                           acl2-number-tree-diff
+                                           tree-all-acl2-numberp
+                                           tree-join-at))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define symbol-tree-diff
+  ((x symbol-treep)
+   (y symbol-treep))
+  (mbe :logic (tree-diff x y)
+       :exec
+       (cond ((or (tree-empty-p x)
+                  (tree-empty-p y))
+              x)
+             ((mbe :logic (heap< (tagged-element->elem (tree->head x))
+                                 (tagged-element->elem (tree->head y)))
+                   :exec (heap<-with-hashes
+                           (tagged-element->elem (tree->head x))
+                           (tagged-element->elem (tree->head y))
+                           (tagged-element->hash (tree->head x))
+                           (tagged-element->hash (tree->head y))))
+              (mv-let (in left right)
+                      (symbol-tree-split
+                        (tagged-element->elem (tree->head y)) x)
+                (declare (ignore in))
+                (let ((left (symbol-tree-diff left (tree->left y)))
+                      (right (symbol-tree-diff right (tree->right y))))
+                  (tree-join left right))))
+             (t
+              (mv-let (in left right)
+                      (symbol-tree-split
+                        (tagged-element->elem (tree->head x)) y)
+                (let ((left (tree-diff (tree->left x) left))
+                      (right (tree-diff (tree->right x) right)))
+                  (if in
+                      (tree-join left right)
+                    (tree-node (tree->head x) left right)))))))
+  :enabled t
+  :guard-hints (("Goal" :in-theory (enable tree-diff
+                                           symbol-tree-diff
+                                           tree-all-symbolp
+                                           tree-join-at))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define eqlable-tree-diff
+  ((x eqlable-treep)
+   (y eqlable-treep))
+  (mbe :logic (tree-diff x y)
+       :exec
+       (cond ((or (tree-empty-p x)
+                  (tree-empty-p y))
+              x)
+             ((mbe :logic (heap< (tagged-element->elem (tree->head x))
+                                 (tagged-element->elem (tree->head y)))
+                   :exec (heap<-with-hashes
+                           (tagged-element->elem (tree->head x))
+                           (tagged-element->elem (tree->head y))
+                           (tagged-element->hash (tree->head x))
+                           (tagged-element->hash (tree->head y))))
+              (mv-let (in left right)
+                      (eqlable-tree-split
+                        (tagged-element->elem (tree->head y)) x)
+                (declare (ignore in))
+                (let ((left (eqlable-tree-diff left (tree->left y)))
+                      (right (eqlable-tree-diff right (tree->right y))))
+                  (tree-join left right))))
+             (t
+              (mv-let (in left right)
+                      (eqlable-tree-split
+                        (tagged-element->elem (tree->head x)) y)
+                (let ((left (tree-diff (tree->left x) left))
+                      (right (tree-diff (tree->right x) right)))
+                  (if in
+                      (tree-join left right)
+                    (tree-node (tree->head x) left right)))))))
+  :enabled t
+  :guard-hints (("Goal" :in-theory (enable tree-diff
+                                           eqlable-tree-diff
+                                           tree-all-eqlablep
+                                           tree-join-at))))

@@ -21,6 +21,13 @@
 (local (include-book "std/basic/controlled-configuration" :dir :system))
 (local (acl2::controlled-configuration :hooks nil))
 
+(local (include-book "kestrel/alists-light/assoc-equal" :dir :system))
+(local (include-book "kestrel/alists-light/symbol-alistp" :dir :system))
+
+(local (include-book "kestrel/utilities/ordinals" :dir :system))
+
+(local (include-book "std/system/partition-rest-and-keyword-args" :dir :system))
+
 (local (include-book "internal/tree"))
 (local (include-book "internal/union"))
 (local (include-book "set"))
@@ -31,45 +38,105 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defsection union
-  :parents (set)
-  :short "An @($n$)-ary set union."
-  :long
-  (xdoc::topstring
-    (xdoc::p
-      "Time complexity: @($O(n\\log(m/n))$) (for binary union, where @($n < m$))."))
-
-  (define binary-union
-    ((x setp)
-     (y setp))
-    :returns (set setp
-                  :hints (("Goal" :in-theory (enable setp
-                                                     fix
-                                                     empty))))
-    (tree-union (fix x) (fix y))
-    :inline t
-    :guard-hints (("Goal" :in-theory (enable setp))))
-
-  ;;;;;;;;;;;;;;;;;;;;
-
-  (define union-macro-loop
-    ((list true-listp))
-    :guard (and (consp list)
-                (consp (rest list)))
-    (if (endp (rest (rest list)))
-        (list 'binary-union
-              (first list)
-              (second list))
-      (list 'binary-union
+(define union-macro-loop
+  (union
+   (list true-listp))
+  :guard (and (consp list)
+              (consp (rest list))
+              (member-eq union
+                         '(union$inline union-= union-eq union-eql)))
+  (if (endp (rest (rest list)))
+      (list union
             (first list)
-            (union-macro-loop (rest list))))
-    :hints (("Goal" :in-theory (enable o< o-finp acl2-count))))
+            (second list))
+    (list union
+          (first list)
+          (union-macro-loop union (rest list))))
+  :hints (("Goal" :in-theory (enable acl2-count))))
 
-  (defmacro union (x y &rest rst)
-    (declare (xargs :guard t))
-    (union-macro-loop (list* x y rst)))
+(define union-macro-fn
+  ((list true-listp))
+  (mv-let (erp rest alist)
+          (partition-rest-and-keyword-args list '(:test))
+    (cond (erp
+           (er hard? 'union "Arguments are ill-formed: ~x0" list))
+          ((or (not (consp rest))
+               (not (consp (rest rest))))
+           (er hard? 'union "Too few arguments: ~x0" list))
+          (t (let ((test? (assoc-eq :test alist)))
+               (if test?
+                   (let ((test (cdr test?)))
+                     (case test
+                       (equal (union-macro-loop 'union$inline rest))
+                       (=     (union-macro-loop 'union-=      rest))
+                       (eq    (union-macro-loop 'union-eq     rest))
+                       (eql   (union-macro-loop 'union-eql    rest))
+                       (otherwise
+                        (er hard? 'union
+                            "Keyword argument :test should have one of the ~
+                             following values: equal, =, eq, or eql.~%~
+                             Instead, it has value: ~x0" test))))
+                 (union-macro-loop 'union$inline rest))))))
+  :guard-hints (("Goal" :in-theory (enable acl2::alistp-when-symbol-alistp))))
 
-  (add-macro-fn union binary-union$inline t))
+;; TODO: custom macro for rest + :test keyword argument
+(defmacro union (&rest forms)
+  (declare (xargs :guard t))
+  (union-macro-fn forms))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; (defsection union
+;;   :parents (set)
+;;   :short "An @($n$)-ary set union."
+;;   :long
+;;   (xdoc::topstring
+;;     (xdoc::p
+;;       "Time complexity: @($O(n\\log(m/n))$) (for binary union, where @($n < m$))."))
+;;
+;;   (define binary-union
+;;     ((x setp)
+;;      (y setp))
+;;     :returns (set setp
+;;                   :hints (("Goal" :in-theory (enable setp
+;;                                                      fix
+;;                                                      empty))))
+;;     (tree-union (fix x) (fix y))
+;;     :inline t
+;;     :guard-hints (("Goal" :in-theory (enable setp))))
+;;
+;;   ;;;;;;;;;;;;;;;;;;;;
+;;
+;;   (define union-macro-loop
+;;     ((list true-listp))
+;;     :guard (and (consp list)
+;;                 (consp (rest list)))
+;;     (if (endp (rest (rest list)))
+;;         (list 'binary-union
+;;               (first list)
+;;               (second list))
+;;       (list 'binary-union
+;;             (first list)
+;;             (union-macro-loop (rest list))))
+;;     :hints (("Goal" :in-theory (enable o< o-finp acl2-count))))
+;;
+;;   (defmacro union (x y &rest rst)
+;;     (declare (xargs :guard t))
+;;     (union-macro-loop (list* x y rst)))
+;;
+;;   (add-macro-fn union binary-union$inline t))
+
+(define union$inline
+  ((x setp)
+   (y setp))
+  :returns (set setp
+                :hints (("Goal" :in-theory (enable setp
+                                                   fix
+                                                   empty))))
+  (tree-union (fix x) (fix y))
+  :guard-hints (("Goal" :in-theory (enable setp))))
+
+(add-macro-fn union union$inline t)
 
 ;;;;;;;;;;;;;;;;;;;;
 
@@ -139,3 +206,42 @@
          (union x y))
   :enable (double-containment
            pick-a-point))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define union-=
+  ((x acl2-number-setp)
+   (y acl2-number-setp))
+  (mbe :logic (union x y)
+       :exec (acl2-number-tree-union x y))
+  :enabled t
+  :inline t
+  :guard-hints (("Goal" :in-theory (enable setp
+                                           set-all-acl2-numberp
+                                           union))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define union-eq
+  ((x symbol-setp)
+   (y symbol-setp))
+  (mbe :logic (union x y)
+       :exec (symbol-tree-union x y))
+  :enabled t
+  :inline t
+  :guard-hints (("Goal" :in-theory (enable setp
+                                           set-all-symbolp
+                                           union))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define union-eql
+  ((x eqlable-setp)
+   (y eqlable-setp))
+  (mbe :logic (union x y)
+       :exec (eqlable-tree-union x y))
+  :enabled t
+  :inline t
+  :guard-hints (("Goal" :in-theory (enable setp
+                                           set-all-eqlablep
+                                           union))))

@@ -19,4 +19,8 @@
 (std::defredundant
   :names (tree-subset-p
           tree-subset-p-sk-witness
-          tree-subset-p-sk))
+          tree-subset-p-sk
+          acl2-number-tree-subset-p
+          symbol-tree-subset-p
+          eqlable-tree-subset-p
+          ))

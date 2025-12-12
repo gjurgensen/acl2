@@ -18,10 +18,15 @@
 
 (std::defredundant
   :names (insert-macro-loop
-          insert1
+          insert-macro-fn
+          insert$inline
           insert
           insert-all
-          from-list))
+          from-list
+          insert-=
+          insert-eq
+          insert-eql
+          ))
 
 ;; (add-macro-alias insert1 insert1$inline)
 ;; (add-macro-fn insert insert1$inline)

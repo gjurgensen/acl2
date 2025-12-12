@@ -19,5 +19,10 @@
 
 (std::defredundant
   :names (subset
+          subset$inline
           subset-sk-witness
-          subset-sk))
+          subset-sk
+          subset-=
+          subset-eq
+          subset-eql
+          ))

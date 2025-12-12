@@ -36,4 +36,6 @@
                                  setp
                                  subset
                                  union
+                                 union-eq
+                                 union-eql
                                  ))))

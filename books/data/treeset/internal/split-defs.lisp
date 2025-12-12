@@ -18,4 +18,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (std::defredundant
-  :names (tree-split))
+  :names (tree-split
+          acl2-number-tree-split
+          symbol-tree-split
+          eqlable-tree-split
+          ))

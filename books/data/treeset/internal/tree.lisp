@@ -373,6 +373,27 @@
   :rule-classes :congruence
   :enable tree-empty-p)
 
+(defrule tree-empty-p-compound-recognizer
+  (implies (not (tree-empty-p tree))
+           (consp tree))
+  :rule-classes :compound-recognizer
+  :enable (tree-empty-p
+           tree-fix))
+
+(defruled tree-empty-p-when-treep
+  (implies (treep tree)
+           (equal (tree-empty-p tree)
+                  (equal tree nil)))
+  :enable (tree-empty-p
+           tree-fix))
+
+(defrule tree-empty-p-when-treep-cheap
+  (implies (treep tree)
+           (equal (tree-empty-p tree)
+                  (equal tree nil)))
+  :rule-classes ((:rewrite :backchain-limit-lst (0)))
+  :by tree-empty-p-when-treep)
+
 (defruled tree-fix-when-tree-empty-p
   (implies (tree-empty-p tree)
            (equal (tree-fix tree)
@@ -837,6 +858,91 @@
                        (equal (tree->left x) (tree->left y))
                        (equal (tree->right x) (tree->right y)))))
   :rule-classes ((:rewrite :backchain-limit-lst (0))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Equality variants
+
+(define tree-all-acl2-numberp ((tree treep))
+  :returns (yes/no booleanp :rule-classes :type-prescription)
+  (or (tree-empty-p tree)
+      (and (acl2-numberp (tagged-element->elem (tree->head tree)))
+           (tree-all-acl2-numberp (tree->left tree))
+           (tree-all-acl2-numberp (tree->right tree)))))
+
+;;;;;;;;;;;;;;;;;;;;
+
+(in-theory (disable (:t tree-all-acl2-numberp)))
+
+(defrule tree-all-acl2-numberp-when-tree-equiv-congruence
+  (implies (tree-equiv tree0 tree1)
+           (equal (tree-all-acl2-numberp tree0)
+                  (tree-all-acl2-numberp tree1)))
+  :rule-classes :congruence
+  :induct t
+  :enable tree-all-acl2-numberp)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define tree-all-symbolp ((tree treep))
+  :returns (yes/no booleanp :rule-classes :type-prescription)
+  (or (tree-empty-p tree)
+      (and (symbolp (tagged-element->elem (tree->head tree)))
+           (tree-all-symbolp (tree->left tree))
+           (tree-all-symbolp (tree->right tree)))))
+
+;;;;;;;;;;;;;;;;;;;;
+
+(in-theory (disable (:t tree-all-symbolp)))
+
+(defrule tree-all-symbolp-when-tree-equiv-congruence
+  (implies (tree-equiv tree0 tree1)
+           (equal (tree-all-symbolp tree0)
+                  (tree-all-symbolp tree1)))
+  :rule-classes :congruence
+  :induct t
+  :enable tree-all-symbolp)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define tree-all-eqlablep ((tree treep))
+  :returns (yes/no booleanp :rule-classes :type-prescription)
+  (or (tree-empty-p tree)
+      (and (eqlablep (tagged-element->elem (tree->head tree)))
+           (tree-all-eqlablep (tree->left tree))
+           (tree-all-eqlablep (tree->right tree)))))
+
+;;;;;;;;;;;;;;;;;;;;
+
+(in-theory (disable (:t tree-all-eqlablep)))
+
+(defrule tree-all-eqlablep-when-tree-equiv-congruence
+  (implies (tree-equiv tree0 tree1)
+           (equal (tree-all-eqlablep tree0)
+                  (tree-all-eqlablep tree1)))
+  :rule-classes :congruence
+  :induct t
+  :enable tree-all-eqlablep)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; TODO: mbe-in some slightly more efficient functions which does the treep and
+;; tree-all checks simultaneously.
+
+(define acl2-number-treep (x)
+  (and (treep x)
+       (tree-all-acl2-numberp x))
+  :enabled t)
+
+(define symbol-treep (x)
+  (and (treep x)
+       (tree-all-symbolp x))
+  :enabled t)
+
+(define eqlable-treep (x)
+  (and (treep x)
+       (tree-all-eqlablep x))
+  :enabled t)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

@@ -25,7 +25,18 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define in
+(defmacro in (x set &key (test 'equal))
+  (declare (xargs :guard (member-eq test '(equal = eq eql))))
+  (case test
+    (equal `(in$inline ,x ,set))
+    (=     `(in-=      ,x ,set))
+    (eq    `(in-eq     ,x ,set))
+    (eql   `(in-eql    ,x ,set))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; TODO: this documentation should be on in, not in$inline
+(define in$inline
   (x
    (set setp))
   :parents (set)
@@ -37,7 +48,10 @@
   :returns (yes/no booleanp :rule-classes (:rewrite :type-prescription))
   (mbe :logic (tree-in x (fix set))
        :exec (tree-search-in x set))
-  :guard-hints (("Goal" :in-theory (enable setp))))
+  :guard-hints (("Goal" :in-theory (enable setp)))
+
+  ///
+  (add-macro-fn in in$inline))
 
 ;;;;;;;;;;;;;;;;;;;;
 
@@ -128,6 +142,41 @@
            fix
            setp
            empty))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define in-=
+  ((x acl2-numberp)
+   (set acl2-number-setp))
+  (mbe :logic (in x set)
+       :exec (acl2-number-tree-search-in x set))
+  :enabled t
+  :inline t
+  :guard-hints (("Goal" :in-theory (enable setp
+                                           set-all-acl2-numberp
+                                           in))))
+
+(define in-eq
+  ((x symbolp)
+   (set symbol-setp))
+  (mbe :logic (in x set)
+       :exec (symbol-tree-search-in x set))
+  :enabled t
+  :inline t
+  :guard-hints (("Goal" :in-theory (enable setp
+                                           set-all-symbolp
+                                           in))))
+
+(define in-eql
+  ((x eqlablep)
+   (set eqlable-setp))
+  (mbe :logic (in x set)
+       :exec (eqlable-tree-search-in x set))
+  :enabled t
+  :inline t
+  :guard-hints (("Goal" :in-theory (enable setp
+                                           set-all-eqlablep
+                                           in))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

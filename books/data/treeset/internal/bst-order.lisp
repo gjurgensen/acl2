@@ -72,18 +72,44 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define bst<-with-hashes (x y hash-x hash-y)
-  (declare (xargs :type-prescription
-                  (booleanp (bst<-with-hashes x y hash-x hash-y)))
-           (ignore hash-x hash-y))
-  :parents (bst<)
-  :short "Variant of @(tsee bst<) which may use pre-computed hashes."
-  :long
-  (xdoc::topstring
-   (xdoc::p
-     "This is currently a dummy function warpping @(tsee bst<). It is provided
-      in case we wish to change the order to make use of hash values, as @(tsee
-      heap<) currently does."))
-  (bst< x y)
+;; (define bst<-with-hashes (x y hash-x hash-y)
+;;   (declare (xargs :type-prescription
+;;                   (booleanp (bst<-with-hashes x y hash-x hash-y)))
+;;            (ignore hash-x hash-y))
+;;   :parents (bst<)
+;;   :short "Variant of @(tsee bst<) which may use pre-computed hashes."
+;;   :long
+;;   (xdoc::topstring
+;;    (xdoc::p
+;;      "This is currently a dummy function warpping @(tsee bst<). It is provided
+;;       in case we wish to change the order to make use of hash values, as @(tsee
+;;       heap<) currently does."))
+;;   (bst< x y)
+;;   :enabled t
+;;   :inline t)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define acl2-number-bst<
+  ((x acl2-numberp)
+   (y acl2-numberp))
+  (mbe :logic (bst< x y)
+       :exec (data::acl2-number-<< x y))
   :enabled t
-  :inline t)
+  :guard-hints (("Goal" :in-theory (enable bst<))))
+
+(define symbol-bst<
+  ((x symbolp)
+   (y symbolp))
+  (mbe :logic (bst< x y)
+       :exec (data::symbol-<< x y))
+  :enabled t
+  :guard-hints (("Goal" :in-theory (enable bst<))))
+
+(define eqlable-bst<
+  ((x eqlablep)
+   (y eqlablep))
+  (mbe :logic (bst< x y)
+       :exec (data::eqlable-<< x y))
+  :enabled t
+  :guard-hints (("Goal" :in-theory (enable bst<))))

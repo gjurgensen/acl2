@@ -314,6 +314,114 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(define acl2-number-tree-search-in
+  ((x acl2-numberp)
+   (tree acl2-number-treep))
+  (mbe :logic (tree-search-in x tree)
+       :exec (if (tree-empty-p tree)
+                 nil
+               (let ((head-elem (tagged-element->elem (tree->head tree))))
+                 (or (= x head-elem)
+                     (if (acl2-number-bst< x head-elem)
+                         (acl2-number-tree-search-in x (tree->left tree))
+                       (acl2-number-tree-search-in x (tree->right tree)))))))
+  :enabled t
+  ;; Verified below
+  :verify-guards nil)
+
+;;;;;;;;;;;;;;;;;;;;
+
+(defruled tree-search-in-becomes-acl2-number-tree-search-in-exec
+  (equal (tree-search-in x tree)
+         (if (tree-empty-p tree)
+             nil
+           (let ((head-elem (tagged-element->elem (tree->head tree))))
+             (or (equal x head-elem)
+                 (if (bst< x head-elem)
+                     (acl2-number-tree-search-in x (tree->left tree))
+                   (acl2-number-tree-search-in x (tree->right tree)))))))
+  :induct t
+  :enable tree-search-in)
+
+(verify-guards acl2-number-tree-search-in
+  :hints
+  (("Goal" :use tree-search-in-becomes-acl2-number-tree-search-in-exec
+           :in-theory (enable tree-all-acl2-numberp))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define symbol-tree-search-in
+  ((x symbolp)
+   (tree symbol-treep))
+  (mbe :logic (tree-search-in x tree)
+       :exec (if (tree-empty-p tree)
+                 nil
+               (let ((head-elem (tagged-element->elem (tree->head tree))))
+                 (or (eq x head-elem)
+                     (if (symbol-bst< x head-elem)
+                         (symbol-tree-search-in x (tree->left tree))
+                       (symbol-tree-search-in x (tree->right tree)))))))
+  :enabled t
+  ;; Verified below
+  :verify-guards nil)
+
+;;;;;;;;;;;;;;;;;;;;
+
+(defruled tree-search-in-becomes-symbol-tree-search-in-exec
+  (equal (tree-search-in x tree)
+         (if (tree-empty-p tree)
+             nil
+           (let ((head-elem (tagged-element->elem (tree->head tree))))
+             (or (equal x head-elem)
+                 (if (bst< x head-elem)
+                     (symbol-tree-search-in x (tree->left tree))
+                   (symbol-tree-search-in x (tree->right tree)))))))
+  :induct t
+  :enable tree-search-in)
+
+(verify-guards symbol-tree-search-in
+  :hints
+  (("Goal" :use tree-search-in-becomes-symbol-tree-search-in-exec
+           :in-theory (enable tree-all-symbolp))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define eqlable-tree-search-in
+  ((x eqlablep)
+   (tree eqlable-treep))
+  (mbe :logic (tree-search-in x tree)
+       :exec (if (tree-empty-p tree)
+                 nil
+               (let ((head-elem (tagged-element->elem (tree->head tree))))
+                 (or (eql x head-elem)
+                     (if (eqlable-bst< x head-elem)
+                         (eqlable-tree-search-in x (tree->left tree))
+                       (eqlable-tree-search-in x (tree->right tree)))))))
+  :enabled t
+  ;; Verified below
+  :verify-guards nil)
+
+;;;;;;;;;;;;;;;;;;;;
+
+(defruled tree-search-in-becomes-eqlable-tree-search-in-exec
+  (equal (tree-search-in x tree)
+         (if (tree-empty-p tree)
+             nil
+           (let ((head-elem (tagged-element->elem (tree->head tree))))
+             (or (equal x head-elem)
+                 (if (bst< x head-elem)
+                     (eqlable-tree-search-in x (tree->left tree))
+                   (eqlable-tree-search-in x (tree->right tree)))))))
+  :induct t
+  :enable tree-search-in)
+
+(verify-guards eqlable-tree-search-in
+  :hints
+  (("Goal" :use tree-search-in-becomes-eqlable-tree-search-in-exec
+           :in-theory (enable tree-all-eqlablep))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defthy tree-in-extra-rules
   '(tree-in-when-tree-empty-p
     tree-in-when-tree-in-of-tree->left

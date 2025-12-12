@@ -25,7 +25,14 @@
           emptyp
           head
           left
-          right))
+          right
+          set-all-acl2-numberp
+          set-all-symbolp
+          set-all-eqlablep
+          acl2-number-setp
+          symbol-setp
+          eqlable-setp
+          ))
 
 ;; (add-macro-alias set-equiv set-equiv$inline)
 ;; (add-macro-alias emptyp emptyp$inline)

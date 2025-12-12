@@ -17,4 +17,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (std::defredundant
-  :names (diff))
+  :names (diff
+          diff$inline
+          diff-=
+          diff-eq
+          diff-eql
+          ))

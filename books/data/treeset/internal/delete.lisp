@@ -35,7 +35,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; TODO: this should take hash, like insert does.
 (define tree-delete
   (x
    (tree treep))
@@ -183,3 +182,87 @@
            bstp
            bst<-rules
            acl2::fix))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define acl2-number-tree-delete
+  ((x acl2-numberp)
+   (tree acl2-number-treep))
+  (mbe :logic (tree-delete x tree)
+       :exec
+       (cond ((tree-empty-p tree)
+              nil)
+             ((= x (tagged-element->elem (tree->head tree)))
+              (cond ((tree-empty-p (tree->left tree))
+                     (tree->right tree))
+                    ((tree-empty-p (tree->right tree))
+                     (tree->left tree))
+                    (t (tree-join (tree->left tree)
+                                  (tree->right tree)))))
+             ((acl2-number-bst< x (tagged-element->elem (tree->head tree)))
+              (tree-node (tree->head tree)
+                         (tree-delete x (tree->left tree))
+                         (tree->right tree)))
+             (t (tree-node (tree->head tree)
+                           (tree->left tree)
+                           (tree-delete x (tree->right tree))))))
+  :enabled t
+  :guard-hints (("Goal" :in-theory (enable tree-delete
+                                           tree-all-acl2-numberp
+                                           tree-join-at))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define symbol-tree-delete
+  ((x symbolp)
+   (tree symbol-treep))
+  (mbe :logic (tree-delete x tree)
+       :exec
+       (cond ((tree-empty-p tree)
+              nil)
+             ((eq x (tagged-element->elem (tree->head tree)))
+              (cond ((tree-empty-p (tree->left tree))
+                     (tree->right tree))
+                    ((tree-empty-p (tree->right tree))
+                     (tree->left tree))
+                    (t (tree-join (tree->left tree)
+                                  (tree->right tree)))))
+             ((symbol-bst< x (tagged-element->elem (tree->head tree)))
+              (tree-node (tree->head tree)
+                         (tree-delete x (tree->left tree))
+                         (tree->right tree)))
+             (t (tree-node (tree->head tree)
+                           (tree->left tree)
+                           (tree-delete x (tree->right tree))))))
+  :enabled t
+  :guard-hints (("Goal" :in-theory (enable tree-delete
+                                           tree-all-symbolp
+                                           tree-join-at))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define eqlable-tree-delete
+  ((x eqlablep)
+   (tree eqlable-treep))
+  (mbe :logic (tree-delete x tree)
+       :exec
+       (cond ((tree-empty-p tree)
+              nil)
+             ((eql x (tagged-element->elem (tree->head tree)))
+              (cond ((tree-empty-p (tree->left tree))
+                     (tree->right tree))
+                    ((tree-empty-p (tree->right tree))
+                     (tree->left tree))
+                    (t (tree-join (tree->left tree)
+                                  (tree->right tree)))))
+             ((eqlable-bst< x (tagged-element->elem (tree->head tree)))
+              (tree-node (tree->head tree)
+                         (tree-delete x (tree->left tree))
+                         (tree->right tree)))
+             (t (tree-node (tree->head tree)
+                           (tree->left tree)
+                           (tree-delete x (tree->right tree))))))
+  :enabled t
+  :guard-hints (("Goal" :in-theory (enable tree-delete
+                                           tree-all-eqlablep
+                                           tree-join-at))))

@@ -19,6 +19,10 @@
 
 (std::defredundant
   :names (tree-in
-          tree-search-in))
+          tree-search-in
+          acl2-number-tree-search-in
+          symbol-tree-search-in
+          eqlable-tree-search-in
+          ))
 
 ;; (add-macro-alias in in$inline)

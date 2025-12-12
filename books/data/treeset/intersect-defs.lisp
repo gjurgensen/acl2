@@ -18,8 +18,13 @@
 
 (std::defredundant
   :names (intersect-macro-loop
-          binary-intersect
-          intersect))
+          intersect-macro-fn
+          intersect
+          intersect$inline
+          intersect-=
+          intersect-eq
+          intersect-eql
+          ))
 
 ;; (add-macro-alias binary-intersect binary-intersect$inline)
 ;; (add-macro-fn intersect binary-intersect$inline t)

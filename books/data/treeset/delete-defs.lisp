@@ -17,10 +17,14 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (std::defredundant
-  :names (tree-delete
-          delete-macro-loop
-          delete1
-          delete))
+  :names (delete-macro-loop
+          delete-macro-fn
+          delete
+          delete$inline
+          delete-=
+          delete-eq
+          delete-eql
+          ))
 
 ;; (add-macro-alias delete1 delete1$inline)
 ;; (add-macro-fn delete delete1$inline t)

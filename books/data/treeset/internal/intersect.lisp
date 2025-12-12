@@ -119,6 +119,16 @@
            (tree-empty-p (tree-intersect x y)))
   :enable tree-intersect)
 
+(defrule not-tree-intersect-when-tree-empty-p-of-arg1
+  (implies (tree-empty-p x)
+           (not (tree-intersect x y)))
+  :enable tree-intersect)
+
+(defrule not-tree-intersect-when-tree-empty-p-of-arg2
+  (implies (tree-empty-p y)
+           (not (tree-intersect x y)))
+  :enable tree-intersect)
+
 (defrule tree-in-of-tree-intersect
   (implies (and (bstp x)
                 (bstp y))
@@ -174,3 +184,119 @@
   :induct t
   :enable (tree-intersect
            tree->head-when-heapp-and-tree-in-tree->head-syntaxp))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define acl2-number-tree-intersect
+  ((x acl2-number-treep)
+   (y acl2-number-treep))
+  (mbe :logic (tree-intersect x y)
+       :exec
+       (cond ((or (tree-empty-p x)
+                  (tree-empty-p y))
+              nil)
+             ((mbe :logic (heap< (tagged-element->elem (tree->head x))
+                                 (tagged-element->elem (tree->head y)))
+                   :exec (heap<-with-hashes
+                           (tagged-element->elem (tree->head x))
+                           (tagged-element->elem (tree->head y))
+                           (tagged-element->hash (tree->head x))
+                           (tagged-element->hash (tree->head y))))
+              (mv-let (in left right)
+                      (acl2-number-tree-split
+                        (tagged-element->elem (tree->head y)) x)
+                (let ((left (tree-intersect left (tree->left y)))
+                      (right (tree-intersect right (tree->right y))))
+                  (if in
+                      (tree-node (tree->head y) left right)
+                    (tree-join left right)))))
+             (t
+              (mv-let (in left right)
+                      (acl2-number-tree-split
+                        (tagged-element->elem (tree->head x)) y)
+                (let ((left (tree-intersect (tree->left x) left))
+                      (right (tree-intersect (tree->right x) right)))
+                  (if in
+                      (tree-node (tree->head x) left right)
+                    (tree-join left right)))))))
+  :enabled t
+  :guard-hints (("Goal" :in-theory (enable tree-join-at
+                                           tree-intersect
+                                           tree-all-acl2-numberp))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define symbol-tree-intersect
+  ((x symbol-treep)
+   (y symbol-treep))
+  (mbe :logic (tree-intersect x y)
+       :exec
+       (cond ((or (tree-empty-p x)
+                  (tree-empty-p y))
+              nil)
+             ((mbe :logic (heap< (tagged-element->elem (tree->head x))
+                                 (tagged-element->elem (tree->head y)))
+                   :exec (heap<-with-hashes
+                           (tagged-element->elem (tree->head x))
+                           (tagged-element->elem (tree->head y))
+                           (tagged-element->hash (tree->head x))
+                           (tagged-element->hash (tree->head y))))
+              (mv-let (in left right)
+                      (symbol-tree-split
+                        (tagged-element->elem (tree->head y)) x)
+                (let ((left (tree-intersect left (tree->left y)))
+                      (right (tree-intersect right (tree->right y))))
+                  (if in
+                      (tree-node (tree->head y) left right)
+                    (tree-join left right)))))
+             (t
+              (mv-let (in left right)
+                      (symbol-tree-split
+                        (tagged-element->elem (tree->head x)) y)
+                (let ((left (tree-intersect (tree->left x) left))
+                      (right (tree-intersect (tree->right x) right)))
+                  (if in
+                      (tree-node (tree->head x) left right)
+                    (tree-join left right)))))))
+  :enabled t
+  :guard-hints (("Goal" :in-theory (enable tree-join-at
+                                           tree-intersect
+                                           tree-all-symbolp))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define eqlable-tree-intersect
+  ((x eqlable-treep)
+   (y eqlable-treep))
+  (mbe :logic (tree-intersect x y)
+       :exec
+       (cond ((or (tree-empty-p x)
+                  (tree-empty-p y))
+              nil)
+             ((mbe :logic (heap< (tagged-element->elem (tree->head x))
+                                 (tagged-element->elem (tree->head y)))
+                   :exec (heap<-with-hashes
+                           (tagged-element->elem (tree->head x))
+                           (tagged-element->elem (tree->head y))
+                           (tagged-element->hash (tree->head x))
+                           (tagged-element->hash (tree->head y))))
+              (mv-let (in left right)
+                      (eqlable-tree-split
+                        (tagged-element->elem (tree->head y)) x)
+                (let ((left (tree-intersect left (tree->left y)))
+                      (right (tree-intersect right (tree->right y))))
+                  (if in
+                      (tree-node (tree->head y) left right)
+                    (tree-join left right)))))
+             (t
+              (mv-let (in left right)
+                      (eqlable-tree-split
+                        (tagged-element->elem (tree->head x)) y)
+                (let ((left (tree-intersect (tree->left x) left))
+                      (right (tree-intersect (tree->right x) right)))
+                  (if in
+                      (tree-node (tree->head x) left right)
+                    (tree-join left right)))))))
+  :enabled t
+  :guard-hints (("Goal" :in-theory (enable tree-join-at
+                                           tree-intersect
+                                           tree-all-eqlablep))))

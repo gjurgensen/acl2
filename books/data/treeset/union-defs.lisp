@@ -19,8 +19,12 @@
 
 (std::defredundant
   :names (union-macro-loop
-          binary-union
-          union))
+          union-macro-fn
+          union
+          union$inline
+          union-=
+          union-eq
+          union-eql))
 
 ;; (add-macro-alias binary-union binary-union$inline)
 ;; (add-macro-fn union binary-union$inline t)

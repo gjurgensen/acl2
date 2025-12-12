@@ -241,3 +241,117 @@
              (heapp (tree-union x y)))
     :induct t
     :enable tree-union))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define acl2-number-tree-union
+  ((x acl2-number-treep)
+   (y acl2-number-treep))
+  (mbe :logic (tree-union x y)
+       :exec
+       (cond ((tree-empty-p x)
+              y)
+             ((tree-empty-p y)
+              x)
+             ((mbe :logic (heap< (tagged-element->elem (tree->head x))
+                                 (tagged-element->elem (tree->head y)))
+                   :exec (heap<-with-hashes
+                           (tagged-element->elem (tree->head x))
+                           (tagged-element->elem (tree->head y))
+                           (tagged-element->hash (tree->head x))
+                           (tagged-element->hash (tree->head y))))
+              (mv-let (in left right)
+                      (acl2-number-tree-split
+                        (tagged-element->elem (tree->head y)) x)
+                (declare (ignore in))
+                (tree-node (tree->head y)
+                           (acl2-number-tree-union left (tree->left y))
+                           (acl2-number-tree-union right (tree->right y)))))
+             (t
+              (mv-let (in left right)
+                      (acl2-number-tree-split
+                        (tagged-element->elem (tree->head x)) y)
+                (declare (ignore in))
+                (tree-node (tree->head x)
+                           (acl2-number-tree-union (tree->left x) left)
+                           (acl2-number-tree-union (tree->right x) right))))))
+  :enabled t
+  :guard-hints (("Goal" :in-theory (enable tree-union
+                                           acl2-number-tree-union
+                                           tree-all-acl2-numberp))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define symbol-tree-union
+  ((x symbol-treep)
+   (y symbol-treep))
+  (mbe :logic (tree-union x y)
+       :exec
+       (cond ((tree-empty-p x)
+              y)
+             ((tree-empty-p y)
+              x)
+             ((mbe :logic (heap< (tagged-element->elem (tree->head x))
+                                 (tagged-element->elem (tree->head y)))
+                   :exec (heap<-with-hashes
+                           (tagged-element->elem (tree->head x))
+                           (tagged-element->elem (tree->head y))
+                           (tagged-element->hash (tree->head x))
+                           (tagged-element->hash (tree->head y))))
+              (mv-let (in left right)
+                      (symbol-tree-split
+                        (tagged-element->elem (tree->head y)) x)
+                (declare (ignore in))
+                (tree-node (tree->head y)
+                           (symbol-tree-union left (tree->left y))
+                           (symbol-tree-union right (tree->right y)))))
+             (t
+              (mv-let (in left right)
+                      (symbol-tree-split
+                        (tagged-element->elem (tree->head x)) y)
+                (declare (ignore in))
+                (tree-node (tree->head x)
+                           (symbol-tree-union (tree->left x) left)
+                           (symbol-tree-union (tree->right x) right))))))
+  :enabled t
+  :guard-hints (("Goal" :in-theory (enable tree-union
+                                           symbol-tree-union
+                                           tree-all-symbolp))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define eqlable-tree-union
+  ((x eqlable-treep)
+   (y eqlable-treep))
+  (mbe :logic (tree-union x y)
+       :exec
+       (cond ((tree-empty-p x)
+              y)
+             ((tree-empty-p y)
+              x)
+             ((mbe :logic (heap< (tagged-element->elem (tree->head x))
+                                 (tagged-element->elem (tree->head y)))
+                   :exec (heap<-with-hashes
+                           (tagged-element->elem (tree->head x))
+                           (tagged-element->elem (tree->head y))
+                           (tagged-element->hash (tree->head x))
+                           (tagged-element->hash (tree->head y))))
+              (mv-let (in left right)
+                      (eqlable-tree-split
+                        (tagged-element->elem (tree->head y)) x)
+                (declare (ignore in))
+                (tree-node (tree->head y)
+                           (eqlable-tree-union left (tree->left y))
+                           (eqlable-tree-union right (tree->right y)))))
+             (t
+              (mv-let (in left right)
+                      (eqlable-tree-split
+                        (tagged-element->elem (tree->head x)) y)
+                (declare (ignore in))
+                (tree-node (tree->head x)
+                           (eqlable-tree-union (tree->left x) left)
+                           (eqlable-tree-union (tree->right x) right))))))
+  :enabled t
+  :guard-hints (("Goal" :in-theory (enable tree-union
+                                           eqlable-tree-union
+                                           tree-all-eqlablep))))

@@ -14,7 +14,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (std::defredundant
-  :names #!ACL2(fast-<<
-                <<
-                fast-lexorder
-                ))
+  :names (acl2::fast-<<
+          acl2::fast-lexorder
+          acl2::<<
+          acl2-number-<<
+          symbol-<<
+          eqlable-<<))

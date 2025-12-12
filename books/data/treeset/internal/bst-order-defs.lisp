@@ -19,7 +19,11 @@
 
 (std::defredundant
   :names (bst<
-          bst<-with-hashes))
+          ;; bst<-with-hashes
+          acl2-number-bst<
+          symbol-bst<
+          eqlable-bst<
+          ))
 
 ;; (add-macro-alias bst< bst<$inline)
 ;; (add-macro-alias bst<-with-hashes bst<-with-hashes$inline)
