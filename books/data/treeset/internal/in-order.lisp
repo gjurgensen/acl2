@@ -18,7 +18,6 @@
 (include-book "data/utilities/true-list-defs" :dir :system)
 
 (include-book "tree-defs")
-(include-book "bst-order-defs")
 (include-book "bst-defs")
 (include-book "in-defs")
 (include-book "count-defs")
@@ -44,7 +43,6 @@
 (local (include-book "std/osets/top" :dir :system))
 
 (local (include-book "tree"))
-(local (include-book "bst-order"))
 (local (include-book "bst"))
 (local (include-book "in"))
 (local (include-book "count"))
@@ -177,19 +175,11 @@
                       (<< x (car y)))))
   :enable (set::setp))
 
-(defruled lemma0
-  (implies (and (bstp tree)
-                (tree-in x (tree->left tree)))
-           (bst< x
-                 (tagged-element->elem (tree->head tree)))))
-
-(defrule lemma1
+(defrule lemma0
   (implies (and (bstp tree)
                 (tree-in x (tree->left tree)))
            (<< x
-               (tagged-element->elem (tree->head tree))))
-  :use lemma0
-  :enable bst<)
+               (tagged-element->elem (tree->head tree)))))
 
 ;; (defrule lemma2
 ;;   (implies (not (tree-empty-p tree))
@@ -206,19 +196,11 @@
 
 ;;;;;;;;;;
 
-(defruled lemma3
-  (implies (and (bstp tree)
-                (tree-in x (tree->right tree)))
-           (bst< (tagged-element->elem (tree->head tree))
-                 x)))
-
-(defrule lemma4
+(defrule lemma3
   (implies (and (bstp tree)
                 (tree-in x (tree->right tree)))
            (<< (tagged-element->elem (tree->head tree))
-               x))
-  :use lemma3
-  :enable bst<)
+               x)))
 
 (defrule lemma5
   (equal (tree-in (car (tree-in-order tree)) tree)
@@ -246,6 +228,7 @@
                 (bstp tree))
            (set::setp (cons (tagged-element->elem (tree->head tree))
                             (tree-in-order (tree->right tree)))))
+  ;; :enable data::<<-rules
   :cases ((tree-empty-p (tree->right tree))))
 
 (defrule subgoal

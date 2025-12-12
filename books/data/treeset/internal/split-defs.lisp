@@ -8,8 +8,9 @@
 
 (in-package "TREESET")
 
+(include-book "data/utilities/total-order-defs" :dir :system)
+
 (include-book "tree-defs")
-(include-book "bst-order-defs")
 (include-book "rotate-defs")
 
 (local (include-book "std/util/defredundant" :dir :system))

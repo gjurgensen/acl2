@@ -11,6 +11,8 @@
 (include-book "std/util/define" :dir :system)
 (include-book "std/util/defrule" :dir :system)
 
+(include-book "data/utilities/total-order-defs" :dir :system)
+
 (include-book "tree-defs")
 (include-book "count-defs")
 (include-book "in-defs")
@@ -18,18 +20,14 @@
 (local (include-book "std/basic/controlled-configuration" :dir :system))
 (local (acl2::controlled-configuration :hooks nil))
 
+(local (include-book "data/utilities/total-order" :dir :system))
+
 (local (include-book "tree"))
 (local (include-book "bst"))
-(local (include-book "bst-order"))
 (local (include-book "heap"))
 (local (include-book "heap-order"))
 (local (include-book "count"))
 (local (include-book "in"))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; TODO: is this still necessary?
-(local (in-theory (disable bst<-rules)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -198,26 +196,26 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defrule bst<-all-l-of-rotate-left
-  (equal (bst<-all-l (rotate-left tree) x)
-         (bst<-all-l tree x))
+(defrule <<-all-l-of-rotate-left
+  (equal (<<-all-l (rotate-left tree) x)
+         (<<-all-l tree x))
   :enable rotate-left)
 
-(defrule bst<-all-l-of-rotate-right
-  (equal (bst<-all-l (rotate-right tree) x)
-         (bst<-all-l tree x))
+(defrule <<-all-l-of-rotate-right
+  (equal (<<-all-l (rotate-right tree) x)
+         (<<-all-l tree x))
   :enable rotate-right)
 
 ;;;;;;;;;;;;;;;;;;;;
 
-(defrule bst<-all-r-of-arg1-and-rotate-left
-  (equal (bst<-all-r x (rotate-left tree))
-         (bst<-all-r x tree))
+(defrule <<-all-r-of-arg1-and-rotate-left
+  (equal (<<-all-r x (rotate-left tree))
+         (<<-all-r x tree))
   :enable rotate-left)
 
-(defrule bst<-all-r-of-arg1-and-rotate-right
-  (equal (bst<-all-r x (rotate-right tree))
-         (bst<-all-r x tree))
+(defrule <<-all-r-of-arg1-and-rotate-right
+  (equal (<<-all-r x (rotate-right tree))
+         (<<-all-r x tree))
   :enable rotate-right)
 
 ;;;;;;;;;;;;;;;;;;;;
@@ -238,13 +236,13 @@
   (equal (bstp (rotate-left tree))
          (bstp tree))
   :enable (rotate-left
-           bst<-all-extra-rules))
+           <<-all-extra-rules))
 
 (defrule bstp-of-rotate-right
   (equal (bstp (rotate-right tree))
          (bstp tree))
   :enable (rotate-right
-           bst<-all-extra-rules))
+           <<-all-extra-rules))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

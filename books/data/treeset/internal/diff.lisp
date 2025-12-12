@@ -23,11 +23,12 @@
 (local (include-book "std/basic/controlled-configuration" :dir :system))
 (local (acl2::controlled-configuration :hooks nil))
 
+(local (include-book "data/utilities/total-order" :dir :system))
+
 (local (include-book "kestrel/utilities/ordinals" :dir :system))
 
 (local (include-book "../hash"))
 (local (include-book "tree"))
-(local (include-book "bst-order"))
 (local (include-book "bst"))
 (local (include-book "heap"))
 (local (include-book "heap-order"))
@@ -127,19 +128,19 @@
                        (not (tree-in a y)))))
   :induct t
   :enable (tree-diff
-           bst<-rules))
+           data::<<-rules))
 
 ;;;;;;;;;;;;;;;;;;;;
 
-(defrule bst<-all-l-of-tree-diff-when-bst<-all-l-of-arg1
-  (implies (bst<-all-l x a)
-           (bst<-all-l (tree-diff x y) a))
+(defrule <<-all-l-of-tree-diff-when-<<-all-l-of-arg1
+  (implies (<<-all-l x a)
+           (<<-all-l (tree-diff x y) a))
   :induct t
   :enable tree-diff)
 
-(defrule bst<-all-r-of-arg1-and-tree-diff-when-bst-<-all-r-of-arg1-and-arg2
-  (implies (bst<-all-r a x)
-           (bst<-all-r a (tree-diff x y)))
+(defrule <<-all-r-of-arg1-and-tree-diff-when-bst-<-all-r-of-arg1-and-arg2
+  (implies (<<-all-r a x)
+           (<<-all-r a (tree-diff x y)))
   :induct t
   :enable tree-diff)
 

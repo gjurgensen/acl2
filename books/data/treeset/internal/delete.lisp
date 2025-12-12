@@ -12,8 +12,9 @@
 (include-book "std/util/defrule" :dir :system)
 (include-book "xdoc/constructors" :dir :system)
 
+(include-book "data/utilities/total-order-defs" :dir :system)
+
 (include-book "tree-defs")
-(include-book "bst-order-defs")
 (include-book "bst-defs")
 (include-book "count-defs")
 (include-book "in-defs")
@@ -22,10 +23,11 @@
 (local (include-book "std/basic/controlled-configuration" :dir :system))
 (local (acl2::controlled-configuration :hooks nil))
 
+(local (include-book "data/utilities/total-order" :dir :system))
+
 (local (include-book "kestrel/utilities/ordinals" :dir :system))
 
 (local (include-book "tree"))
-(local (include-book "bst-order"))
 (local (include-book "bst"))
 (local (include-book "heap-order"))
 (local (include-book "heap"))
@@ -62,7 +64,7 @@
                                             (tree->right tree))
                        :exec (tree-join (tree->left tree)
                                         (tree->right tree))))))
-        ((bst< x (tagged-element->elem (tree->head tree)))
+        ((<< x (tagged-element->elem (tree->head tree)))
          ;; TODO: Return a flag indicating whether or not the subtree we
          ;; recursed on changed.
          (tree-node (tree->head tree)
@@ -105,34 +107,34 @@
                        (tree-in x tree))))
   :induct t
   :enable (tree-delete
-           bst<-rules))
+           data::<<-rules))
 
 ;;;;;;;;;;;;;;;;;;;;
 
-(defrule bst<-all-l-of-tree-delete
-  (implies (bst<-all-l tree y)
-           (bst<-all-l (tree-delete x tree) y))
+(defrule <<-all-l-of-tree-delete
+  (implies (<<-all-l tree y)
+           (<<-all-l (tree-delete x tree) y))
   :induct t
-  :enable (bst<-all-l
+  :enable (<<-all-l
            tree-delete))
 
-(defrule bst<-all-l-when-not-bst<-all-l-of-tree-delete-forward-chaining
-  (implies (not (bst<-all-l (tree-delete y tree) x))
-           (not (bst<-all-l tree x)))
+(defrule <<-all-l-when-not-<<-all-l-of-tree-delete-forward-chaining
+  (implies (not (<<-all-l (tree-delete y tree) x))
+           (not (<<-all-l tree x)))
   :rule-classes :forward-chaining)
 
 ;;;;;;;;;;;;;;;;;;;;
 
-(defrule bst<-all-r-of-arg1-and-tree-delete
-  (implies (bst<-all-r x tree)
-           (bst<-all-r x (tree-delete y tree)))
+(defrule <<-all-r-of-arg1-and-tree-delete
+  (implies (<<-all-r x tree)
+           (<<-all-r x (tree-delete y tree)))
   :induct t
-  :enable (bst<-all-r
+  :enable (<<-all-r
            tree-delete))
 
-(defrule bst<-all-r-when-not-bst<-all-r-of-arg1-and-tree-delete-forward-chaining
-  (implies (not (bst<-all-r x (tree-delete y tree)))
-           (not (bst<-all-r x tree)))
+(defrule <<-all-r-when-not-<<-all-r-of-arg1-and-tree-delete-forward-chaining
+  (implies (not (<<-all-r x (tree-delete y tree)))
+           (not (<<-all-r x tree)))
   :rule-classes :forward-chaining)
 
 ;;;;;;;;;;;;;;;;;;;;
@@ -143,7 +145,7 @@
   :induct t
   :enable (tree-delete
            bstp
-           bst<-rules))
+           data::<<-rules))
 
 ;;;;;;;;;;;;;;;;;;;;
 
@@ -180,7 +182,7 @@
   :enable (tree-delete
            tree-nodes-count
            bstp
-           bst<-rules
+           data::<<-rules
            acl2::fix))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -199,7 +201,7 @@
                      (tree->left tree))
                     (t (tree-join (tree->left tree)
                                   (tree->right tree)))))
-             ((acl2-number-bst< x (tagged-element->elem (tree->head tree)))
+             ((data::acl2-number-<< x (tagged-element->elem (tree->head tree)))
               (tree-node (tree->head tree)
                          (tree-delete x (tree->left tree))
                          (tree->right tree)))
@@ -227,7 +229,7 @@
                      (tree->left tree))
                     (t (tree-join (tree->left tree)
                                   (tree->right tree)))))
-             ((symbol-bst< x (tagged-element->elem (tree->head tree)))
+             ((data::symbol-<< x (tagged-element->elem (tree->head tree)))
               (tree-node (tree->head tree)
                          (tree-delete x (tree->left tree))
                          (tree->right tree)))
@@ -255,7 +257,7 @@
                      (tree->left tree))
                     (t (tree-join (tree->left tree)
                                   (tree->right tree)))))
-             ((eqlable-bst< x (tagged-element->elem (tree->head tree)))
+             ((data::eqlable-<< x (tagged-element->elem (tree->head tree)))
               (tree-node (tree->head tree)
                          (tree-delete x (tree->left tree))
                          (tree->right tree)))

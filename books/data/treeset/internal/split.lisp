@@ -11,8 +11,9 @@
 (include-book "std/util/define" :dir :system)
 (include-book "std/util/defrule" :dir :system)
 
+(include-book "data/utilities/total-order-defs" :dir :system)
+
 (include-book "tree-defs")
-(include-book "bst-order-defs")
 (include-book "rotate-defs")
 (include-book "in-defs")
 (include-book "count-defs")
@@ -21,10 +22,11 @@
 (local (include-book "std/basic/controlled-configuration" :dir :system))
 (local (acl2::controlled-configuration :hooks nil))
 
+(local (include-book "data/utilities/total-order" :dir :system))
+
 (local (include-book "kestrel/utilities/ordinals" :dir :system))
 
 (local (include-book "tree"))
-(local (include-book "bst-order"))
 (local (include-book "bst"))
 (local (include-book "heap-order"))
 (local (include-book "heap"))
@@ -48,9 +50,9 @@
    (xdoc::ul
      (xdoc::li "@('in') is a boolean representing @('(tree-in x tree)').")
      (xdoc::li "@('left') is a @('set') containing all elements of @('tree')
-                less than @('x') (with respect to @('bst<')).")
+                less than @('x') (with respect to @('<<')).")
      (xdoc::li "@('right') is a @('set') containing all elements of @('tree')
-                greater than @('x') (with respect to @('bst<'))."))
+                greater than @('x') (with respect to @('<<'))."))
    (xdoc::p
      "The implementation is comparable to @('tree-insert') if we were to
       pretend @('x') is maximal with respect to @('heap<')."))
@@ -61,7 +63,7 @@
          (mv nil nil nil))
         ((equal x (tagged-element->elem (tree->head tree)))
          (mv t (tree->left tree) (tree->right tree)))
-        ((bst< x (tagged-element->elem (tree->head tree)))
+        ((<< x (tagged-element->elem (tree->head tree)))
          ;; Interpret as a tree-node (use x instead of in)
          ;; (may violate heapp)
          (mv-let (in left$ right$)
@@ -167,79 +169,79 @@
   :enable (tree-split
            tree-in
            bstp
-           bst<-rules))
+           data::<<-rules))
 
 ;;;;;;;;;;;;;;;;;;;;
 
-(defruled bst<-all-l-of-tree-split.left-when-bst<-all-l
-  (implies (bst<-all-l tree y)
-           (bst<-all-l (mv-nth 1 (tree-split x tree)) y))
+(defruled <<-all-l-of-tree-split.left-when-<<-all-l
+  (implies (<<-all-l tree y)
+           (<<-all-l (mv-nth 1 (tree-split x tree)) y))
   :induct t
   :enable tree-split)
 
-(defrule bst<-all-l-of-tree-split.left-when-bst<-all-l-cheap
-  (implies (bst<-all-l tree y)
-           (bst<-all-l (mv-nth 1 (tree-split x tree)) y))
+(defrule <<-all-l-of-tree-split.left-when-<<-all-l-cheap
+  (implies (<<-all-l tree y)
+           (<<-all-l (mv-nth 1 (tree-split x tree)) y))
   :rule-classes ((:rewrite :backchain-limit-lst (0)))
-  :by bst<-all-l-of-tree-split.left-when-bst<-all-l)
+  :by <<-all-l-of-tree-split.left-when-<<-all-l)
 
 ;;;;;;;;;;;;;;;;;;;;
 
-(defruled bst<-all-l-of-tree-split.right-when-bst<-all-l
-  (implies (bst<-all-l tree y)
-           (bst<-all-l (mv-nth 2 (tree-split x tree)) y))
+(defruled <<-all-l-of-tree-split.right-when-<<-all-l
+  (implies (<<-all-l tree y)
+           (<<-all-l (mv-nth 2 (tree-split x tree)) y))
   :induct t
   :enable tree-split)
 
-(defrule bst<-all-l-of-tree-split.right-when-bst<-all-l-cheap
-  (implies (bst<-all-l tree y)
-           (bst<-all-l (mv-nth 2 (tree-split x tree)) y))
+(defrule <<-all-l-of-tree-split.right-when-<<-all-l-cheap
+  (implies (<<-all-l tree y)
+           (<<-all-l (mv-nth 2 (tree-split x tree)) y))
   :rule-classes ((:rewrite :backchain-limit-lst (0)))
-  :by bst<-all-l-of-tree-split.right-when-bst<-all-l)
+  :by <<-all-l-of-tree-split.right-when-<<-all-l)
 
 ;;;;;;;;;;;;;;;;;;;;
 
-(defruled bst<-all-r-of-arg1-and-tree-split.left-when-bst<-all-r
-  (implies (bst<-all-r x tree)
-           (bst<-all-r x (mv-nth 1 (tree-split y tree))))
+(defruled <<-all-r-of-arg1-and-tree-split.left-when-<<-all-r
+  (implies (<<-all-r x tree)
+           (<<-all-r x (mv-nth 1 (tree-split y tree))))
   :induct t
   :enable tree-split)
 
-(defrule bst<-all-r-of-arg1-and-tree-split.left-when-bst<-all-r-cheap
-  (implies (bst<-all-r x tree)
-           (bst<-all-r x (mv-nth 1 (tree-split y tree))))
+(defrule <<-all-r-of-arg1-and-tree-split.left-when-<<-all-r-cheap
+  (implies (<<-all-r x tree)
+           (<<-all-r x (mv-nth 1 (tree-split y tree))))
   :rule-classes ((:rewrite :backchain-limit-lst (0)))
-  :by bst<-all-r-of-arg1-and-tree-split.left-when-bst<-all-r)
+  :by <<-all-r-of-arg1-and-tree-split.left-when-<<-all-r)
 
 ;;;;;;;;;;;;;;;;;;;;
 
-(defruled bst<-all-r-of-arg1-and-tree-split.right-when-bst<-all-r
-  (implies (bst<-all-r x tree)
-           (bst<-all-r x (mv-nth 2 (tree-split y tree))))
+(defruled <<-all-r-of-arg1-and-tree-split.right-when-<<-all-r
+  (implies (<<-all-r x tree)
+           (<<-all-r x (mv-nth 2 (tree-split y tree))))
   :induct t
   :enable tree-split)
 
-(defrule bst<-all-r-of-arg1-and-tree-split.right-when-bst<-all-r-cheap
-  (implies (bst<-all-r x tree)
-           (bst<-all-r x (mv-nth 2 (tree-split y tree))))
+(defrule <<-all-r-of-arg1-and-tree-split.right-when-<<-all-r-cheap
+  (implies (<<-all-r x tree)
+           (<<-all-r x (mv-nth 2 (tree-split y tree))))
   :rule-classes ((:rewrite :backchain-limit-lst (0)))
-  :by bst<-all-r-of-arg1-and-tree-split.right-when-bst<-all-r)
+  :by <<-all-r-of-arg1-and-tree-split.right-when-<<-all-r)
 
 ;;;;;;;;;;;;;;;;;;;;
 
-(defruled bst<-all-l-when-bst<-all-l-of-tree-split.left-and-tree-split.right
-  (implies (and (bst<-all-l (mv-nth 1 (tree-split x tree)) y)
-                (bst<-all-l (mv-nth 2 (tree-split x tree)) y)
-                (bst< x y))
-           (bst<-all-l tree y))
+(defruled <<-all-l-when-<<-all-l-of-tree-split.left-and-tree-split.right
+  (implies (and (<<-all-l (mv-nth 1 (tree-split x tree)) y)
+                (<<-all-l (mv-nth 2 (tree-split x tree)) y)
+                (<< x y))
+           (<<-all-l tree y))
   :induct t
   :enable tree-split)
 
-(defruled bst<-all-r-when-bst<-all-l-of-arg1-and-tree-split.left-and-tree-split.right
-  (implies (and (bst<-all-r x (mv-nth 1 (tree-split y tree)))
-                (bst<-all-r x (mv-nth 2 (tree-split y tree)))
-                (bst< x y))
-           (bst<-all-r x tree))
+(defruled <<-all-r-when-<<-all-l-of-arg1-and-tree-split.left-and-tree-split.right
+  (implies (and (<<-all-r x (mv-nth 1 (tree-split y tree)))
+                (<<-all-r x (mv-nth 2 (tree-split y tree)))
+                (<< x y))
+           (<<-all-r x tree))
   :induct t
   :enable tree-split)
 
@@ -261,23 +263,23 @@
 
 ;;;;;;;;;;;;;;;;;;;;
 
-(defrule bst<-all-l-of-tree-split.left-of-arg1-and-arg1
+(defrule <<-all-l-of-tree-split.left-of-arg1-and-arg1
   (implies (bstp tree)
-           (bst<-all-l (mv-nth 1 (tree-split x tree)) x))
+           (<<-all-l (mv-nth 1 (tree-split x tree)) x))
   :induct t
   :enable (tree-split
            bstp
-           bst<-all-extra-rules
-           bst<-rules))
+           <<-all-extra-rules
+           data::<<-rules))
 
-(defrule bst<-all-r-of-arg1-and-tree-split.right-of-arg1
+(defrule <<-all-r-of-arg1-and-tree-split.right-of-arg1
   (implies (bstp tree)
-           (bst<-all-r x (mv-nth 2 (tree-split x tree))))
+           (<<-all-r x (mv-nth 2 (tree-split x tree))))
   :induct t
   :enable (tree-split
            bstp
-           bst<-all-extra-rules
-           bst<-rules))
+           <<-all-extra-rules
+           data::<<-rules))
 
 ;;;;;;;;;;;;;;;;;;;;
 
@@ -365,23 +367,23 @@
   (implies (bstp tree)
            (equal (tree-in x (mv-nth 1 (tree-split y tree)))
                   (and (tree-in x tree)
-                       (bst< x y))))
+                       (<< x y))))
   :induct t
   :enable (tree-split
            tree-in-extra-rules
-           bst<-rules
-           bst<-all-extra-rules))
+           data::<<-rules
+           <<-all-extra-rules))
 
 (defrule tree-in-of-tree-split.right
   (implies (bstp tree)
            (equal (tree-in x (mv-nth 2 (tree-split y tree)))
                   (and (tree-in x tree)
-                       (bst< y x))))
+                       (<< y x))))
   :induct t
   :enable (tree-split
            tree-in-extra-rules
-           bst<-rules
-           bst<-all-extra-rules))
+           data::<<-rules
+           <<-all-extra-rules))
 
 ;;;;;;;;;;;;;;;;;;;;
 
@@ -397,71 +399,72 @@
 
 ;;;;;;;;;;;;;;;;;;;;
 
-(defruled bst<-all-r-when-tree-empty-p-of-tree-split.left
+(defruled <<-all-r-when-tree-empty-p-of-tree-split.left
   (implies (and (bstp tree)
-                (bst< x y)
+                (<< x y)
                 (tree-empty-p (mv-nth 1 (tree-split y tree))))
-           (bst<-all-r x tree))
+           (<<-all-r x tree))
   :induct t
   :enable (tree-split
-           bst<-rules
-           bst<-all-extra-rules))
+           data::<<-rules
+           <<-all-extra-rules))
 
 ;; TODO: is this a reasonable rule?
-(defrule bst<-all-r-when-tree-empty-p-of-tree-split.left-forward-chaining
+(defrule <<-all-r-when-tree-empty-p-of-tree-split.left-forward-chaining
   (implies (and (tree-empty-p (mv-nth 1 (tree-split y tree)))
-                (bst< x y)
+                (<< x y)
                 (bstp tree))
-           (bst<-all-r x tree))
+           (<<-all-r x tree))
   :rule-classes :forward-chaining
-  :by bst<-all-r-when-tree-empty-p-of-tree-split.left)
+  :by <<-all-r-when-tree-empty-p-of-tree-split.left)
 
 ;;;;;;;;;;;;;;;;;;;;
 
-(defruled bst<-all-l-when-tree-empty-p-of-tree-split.right
+(defruled <<-all-l-when-tree-empty-p-of-tree-split.right
   (implies (and (bstp tree)
-                (bst< y x)
+                (<< y x)
                 (tree-empty-p (mv-nth 2 (tree-split y tree))))
-           (bst<-all-l tree x))
+           (<<-all-l tree x))
   :induct t
   :enable (tree-split
-           bst<-all-extra-rules)
+           <<-all-extra-rules)
   :prep-lemmas
   ((defrule lemma0
-     (implies (and (not (bst< y (tagged-element->elem (tree->head tree))))
-                   (bst<-all-l (tree->right tree) x)
+     (implies (and (not (<< y (tagged-element->elem (tree->head tree))))
+                   (<<-all-l (tree->right tree) x)
                    (bstp tree)
-                   (bst< y x))
-              (bst<-all-l tree x))
-     :enable (bst<-rules
-              bst<-all-extra-rules)
-     :disable bst<-trichotomy
-     :use ((:instance bst<-trichotomy
-                      (x (tagged-element->elem (tree->head tree))))))))
+                   (<< y x))
+              (<<-all-l tree x))
+     :enable (data::<<-rules
+              <<-all-extra-rules)
+     :disable acl2::<<-trichotomy
+     :use ((:instance acl2::<<-trichotomy
+                      (acl2::x (tagged-element->elem (tree->head tree)))
+                      (acl2::y y))))))
 
 ;; TODO: is this a reasonable rule?
-(defrule bst<-all-l-when-tree-empty-p-of-tree-split.right-forward-chaining
+(defrule <<-all-l-when-tree-empty-p-of-tree-split.right-forward-chaining
   (implies (and (tree-empty-p (mv-nth 2 (tree-split y tree)))
-                (bst< y x)
+                (<< y x)
                 (bstp tree))
-           (bst<-all-l tree x))
+           (<<-all-l tree x))
   :rule-classes :forward-chaining
-  :by bst<-all-l-when-tree-empty-p-of-tree-split.right)
+  :by <<-all-l-when-tree-empty-p-of-tree-split.right)
 
 ;;;;;;;;;;;;;;;;;;;;
 
-(defrule tree-empty-p-of-tree-split.left-when-bst<-all-r
-  (implies (bst<-all-r x tree)
+(defrule tree-empty-p-of-tree-split.left-when-<<-all-r
+  (implies (<<-all-r x tree)
            (tree-empty-p (mv-nth 1 (tree-split x tree))))
   :induct t
   :enable tree-split)
 
-(defrule tree-empty-p-of-tree-split.right-when-bst<-all-r
-  (implies (bst<-all-l tree x)
+(defrule tree-empty-p-of-tree-split.right-when-<<-all-r
+  (implies (<<-all-l tree x)
            (tree-empty-p (mv-nth 2 (tree-split x tree))))
   :induct t
   :enable (tree-split
-           bst<-rules))
+           data::<<-rules))
 
 ;;;;;;;;;;;;;;;;;;;;
 
@@ -521,7 +524,7 @@
   :induct t
   :enable (tree-split
            tree-nodes-count
-           bst<-rules))
+           data::<<-rules))
 
 ;; Very awkward rule
 ;; (defrule tree-nodes-count-becomes-tree-nodes-count-of-tree-split-forward-chaining
@@ -660,7 +663,7 @@
               (mv nil nil nil))
              ((= x (tagged-element->elem (tree->head tree)))
               (mv t (tree->left tree) (tree->right tree)))
-             ((acl2-number-bst< x (tagged-element->elem (tree->head tree)))
+             ((data::acl2-number-<< x (tagged-element->elem (tree->head tree)))
               (mv-let (in left$ right$)
                       (acl2-number-tree-split x (tree->left tree))
                 (mbe :logic (let ((tree$
@@ -704,7 +707,7 @@
               (mv nil nil nil))
              ((eq x (tagged-element->elem (tree->head tree)))
               (mv t (tree->left tree) (tree->right tree)))
-             ((symbol-bst< x (tagged-element->elem (tree->head tree)))
+             ((data::symbol-<< x (tagged-element->elem (tree->head tree)))
               (mv-let (in left$ right$)
                       (symbol-tree-split x (tree->left tree))
                 (mbe :logic (let ((tree$
@@ -748,7 +751,7 @@
               (mv nil nil nil))
              ((eql x (tagged-element->elem (tree->head tree)))
               (mv t (tree->left tree) (tree->right tree)))
-             ((eqlable-bst< x (tagged-element->elem (tree->head tree)))
+             ((data::eqlable-<< x (tagged-element->elem (tree->head tree)))
               (mv-let (in left$ right$)
                       (eqlable-tree-split x (tree->left tree))
                 (mbe :logic (let ((tree$
@@ -787,12 +790,12 @@
   '(tree-split.in-when-tree-empty-p
     tree-empty-p-of-tree-split.left-when-tree-empty-p
     tree-empty-p-of-tree-split.right-when-tree-empty-p
-    bst<-all-l-of-tree-split.left-when-bst<-all-l
-    bst<-all-l-of-tree-split.right-when-bst<-all-l
-    bst<-all-r-of-arg1-and-tree-split.left-when-bst<-all-r
-    bst<-all-r-of-arg1-and-tree-split.right-when-bst<-all-r
-    bst<-all-l-when-bst<-all-l-of-tree-split.left-and-tree-split.right
-    bst<-all-r-when-bst<-all-l-of-arg1-and-tree-split.left-and-tree-split.right
+    <<-all-l-of-tree-split.left-when-<<-all-l
+    <<-all-l-of-tree-split.right-when-<<-all-l
+    <<-all-r-of-arg1-and-tree-split.left-when-<<-all-r
+    <<-all-r-of-arg1-and-tree-split.right-when-<<-all-r
+    <<-all-l-when-<<-all-l-of-tree-split.left-and-tree-split.right
+    <<-all-r-when-<<-all-l-of-arg1-and-tree-split.left-and-tree-split.right
     heap<-all-l-of-tree-split.left-when-heap<-all-l
     heap<-all-l-of-tree-split.right-when-heap<-all-l
     heap<-all-l-when-heap<-all-l-of-tree-split.left-and-tree-split.right

@@ -9,9 +9,9 @@
 (in-package "TREESET")
 
 (include-book "data/utilities/fixed-size-words/u32-defs" :dir :system)
+(include-book "data/utilities/total-order-defs" :dir :system)
 
 (include-book "../hash-defs")
-(include-book "bst-order")
 (include-book "heap-order")
 (include-book "rotate-defs")
 

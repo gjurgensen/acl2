@@ -19,16 +19,14 @@
 (local (include-book "std/basic/controlled-configuration" :dir :system))
 (local (acl2::controlled-configuration :hooks nil))
 
-(local (include-book "data/utilities/total-order-defs" :dir :system))
+(local (include-book "data/utilities/total-order" :dir :system))
 
 (local (include-book "tree"))
-(local (include-book "bst-order"))
 (local (include-book "bst"))
 (local (include-book "heap-order"))
 (local (include-book "heap"))
 (local (include-book "in"))
 (local (include-book "subset"))
-;; (local (include-book "pick-a-point"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -111,37 +109,37 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defrule tree-in-of-tree->left-when-tree-in-and-bst<-all
-  (implies (and (bst<-all-r (tagged-element->elem (tree->head y))
-                            (tree->right y))
-                (bst<-all-l (tree->left x)
-                            (tagged-element->elem (tree->head y)))
+(defrule tree-in-of-tree->left-when-tree-in-and-<<-all
+  (implies (and (<<-all-r (tagged-element->elem (tree->head y))
+                          (tree->right y))
+                (<<-all-l (tree->left x)
+                          (tagged-element->elem (tree->head y)))
                 (tree-in a (tree->left x))
                 (tree-in a y))
            (tree-in a (tree->left y)))
   :enable (tree-in
-           bst<-rules)
-  :disable bst<-when-bst<-all-l-and-tree-in-forward-chaining
-  :use ((:instance bst<-when-bst<-all-l-and-tree-in
+           data::<<-rules)
+  :disable <<-when-<<-all-l-and-tree-in-forward-chaining
+  :use ((:instance <<-when-<<-all-l-and-tree-in
                    (x a)
                    (y (tagged-element->elem (tree->head y)))
                    (tree (tree->left x)))))
 
-(defrule tree-in-of-tree->left-when-tree-in-of-tree->left-of-tree-subset-p-and-bst<-all-l
+(defrule tree-in-of-tree->left-when-tree-in-of-tree->left-of-tree-subset-p-and-<<-all-l
   (implies (and (tree-subset-p x y)
                 (bstp y)
-                (bst<-all-l (tree->left x)
-                            (tagged-element->elem (tree->head y)))
+                (<<-all-l (tree->left x)
+                          (tagged-element->elem (tree->head y)))
                 (tree-in a (tree->left x)))
            (tree-in a (tree->left y)))
   :use tree-in-when-tree-in-and-tree-subset-p
   :disable tree-in-when-tree-in-and-tree-subset-p)
 
-(defrule tree-subset-p-of-tree->left-tree->left-when-tree-subset-p-and-bst<-all-l
+(defrule tree-subset-p-of-tree->left-tree->left-when-tree-subset-p-and-<<-all-l
   (implies (and (tree-subset-p x y)
                 (bstp y)
-                (bst<-all-l (tree->left x)
-                            (tagged-element->elem (tree->head y))))
+                (<<-all-l (tree->left x)
+                          (tagged-element->elem (tree->head y))))
            (tree-subset-p (tree->left x) (tree->left y)))
   ;; TODO: polarity based rewriting from tree-subset-p to sk when using
   ;; pick-a-point strategy?
@@ -157,44 +155,44 @@
                 (equal (tagged-element->elem (tree->head x))
                        (tagged-element->elem (tree->head y))))
            (tree-subset-p (tree->left x) (tree->left y)))
-  :disable tree-subset-p-of-tree->left-tree->left-when-tree-subset-p-and-bst<-all-l
-  :use tree-subset-p-of-tree->left-tree->left-when-tree-subset-p-and-bst<-all-l)
+  :disable tree-subset-p-of-tree->left-tree->left-when-tree-subset-p-and-<<-all-l
+  :use tree-subset-p-of-tree->left-tree->left-when-tree-subset-p-and-<<-all-l)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; TODO GJ: same as changes for left above
 
-(defrule tree-in-of-tree->right-when-tree-in-and-bst<-all
-  (implies (and (bst<-all-l (tree->left y)
-                            (tagged-element->elem (tree->head y)))
-                (bst<-all-r (tagged-element->elem (tree->head y))
-                            (tree->right x))
+(defrule tree-in-of-tree->right-when-tree-in-and-<<-all
+  (implies (and (<<-all-l (tree->left y)
+                          (tagged-element->elem (tree->head y)))
+                (<<-all-r (tagged-element->elem (tree->head y))
+                          (tree->right x))
                 (tree-in a (tree->right x))
                 (tree-in a y))
            (tree-in a (tree->right y)))
   :enable (tree-in
-           bst<-rules)
-  :disable bst<-when-bst<-all-r-and-tree-in-forward-chaining
-  :use ((:instance bst<-when-bst<-all-r-and-tree-in
+           data::<<-rules)
+  :disable <<-when-<<-all-r-and-tree-in-forward-chaining
+  :use ((:instance <<-when-<<-all-r-and-tree-in
                    (x (tagged-element->elem (tree->head y)))
                    (y a)
                    (tree (tree->right x)))))
 
-(defrule tree-in-of-right-when-tree-in-of-tree->right-of-tree-subset-p-and-bst<-all-r
+(defrule tree-in-of-right-when-tree-in-of-tree->right-of-tree-subset-p-and-<<-all-r
   (implies (and (tree-subset-p x y)
                 (bstp y)
-                (bst<-all-r (tagged-element->elem (tree->head y))
-                            (tree->right x))
+                (<<-all-r (tagged-element->elem (tree->head y))
+                          (tree->right x))
                 (tree-in a (tree->right x)))
            (tree-in a (tree->right y)))
   :use tree-in-when-tree-in-and-tree-subset-p
   :disable tree-in-when-tree-in-and-tree-subset-p)
 
-(defrule tree-subset-p-of-tree->right-tree->right-when-tree-subset-p-and-bst<-all-r
+(defrule tree-subset-p-of-tree->right-tree->right-when-tree-subset-p-and-<<-all-r
   (implies (and (tree-subset-p x y)
                 (bstp y)
-                (bst<-all-r (tagged-element->elem (tree->head y))
-                            (tree->right x)))
+                (<<-all-r (tagged-element->elem (tree->head y))
+                          (tree->right x)))
            (tree-subset-p (tree->right x) (tree->right y)))
   :use (:instance tree-subset-p-becomes-tree-subset-p-sk
                   (x (tree->right x))
@@ -208,8 +206,8 @@
                 (equal (tagged-element->elem (tree->head x))
                        (tagged-element->elem (tree->head y))))
            (tree-subset-p (tree->right x) (tree->right y)))
-  :disable tree-subset-p-of-tree->right-tree->right-when-tree-subset-p-and-bst<-all-r
-  :use tree-subset-p-of-tree->right-tree->right-when-tree-subset-p-and-bst<-all-r)
+  :disable tree-subset-p-of-tree->right-tree->right-when-tree-subset-p-and-<<-all-r
+  :use tree-subset-p-of-tree->right-tree->right-when-tree-subset-p-and-<<-all-r)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

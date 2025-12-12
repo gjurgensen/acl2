@@ -8,8 +8,9 @@
 
 (in-package "TREESET")
 
+(include-book "data/utilities/total-order-defs" :dir :system)
+
 (include-book "tree-defs")
-(include-book "bst-order-defs")
 
 (local (include-book "std/util/defredundant" :dir :system))
 (local (include-book "bst"))
@@ -17,6 +18,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (std::defredundant
-  :names (bst<-all-l
-          bst<-all-r
+  :names (<<-all-l
+          <<-all-r
           bstp))

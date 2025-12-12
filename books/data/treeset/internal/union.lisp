@@ -22,11 +22,12 @@
 (local (include-book "std/basic/controlled-configuration" :dir :system))
 (local (acl2::controlled-configuration :hooks nil))
 
+(local (include-book "data/utilities/total-order" :dir :system))
+
 (local (include-book "kestrel/utilities/ordinals" :dir :system))
 
 (local (include-book "../hash"))
 (local (include-book "tree"))
-(local (include-book "bst-order"))
 (local (include-book "bst"))
 (local (include-book "heap-order"))
 (local (include-book "heap"))
@@ -118,35 +119,35 @@
                       (tree-in a y))))
   :induct t
   :enable (tree-union
-           bst<-rules))
+           data::<<-rules))
 
 ;;;;;;;;;;;;;;;;;;;;
 
-(defrule bst<-all-l-of-tree-union
-  (equal (bst<-all-l (tree-union x y) z)
-         (and (bst<-all-l x z)
-              (bst<-all-l y z)))
+(defrule <<-all-l-of-tree-union
+  (equal (<<-all-l (tree-union x y) z)
+         (and (<<-all-l x z)
+              (<<-all-l y z)))
   ;; TODO: better proof?
   :use lemma
   :prep-lemmas
   ((defruled lemma
-     (iff (bst<-all-l (tree-union x y) z)
-          (and (bst<-all-l x z)
-               (bst<-all-l y z)))
+     (iff (<<-all-l (tree-union x y) z)
+          (and (<<-all-l x z)
+               (<<-all-l y z)))
      :induct t
      :enable (tree-union
               tree-split-extra-rules))))
 
-(defrule bst<-all-r-of-arg1-and-tree-union
-  (equal (bst<-all-r x (tree-union y z))
-         (and (bst<-all-r x y)
-              (bst<-all-r x z)))
+(defrule <<-all-r-of-arg1-and-tree-union
+  (equal (<<-all-r x (tree-union y z))
+         (and (<<-all-r x y)
+              (<<-all-r x z)))
   :use lemma
   :prep-lemmas
   ((defruled lemma
-     (iff (bst<-all-r x (tree-union y z))
-          (and (bst<-all-r x y)
-               (bst<-all-r x z)))
+     (iff (<<-all-r x (tree-union y z))
+          (and (<<-all-r x y)
+               (<<-all-r x z)))
      :induct t
      :enable (tree-union
               tree-split-extra-rules))))

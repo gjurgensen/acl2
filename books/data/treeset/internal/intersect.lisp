@@ -21,11 +21,12 @@
 (local (include-book "std/basic/controlled-configuration" :dir :system))
 (local (acl2::controlled-configuration :hooks nil))
 
+(local (include-book "data/utilities/total-order" :dir :system))
+
 (local (include-book "kestrel/utilities/ordinals" :dir :system))
 
 (local (include-book "../hash"))
 (local (include-book "tree"))
-(local (include-book "bst-order"))
 (local (include-book "bst"))
 (local (include-book "heap-order"))
 (local (include-book "heap"))
@@ -137,21 +138,21 @@
                        (tree-in a y))))
   :induct t
   :enable (tree-intersect
-           bst<-rules))
+           data::<<-rules))
 
 ;;;;;;;;;;;;;;;;;;;;
 
-(defrule bst<-all-l-of-tree-intersect
-  (implies (and (bst<-all-l x z)
-                (bst<-all-l y z))
-           (bst<-all-l (tree-intersect x y) z))
+(defrule <<-all-l-of-tree-intersect
+  (implies (and (<<-all-l x z)
+                (<<-all-l y z))
+           (<<-all-l (tree-intersect x y) z))
   :induct t
   :enable tree-intersect)
 
-(defrule bst<-all-r-of-arg1-and-tree-intersect
-  (implies (and (bst<-all-r x y)
-                (bst<-all-r x z))
-           (bst<-all-r x (tree-intersect y z)))
+(defrule <<-all-r-of-arg1-and-tree-intersect
+  (implies (and (<<-all-r x y)
+                (<<-all-r x z))
+           (<<-all-r x (tree-intersect y z)))
   :induct t
   :enable tree-intersect)
 

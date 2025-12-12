@@ -35,7 +35,6 @@
 (local (include-book "std/system/partition-rest-and-keyword-args" :dir :system))
 
 (local (include-book "internal/tree"))
-(local (include-book "internal/bst-order"))
 (local (include-book "internal/bst"))
 (local (include-book "internal/heap-order"))
 (local (include-book "internal/heap"))

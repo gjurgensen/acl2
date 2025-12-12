@@ -21,20 +21,16 @@
 (local (include-book "std/basic/controlled-configuration" :dir :system))
 (local (acl2::controlled-configuration :hooks nil))
 
+(local (include-book "data/utilities/total-order" :dir :system))
+
 (local (include-book "kestrel/utilities/ordinals" :dir :system))
 
 (local (include-book "tree"))
-(local (include-book "bst-order"))
 (local (include-book "bst"))
 (local (include-book "heap-order"))
 (local (include-book "heap"))
 (local (include-book "count"))
 (local (include-book "in"))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; TODO: still necessary?
-(local (in-theory (disable bst<-rules)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -48,34 +44,34 @@
 ;;          (tagged-element->elem (tree->head left)))
 
 (defruled tree-in-right-when-disjoint-and-tree-in-left
-  (implies (and (bst<-all-l left x)
-                (bst<-all-r x right)
+  (implies (and (<<-all-l left x)
+                (<<-all-r x right)
                 (tree-in y left))
            (not (tree-in y right)))
   :induct t
   :enable (tree-in
-           bst<-rules))
+           data::<<-rules))
 
 (defrule tree-in-right-when-disjoint-and-tree-in-left-forward-chaining
-  (implies (and (bst<-all-l left x)
-                (bst<-all-r x right)
+  (implies (and (<<-all-l left x)
+                (<<-all-r x right)
                 (tree-in y left))
            (not (tree-in y right)))
   :rule-classes :forward-chaining
   :enable tree-in-right-when-disjoint-and-tree-in-left)
 
 (defruled tree-in-left-when-disjoint-and-tree-in-right
-  (implies (and (bst<-all-l left x)
-                (bst<-all-r x right)
+  (implies (and (<<-all-l left x)
+                (<<-all-r x right)
                 (tree-in y right))
            (not (tree-in y left)))
   :induct t
   :enable (tree-in
-           bst<-rules))
+           data::<<-rules))
 
 (defrule tree-in-left-when-disjoint-and-tree-in-right-forward-chaining
-  (implies (and (bst<-all-l left x)
-                (bst<-all-r x right)
+  (implies (and (<<-all-l left x)
+                (<<-all-r x right)
                 (tree-in y right))
            (not (tree-in y left)))
   :rule-classes :forward-chaining
@@ -83,9 +79,9 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defruled equal-of-tree->heads-when-bst<-all-l-and-bst<-all-r
-  (implies (and (bst<-all-l left x)
-                (bst<-all-r x right))
+(defruled equal-of-tree->heads-when-<<-all-l-and-<<-all-r
+  (implies (and (<<-all-l left x)
+                (<<-all-r x right))
            (or (tree-empty-p left)
                (tree-empty-p right)
                (not (equal (tagged-element->elem (tree->head left))
@@ -93,15 +89,15 @@
   :use ((:instance tree-in-right-when-disjoint-and-tree-in-left
                    (y (tagged-element->elem (tree->head left))))))
 
-(defrule equal-of-tree->heads-when-bst<-all-l-and-bst<-all-r-forward-chaining
-  (implies (and (bst<-all-l left x)
-                (bst<-all-r x right))
+(defrule equal-of-tree->heads-when-<<-all-l-and-<<-all-r-forward-chaining
+  (implies (and (<<-all-l left x)
+                (<<-all-r x right))
            (or (tree-empty-p left)
                (tree-empty-p right)
                (not (equal (tagged-element->elem (tree->head left))
                            (tagged-element->elem (tree->head right))))))
   :rule-classes :forward-chaining
-  :use equal-of-tree->heads-when-bst<-all-l-and-bst<-all-r)
+  :use equal-of-tree->heads-when-<<-all-l-and-<<-all-r)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -117,8 +113,8 @@
    (xdoc::p
      "Technically it is not required that the two trees are a result of a
       previous split call. It is only expected that, given a join @('(tree-join
-      left right)'), there exists some @('x') such that @('(bst<-all-l left x)')
-      and @('(bst<-all-r x right)'), as is produced by @('split')."))
+      left right)'), there exists some @('x') such that @('(<<-all-l left x)')
+      and @('(<<-all-r x right)'), as is produced by @('split')."))
   (cond ((tree-empty-p left)
          (tree-fix right))
         ((tree-empty-p right)
@@ -197,30 +193,30 @@
            tree-nodes-count
            acl2::fix))
 
-(defrule bst<-all-l-of-tree-join
-  (equal (bst<-all-l (tree-join left right) x)
-         (and (bst<-all-l left x)
-              (bst<-all-l right x)))
+(defrule <<-all-l-of-tree-join
+  (equal (<<-all-l (tree-join left right) x)
+         (and (<<-all-l left x)
+              (<<-all-l right x)))
   :induct t
   :enable tree-join)
 
-(defrule bst<-all-r-of-arg1-and-tree-join
-  (equal (bst<-all-r x (tree-join left right))
-         (and (bst<-all-r x left)
-              (bst<-all-r x right)))
+(defrule <<-all-r-of-arg1-and-tree-join
+  (equal (<<-all-r x (tree-join left right))
+         (and (<<-all-r x left)
+              (<<-all-r x right)))
   :induct t
   :enable tree-join)
 
 (defrule bst-p-of-tree-join-when-bst-p-and-split
-  (implies (and (bst<-all-l left x)
-                (bst<-all-r x right))
+  (implies (and (<<-all-l left x)
+                (<<-all-r x right))
            (equal (bstp (tree-join left right))
                   (and (bstp left)
                        (bstp right))))
   :induct t
   :enable (tree-join
-           bst<-rules
-           bst<-all-extra-rules))
+           data::<<-rules
+           <<-all-extra-rules))
 
 (defrule heap<-all-l-of-tree-join
   (implies (and (heap<-all-l left x)
@@ -256,8 +252,8 @@
    (xdoc::p
      "This @('split') argument is the value such that:")
    (xdoc::codeblock
-     "(and (bst<-all-l left split)"
-     "     (bst<-all-r split right))")
+     "(and (<<-all-l left split)"
+     "     (<<-all-r split right))")
    (xdoc::p
      "While the @('split') argument is not used by the function, it is
       convenient to have so various rewriting rules can bind the variable
@@ -316,21 +312,21 @@
             (tree-nodes-count right)))
   :enable tree-join-at)
 
-(defrule bst<-all-l-of-tree-join-at
-  (equal (bst<-all-l (tree-join-at split left right) x)
-         (and (bst<-all-l left x)
-              (bst<-all-l right x)))
+(defrule <<-all-l-of-tree-join-at
+  (equal (<<-all-l (tree-join-at split left right) x)
+         (and (<<-all-l left x)
+              (<<-all-l right x)))
   :enable tree-join-at)
 
-(defrule bst<-all-r-of-arg1-and-tree-join-at
-  (equal (bst<-all-r x (tree-join-at split left right))
-         (and (bst<-all-r x left)
-              (bst<-all-r x right)))
+(defrule <<-all-r-of-arg1-and-tree-join-at
+  (equal (<<-all-r x (tree-join-at split left right))
+         (and (<<-all-r x left)
+              (<<-all-r x right)))
   :enable tree-join-at)
 
 (defrule bst-p-of-tree-join-at-when-bst-p-and-split
-  (implies (and (bst<-all-l left split)
-                (bst<-all-r split right))
+  (implies (and (<<-all-l left split)
+                (<<-all-r split right))
            ;; This demonstrates the utility of tree-join-at. The variable split
            ;; does not appear free in the hyps.
            (equal (bstp (tree-join-at split left right))
@@ -368,8 +364,8 @@
                               (tagged-element->elem (tree->head right))))
                   (heap<-all-l (tree->left right)
                                (tagged-element->elem (tree->head right)))
-                  (bst<-all-l left x)
-                  (bst<-all-r x right)
+                  (<<-all-l left x)
+                  (<<-all-r x right)
                   (heap<-all-l (tree->right right)
                                (tagged-element->elem (tree->head right)))
                   (heap<-all-l (tree->right left)
@@ -378,8 +374,8 @@
                           (tagged-element->elem (tree->head left))))
     :enable (heap<-all-l-extra-rules
              heap<-rules)
-    :disable equal-of-tree->heads-when-bst<-all-l-and-bst<-all-r-forward-chaining
-    :use equal-of-tree->heads-when-bst<-all-l-and-bst<-all-r)
+    :disable equal-of-tree->heads-when-<<-all-l-and-<<-all-r-forward-chaining
+    :use equal-of-tree->heads-when-<<-all-l-and-<<-all-r)
 
   (defrulel lemma1
     (implies (and (not (heap< (tagged-element->elem (tree->head left))
@@ -387,8 +383,8 @@
                   (heapp (tree->right left))
                   (heap<-all-l (tree->left right)
                                (tagged-element->elem (tree->head right)))
-                  (bst<-all-l left x)
-                  (bst<-all-r x right)
+                  (<<-all-l left x)
+                  (<<-all-r x right)
                   (not (heap<-all-l (tree->right left)
                                     (tagged-element->elem (tree->head left)))))
              (not (heap<-all-l (tree-join (tree->right left) right)
@@ -396,8 +392,8 @@
     :enable (tree-join
              heapp-extra-rules
              heap<-all-l-extra-rules)
-    :disable equal-of-tree->heads-when-bst<-all-l-and-bst<-all-r-forward-chaining
-    :use equal-of-tree->heads-when-bst<-all-l-and-bst<-all-r)
+    :disable equal-of-tree->heads-when-<<-all-l-and-<<-all-r-forward-chaining
+    :use equal-of-tree->heads-when-<<-all-l-and-<<-all-r)
 
   (defrulel lemma2
     (implies (and (heapp (tree->left right))
@@ -433,8 +429,8 @@
 
   ;; rename "when disjoint"
   (defrule heapp-of-tree-join
-    (implies (and (bst<-all-l left x)
-                  (bst<-all-r x right))
+    (implies (and (<<-all-l left x)
+                  (<<-all-r x right))
              (equal (heapp (tree-join left right))
                     (and (heapp left)
                          (heapp right))))
@@ -442,8 +438,8 @@
     :enable tree-join))
 
 (defrule heapp-of-tree-join-at
-  (implies (and (bst<-all-l left split)
-                (bst<-all-r split right))
+  (implies (and (<<-all-l left split)
+                (<<-all-r split right))
            (equal (heapp (tree-join-at split left right))
                   (and (heapp left)
                        (heapp right))))

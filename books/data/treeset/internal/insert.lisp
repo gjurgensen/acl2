@@ -13,6 +13,7 @@
 (include-book "xdoc/constructors" :dir :system)
 
 (include-book "data/utilities/fixed-size-words/u32-defs" :dir :system)
+(include-book "data/utilities/total-order-defs" :dir :system)
 
 (include-book "../hash-defs")
 (include-book "tree-defs")
@@ -26,11 +27,11 @@
 (local (include-book "kestrel/utilities/ordinals" :dir :system))
 
 (local (include-book "data/utilities/fixed-size-words/u32" :dir :system))
+(local (include-book "data/utilities/total-order" :dir :system))
 
 (local (include-book "../hash"))
 (local (include-book "tree"))
 (local (include-book "bst"))
-(local (include-book "bst-order"))
 (local (include-book "heap"))
 (local (include-book "heap-order"))
 (local (include-book "count"))
@@ -60,7 +61,7 @@
            (head-elem (tagged-element->elem head)))
       (cond ((equal x head-elem)
              (tree-fix tree))
-            ((bst< x head-elem)
+            ((<< x head-elem)
              (let* ((left$ (tree-insert x hash (tree->left tree)))
                     ;; TODO: return boolean flag indicating whether insertion
                     ;; was redundant. If it was, just exit.
@@ -142,20 +143,20 @@
 
 ;;;;;;;;;;;;;;;;;;;;
 
-(defrule bst<-all-l-of-tree-insert
-  (equal (bst<-all-l (tree-insert y hash tree) x)
-         (and (bst< y x)
-              (bst<-all-l tree x)))
+(defrule <<-all-l-of-tree-insert
+  (equal (<<-all-l (tree-insert y hash tree) x)
+         (and (<< y x)
+              (<<-all-l tree x)))
   :induct t
-  :enable (bst<-all-l
+  :enable (<<-all-l
            tree-insert))
 
-(defrule bst<-all-r-of-tree-insert
-  (equal (bst<-all-r x (tree-insert y hash tree))
-         (and (bst< x y)
-              (bst<-all-r x tree)))
+(defrule <<-all-r-of-tree-insert
+  (equal (<<-all-r x (tree-insert y hash tree))
+         (and (<< x y)
+              (<<-all-r x tree)))
   :induct t
-  :enable (bst<-all-r
+  :enable (<<-all-r
            tree-insert))
 
 (defrule bst-of-tree-insert-when-bst
@@ -164,7 +165,7 @@
   :induct t
   :enable (tree-insert
            bstp
-           bst<-rules))
+           data::<<-rules))
 
 ;;;;;;;;;;;;;;;;;;;;
 
@@ -261,7 +262,7 @@
   :enable (tree-insert
            tree-nodes-count
            bstp
-           bst<-rules))
+           data::<<-rules))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -280,7 +281,7 @@
                 (head-elem (tagged-element->elem head)))
            (cond ((= x head-elem)
                   (tree-fix tree))
-                 ((acl2-number-bst< x head-elem)
+                 ((data::acl2-number-<< x head-elem)
                   (let* ((left$ (acl2-number-tree-insert
                                   x hash (tree->left tree)))
                          (head-left$ (tree->head left$))
@@ -307,55 +308,12 @@
                         (rotate-left tree$)
                       tree$)))))))
   :enabled t
-  ;; Verified below
-  :verify-guards nil)
-
-;;;;;;;;;;;;;;;;;;;;
-
-(defruled tree-insert-becomes-acl2-number-tree-insert-exec
-  (equal
-    (tree-insert x hash tree)
-    (if (tree-empty-p tree)
-        (tree-node (tagged-element hash x) nil nil)
-      (let* ((hash (mbe :logic (hash x) :exec hash))
-             (head (tree->head tree))
-             (head-elem (tagged-element->elem head)))
-        (cond ((equal x head-elem)
-               (tree-fix tree))
-              ((bst< x head-elem)
-               (let* ((left$ (acl2-number-tree-insert
-                               x hash (tree->left tree)))
-                      (head-left$ (tree->head left$))
-                      (tree$ (tree-node head
-                                        left$
-                                        (tree->right tree))))
-                 (if (heap<-with-hashes head-elem
-                                        (tagged-element->elem head-left$)
-                                        (tagged-element->hash head)
-                                        (tagged-element->hash head-left$))
-                     (rotate-right tree$)
-                   tree$)))
-              (t
-               (let* ((right$ (acl2-number-tree-insert
-                                x hash (tree->right tree)))
-                      (head-right$ (tree->head right$))
-                      (tree$ (tree-node head
-                                        (tree->left tree)
-                                        right$)))
-                 (if (heap<-with-hashes head-elem
-                                        (tagged-element->elem head-right$)
-                                        (tagged-element->hash head)
-                                        (tagged-element->hash head-right$))
-                     (rotate-left tree$)
-                   tree$)))))))
-  :induct t
-  :enable tree-insert)
-
-(verify-guards acl2-number-tree-insert
-  :hints
-  (("Goal" :in-theory (enable data::u32-equal
-                              tree-all-acl2-numberp)
-           :use tree-insert-becomes-acl2-number-tree-insert-exec)))
+  :guard-hints (("Goal" :in-theory (enable data::u32-equal
+                                           tree-insert
+                                           acl2-number-tree-insert
+                                           tree-all-acl2-numberp)
+                        ;; TODO: avoid expand hint
+                        :expand (tree-insert x nil tree))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -374,7 +332,7 @@
                 (head-elem (tagged-element->elem head)))
            (cond ((eq x head-elem)
                   (tree-fix tree))
-                 ((symbol-bst< x head-elem)
+                 ((data::symbol-<< x head-elem)
                   (let* ((left$ (symbol-tree-insert
                                   x hash (tree->left tree)))
                          (head-left$ (tree->head left$))
@@ -401,55 +359,12 @@
                         (rotate-left tree$)
                       tree$)))))))
   :enabled t
-  ;; Verified below
-  :verify-guards nil)
-
-;;;;;;;;;;;;;;;;;;;;
-
-(defruled tree-insert-becomes-symbol-tree-insert-exec
-  (equal
-    (tree-insert x hash tree)
-    (if (tree-empty-p tree)
-        (tree-node (tagged-element hash x) nil nil)
-      (let* ((hash (mbe :logic (hash x) :exec hash))
-             (head (tree->head tree))
-             (head-elem (tagged-element->elem head)))
-        (cond ((equal x head-elem)
-               (tree-fix tree))
-              ((bst< x head-elem)
-               (let* ((left$ (symbol-tree-insert
-                               x hash (tree->left tree)))
-                      (head-left$ (tree->head left$))
-                      (tree$ (tree-node head
-                                        left$
-                                        (tree->right tree))))
-                 (if (heap<-with-hashes head-elem
-                                        (tagged-element->elem head-left$)
-                                        (tagged-element->hash head)
-                                        (tagged-element->hash head-left$))
-                     (rotate-right tree$)
-                   tree$)))
-              (t
-               (let* ((right$ (symbol-tree-insert
-                                x hash (tree->right tree)))
-                      (head-right$ (tree->head right$))
-                      (tree$ (tree-node head
-                                        (tree->left tree)
-                                        right$)))
-                 (if (heap<-with-hashes head-elem
-                                        (tagged-element->elem head-right$)
-                                        (tagged-element->hash head)
-                                        (tagged-element->hash head-right$))
-                     (rotate-left tree$)
-                   tree$)))))))
-  :induct t
-  :enable tree-insert)
-
-(verify-guards symbol-tree-insert
-  :hints
-  (("Goal" :in-theory (enable data::u32-equal
-                              tree-all-symbolp)
-           :use tree-insert-becomes-symbol-tree-insert-exec)))
+  :guard-hints (("Goal" :in-theory (enable data::u32-equal
+                                           tree-insert
+                                           symbol-tree-insert
+                                           tree-all-symbolp)
+                        ;; TODO: avoid expand hint
+                        :expand (tree-insert x nil tree))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -468,7 +383,7 @@
                 (head-elem (tagged-element->elem head)))
            (cond ((eql x head-elem)
                   (tree-fix tree))
-                 ((eqlable-bst< x head-elem)
+                 ((data::eqlable-<< x head-elem)
                   (let* ((left$ (eqlable-tree-insert
                                   x hash (tree->left tree)))
                          (head-left$ (tree->head left$))
@@ -495,52 +410,9 @@
                         (rotate-left tree$)
                       tree$)))))))
   :enabled t
-  ;; Verified below
-  :verify-guards nil)
-
-;;;;;;;;;;;;;;;;;;;;
-
-(defruled tree-insert-becomes-eqlable-tree-insert-exec
-  (equal
-    (tree-insert x hash tree)
-    (if (tree-empty-p tree)
-        (tree-node (tagged-element hash x) nil nil)
-      (let* ((hash (mbe :logic (hash x) :exec hash))
-             (head (tree->head tree))
-             (head-elem (tagged-element->elem head)))
-        (cond ((equal x head-elem)
-               (tree-fix tree))
-              ((bst< x head-elem)
-               (let* ((left$ (eqlable-tree-insert
-                               x hash (tree->left tree)))
-                      (head-left$ (tree->head left$))
-                      (tree$ (tree-node head
-                                        left$
-                                        (tree->right tree))))
-                 (if (heap<-with-hashes head-elem
-                                        (tagged-element->elem head-left$)
-                                        (tagged-element->hash head)
-                                        (tagged-element->hash head-left$))
-                     (rotate-right tree$)
-                   tree$)))
-              (t
-               (let* ((right$ (eqlable-tree-insert
-                                x hash (tree->right tree)))
-                      (head-right$ (tree->head right$))
-                      (tree$ (tree-node head
-                                        (tree->left tree)
-                                        right$)))
-                 (if (heap<-with-hashes head-elem
-                                        (tagged-element->elem head-right$)
-                                        (tagged-element->hash head)
-                                        (tagged-element->hash head-right$))
-                     (rotate-left tree$)
-                   tree$)))))))
-  :induct t
-  :enable tree-insert)
-
-(verify-guards eqlable-tree-insert
-  :hints
-  (("Goal" :in-theory (enable data::u32-equal
-                              tree-all-eqlablep)
-           :use tree-insert-becomes-eqlable-tree-insert-exec)))
+  :guard-hints (("Goal" :in-theory (enable data::u32-equal
+                                           tree-insert
+                                           eqlable-tree-insert
+                                           tree-all-eqlablep)
+                        ;; TODO: avoid expand hint
+                        :expand (tree-insert x nil tree))))

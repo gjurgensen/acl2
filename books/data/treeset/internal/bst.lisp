@@ -11,296 +11,298 @@
 (include-book "std/util/define" :dir :system)
 (include-book "std/util/defrule" :dir :system)
 
+(include-book "data/utilities/total-order-defs" :dir :system)
+
 (include-book "tree-defs")
-(include-book "bst-order-defs")
 
 (local (include-book "std/basic/controlled-configuration" :dir :system))
 (local (acl2::controlled-configuration :hooks nil))
 
 (local (include-book "kestrel/utilities/ordinals" :dir :system))
 
+(local (include-book "data/utilities/total-order" :dir :system))
+
 (local (include-book "tree"))
-(local (include-book "bst-order"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define bst<-all-l
+(define <<-all-l
   ((tree treep)
    x)
-  (declare (xargs :type-prescription (booleanp (bst<-all-l tree x))))
+  (declare (xargs :type-prescription (booleanp (<<-all-l tree x))))
   :parents (tree)
-  :short "Check that all members of a tree are @(tsee bst<) some value."
+  :short "Check that all members of a tree are @(tsee <<) some value."
   (or (tree-empty-p tree)
-      (and (bst< (tagged-element->elem (tree->head tree)) x)
-           (bst<-all-l (tree->left tree) x)
-           (bst<-all-l (tree->right tree) x))))
+      (and (<< (tagged-element->elem (tree->head tree)) x)
+           (<<-all-l (tree->left tree) x)
+           (<<-all-l (tree->right tree) x))))
 
-(define bst<-all-r
+(define <<-all-r
   (x
    (tree treep))
-  (declare (xargs :type-prescription (booleanp (bst<-all-r x tree))))
+  (declare (xargs :type-prescription (booleanp (<<-all-r x tree))))
   :parents (tree)
-  :short "Check that some value is @(tsee bst<) all members of a tree."
+  :short "Check that some value is @(tsee <<) all members of a tree."
   (or (tree-empty-p tree)
-      (and (bst< x (tagged-element->elem (tree->head tree)))
-           (bst<-all-r x (tree->left tree))
-           (bst<-all-r x (tree->right tree)))))
+      (and (<< x (tagged-element->elem (tree->head tree)))
+           (<<-all-r x (tree->left tree))
+           (<<-all-r x (tree->right tree)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defrule bst<-all-l-when-tree-equiv-congruence
+(defrule <<-all-l-when-tree-equiv-congruence
   (implies (tree-equiv x y)
-           (equal (bst<-all-l x a)
-                  (bst<-all-l y a)))
+           (equal (<<-all-l x a)
+                  (<<-all-l y a)))
   :rule-classes :congruence
   :enable tree-equiv
-  :expand ((bst<-all-l x a)
-           (bst<-all-l y a)))
+  :expand ((<<-all-l x a)
+           (<<-all-l y a)))
 
-(defrule bst<-all-r-when-tree-equiv-congruence
+(defrule <<-all-r-when-tree-equiv-congruence
   (implies (tree-equiv x y)
-           (equal (bst<-all-r a x)
-                  (bst<-all-r a y)))
+           (equal (<<-all-r a x)
+                  (<<-all-r a y)))
   :rule-classes :congruence
   :enable tree-equiv
-  :expand ((bst<-all-r a x)
-           (bst<-all-r a y)))
+  :expand ((<<-all-r a x)
+           (<<-all-r a y)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defrule bst<-all-l-of-nil
-  (bst<-all-l nil tree)
-  :enable bst<-all-l)
+(defrule <<-all-l-of-nil
+  (<<-all-l nil tree)
+  :enable <<-all-l)
 
-(defrule bst<-all-r-of-arg1-and-nil
-  (bst<-all-r tree nil)
-  :enable bst<-all-r)
+(defrule <<-all-r-of-arg1-and-nil
+  (<<-all-r tree nil)
+  :enable <<-all-r)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defruled bst<-all-l-when-tree-empty-p
+(defruled <<-all-l-when-tree-empty-p
   (implies (tree-empty-p tree)
-           (bst<-all-l tree x))
-  :enable bst<-all-l)
+           (<<-all-l tree x))
+  :enable <<-all-l)
 
-(defrule bst<-all-l-when-tree-empty-p-cheap
+(defrule <<-all-l-when-tree-empty-p-cheap
   (implies (tree-empty-p tree)
-           (bst<-all-l tree x))
+           (<<-all-l tree x))
   :rule-classes ((:rewrite :backchain-limit-lst (0)))
-  :by bst<-all-l-when-tree-empty-p)
+  :by <<-all-l-when-tree-empty-p)
 
-(defruled bst<-all-r-when-tree-empty-p
+(defruled <<-all-r-when-tree-empty-p
   (implies (tree-empty-p tree)
-           (bst<-all-r x tree))
-  :enable bst<-all-r)
+           (<<-all-r x tree))
+  :enable <<-all-r)
 
-(defrule bst<-all-r-when-tree-empty-p-cheap
+(defrule <<-all-r-when-tree-empty-p-cheap
   (implies (tree-empty-p tree)
-           (bst<-all-r x tree))
+           (<<-all-r x tree))
   :rule-classes ((:rewrite :backchain-limit-lst (0)))
-  :by bst<-all-r-when-tree-empty-p)
+  :by <<-all-r-when-tree-empty-p)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defruled bst<-all-l-when-bst<-all-r
-  (implies (bst<-all-r x tree)
-           (equal (bst<-all-l tree x)
+(defruled <<-all-l-when-<<-all-r
+  (implies (<<-all-r x tree)
+           (equal (<<-all-l tree x)
                   (tree-empty-p tree)))
   :induct t
-  :enable (bst<-all-r
-           bst<-all-l
-           bst<-rules))
+  :enable (<<-all-r
+           <<-all-l
+           data::<<-rules))
 
-(defruled bst<-all-l-when-bst<-all-r-forward-chaining
-  (implies (bst<-all-r x tree)
-           (equal (bst<-all-l tree x)
+(defruled <<-all-l-when-<<-all-r-forward-chaining
+  (implies (<<-all-r x tree)
+           (equal (<<-all-l tree x)
                   (tree-empty-p tree)))
   :rule-classes :forward-chaining
-  :by bst<-all-l-when-bst<-all-r)
+  :by <<-all-l-when-<<-all-r)
 
-(defrule bst<-all-l-when-bst<-all-r-and-not-tree-empty-p-forward-chaining
-  (implies (and (bst<-all-r x tree)
+(defrule <<-all-l-when-<<-all-r-and-not-tree-empty-p-forward-chaining
+  (implies (and (<<-all-r x tree)
                 (not (tree-empty-p tree)))
-           (not (bst<-all-l tree x)))
+           (not (<<-all-l tree x)))
   :rule-classes :forward-chaining
-  :enable bst<-all-l-when-bst<-all-r)
+  :enable <<-all-l-when-<<-all-r)
 
 ;;;;;;;;;;;;;;;;;;;;
 
-(defruled bst<-all-r-when-bst<-all-l
-  (implies (bst<-all-l tree x)
-           (equal (bst<-all-r x tree)
+(defruled <<-all-r-when-<<-all-l
+  (implies (<<-all-l tree x)
+           (equal (<<-all-r x tree)
                   (tree-empty-p tree)))
   :induct t
-  :enable (bst<-all-l
-           bst<-all-r
-           bst<-rules))
+  :enable (<<-all-l
+           <<-all-r
+           data::<<-rules))
 
-(defruled bst<-all-r-when-bst<-all-l-forward-chaining
-  (implies (bst<-all-l tree x)
-           (equal (bst<-all-r x tree)
+(defruled <<-all-r-when-<<-all-l-forward-chaining
+  (implies (<<-all-l tree x)
+           (equal (<<-all-r x tree)
                   (tree-empty-p tree)))
   :rule-classes :forward-chaining
-  :by bst<-all-r-when-bst<-all-l)
+  :by <<-all-r-when-<<-all-l)
 
-(defrule bst<-all-r-when-bst<-all-l-and-not-tree-empty-p-forward-chaining
-  (implies (and (bst<-all-l tree x)
+(defrule <<-all-r-when-<<-all-l-and-not-tree-empty-p-forward-chaining
+  (implies (and (<<-all-l tree x)
                 (not (tree-empty-p tree)))
-           (not (bst<-all-r x tree)))
+           (not (<<-all-r x tree)))
   :rule-classes :forward-chaining
-  :enable bst<-all-r-when-bst<-all-l)
+  :enable <<-all-r-when-<<-all-l)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defrule tree-empty-p-when-not-bst<-all-l-forward-chaining
-  (implies (not (bst<-all-l tree x))
+(defrule tree-empty-p-when-not-<<-all-l-forward-chaining
+  (implies (not (<<-all-l tree x))
            (not (tree-empty-p tree)))
   :rule-classes ((:rewrite :backchain-limit-lst (0)))
-  :enable bst<-all-l)
+  :enable <<-all-l)
 
-(defrule tree-empty-p-when-not-bst<-all-r-forward-chaining
-  (implies (not (bst<-all-r x tree))
+(defrule tree-empty-p-when-not-<<-all-r-forward-chaining
+  (implies (not (<<-all-r x tree))
            (not (tree-empty-p tree)))
   :rule-classes ((:rewrite :backchain-limit-lst (0)))
-  :enable bst<-all-r)
+  :enable <<-all-r)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defrule bst<-all-l-of-arg1-and-tree->head
-  (equal (bst<-all-l tree (tagged-element->elem (tree->head tree)))
+(defrule <<-all-l-of-arg1-and-tree->head
+  (equal (<<-all-l tree (tagged-element->elem (tree->head tree)))
          (tree-empty-p tree))
-  :enable (bst<-all-l
+  :enable (<<-all-l
            tree->head
-           bst<-rules))
+           data::<<-rules))
 
-(defrule bst<-all-r-of-tree->head
-  (equal (bst<-all-r (tagged-element->elem (tree->head tree)) tree)
+(defrule <<-all-r-of-tree->head
+  (equal (<<-all-r (tagged-element->elem (tree->head tree)) tree)
          (tree-empty-p tree))
-  :enable (bst<-all-r
+  :enable (<<-all-r
            tree->head
-           bst<-rules))
+           data::<<-rules))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defruled bst<-all-l-of-tree->left-when-bst<-all-l
-  (implies (bst<-all-l tree x)
-           (bst<-all-l (tree->left tree) x))
-  :enable bst<-all-l)
+(defruled <<-all-l-of-tree->left-when-<<-all-l
+  (implies (<<-all-l tree x)
+           (<<-all-l (tree->left tree) x))
+  :enable <<-all-l)
 
-(defrule bst<-all-l-of-tree->left-when-bst<-all-l-cheap
-  (implies (bst<-all-l tree x)
-           (bst<-all-l (tree->left tree) x))
+(defrule <<-all-l-of-tree->left-when-<<-all-l-cheap
+  (implies (<<-all-l tree x)
+           (<<-all-l (tree->left tree) x))
   :rule-classes ((:rewrite :backchain-limit-lst (0)))
-  :by bst<-all-l-of-tree->left-when-bst<-all-l)
+  :by <<-all-l-of-tree->left-when-<<-all-l)
 
-(defruled bst<-all-l-of-tree->right-when-bst<-all-l
-  (implies (bst<-all-l tree x)
-           (bst<-all-l (tree->right tree) x))
-  :enable bst<-all-l)
+(defruled <<-all-l-of-tree->right-when-<<-all-l
+  (implies (<<-all-l tree x)
+           (<<-all-l (tree->right tree) x))
+  :enable <<-all-l)
 
-(defrule bst<-all-l-of-tree->right-when-bst<-all-l-cheap
-  (implies (bst<-all-l tree x)
-           (bst<-all-l (tree->right tree) x))
+(defrule <<-all-l-of-tree->right-when-<<-all-l-cheap
+  (implies (<<-all-l tree x)
+           (<<-all-l (tree->right tree) x))
   :rule-classes ((:rewrite :backchain-limit-lst (0)))
-  :by bst<-all-l-of-tree->right-when-bst<-all-l)
+  :by <<-all-l-of-tree->right-when-<<-all-l)
 
 ;;;;;;;;;;;;;;;;;;;;
 
-(defruled bst<-all-r-of-arg1-and-tree->left-when-bst<-all-r
-  (implies (bst<-all-r x tree)
-           (bst<-all-r x (tree->left tree)))
-  :enable bst<-all-r)
+(defruled <<-all-r-of-arg1-and-tree->left-when-<<-all-r
+  (implies (<<-all-r x tree)
+           (<<-all-r x (tree->left tree)))
+  :enable <<-all-r)
 
-(defrule bst<-all-r-of-arg1-and-tree->left-when-bst<-all-r-cheap
-  (implies (bst<-all-r x tree)
-           (bst<-all-r x (tree->left tree)))
+(defrule <<-all-r-of-arg1-and-tree->left-when-<<-all-r-cheap
+  (implies (<<-all-r x tree)
+           (<<-all-r x (tree->left tree)))
   :rule-classes ((:rewrite :backchain-limit-lst (0)))
-  :by bst<-all-r-of-arg1-and-tree->left-when-bst<-all-r)
+  :by <<-all-r-of-arg1-and-tree->left-when-<<-all-r)
 
-(defruled bst<-all-r-of-arg1-and-tree->right-when-bst<-all-r
-  (implies (bst<-all-r x tree)
-           (bst<-all-r x (tree->right tree)))
-  :enable bst<-all-r)
+(defruled <<-all-r-of-arg1-and-tree->right-when-<<-all-r
+  (implies (<<-all-r x tree)
+           (<<-all-r x (tree->right tree)))
+  :enable <<-all-r)
 
-(defrule bst<-all-r-of-arg1-and-tree->right-when-bst<-all-r-cheap
-  (implies (bst<-all-r x tree)
-           (bst<-all-r x (tree->right tree)))
+(defrule <<-all-r-of-arg1-and-tree->right-when-<<-all-r-cheap
+  (implies (<<-all-r x tree)
+           (<<-all-r x (tree->right tree)))
   :rule-classes ((:rewrite :backchain-limit-lst (0)))
-  :by bst<-all-r-of-arg1-and-tree->right-when-bst<-all-r)
+  :by <<-all-r-of-arg1-and-tree->right-when-<<-all-r)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defrule bst<-all-l-of-tree-node
-  (equal (bst<-all-l (tree-node head left right) x)
-         (and (bst< (tagged-element->elem head) x)
-              (bst<-all-l left x)
-              (bst<-all-l right x)))
-  :enable bst<-all-l)
+(defrule <<-all-l-of-tree-node
+  (equal (<<-all-l (tree-node head left right) x)
+         (and (<< (tagged-element->elem head) x)
+              (<<-all-l left x)
+              (<<-all-l right x)))
+  :enable <<-all-l)
 
-(defrule bst<-all-r-of-arg1-and-tree-node
-  (equal (bst<-all-r x (tree-node head left right))
-         (and (bst< x (tagged-element->elem head))
-              (bst<-all-r x left)
-              (bst<-all-r x right)))
-  :enable bst<-all-r)
+(defrule <<-all-r-of-arg1-and-tree-node
+  (equal (<<-all-r x (tree-node head left right))
+         (and (<< x (tagged-element->elem head))
+              (<<-all-r x left)
+              (<<-all-r x right)))
+  :enable <<-all-r)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defruled bst<-all-l-weaken
-  (implies (and (bst< x y)
-                (bst<-all-l tree x))
-           (bst<-all-l tree y))
+(defruled <<-all-l-weaken
+  (implies (and (<< x y)
+                (<<-all-l tree x))
+           (<<-all-l tree y))
   :induct t
-  :enable (bst<-all-l
-           bst<-rules))
+  :enable (<<-all-l
+           data::<<-rules))
 
-(defruled bst<-all-l-weaken2
-  (implies (and (not (bst< x y))
-                (bst<-all-l tree y))
-           (bst<-all-l tree x))
-  :enable (bst<-all-l-weaken
-           bst<-rules)
-  :disable bst<-trichotomy
-  :use ((:instance bst<-trichotomy
-                   (x y)
-                   (y x))))
+(defruled <<-all-l-weaken2
+  (implies (and (not (<< x y))
+                (<<-all-l tree y))
+           (<<-all-l tree x))
+  :enable (<<-all-l-weaken
+           data::<<-rules)
+  :disable acl2::<<-trichotomy
+  :use ((:instance acl2::<<-trichotomy
+                   (acl2::x y)
+                   (acl2::y x))))
 
 ;;;;;;;;;;;;;;;;;;;;
 
-(defruled bst<-all-r-weaken
-  (implies (and (bst< x y)
-                (bst<-all-r y tree))
-           (bst<-all-r x tree))
+(defruled <<-all-r-weaken
+  (implies (and (<< x y)
+                (<<-all-r y tree))
+           (<<-all-r x tree))
   :induct t
-  :enable (bst<-all-r
-           bst<-rules))
+  :enable (<<-all-r
+           data::<<-rules))
 
-(defruled bst<-all-r-weaken2
-  (implies (and (not (bst< x y))
-                (bst<-all-r x tree))
-           (bst<-all-r y tree))
-  :enable (bst<-all-r-weaken
-            bst<-rules)
-  :disable bst<-trichotomy
-  :use ((:instance bst<-trichotomy
-                   (x y)
-                   (y x))))
+(defruled <<-all-r-weaken2
+  (implies (and (not (<< x y))
+                (<<-all-r x tree))
+           (<<-all-r y tree))
+  :enable (<<-all-r-weaken
+           data::<<-rules)
+  :disable acl2::<<-trichotomy
+  :use ((:instance acl2::<<-trichotomy
+                   (acl2::x y)
+                   (acl2::y x))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defrule bst<-of-tree->head-when-bst<-all-l
-  (implies (and (bst<-all-l tree x)
+(defrule <<-of-tree->head-when-<<-all-l
+  (implies (and (<<-all-l tree x)
                 (not (tree-empty-p tree)))
-           (bst< (tagged-element->elem (tree->head tree)) x))
+           (<< (tagged-element->elem (tree->head tree)) x))
   :rule-classes ((:rewrite :backchain-limit-lst (0 nil)))
-  :enable bst<-all-l)
+  :enable <<-all-l)
 
-(defrule bst<-of-arg1-and-tree->head-when-bst<-all-r-arg1
-  (implies (and (bst<-all-r x tree)
+(defrule <<-of-arg1-and-tree->head-when-<<-all-r-arg1
+  (implies (and (<<-all-r x tree)
                 (not (tree-empty-p tree)))
-           (bst< x (tagged-element->elem (tree->head tree))))
+           (<< x (tagged-element->elem (tree->head tree))))
   :rule-classes ((:rewrite :backchain-limit-lst (0 nil)))
-  :enable bst<-all-r)
+  :enable <<-all-r)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -318,9 +320,9 @@
   (or (tree-empty-p tree)
       (and (bstp (tree->left tree))
            (bstp (tree->right tree))
-           (bst<-all-l (tree->left tree)
+           (<<-all-l (tree->left tree)
                        (tagged-element->elem (tree->head tree)))
-           (bst<-all-r (tagged-element->elem (tree->head tree))
+           (<<-all-r (tagged-element->elem (tree->head tree))
                        (tree->right tree)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -378,9 +380,9 @@
            (equal (bstp tree)
                   (and (bstp (tree->left tree))
                        (bstp (tree->right tree))
-                       (bst<-all-l (tree->left tree)
+                       (<<-all-l (tree->left tree)
                                    (tagged-element->elem (tree->head tree)))
-                       (bst<-all-r (tagged-element->elem (tree->head tree))
+                       (<<-all-r (tagged-element->elem (tree->head tree))
                                    (tree->right tree)))))
   :enable bstp)
 
@@ -389,9 +391,9 @@
            (equal (bstp tree)
                   (and (bstp (tree->left tree))
                        (bstp (tree->right tree))
-                       (bst<-all-l (tree->left tree)
+                       (<<-all-l (tree->left tree)
                                    (tagged-element->elem (tree->head tree)))
-                       (bst<-all-r (tagged-element->elem (tree->head tree))
+                       (<<-all-r (tagged-element->elem (tree->head tree))
                                    (tree->right tree)))))
   :rule-classes ((:rewrite :backchain-limit-lst (0)))
   :by bstp-when-not-tree-empty-p)
@@ -402,56 +404,56 @@
   (equal (bstp (tree-node head left right))
          (and (bstp left)
               (bstp right)
-              (bst<-all-l left (tagged-element->elem head))
-              (bst<-all-r (tagged-element->elem head) right)))
+              (<<-all-l left (tagged-element->elem head))
+              (<<-all-r (tagged-element->elem head) right)))
   :enable bstp)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defruled bst<-of-tree->head-tree->left-and-tree->head
+(defruled <<-of-tree->head-tree->left-and-tree->head
   (implies (and (bstp tree)
                 (not (tree-empty-p (tree->left tree))))
-           (bst< (tagged-element->elem (tree->head (tree->left tree)))
+           (<< (tagged-element->elem (tree->head (tree->left tree)))
                  (tagged-element->elem (tree->head tree)))))
 
-(defruled bst<-of-tree->head-and-tree->head-tree->right
+(defruled <<-of-tree->head-and-tree->head-tree->right
   (implies (and (bstp tree)
                 (not (tree-empty-p (tree->right tree))))
-           (bst< (tagged-element->elem (tree->head tree))
+           (<< (tagged-element->elem (tree->head tree))
                  (tagged-element->elem (tree->head (tree->right tree))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defrule bst<-all-l-of-tree->left-and-tree->head-when-bstp
+(defrule <<-all-l-of-tree->left-and-tree->head-when-bstp
   (implies (bstp set)
-           (bst<-all-l (tree->left set)
+           (<<-all-l (tree->left set)
                        (tagged-element->elem (tree->head set)))))
 
-(defrule bst<-all-r-of-tree->head-and-tree->right-when-bstp
+(defrule <<-all-r-of-tree->head-and-tree->right-when-bstp
   (implies (bstp tree)
-           (bst<-all-r (tagged-element->elem (tree->head tree))
+           (<<-all-r (tagged-element->elem (tree->head tree))
                        (tree->right tree))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defthy bst<-all-extra-rules
-  '(bst<-all-l-when-tree-empty-p
-    bst<-all-r-when-tree-empty-p
-    bst<-all-l-when-bst<-all-r-forward-chaining
-    bst<-all-r-when-bst<-all-l-forward-chaining
-    bst<-all-l-of-tree->left-when-bst<-all-l
-    bst<-all-l-of-tree->right-when-bst<-all-l
-    bst<-all-r-of-arg1-and-tree->left-when-bst<-all-r
-    bst<-all-r-of-arg1-and-tree->right-when-bst<-all-r
-    bst<-all-l-weaken
-    bst<-all-l-weaken2
-    bst<-all-r-weaken
-    bst<-all-r-weaken2))
+(defthy <<-all-extra-rules
+  '(<<-all-l-when-tree-empty-p
+    <<-all-r-when-tree-empty-p
+    <<-all-l-when-<<-all-r-forward-chaining
+    <<-all-r-when-<<-all-l-forward-chaining
+    <<-all-l-of-tree->left-when-<<-all-l
+    <<-all-l-of-tree->right-when-<<-all-l
+    <<-all-r-of-arg1-and-tree->left-when-<<-all-r
+    <<-all-r-of-arg1-and-tree->right-when-<<-all-r
+    <<-all-l-weaken
+    <<-all-l-weaken2
+    <<-all-r-weaken
+    <<-all-r-weaken2))
 
 (defthy bstp-extra-rules
   '(bstp-of-tree->left-when-tree-orderdp
     bstp-of-tree->right-when-bstp
     bstp-when-tree-empty-p
     bstp-when-not-tree-empty-p
-    bst<-of-tree->head-tree->left-and-tree->head
-    bst<-of-tree->head-and-tree->head-tree->right))
+    <<-of-tree->head-tree->left-and-tree->head
+    <<-of-tree->head-and-tree->head-tree->right))
