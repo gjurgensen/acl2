@@ -20,4 +20,5 @@
 (std::defredundant
   :names (<<-all-l
           <<-all-r
+          fast-bstp-nonempty
           bstp))

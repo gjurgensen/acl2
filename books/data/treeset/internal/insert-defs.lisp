@@ -22,6 +22,7 @@
 
 (std::defredundant
   :names (tree-insert
+          tree-singleton
           acl2-number-tree-insert
           symbol-tree-insert
           eqlable-tree-insert))

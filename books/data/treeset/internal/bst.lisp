@@ -306,24 +306,367 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(define fast-bstp-nonempty ((tree treep))
+  :guard (not (tree-empty-p tree))
+  :returns (mv bstp
+               min
+               max)
+  (if (mbt (not (tree-empty-p tree)))
+      (mv-let (bstp min)
+              (if (tree-empty-p (tree->left tree))
+                  (mv t (tagged-element->elem (tree->head tree)))
+                (mv-let (bstp$ min$ max$)
+                        (fast-bstp-nonempty (tree->left tree))
+                  (mv (and bstp$
+                           (<< max$ (tagged-element->elem (tree->head tree))))
+                      min$)))
+        (if bstp
+            (if (tree-empty-p (tree->right tree))
+                (mv t min (tagged-element->elem (tree->head tree)))
+              (mv-let (bstp$ min$ max$)
+                      (fast-bstp-nonempty (tree->right tree))
+                (mv (and bstp$
+                         (<< (tagged-element->elem (tree->head tree)) min$))
+                    min
+                    max$)))
+          (mv nil nil nil)))
+    (mv t nil nil)))
+
+;;;;;;;;;;;;;;;;;;;;
+
+(in-theory (disable (:t fast-bstp-nonempty)))
+
+;; (defrule <<-all-l-of-left-when-fast-bstp-nonempty
+;;   (implies (and (not (tree-empty-p tree))
+;;                 (mv-nth 0 (fast-bstp-nonempty tree)))
+;;            (tree-in x (tree->left)))
+;;   :induct t
+;;   :enable (fast-bstp-nonempty
+;;            bstp))
+
+;; (defrule <<-all-l-of-left-when-fast-bstp-nonempty
+;;   (implies (and (not (tree-empty-p tree))
+;;                 (mv-nth 0 (fast-bstp-nonempty tree)))
+;;            (and (<<-all-l (tree->left tree)
+;;                           (tagged-element->elem (tree->head tree)))
+;;                 (<<-all-r (tagged-element->elem (tree->head tree))
+;;                           (tree->right tree))))
+;;   :induct t
+;;   :enable (fast-bstp-nonempty
+;;            bstp))
+
+;; (defrule ?
+;;   (implies (and (not (tree-empty-p tree))
+;;                 (mv-nth 0 (fast-bstp-nonempty tree)))
+;;            (<< (tagged-element->elem (tree->head (tree->left tree)))
+;;                (tagged-element->elem (tree->head tree))))
+;;   :induct t
+;;   :enable (fast-bstp-nonempty
+;;            data::<<-rules
+;;            ))
+
+(defruledl lemma0
+  (implies (and (not (tree-empty-p tree))
+                (mv-nth 0 (fast-bstp-nonempty tree)))
+           (or (equal (mv-nth 1 (fast-bstp-nonempty tree))
+                      (mv-nth 2 (fast-bstp-nonempty tree)))
+               (<< (mv-nth 1 (fast-bstp-nonempty tree))
+                   (mv-nth 2 (fast-bstp-nonempty tree)))))
+  :induct t
+  :enable (fast-bstp-nonempty
+           data::<<-rules))
+
+;; (defrule lemma0.1
+;;   (implies (and (not (tree-empty-p tree))
+;;                 (mv-nth 0 (fast-bstp-nonempty tree)))
+;;            (not (<< (mv-nth 2 (fast-bstp-nonempty tree))
+;;                     (mv-nth 1 (fast-bstp-nonempty tree)))))
+;;   :enable data::<<-rules
+;;   :use lemma0)
+
+;;;;;;;;;;;;;;;;;;;;
+
+(defruledl lemma1
+  (implies (and (not (<< (tagged-element->elem (tree->head tree))
+                         x))
+                (tree-empty-p (tree->left tree))
+                (mv-nth 0
+                        (fast-bstp-nonempty (tree->right tree)))
+                (<< (tagged-element->elem (tree->head tree))
+                    (mv-nth 1
+                            (fast-bstp-nonempty (tree->right tree))))
+                (not (tree-empty-p (tree->right tree))))
+           (not (<< (mv-nth 2
+                            (fast-bstp-nonempty (tree->right tree)))
+                    x)))
+  :enable (data::<<-rules)
+  :use ((:instance lemma0
+                   (tree (tree->right tree))))
+  )
+
+(defruledl lemma2
+  (implies (and (not (<< (tagged-element->elem (tree->head tree))
+                         x))
+                (not (tree-empty-p (tree->left tree)))
+                (mv-nth 0
+                        (fast-bstp-nonempty (tree->left tree)))
+                (mv-nth 0
+                        (fast-bstp-nonempty (tree->right tree)))
+                (<< (tagged-element->elem (tree->head tree))
+                    (mv-nth 1
+                            (fast-bstp-nonempty (tree->right tree))))
+                (<< (mv-nth 2
+                            (fast-bstp-nonempty (tree->left tree)))
+                    (tagged-element->elem (tree->head tree)))
+                (not (tree-empty-p (tree->right tree))))
+           (not (<< (mv-nth 2
+                            (fast-bstp-nonempty (tree->right tree)))
+                    x)))
+  :enable (data::<<-rules)
+  :use ((:instance lemma0
+                   (tree (tree->right tree)))))
+
+(defrule <<-all-l-when-fast-bstp-nonempty
+  (implies (and (not (tree-empty-p tree))
+                (mv-nth 0 (fast-bstp-nonempty tree)))
+           (equal (<<-all-l tree x)
+                  (<< (mv-nth 2 (fast-bstp-nonempty tree)) x)))
+  :induct t
+  :enable (fast-bstp-nonempty
+           <<-all-l
+           data::<<-rules
+           lemma1
+           lemma2))
+
+;;;;;;;;;;;;;;;;;;;;
+
+(defruledl lemma3
+  (implies (and (not (<< x
+                         (tagged-element->elem (tree->head tree))))
+                (not (tree-empty-p (tree->left tree)))
+                (mv-nth 0
+                        (fast-bstp-nonempty (tree->left tree)))
+                (<< (mv-nth 2
+                            (fast-bstp-nonempty (tree->left tree)))
+                    (tagged-element->elem (tree->head tree))))
+           (not (<< x
+                    (mv-nth 1
+                            (fast-bstp-nonempty (tree->left tree))))))
+  :enable (data::<<-rules)
+  :use ((:instance lemma0
+                   (tree (tree->left tree)))))
+
+(defrule <<-all-r-when-fast-bstp-nonempty
+  (implies (and (not (tree-empty-p tree))
+                (mv-nth 0 (fast-bstp-nonempty tree)))
+           (equal (<<-all-r x tree)
+                  (<< x (mv-nth 1 (fast-bstp-nonempty tree)))))
+  :induct t
+  :enable (fast-bstp-nonempty
+           <<-all-r
+           data::<<-rules
+           lemma3))
+
+;;;;;;;;;;;;;;;;;;;;
+
+;; MOVE up
+(defrule fast-bstp-nonempty-when-tree-equiv-congruence
+  (implies (tree-equiv tree0 tree1)
+           (equal (fast-bstp-nonempty tree0)
+                  (fast-bstp-nonempty tree1)))
+  :rule-classes :congruence
+  :induct t
+  :enable fast-bstp-nonempty)
+
+(defruled fast-bstp-nonempty.bstp-when-tree-empty-p
+  (implies (tree-empty-p tree)
+           (mv-nth 0 (fast-bstp-nonempty tree)))
+  :enable fast-bstp-nonempty)
+
+(defrule fast-bstp-nonempty.bstp-when-tree-empty-p-cheap
+  (implies (tree-empty-p tree)
+           (mv-nth 0 (fast-bstp-nonempty tree)))
+  :rule-classes ((:rewrite :backchain-limit-lst (0)))
+  :by fast-bstp-nonempty.bstp-when-tree-empty-p)
+
+(defruled fast-bstp-nonempty.bstp-of-tree->left
+  (implies (mv-nth 0 (fast-bstp-nonempty tree))
+           (mv-nth 0 (fast-bstp-nonempty (tree->left tree))))
+  :enable fast-bstp-nonempty)
+
+(defrule fast-bstp-nonempty.bstp-of-tree->left-cheap
+  (implies (mv-nth 0 (fast-bstp-nonempty tree))
+           (mv-nth 0 (fast-bstp-nonempty (tree->left tree))))
+  :rule-classes ((:rewrite :backchain-limit-lst (0)))
+  :by fast-bstp-nonempty.bstp-of-tree->left)
+
+(defruled fast-bstp-nonempty.bstp-of-tree->right
+  (implies (mv-nth 0 (fast-bstp-nonempty tree))
+           (mv-nth 0 (fast-bstp-nonempty (tree->right tree))))
+  :enable fast-bstp-nonempty)
+
+(defrule fast-bstp-nonempty.bstp-of-tree->right-cheap
+  (implies (mv-nth 0 (fast-bstp-nonempty tree))
+           (mv-nth 0 (fast-bstp-nonempty (tree->right tree))))
+  :rule-classes ((:rewrite :backchain-limit-lst (0)))
+  :by fast-bstp-nonempty.bstp-of-tree->right)
+
+;;;;;;;;;;;;;;;;;;;;
+
+(defrule <<-all-l-of-left-and-head-when-fast-bstp-nonempty
+  (implies (and (not (tree-empty-p tree))
+                (mv-nth 0 (fast-bstp-nonempty tree)))
+           (<<-all-l (tree->left tree)
+                     (tagged-element->elem (tree->head tree))))
+  ;; TODO: ugly proof. Why is this disable necessary?
+  ;; - Oh, this "forward chaining" rule is actually a "cheap" rewrite rule.
+  ;;   Was that intentional? Maybe that was the problem?
+  :disable tree-empty-p-when-not-<<-all-l-forward-chaining
+  :cases ((tree-empty-p (tree->left tree)))
+  :expand (fast-bstp-nonempty tree))
+
+(defrule <<-all-r-of-head-and-right-when-fast-bstp-nonempty
+  (implies (and (not (tree-empty-p tree))
+                (mv-nth 0 (fast-bstp-nonempty tree)))
+           (<<-all-r (tagged-element->elem (tree->head tree))
+                     (tree->right tree)))
+  ;; Same as above
+  :disable tree-empty-p-when-not-<<-all-r-forward-chaining
+  :cases ((tree-empty-p (tree->right tree)))
+  :expand (fast-bstp-nonempty tree))
+
+;;;;;;;;;;;;;;;;;;;;
+#|
+;; Perhaps the best way to phrase this is
+;; if max << a, then (<<-all-l tree a)
+(defrule <<-all-l-of-left-when-fast-bstp-nonempty
+  (implies (and (not (tree-empty-p tree))
+                (mv-nth 0 (fast-bstp-nonempty tree))
+                (<< (mv-nth 2 (fast-bstp-nonempty tree)) max-greater))
+           (<<-all-l tree max-greater))
+  :induct t
+  :enable (fast-bstp-nonempty
+           data::<<-rules
+           <<-all-l
+           )
+  )
+
+(defrule <<-all-l-of-left-when-fast-bstp-nonempty
+  (implies (and (not (tree-empty-p tree))
+                (mv-nth 0 (fast-bstp-nonempty tree))
+                (<< min-smaller (mv-nth 1 (fast-bstp-nonempty tree))))
+           (<<-all-r min-smaller tree))
+  :induct t
+  :enable (fast-bstp-nonempty
+           data::<<-rules
+           <<-all-r
+           )
+  )
+
+(defrule <<-all-l-of-left-when-fast-bstp-nonempty
+  (implies (and (not (tree-empty-p tree))
+                (mv-nth 0 (fast-bstp-nonempty tree))
+                (<< min-smaller (mv-nth 1 (fast-bstp-nonempty tree)))
+                (<< (mv-nth 2 (fast-bstp-nonempty tree)) max-greater))
+           (and (<<-all-l tree max-greater)
+                (<<-all-r min-smaller tree)))
+  :induct t
+  :enable (fast-bstp-nonempty
+           data::<<-rules
+           )
+  )
+
+;; Sketch:
+;; if mv-nth 0,
+;; and x is tree-in tree
+;; x is equal to min or min << x
+;; and x is equal to max or x << max
+(defrule <<-all-l-of-left-when-fast-bstp-nonempty
+  (implies (and (not (tree-empty-p tree))
+                (mv-nth 0 (fast-bstp-nonempty tree))
+                (tree-in x tree))
+           (and (or (equal x (mv-nth 1 (fast-bstp-nonempty tree)))
+                    (<< (mv-nth 1 (fast-bstp-nonempty tree)) x))
+                (or (equal x (mv-nth 2 (fast-bstp-nonempty tree)))
+                    (<< x (mv-nth 2 (fast-bstp-nonempty tree))))))
+  :induct t
+  :enable (fast-bstp-nonempty
+           data::<<-rules
+           )
+  )
+
+(defrule <<-all-l-of-left-when-fast-bstp-nonempty
+  (implies (and (not (tree-empty-p tree))
+                (mv-nth 0 (fast-bstp-nonempty tree)))
+           (<<-all-l (tree->left tree)
+                     (tagged-element->elem (tree->head tree))))
+  :induct t
+  :enable (fast-bstp-nonempty
+           bstp
+           <<-all-l
+           data::<<-rules
+           )
+  :hints ('(:expand (<<-all-l (tree->left tree)
+                              (tagged-element->elem (tree->head tree)))))
+  )
+|#
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (define bstp
   ((tree treep))
   (declare (xargs :type-prescription (booleanp (bstp tree))))
   :parents (tree)
   :short "Check the binary search tree property."
-  :long
-  (xdoc::topstring
-   (xdoc::p
-     "This recognizer is currently inefficient, operating in @($O(n^2)$) time
-      instead of @($O(n)$). Eventually we hope to add an @(tsee mbe) with a
-      linear-time executable version."))
   (or (tree-empty-p tree)
-      (and (bstp (tree->left tree))
-           (bstp (tree->right tree))
-           (<<-all-l (tree->left tree)
-                       (tagged-element->elem (tree->head tree)))
-           (<<-all-r (tagged-element->elem (tree->head tree))
-                       (tree->right tree)))))
+      (mbe :logic (and (bstp (tree->left tree))
+                       (bstp (tree->right tree))
+                       (<<-all-l (tree->left tree)
+                                 (tagged-element->elem (tree->head tree)))
+                       (<<-all-r (tagged-element->elem (tree->head tree))
+                                 (tree->right tree)))
+           :exec (mv-let (bstp min max)
+                         (fast-bstp-nonempty tree)
+                   (declare (ignore min max))
+                   bstp)))
+  :inline t
+  ;; Verified below
+  :verify-guards nil)
+
+;; (define bstp
+;;   ((tree treep))
+;;   (declare (xargs :type-prescription (booleanp (bstp tree))))
+;;   :parents (tree)
+;;   :short "Check the binary search tree property."
+;;   :long
+;;   (xdoc::topstring
+;;    (xdoc::p
+;;      "This recognizer is currently inefficient, operating in @($O(n^2)$) time
+;;       instead of @($O(n)$). Eventually we hope to add an @(tsee mbe) with a
+;;       linear-time executable version."))
+;;   (or (tree-empty-p tree)
+;;       (and (bstp (tree->left tree))
+;;            (bstp (tree->right tree))
+;;            (<<-all-l (tree->left tree)
+;;                      (tagged-element->elem (tree->head tree)))
+;;            (<<-all-r (tagged-element->elem (tree->head tree))
+;;                      (tree->right tree))))
+;;   :inline t)
+
+;;;;;;;;;;;;;;;;;;;;
+
+;; TODO: When enabled this somehow disrupts subsequent proofs???
+;;   Why would fast-bstp-nonempty even show up???
+(defruled fast-bstp-nonempty.bstp
+  (implies (not (tree-empty-p tree))
+           (equal (mv-nth 0 (fast-bstp-nonempty tree))
+                  (bstp tree)))
+  :induct t
+  :enable (fast-bstp-nonempty
+           bstp
+           data::<<-rules))
+
+(verify-guards bstp$inline
+  :hints (("Goal" :in-theory (enable bstp fast-bstp-nonempty.bstp))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -410,11 +753,12 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; TODO: Why is this failing now? Any new rules?
 (defruled <<-of-tree->head-tree->left-and-tree->head
   (implies (and (bstp tree)
                 (not (tree-empty-p (tree->left tree))))
            (<< (tagged-element->elem (tree->head (tree->left tree)))
-                 (tagged-element->elem (tree->head tree)))))
+               (tagged-element->elem (tree->head tree)))))
 
 (defruled <<-of-tree->head-and-tree->head-tree->right
   (implies (and (bstp tree)

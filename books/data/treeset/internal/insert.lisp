@@ -266,6 +266,20 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(define tree-singleton
+  (x
+   (hash (unsigned-byte-p 32 hash)))
+  :guard (mbe :logic (equal (hash x) hash)
+              :exec (data::u32-equal (hash x) hash))
+  (mbe :logic (tree-insert x nil nil)
+       :exec (tree-node (tagged-element hash x) nil nil))
+  :enabled t
+  :inline t
+  :guard-hints (("Goal" :in-theory (enable data::u32-equal
+                                           tree-insert))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (define acl2-number-tree-insert
   ((x acl2-numberp)
    (hash (unsigned-byte-p 32 hash))

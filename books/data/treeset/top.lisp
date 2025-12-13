@@ -51,16 +51,10 @@
          difference, from an external user-perspective, is performance. Below
          are the practical worst-case complexities of core operations:")
       ;; TODO: technically, these also scale multiplicatively with the size of
-      ;;   the elements, since bst< and heap< are O(n). If we stored the hash
-      ;;   values in the nodes, heap< could be O(1) average case. If we
-      ;;   switched orders, this could be a nice improvement (since bst< is
-      ;;   called more than heap<).
+      ;;   the elements, since << is O(n).
       (xdoc::ul
         (xdoc::li
-          "@(tsee setp) &mdash; @($O(n^2)$) (Note: the current implementation
-           is inefficient. This should eventually be @($O(n)$) once we
-           introduce a more efficient binary search tree property check via an
-           @(tsee mbe).)")
+          "@(tsee setp) &mdash; @($O(n)$)")
         (xdoc::li
           "@(tsee in) &mdash; @($O(\\log(n))$)")
         (xdoc::li

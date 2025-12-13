@@ -33,9 +33,7 @@
   :long
   (xdoc::topstring
    (xdoc::p
-     "Time complexity: @($O(n^2)$) (Note: the current implementation is
-      inefficient. This should eventually be @($O(n)$) once we introduce a more
-      efficient binary search tree property check via an @(tsee mbe).)"))
+     "Time complexity: @($O(n)$)."))
   :returns (yes/no booleanp :rule-classes (:rewrite :type-prescription))
   (and (treep x)
        (bstp x)

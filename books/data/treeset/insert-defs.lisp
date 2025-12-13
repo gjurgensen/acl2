@@ -21,6 +21,8 @@
           insert-macro-fn
           insert$inline
           insert
+          singleton-with-hash
+          singleton
           insert-all
           from-list
           insert-=

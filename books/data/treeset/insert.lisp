@@ -211,6 +211,29 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(define singleton-with-hash
+  (x
+   (hash (unsigned-byte-p 32 hash)))
+  :guard (mbe :logic (equal (hash x) hash)
+              :exec (data::u32-equal (hash x) hash))
+  (mbe :logic (insert x (empty))
+       :exec (tree-singleton x hash))
+  :enabled t
+  :guard-hints (("Goal" :in-theory (enable data::u32-equal
+                                           insert
+                                           empty))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define singleton (x)
+  (mbe :logic (insert x (empty))
+       :exec (tree-singleton x (hash x)))
+  :enabled t
+  :guard-hints (("Goal" :in-theory (enable insert
+                                           empty))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (define insert-all
   ((list true-listp)
    (set setp))
