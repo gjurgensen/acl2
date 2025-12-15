@@ -13,7 +13,7 @@
 (include-book "xdoc/constructors" :dir :system)
 
 (include-book "data/utilities/fixed-size-words/u32-defs" :dir :system)
-(include-book "data/utilities/total-order-defs" :dir :system)
+(include-book "data/utilities/total-order/total-order-defs" :dir :system)
 
 (include-book "../hash-defs")
 (include-book "tree-defs")
@@ -27,7 +27,7 @@
 (local (include-book "kestrel/utilities/ordinals" :dir :system))
 
 (local (include-book "data/utilities/fixed-size-words/u32" :dir :system))
-(local (include-book "data/utilities/total-order" :dir :system))
+(local (include-book "data/utilities/total-order/total-order" :dir :system))
 
 (local (include-book "../hash"))
 (local (include-book "tree"))

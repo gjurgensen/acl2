@@ -8,18 +8,19 @@
 
 (in-package "TREESET")
 
-(include-book "data/utilities/total-order/total-order-defs" :dir :system)
+(include-book "data/utilities/total-order/max-defs" :dir :system)
+(include-book "data/utilities/total-order/min-defs" :dir :system)
 
-(include-book "../hash-defs")
+(include-book "tree-defs")
 
 (local (include-book "std/util/defredundant" :dir :system))
-(local (include-book "heap-order"))
+(local (include-book "min-max"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (std::defredundant
-  :names (heap<-with-hashes
-          heap<))
-
-;; (add-macro-alias heap<-with-hashes heap<-with-hashes$inline)
-;; (add-macro-alias heap< heap<$inline)
+  :names (tree-min
+          tree-max
+          tree-leftmost
+          tree-rightmost
+          ))

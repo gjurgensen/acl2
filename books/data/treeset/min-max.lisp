@@ -1,0 +1,106 @@
+; Copyright (C) 2025 Kestrel Institute (http://www.kestrel.edu)
+;
+; License: A 3-clause BSD license. See the LICENSE file distributed with ACL2.
+;
+; Author: Grant Jurgensen (grant@kestrel.edu)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(in-package "TREESET")
+
+(include-book "std/util/define" :dir :system)
+(include-book "std/util/defrule" :dir :system)
+
+(include-book "internal/min-max-defs")
+(include-book "set-defs")
+(include-book "in-defs")
+
+(local (include-book "std/basic/controlled-configuration" :dir :system))
+(local (acl2::controlled-configuration :hooks nil))
+
+(local (include-book "internal/tree"))
+(local (include-book "internal/min-max"))
+(local (include-book "set"))
+(local (include-book "in"))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; TODO: document
+(define min ((set setp))
+  :guard (not (emptyp set))
+  (mbe :logic (tree-min (fix set))
+       :exec (tree-leftmost set))
+  :inline t
+  :guard-hints (("Goal" :in-theory (enable setp))))
+
+;;;;;;;;;;;;;;;;;;;;
+
+(defrule min-when-equiv-congruence
+  (implies (equiv set0 set1)
+           (equal (min set0)
+                  (min set1)))
+  :rule-classes :congruence
+  :enable min)
+
+(defrule in-of-min
+  (equal (in (min set) set)
+         (not (emptyp set)))
+  :enable (min
+           in
+           emptyp))
+
+(defrule <<-of-arg1-and-min-when-in
+  (implies (in x set)
+           (not (<< x (min set))))
+  :enable (min
+           in))
+
+(defrule <<-of-min-when-in
+  (implies (in x set)
+           (equal (<< (min set) x)
+                  (not (equal (min set) x))))
+  :enable (min
+           in))
+
+;; TODO: connect to to-oset
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; TODO: document
+(define max ((set setp))
+  :guard (not (emptyp set))
+  (mbe :logic (tree-max (fix set))
+       :exec (tree-rightmost set))
+  :inline t
+  :guard-hints (("Goal" :in-theory (enable setp))))
+
+;;;;;;;;;;;;;;;;;;;;
+
+(defrule max-when-equiv-congruence
+  (implies (equiv set0 set1)
+           (equal (max set0)
+                  (max set1)))
+  :rule-classes :congruence
+  :enable max)
+
+(defrule in-of-max
+  (equal (in (max set) set)
+         (not (emptyp set)))
+  :enable (max
+           in
+           emptyp))
+
+(defrule <<-of--max-when-in
+  (implies (in x set)
+           (not (<< (max set) x)))
+  :enable (max
+           in))
+
+(defrule <<-of-arg1-and-max-when-in
+  (implies (in x set)
+           (equal (<< x (max set))
+                  (not (equal (max set) x))))
+  :enable (max
+           in))
+
+;; TODO: connect to to-oset

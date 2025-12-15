@@ -17,6 +17,8 @@
   (union-eq '(define-sk
               defmacro+
               defxdoc+
+              data::min-<<
+              data::max-<<
               )
             (set-difference-eq *std-pkg-symbols*
                                #!STD

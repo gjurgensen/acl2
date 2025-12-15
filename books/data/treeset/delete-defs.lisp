@@ -8,6 +8,7 @@
 
 (in-package "TREESET")
 
+(include-book "internal/join-defs")
 (include-book "internal/delete-defs")
 (include-book "set-defs")
 
@@ -24,6 +25,7 @@
           delete-=
           delete-eq
           delete-eql
+          tail
           ))
 
 ;; (add-macro-alias delete1 delete1$inline)

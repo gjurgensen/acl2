@@ -11,7 +11,7 @@
 (include-book "std/util/define" :dir :system)
 (include-book "std/util/defrule" :dir :system)
 
-(include-book "data/utilities/total-order-defs" :dir :system)
+(include-book "data/utilities/total-order/total-order-defs" :dir :system)
 
 (include-book "tree-defs")
 
@@ -20,7 +20,7 @@
 
 (local (include-book "kestrel/utilities/ordinals" :dir :system))
 
-(local (include-book "data/utilities/total-order" :dir :system))
+(local (include-book "data/utilities/total-order/total-order" :dir :system))
 
 (local (include-book "tree"))
 

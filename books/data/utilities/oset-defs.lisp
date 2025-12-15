@@ -8,7 +8,7 @@
 
 (in-package "DATA")
 
-(include-book "total-order-defs")
+(include-book "total-order/total-order-defs")
 
 (local (include-book "std/util/defredundant" :dir :system))
 (local (include-book "std/osets/top" :dir :system))

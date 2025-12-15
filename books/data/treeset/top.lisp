@@ -15,6 +15,7 @@
 (include-book "hash")
 (include-book "set")
 (include-book "in")
+(include-book "min-max")
 (include-book "cardinality")
 (include-book "subset")
 (include-book "insert")
@@ -27,9 +28,9 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; It is not recommended to include this book. Instead, the defs.lisp book
-;; should be included and then any additional theorems books as needed (perhaps
-;; only locally included.)
+;; For ordinary use of treesets, it is recommend that you include the "defs"
+;; books (or some subset of the books it includes), and then this book (or some
+;; subset of its includes) *locally*.
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -92,20 +93,22 @@
   :long
   (xdoc::topstring
     (xdoc::p
-      "Here we describe the internal representation of sets.  Users of the
+      "Here we describe the internal representation of sets. Users of the
        library should not depend on these details, opting instead to use the
-       \"primitive\" operators abstractly.")
+       \"primitive\" operators abstractly. If you require a theorem which is
+       not yet provided, it is recommended to take a proof over
+       @(csee set::std/osets) and apply it to @(see treeset)s via the
+       isomorphism.")
     (xdoc::p
       "Sets are represented internally as treaps (= \"tree\" + \"heap\").
        Treaps are binary search trees with an additional max heap constraint
-       (see @(tsee bst-p) and @(tsee heapp), respectively).  Crucially, the max
+       (see @(tsee bstp) and @(tsee heapp), respectively).  Crucially, the max
        heap property is maintained with respect to a different order than that
        which is used for the binary search tree property.")
     (xdoc::p
-      "The binary search tree property uses the @(tsee bst<) order, which is
-       just a wrapper around @(tsee <<). The binary search tree property is
-       what delivers logarithmic average-case complexity of our basic
-       operations.")
+      "The binary search tree property uses the @(tsee <<) order. The binary
+       search tree property is what delivers logarithmic average-case
+       complexity of our basic operations.")
     (xdoc::p
       "The max heap property uses the new @(tsee heap<) total order. This
        ensures that the tree has a canonical structure and that the tree is

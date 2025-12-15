@@ -6,20 +6,16 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(in-package "TREESET")
+(in-package "DATA")
 
-(include-book "data/utilities/total-order/total-order-defs" :dir :system)
-
-(include-book "../hash-defs")
+(include-book "total-order-defs")
 
 (local (include-book "std/util/defredundant" :dir :system))
-(local (include-book "heap-order"))
+(local (include-book "max"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (std::defredundant
-  :names (heap<-with-hashes
-          heap<))
-
-;; (add-macro-alias heap<-with-hashes heap<-with-hashes$inline)
-;; (add-macro-alias heap< heap<$inline)
+  :names (max-<<-macro-loop
+          max-<<
+          binary-max-<<))

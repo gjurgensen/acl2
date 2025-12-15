@@ -8,7 +8,7 @@
 
 (in-package "TREESET")
 
-(include-book "data/utilities/total-order-defs" :dir :system)
+(include-book "data/utilities/total-order/total-order-defs" :dir :system)
 
 (include-book "tree-defs")
 (include-book "rotate-defs")

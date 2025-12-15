@@ -14,7 +14,7 @@
 ;; (include-book "xdoc/defxdoc-plus" :dir :system)
 
 (include-book "data/utilities/oset-defs" :dir :system)
-(include-book "data/utilities/total-order-defs" :dir :system)
+(include-book "data/utilities/total-order/total-order-defs" :dir :system)
 (include-book "data/utilities/true-list-defs" :dir :system)
 
 (include-book "tree-defs")
@@ -37,7 +37,7 @@
 (local (include-book "kestrel/lists-light/len" :dir :system))
 (local (include-book "kestrel/lists-light/member-equal" :dir :system))
 
-(local (include-book "data/utilities/total-order" :dir :system))
+(local (include-book "data/utilities/total-order/total-order" :dir :system))
 (local (include-book "data/utilities/true-list" :dir :system))
 
 (local (include-book "std/osets/top" :dir :system))

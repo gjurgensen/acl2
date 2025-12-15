@@ -12,6 +12,7 @@
 (include-book "std/util/defrule" :dir :system)
 (include-book "xdoc/constructors" :dir :system)
 
+(include-book "internal/join-defs")
 (include-book "internal/delete-defs")
 (include-book "set-defs")
 (include-book "cardinality-defs")
@@ -27,6 +28,8 @@
 
 (local (include-book "std/system/partition-rest-and-keyword-args" :dir :system))
 
+(local (include-book "internal/tree"))
+(local (include-book "internal/join"))
 (local (include-book "internal/delete"))
 (local (include-book "internal/count"))
 (local (include-book "internal/in"))
@@ -251,3 +254,20 @@
   :guard-hints (("Goal" :in-theory (enable delete
                                            setp
                                            set-all-eqlablep))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; TODO: document
+(define tail
+  ((set setp))
+  :guard (not (emptyp set))
+  (mbe :logic (delete (head set) set)
+       :exec (tree-join (tree->left set)
+                        (tree->right set)))
+  :enabled t
+  :inline t
+  :guard-hints (("Goal" :in-theory (enable setp
+                                           delete
+                                           head
+                                           tree-delete
+                                           tree-join-at))))

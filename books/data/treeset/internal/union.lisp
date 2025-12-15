@@ -22,7 +22,7 @@
 (local (include-book "std/basic/controlled-configuration" :dir :system))
 (local (acl2::controlled-configuration :hooks nil))
 
-(local (include-book "data/utilities/total-order" :dir :system))
+(local (include-book "data/utilities/total-order/total-order" :dir :system))
 
 (local (include-book "kestrel/utilities/ordinals" :dir :system))
 

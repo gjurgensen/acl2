@@ -14,7 +14,7 @@
 (include-book "xdoc/defxdoc-plus" :dir :system)
 
 (include-book "data/utilities/fixed-size-words/u32-defs" :dir :system)
-(include-book "data/utilities/total-order-defs" :dir :system)
+(include-book "data/utilities/total-order/total-order-defs" :dir :system)
 
 (include-book "../hash-defs")
 
@@ -22,7 +22,7 @@
 (local (acl2::controlled-configuration :hooks nil))
 
 (local (include-book "data/utilities/fixed-size-words/u32" :dir :system))
-(local (include-book "data/utilities/total-order" :dir :system))
+(local (include-book "data/utilities/total-order/total-order" :dir :system))
 
 (local (include-book "../hash"))
 

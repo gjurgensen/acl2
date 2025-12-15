@@ -11,6 +11,7 @@
 (include-book "hash-defs")
 (include-book "set-defs")
 (include-book "in-defs")
+(include-book "min-max-defs")
 (include-book "cardinality-defs")
 (include-book "subset-defs")
 (include-book "insert-defs")
