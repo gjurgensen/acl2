@@ -109331,10 +109331,10 @@ it."
 
  <p>Sped up @(tsee include-book) by significantly reducing time in translating
  calls of @(tsee with-output) and some other macros (for some technical details
- see ACL2 source function @('macroexpand1*-cmp') and in creatiion of the
+ see ACL2 source function @('macroexpand1*-cmp')) and in creatiion of the
  so-called post-alist in a @(see certificate) (for relevant code, which shows
  the use of @(see fast-alists), see ACL2 source function
- @('accumulate-post-alist').)  For examples showing reduction by about 1/3 in
+ @('accumulate-post-alist')).  For examples showing reduction by about 1/3 in
  include-book time, see the comment &ldquo;Here are sample time reports (...)
  for include-book speedups due to...&rdquo; in the form @('(defxdoc note-8-7
  ...)') in @(see community-book) @('books/system/doc/acl2-doc.lisp').  Thanks
@@ -109488,9 +109488,9 @@ it."
  <p>The @(':native') option of @(tsee trace!) and @(tsee trace$) did not work
  as one would reasonably expect when SBCL is the host Lisp; now it does.</p>
 
- <p>Some ill-formed hard errors, for example from calls of @('er'), caused raw
- Lisp errors.  This has been fixed.  Thanks to Eric Smith for reporting this
- bug with an example.</p>
+ <p>Some ill-formed hard errors, for example from calls of @(tsee er), caused
+ raw Lisp errors.  This has been fixed.  Thanks to Eric Smith for reporting
+ this bug with an example.</p>
 
  <p>@('DO') @(tsee Loop$) expressions (see @(see do-loop$)) are now allowed
  that have no @('WITH') clauses.  Formerly, an expression @('(loop$ do ...)')
@@ -109591,11 +109591,11 @@ it."
 
  <p>By default, the directory where an ACL2 executable is to be built must not
  have a pathname that contains spaces, as before.  However, now there is a
- variable, @('ACL2_ALLOW_SPACES_IN_DIRECTORIES'), that may be set to a
- non-empty value in order to build an ACL2 executable in such a directory, as
- noted in the error message.  That message points out that there may be errors,
- however, when certifying books.  Thanks to Eric Smith for a discussion leading
- to this change.</p>
+ `@('make')' variable, @('ACL2_ALLOW_SPACES_IN_DIRECTORIES'), that may be set
+ to a non-empty value in order to build an ACL2 executable in such a directory,
+ as noted in the error message.  That message points out that there may be
+ errors, however, when certifying books.  Thanks to Eric Smith for a discussion
+ leading to this change.</p>
 
  <p>References to the old &ldquo;bleeding edge&rdquo; manual
  (<a

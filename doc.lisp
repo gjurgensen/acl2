@@ -106460,13 +106460,13 @@ Heuristic and Efficiency Improvements
 
   Sped up [47m[include-book][0m by significantly reducing time in translating
   calls of [47m[with-output][0m and some other macros (for some technical
-  details see ACL2 source function [47mmacroexpand1*-cmp[0m and in creatiion
-  of the so-called post-alist in a [certificate] (for relevant code,
-  which shows the use of [fast-alists], see ACL2 source function
-  [47maccumulate-post-alist[0m.)  For examples showing reduction by about
-  1/3 in include-book time, see the comment ``Here are sample time
-  reports (...)  for include-book speedups due to...'' in the form
-  [47m(defxdoc note-8-7 ...)[0m in [community-book]
+  details see ACL2 source function [47mmacroexpand1*-cmp[0m) and in
+  creatiion of the so-called post-alist in a [certificate] (for
+  relevant code, which shows the use of [fast-alists], see ACL2
+  source function [47maccumulate-post-alist[0m).  For examples showing
+  reduction by about 1/3 in include-book time, see the comment ``Here
+  are sample time reports (...)  for include-book speedups due
+  to...'' in the form [47m(defxdoc note-8-7 ...)[0m in [community-book]
   [47mbooks/system/doc/acl2-doc.lisp[0m.  Thanks to Eric Smith for sending
   an example book for which to speed up [47m[include-book][0m.
 
@@ -106610,8 +106610,8 @@ Bug Fixes
   The [47m:native[0m option of [47m[trace!][0m and [47m[trace$][0m did not work as one would
   reasonably expect when SBCL is the host Lisp; now it does.
 
-  Some ill-formed hard errors, for example from calls of [47mer[0m, caused raw
-  Lisp errors.  This has been fixed.  Thanks to Eric Smith for
+  Some ill-formed hard errors, for example from calls of [47m[er][0m, caused
+  raw Lisp errors.  This has been fixed.  Thanks to Eric Smith for
   reporting this bug with an example.
 
   [47mDO[0m [47m[Loop$][0m expressions (see [do-loop$]) are now allowed that have no
@@ -106713,12 +106713,12 @@ Changes at the System Level
 
   By default, the directory where an ACL2 executable is to be built
   must not have a pathname that contains spaces, as before.  However,
-  now there is a variable, [47mACL2_ALLOW_SPACES_IN_DIRECTORIES[0m, that may
-  be set to a non-empty value in order to build an ACL2 executable in
-  such a directory, as noted in the error message.  That message
-  points out that there may be errors, however, when certifying
-  books.  Thanks to Eric Smith for a discussion leading to this
-  change.
+  now there is a `[47mmake[0m' variable, [47mACL2_ALLOW_SPACES_IN_DIRECTORIES[0m,
+  that may be set to a non-empty value in order to build an ACL2
+  executable in such a directory, as noted in the error message.
+  That message points out that there may be errors, however, when
+  certifying books.  Thanks to Eric Smith for a discussion leading to
+  this change.
 
   References to the old ``bleeding edge'' manual
   ({https://www.cs.utexas.edu/users/moore/acl2/manuals/latest/' |
