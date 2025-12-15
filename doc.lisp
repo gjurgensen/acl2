@@ -6461,15 +6461,36 @@ Subtopics
   This example associates the function symbol [47m[binary-append][0m with the
   macro name [47m[append][0m.  As a result, the name [47m[append][0m may be used as
   a runic designator (see [theories]) by the various theory
-  functions.  See [macro-aliases-table] for more details.  Also see
-  [add-macro-fn] for an extension of this utility that also affects
-  printing.
+  functions.  See [add-macro-fn] and [add-binop] for extensions of
+  this utility that also affect printing.
 
     General Form:
-    (add-macro-alias macro-name function-name)
+    (add-macro-alias macro-name sym)
 
-  This is a convenient way to add an entry to [47m[macro-aliases-table][0m.
-  See [macro-aliases-table] and also see [remove-macro-alias].")
+  where [47mmacro-name[0m is a macro name and [47msym[0m is a symbol.  If [47msym[0m is a
+  function symbol, then this event establishes [47mmacro-name[0m as a
+  [3mmacro-alias[0m for [47msym[0m by associating [47mmacro-name[0m with [47msym[0m in the
+  [table], [47mmacro-aliases-table[0m; see [macro-aliases-table] for
+  detailed discussion.  In particular, that discussion explains the
+  use of macro-aliases to allow a macro name as the second argument
+  of [47madd-macro-alias[0m, as in the example below.
+
+    (defun fn (x) x)
+    (defmacro mac1 (x) (fn x))
+    (defmacro mac2 (x) (list 'mac1 x))
+    (add-macro-alias mac1 fn); or (table macro-aliases-table 'mac1 'fn)
+
+    ; The following is equivalent to (add-macro-alias mac2 fn), since
+    ; mac1 is a macro-alias for fn by virtue of the preceding event.
+    ; Note that the form (table macro-aliases-table 'mac2 'mac1)
+    ; would not suffice here; that is, the in-theory event below would cause an
+    ; error, because mac1 is not a function symbol.
+    (add-macro-alias mac2 mac1)
+
+    ; Success:
+    (in-theory (disable mac2))
+
+  Also see [macro-aliases-table] and also see [remove-macro-alias].")
  (ADD-MACRO-FN
   (MACROS)
   "Associate a function name with a macro name
@@ -74450,7 +74471,7 @@ LP9: Semantics of [47mFOR[0m [47mLoop$[0ms
   (MACROS)
   "A [table] used to associate function names with macro names
 
-    Example:
+    Example Form:
     (table macro-aliases-table 'append 'binary-append)
 
   This example associates the function symbol [47m[binary-append][0m with the
@@ -74462,56 +74483,116 @@ LP9: Semantics of [47mFOR[0m [47mLoop$[0ms
 
   as an abbreviation for
 
-    (in-theory (disable binary-append))
-
-  which in turn really abbreviates
-
-    (in-theory (set-difference-theories (current-theory :here)
-                                        '(binary-append)))
+    (in-theory (disable binary-append)).
 
     General Form:
 
     (table macro-aliases-table 'macro-name 'function-name)
 
-  or very generally
+  or more generally
 
     (table macro-aliases-table macro-name-form function-name-form)
 
-  where [47mmacro-name-form[0m and [47mfunction-name-form[0m evaluate, respectively,
-  to a macro name and a symbol in the current ACL2 [world].  See
-  [table] for a general discussion of tables and the [47mtable[0m event used
-  to manipulate tables.
+  where [47mmacro-name-form[0m and [47mfunction-name-form[0m evaluate to values [47mMAC[0m
+  and [47mFN[0m, subject to the following requirements.
 
-  Note that [47mfunction-name-form[0m (above) does not need to evaluate to a
-  function symbol, but only to a symbol.  As a result, one can
-  introduce the alias before defining a recursive function, as
-  follows.
+    * [47mMAC[0m is a symbol that is a macro name.
 
-    (table macro-aliases-table 'mac 'fn)
-    (defun fn (x)
-      (if (consp x)
-          (mac (cdr x))
-        x))
+    * [47mFN[0m is a symbol.
 
-  Although this is obviously a contrived example, this flexibility can
-  be useful to macro writers; see for example the definition of ACL2
-  system macro [47m[defun-inline][0m.
+    * [47mFN[0m is either a function symbol or else a symbol that does not have a
+      definition (a [3mnew name[0m).  In particular, [47mFN[0m is not a macro
+      name.
 
-  The [47m[table][0m [47m[macro-aliases-table][0m is an alist that associates macro
-  symbols with function symbols, so that macro names may be used as
-  runic designators (see [theories]).  For a convenient way to add
-  entries to this [table], see [add-macro-alias].  To remove entries
-  from the [table] with ease, see [remove-macro-alias].
+  After admitting the [table] event displayed above, we may say that
+  [47mMAC[0m is a [3mmacro-alias for[0m [47mFN[0m.
 
-  This [table] is used by the theory functions; see [theories].  For
-  example, in order that [47m(disable append)[0m be interpreted as [47m(disable
-  binary-append)[0m, it is necessary that the example form above has
-  been executed.  In fact, this [table] does indeed associate many of
-  the macros provided by the ACL2 system, including [47m[append][0m, with
-  function symbols.  Loosely speaking, it only does so when the macro
-  is ``essentially the same thing as'' a corresponding function; for
-  example, [47m(append x y)[0m and [47m(binary-append x y)[0m represent the same
-  term, for any expressions [47mx[0m and [47my[0m.")
+
+Further Explanation
+
+  See [table] for a general discussion of tables and the [47mtable[0m [event],
+  which is used to manipulate tables.  The table,
+  [47m[macro-aliases-table][0m, is an alist that can associate macro symbols
+  with function symbols, so that macro names may be used as runic
+  designators (see [theories] and discussion below).  For a
+  convenient way to add entries to this [table], see
+  [add-macro-alias], which allows the second argument to be, itself,
+  a macro-alias.  To remove entries conveniently from the [table],
+  see [remove-macro-alias].
+
+  As hinted above, this [table] is used by theory functions; see
+  [theories].  For example, in order that [47m(disable append)[0m be
+  interpreted as [47m(disable binary-append)[0m, it suffices that [47m(table
+  macro-aliases-table 'append 'binary-append)[0m, has been executed.  In
+  fact, this [table] does indeed establish many of the macros
+  provided by the ACL2 system as macro-aliases, such as establishing
+  [47m[append][0m as a macro-alias for [47m[binary-append][0m.  This only takes
+  place when the macro is ``essentially the same thing as'' a
+  corresponding function; for example, [47m(append x y)[0m and
+  [47m(binary-append x y)[0m represent the same term, for any expressions [47mx[0m
+  and [47my[0m.
+
+  Note that the value [47mFN[0m of [47mfunction-name-form[0m (above) is allowed to be
+  a symbol to be defined later as a function symbol.  The following
+  examples illustrate some approaches that work and some that do not.
+
+    ;;;;;;;;;;
+    ;;; Example 1: No errors, with function defined before setting the table.
+    ;;;;;;;;;;
+
+    (defun fn (x) x)
+    (defmacro mac (x) (list 'fn x))
+    (table macro-aliases-table 'mac 'fn) ; or (add-macro-alias mac fn)
+    (in-theory (disable mac))
+
+    ;;;;;;;;;;
+    ;;; Example 2: No errors, with function defined after setting the table.
+    ;;;;;;;;;;
+
+    (defmacro mac (x) (list 'fn x))
+
+    ; Legal, even though fn is not yet defined:
+    (table macro-aliases-table 'mac 'fn) ; or (add-macro-alias mac fn)
+
+    (defun fn (x) x)
+    (in-theory (disable mac))
+
+    ;;;;;;;;;;
+    ;;; Example 3: ERROR.
+    ;;;;;;;;;;
+
+    (defun fn (x) x)
+    (defmacro mac1 (x) (fn x))
+    (defmacro mac2 (x) (list 'mac1 x))
+
+    ; BAD, since the table event above anticipates fn to be defined as
+    ; a function, not a macro (but, no error yet) -- but not (yet) an error:
+    (table macro-aliases-table 'mac2 'mac1) ; or (add-macro-alias mac2 mac1)
+
+    ; ERROR, since mac2 does not designate rules, because it aliases a macro:
+    (in-theory (disable mac2))
+
+    ; OK, but too late to help with that in-theory event; see below:
+    (table macro-aliases-table 'mac1 'fn) ; or (add-macro-alias mac1 fn)
+
+    ; ERROR, since mac2 is still associated with mac1, not with fn:
+    (in-theory (disable mac2))
+
+    ;;;;;;;;;;
+    ;;; Example 4: Fixed version of Example 3.
+    ;;;;;;;;;;
+
+    (defun fn (x) x)
+    (defmacro mac1 (x) (fn x))
+    (defmacro mac2 (x) (list 'mac1 x))
+    (add-macro-alias mac1 fn); or (table macro-aliases-table 'mac1 'fn)
+
+    ; The following is equivalent to (add-macro-alias mac2 fn), since
+    ; mac1 is a macro-alias for fn by virtue of the preceding event.
+    (add-macro-alias mac2 mac1)
+
+    ; Success:
+    (in-theory (disable mac2))")
  (MACRO-ARGS
   (MACROS)
   "The formals list of a macro definition
@@ -106306,6 +106387,23 @@ Changes to Existing Features
 
   Improved the error message when the package name is missing
   immediately after `#!', as in #!(foo).
+
+  It was the case that in an [event] [47m(add-macro-alias mac fn)[0m,
+  [47m(add-macro-fn mac fn)[0m, or [47m(add-binop mac fn)[0m, if [47mfn[0m was a macro
+  name then this event generally had no effect.  Now, if in addition
+  an event [47m(add-macro-alias fn fn2)[0m has first been admitted (and no
+  later such event has been admitted), then in these three events, [47mfn[0m
+  will be treated as [47mfn2[0m.  See [add-macro-alias].  Thanks to Grant
+  Jurgensen for sending an example that showed how a confusing
+  [47m[in-theory][0m error could occur before this change, in the situation
+  described above: after the change, [47m(in-theory (disable mac))[0m is
+  treated as a directive to [disable] [47mfn2[0m; but before the change it
+  was treated as an attempt to [disable] the macro, [47mfn[0m, which caused
+  an error.
+
+  The utility [47m:[0m[47m[trans*][0m new uses the [47m:TERM[0m [evisc-tuple] (see
+  [set-evisc-tuple]) to print terms, as was already being done by
+  [47m:[0m[47m[trans][0m.
 
 
 New Features
@@ -154257,12 +154355,15 @@ Remarks
     :trans (caddr x)
     :trans (cond (p q) (r))
 
-  ACL2 accepts user-level syntax as input, but [3mtranslates[0m it to an
-  internal syntax.  This translation includes macroexpansion,
-  replacing [47m[let][0m forms by [47m[lambda][0m expressions, quoting constants,
-  and so on.  See [term] for relevant background.
+  ACL2 accepts user-level syntax as input, and it prints the result of
+  [3mtranslating[0m it to an internal syntax.  This translation includes
+  macroexpansion, replacing [47m[let][0m forms by [47m[lambda][0m expressions,
+  quoting constants, and so on.  See [term] for relevant background.
+  The printing can be abbreviated, as it uses the [47m:term[0m [evisc-tuple]
+  (with a [47mflg[0m of [47mnil[0m, hence without any abbreviation by default; see
+  [set-evisc-tuple]).
 
-  Note that the [47mtrans[0m command produces a [47m[term][0m that need not obey code
+  Note that the [47mtrans[0m command prints a [47m[term][0m that need not obey code
   restrictions: that term can be used in theorems but might not be
   allowed in definitions (except in [non-executable] contexts; see
   [defun-nx] and see [non-exec]).
@@ -154270,7 +154371,7 @@ Remarks
   [47mTrans[0m takes one argument, an alleged term in user syntax, and
   translates it, expanding the macros in it completely.  Either an
   error is caused or the internal syntax for the term (representing
-  its formal meaning) is printed.  We also print the ``output
+  its formal meaning) is printed.  It also prints the ``output
   signature'' which indicates how many results are returned and which
   are single-threaded objects.  For example, a term that returns one
   ordinary object (e.g., an object other than [47m[state][0m or a
@@ -154302,8 +154403,8 @@ Remarks
   causes an error; to see the desired translation use [47m:trans! (df+ x
   y)[0m.
 
-  It is sometimes more convenient to use [47m[trans1][0m which is like trans
-  but which only does top-level macroexpansion.
+  It is sometimes more convenient to use [47m:[0m[47m[trans1][0m, which, unlike
+  [47m:trans[0m, only does top-level macroexpansion.
 
   For more, see [term].")
  (TRANS!
@@ -154330,20 +154431,22 @@ Remarks
   [trans], [trans!], and [47m[trans1][0m for other utilities that expand and
   translate their input.
 
-  Unlike [47mtrans[0m, the [47mtrans*[0m command can show not only the translation of
-  a given expression but also the intermediate expansions leading to
-  that translation, and [47mtrans*[0m can also show [47m[make-event][0m expansions.
-  Another difference between [47mtrans*[0m and [47mtrans[0m is that [47mtrans*[0m does not
-  enforce code restrictions; thus, multiple-value mismatches and
-  violations of single-threadedness are permitted by [47mtrans*[0m.  That
-  is: when [47mtrans*[0m takes steps to convert an untranslated term to a
-  translated term, it does so as though one is translating a theorem
-  statement, not a definition body.
+  Unlike [47mtrans[0m, the [47mtrans*[0m command can print not only the translation
+  of a given expression but also the intermediate expansions leading
+  to that translation, and [47mtrans*[0m can also print [47m[make-event][0m
+  expansions.  Another difference between [47mtrans*[0m and [47mtrans[0m is that
+  [47mtrans*[0m does not enforce code restrictions; thus, multiple-value
+  mismatches and violations of single-threadedness are permitted by
+  [47mtrans*[0m.  That is: when [47mtrans*[0m takes steps to convert an
+  untranslated term to a translated term, it does so as though one is
+  translating a theorem statement, not a definition body.
 
-  But like [47mtrans[0m, the [47mtrans*[0m command produces a [47m[term][0m that need not
-  obey code restrictions: that term can be used in theorems but might
-  not be allowed in definitions (except in [non-executable] contexts;
-  see [defun-nx] and see [non-exec]).
+  But like [47mtrans[0m, the [47mtrans*[0m command prints [47m[term][0ms that need not obey
+  code restrictions: they can be used in theorems but might not be
+  allowed in definitions (except in [non-executable] contexts; see
+  [defun-nx] and see [non-exec]).  Also like [47mtrans[0m, the printing uses
+  the [47m:term[0m [evisc-tuple] (with a [47mflg[0m of [47mnil[0m, hence without any
+  abbreviation by default; see [set-evisc-tuple]).
 
   For discussion of how one may use a keyword command like [47m:trans*[0m in
   place of calling the corresponding utility, in this case [47mtrans*[0m,
