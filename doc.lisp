@@ -33233,7 +33233,10 @@ Subtopics
                                  (apply$-guard do-fn '(nil))
                                  (apply$-guard finally-fn '(nil))
                                  (weak-dolia-p dolia))))
-     (let* ((triple (true-list-fix (apply$ do-fn (list alist))))
+     (let* ((stobj-values-p (not (all-nils (true-list-fix values))))
+            (old-measure-value (and stobj-values-p
+                                    (apply$ measure-fn (list alist))))
+            (triple (true-list-fix (apply$ do-fn (list alist))))
             (exit-token (car triple))
             (val (cadr triple))
             (new-alist (caddr triple)))
@@ -33246,7 +33249,8 @@ Subtopics
           (val (cadr triple)))
          (if (eq exit-token :return) val nil)))
        ((l< (lex-fix (apply$ measure-fn (list new-alist)))
-            (lex-fix (apply$ measure-fn (list alist))))
+            (lex-fix (if stobj-values-p old-measure-value
+                       (apply$ measure-fn (list alist)))))
         (do$ measure-fn new-alist
              do-fn finally-fn values dolia))
        (t
@@ -33278,7 +33282,8 @@ Subtopics
            untrans-measure untrans-do-loop$ nil
            (eviscerate-do$-alist alist all-stobj-names)
            (eviscerate-do$-alist new-alist all-stobj-names)
-           (apply$ measure-fn (list alist))
+           (if stobj-values-p old-measure-value
+             (apply$ measure-fn (list alist)))
            (apply$ measure-fn (list new-alist))
            values))
          (loop$-default-values values new-alist))))))
@@ -33527,6 +33532,29 @@ INFORMAL INTRODUCTION
   known stobj.  In fact, stobjs are not allowed to be declared in
   [47mWITH[0m clauses (and that is not necessary for assigning to them).
 
+  Note that it is possible to write [47mDO[0m loops without any [47mWITH[0m clauses,
+  provided a stobj is being manipulated and measured in the body.
+  For example, using the stobj declared in the previous example,
+
+    (loop$ do
+           :values (st)
+           :measure (acl2-count (fld st))
+           (if (endp (fld st))
+               (return st)
+               (if (equal 3 (car (fld st)))
+                   (return st)
+                   (setq st (update-fld (cdr (fld st)) st)))))
+
+  is acceptable.  In Common Lisp, [47m(loop$ do <body>)[0m loops until a
+  [47mreturn[0m is executed and so to be admissible in ACL2 some [47m:measure[0m
+  must be specified (unless there is [47mreturn[0m on every branch through
+  [47m<body>[0m).  If there are no [47mWITH[0m clauses, stobjs are the only objects
+  that might be measured to explain termination, and ACL2 cannot
+  guess effective measures of stobjs.
+
+  To see some advice about proving inductive theorems about [47mDO[0m loops
+  measured by stobjs, see [stating-and-proving-lemmas-about-loop$s].
+
   [31;1mThe [47mOF-TYPE[0m[31;1m Keyword[0m
 
   So far our examples have all involved [47mloop$[0m expressions that are
@@ -33754,8 +33782,8 @@ INFORMAL INTRODUCTION
     :df is #d0.0 and the value of any stobj component is the last latched
     value of that stobj.
 
-    ACL2 Error in TOP-LEVEL:  Evaluation aborted.  To debug see :DOC print-
-    gv, see :DOC trace, and see :DOC wet.
+    ACL2 Error [Evaluation] in TOP-LEVEL: Evaluation aborted.  To debug
+    see :DOC print- gv, see :DOC trace, and see :DOC wet.
 
     ACL2 !>
 
@@ -34203,7 +34231,10 @@ SEMANTICS
                                  (apply$-guard do-fn '(nil))
                                  (apply$-guard finally-fn '(nil))
                                  (weak-dolia-p dolia))))
-     (let* ((triple (true-list-fix (apply$ do-fn (list alist))))
+     (let* ((stobj-values-p (not (all-nils (true-list-fix values))))
+            (old-measure-value (and stobj-values-p
+                                    (apply$ measure-fn (list alist))))
+            (triple (true-list-fix (apply$ do-fn (list alist))))
             (exit-token (car triple))
             (val (cadr triple))
             (new-alist (caddr triple)))
@@ -34216,7 +34247,8 @@ SEMANTICS
           (val (cadr triple)))
          (if (eq exit-token :return) val nil)))
        ((l< (lex-fix (apply$ measure-fn (list new-alist)))
-            (lex-fix (apply$ measure-fn (list alist))))
+            (lex-fix (if stobj-values-p old-measure-value
+                       (apply$ measure-fn (list alist)))))
         (do$ measure-fn new-alist
              do-fn finally-fn values dolia))
        (t
@@ -34248,7 +34280,8 @@ SEMANTICS
            untrans-measure untrans-do-loop$ nil
            (eviscerate-do$-alist alist all-stobj-names)
            (eviscerate-do$-alist new-alist all-stobj-names)
-           (apply$ measure-fn (list alist))
+           (if stobj-values-p old-measure-value
+             (apply$ measure-fn (list alist)))
            (apply$ measure-fn (list new-alist))
            values))
          (loop$-default-values values new-alist))))))
@@ -67104,10 +67137,11 @@ Subtopics
     ***********************************************
 
   The solution is generally to [disable] the [executable-counterpart]
-  of the offending function, as suggested by the example below
-  (essentially provided by Sol Swords).  As of this writing (in July,
-  2025), the only way to get an unexpected ``live'' [stobj] is by the
-  use of [47m[swap-stobjs][0m, as illustrated below.
+  of the offending function.  It may well be that the only way to get
+  an unexpected ``live'' [stobj] is by the use of [47m[swap-stobjs][0m, as
+  suggested by the example shown below (essentially provided by Sol
+  Swords) --- which results in a different error message, shown
+  below, than the one above.
 
   First introduce a pair of congruent [stobj]s.
 
@@ -67124,20 +67158,54 @@ Subtopics
           (swap-stobjs st1 st)
           st)))
 
-  The following proof attempt causes the error message displayed above.
+  Here is a proof attempt that results in a raw Lisp error due to a
+  live stobj being introduced by [47m[swap-stobjs][0m.
 
-    (thm (not (equal (st-init '(1)) '(nil))))
+    ACL2 !>(thm (not (equal (st-init '(1)) '(nil))))
+
+    ***********************************************
+    Note:  SWAP-STOBJS has been called on stobjs named ST1 and ST,
+    where the value of ST1 is a live stobj but the value of ST is not.
+    This is an error, as such calls are unsupported; see :DOC swap-stobjs.
+    Advanced users may find it helpful to evaluate the form
+    (set-debugger-enable :bt)
+    to see a backtrace of calls leading to this error;
+    see :DOC set-debugger-enable.
+      Will attempt to exit the proof in progress;
+      otherwise, the next interrupt will abort the proof.
+      For an immediate abort see :DOC abort-soft.
+    ***********************************************
+
+    The message above might explain the error.  If not, and
+    if you didn't cause an explicit interrupt (Control-C),
+    then it may help to see :DOC raw-lisp-error.
+
+    To enable breaks into the debugger (also see :DOC acl2-customization):
+    (SET-DEBUGGER-ENABLE T)
+
+    Summary
+    Form:  ( THM ...)
+    Rules: NIL
+    Time:  0.00 seconds (prove: 0.00, print: 0.00, other: 0.00)
+
+    *** Note: No checkpoints to print. ***
+
+    ACL2 Error [Failure] in ( THM ...):  See :DOC failure.
+
+    ******** FAILED ********
+    ACL2 !>
 
   In fact, that formula is not a theorem!  Through Version 8.6, ACL2
-  mistakenly proved this theorem by evaluating the indicated call of
-  [47mst-init[0m to obtain an actual Lisp array, because of how ACL2 handles
-  [stobj]s in Lisp.  But now ACL2 produces the error displayed above.
+  mistakenly proved this alleged theorem by evaluating the indicated
+  call of [47mst-init[0m to obtain an actual Lisp array, because of how ACL2
+  handles [stobj]s in Lisp.  But now ACL2 produces the error
+  displayed just above.
 
   The error is avoided if we [disable] the [executable-counterpart] of
-  the offending function mentioned in the error message, [47mst-init[0m.
-  Indeed, the following theorem, which contradicts the false claim
-  above and disables the offending executable-counterpart, shows that
-  the logical value of [47m(st-init '(1))[0m is indeed [47m'(nil)[0m.
+  the offending function, [47mst-init[0m.  Indeed, the following theorem,
+  which contradicts the false claim above and disables the offending
+  executable-counterpart, shows that the logical value of [47m(st-init
+  '(1))[0m is indeed [47m'(nil)[0m.
 
     (thm (equal (st-init '(1)) '(nil))
          :hints((\"Goal\" :in-theory (disable (:e st-init)))))")
@@ -72967,7 +73035,9 @@ LP16: Proving Theorems about [47mDO[0m [47mLoop$[0ms
         (DO$
          (LAMBDA$ (ALIST)
                   (ACL2-COUNT (CDR (ASSOC-EQ-SAFE 'I ALIST))))
-         (CONS (CONS 'I N) (cons 'ans ans0)) ; note generalization of 0!
+         (CONS (CONS 'I N)
+               (cons (cons 'ans ans0)
+                     nil)) ; note generalization of 0!
          (LAMBDA$
           (ALIST)
           (IF (INTEGERP (CDR (ASSOC-EQ-SAFE 'I ALIST)))
@@ -72995,11 +73065,12 @@ LP16: Proving Theorems about [47mDO[0m [47mLoop$[0ms
 
   The UPPERCASE part above was just copied from the checkpoint and then
   the pair in the initial alist binding [47mANS[0m, which was [47m'(ANS . 0)[0m,
-  was replaced by [47m(cons 'ans ans0)[0m.  So while it looks messy, it's
-  not hard to enter.  Furthermore, it saves us from having to figure
-  out the normal form --- it's already in the checkpoint.  The [47mDO$[0m
-  term in this version of [47mlemma1[0m is just the formal translation of
-  the generalized [47mDO[0m [47mloop$[0m we wrote in the earlier version of [47mlemma1[0m.
+  was replaced by [47m(cons (cons 'ans ans0) nil)[0m.  So while it looks
+  messy, it's not hard to enter.  Furthermore, it saves us from
+  having to figure out the normal form --- it's already in the
+  checkpoint.  The [47mDO$[0m term in this version of [47mlemma1[0m is just the
+  formal translation of the generalized [47mDO[0m [47mloop$[0m we wrote in the
+  earlier version of [47mlemma1[0m.
 
   Next we prove ``lemma 2'' equating the recursive function with the
   (generalized) specification.  This theorem does not involve [47mloop$[0m
@@ -73058,8 +73129,8 @@ LP16: Proving Theorems about [47mDO[0m [47mLoop$[0ms
                              do
                              (if (zp i)
                                  (return ans)
-    			   (progn (setq ans (+ 1 ans))
-    				  (setq i (- i 1)))))
+                             (progn (setq ans (+ 1 ans))
+                                    (setq i (- i 1)))))
                       n)))
 
   For more details about rewriting [47mlambda[0m objects you can leave the
@@ -106339,7 +106410,11 @@ Bug Fixes
   Fixed a soundness bug based on the use of [47m[swap-stobjs][0m on two
   [stobj]s of which one is ``live''.  See [live-stobj-in-proof].
   Thanks to Sol Swords for reporting this bug, including an example
-  and analysis of possible fixes in his report.
+  and analysis of possible fixes in his report.  (Technical Note.  We
+  have added code to check for live [stobj]s in proofs, which was
+  sufficient to fix the bug.  But the situation described above is
+  caught by a change to [47mswap-stobjs[0m, which now signals an error in
+  the relevant case (exactly one live stobj input).)
 
   Fixed a soundness bug due to the interaction of [stobj]s and
   [47m[defattach][0m.  The fundamental problem was that [47mdefattach[0m events can
@@ -106440,6 +106515,56 @@ Bug Fixes
   Some ill-formed hard errors, for example from calls of [47mer[0m, caused raw
   Lisp errors.  This has been fixed.  Thanks to Eric Smith for
   reporting this bug with an example.
+
+  [47mDO[0m [47m[Loop$][0m expressions (see [do-loop$]) are now allowed that have no
+  [47mWITH[0m clauses.  Formerly, an expression [47m(loop$ do ...)[0m caused an
+  error with a rather nonsensical message.
+
+  For a [47mDO[0m [47m[loop$][0m expression returning a [stobj] that participates in
+  its measure, it was possible to get an inappropriate runtime
+  measure error.  (An example appears in a comment in the definition
+  of [47m[do$][0m in the ACL2 sources.)  This bug has been fixed by
+  modifying the definition of [47m[do$][0m to respect singled-threadedness.
+
+  A [47mDO[0m [47m[loop$][0m expression returning a [stobj] could cause a confusing
+  error; see ACL2 source function [47mchk-for-live-stobj[0m for an example.
+  This bug has been fixed so that no error occurs.
+
+  ACL2 did an incomplete job of excluding certain forms from being
+  evaluated in the top-level loop, including calls of [47m[swap-stobjs][0m,
+  parallelism primitives ([47m[pand][0m, [47m[por][0m, [47m[pargs][0m, and [47m[plet][0m) when
+  parallel evaluation is enabled (ACL2(p) only), and [47m[return-last][0m
+  calls.  For example, no error was signalled by the following, even
+  though the two stobjs were not swapped (as shown below).
+
+      (defstobj st1 (fld1))
+      (defstobj st2 (fld2) :congruent-to st1)
+      (update-fld1 1 st1)
+      (update-fld2 2 st2)
+      (assert-event (and (equal (fld1 st1) 1) (equal (fld2 st2) 2)))
+      ; The following is equivalent to (swap-stobjs st1 st2), and it
+      ; now causes an error but it did not cause an error in Version 8.6:
+      (mv-let (st1 st2) (swap-stobjs st1 st2) (mv st1 st2))
+      ; The following succeeds, showing that st1 and st2 were not actually swapped:
+      (assert-event (and (equal (fld1 st1) 1) (equal (fld2 st2) 2)))
+
+  This bug has been fixed.
+
+  [Stobj] creators are once again disallowed in execution contexts (but
+  are still allowed in theorems).  This requirement was relaxed
+  (perhaps inadvertently) in Version 8.5.  The following example
+  shows a problem with relaxing that restriction, as these events are
+  accepted in Versions 8.5 and 8.6, but no longer.
+
+    (defstobj st fld)
+    ; Admitted in Versions 8.5 and 8.6, but no longer:
+    (defun foo () (declare (xargs :guard t)) (create-st))
+    (update-fld 3 st)
+    (assert-event (equal (fld st) 3))
+    ; Should not change global value of st:
+    (foo)
+    ; But (fld st) has indeed changed:
+    (assert-event (equal (fld st) nil))
 
 
 Changes at the System Level
@@ -142677,7 +142802,7 @@ Generalizing the Initial Values
                 (progn (setq a (cons (car tail) a))
                         (setq tail (cdr tail))))))
 
-  The experienced ACL2 user would not attept to prove that [47m(rev-loop$
+  The experienced ACL2 user would not attempt to prove that [47m(rev-loop$
   x)[0m is [47m(rev x)[0m by induction!  The problem is the same as before: the
   [47mnil[0m initialization of the iterative variable [47ma[0m in the [47mdo[0m [47mloop$[0m does
   not permit an appropriate inductive hypothesis.  Instead, the user
@@ -142856,6 +142981,104 @@ Normal Forms in [47mLoop$[0m Bodies
   tail)[0m in the [47mdefun[0m of [47mrev-loop$[0m but lemma deals with the normalized
   form of that body.
 
+  Here is another example, this one involving a [47mdo[0m loop without any
+  [47mWITH[0m clauses.  That in itself causes no special proof problems, but
+  as noted in [do-loop$], it necessitates the use of a stobj in the
+  body and that raises issues similar to those just mentioned.  So
+  below we introduce a stobj, [47mst[0m, with one field, [47mfld[0m.  We define
+  [47m[warrant][0ms for both [47mfld[0m and [47mupdate-fld[0m, and then we define a
+  function, [47mstobj-mem[0m, that uses a [47mdo[0m loop to determine whether a
+  given element occurs in the field, simultaneously shortening the
+  list in the field so that its [47mcar[0m is the element in question.  Here
+  is the setup.
+
+    (defstobj st fld)
+    (defwarrant fld)
+    (defwarrant update-fld)
+
+    (defun stobj-mem (e st)
+      (declare (xargs :stobjs (st)
+                      :guard (true-listp (fld st))))
+      (loop$ do
+             :values (st)
+             :guard (and (stp st)
+                         (true-listp (fld st)))
+             :measure (acl2-count (fld st))
+             (if (endp (fld st))
+                 (return st)
+                 (if (equal e (car (fld st)))
+                     (return st)
+                     (setq st (update-fld (cdr (fld st)) st))))))
+
+  Note that there is no [47mWITH[0m clause but the size of [47m(fld st)[0m is
+  decreasing.
+
+  Suppose we want to prove that after running [47m(stobj-mem e st)[0m on
+  proper input, the final value of [47mfld[0m is equal to [47m(member e (fld
+  st))[0m.  The desired formal statement is
+
+    (defthm stobj-mem-correct
+      (implies (and (stp st)
+                    (true-listp (fld st))
+                    (warrant fld update-fld))
+               (let ((st1 (stobj-mem e st)))
+                 (and (stp st1)
+                      (equal (fld st1)
+                             (member e (fld st))))))
+      :hints ...)
+
+  Note that in the theorem we use [47mst1[0m to denote the final value of the
+  stobj whose initial value is [47mst[0m.  We have to provide the warrants
+  for the accessor and updater used in the body of the [47mloop$[0m.
+
+  This theorem is a little tricky to prove because we're proving a
+  conjunction and after the [47m(stobj-mem e st)[0m and the [47m(stp st)[0m expand
+  we get several conjectures, each of which requires induction.  It
+  is simply easier to prove that the [47mloop$[0m in [47mstobj-mem[0m has the
+  desired property and then use that lemma.  So we first prove:
+
+    (defthm stobj-mem-correct-lemma
+      (implies (and (stp st)
+                    (true-listp (fld st))
+                    (warrant fld update-fld))
+               (let ((st1 (loop$ do
+                                 :values (st)
+                                 :guard (and (stp st)
+                                             (true-listp (fld st)))
+                                 :measure (acl2-count (fld st))
+                                 (if (consp (fld st))
+                                     (if (equal e (car (fld st)))
+                                         (return st)
+                                         (setq st (update-fld (cdr (fld st)) st)))
+                                     (return st)))))
+                 (and (stp st1)
+                      (equal (fld st1)
+                             (member e (fld st)))))))
+
+  But note that we expanded the [47mendp[0m in the statement of this lemma
+  because [47mendp[0m is built-in in a way that causes it often to expand
+  even when disabled (as is actually noted in a warning message if
+  we'd left the [47mendp[0m in place).  We also normalized the resulting [47m(if
+  (not (consp (fld st))) ...)[0m as explained in Lesson 2 above.
+
+  Now we'd like to prove the desired theorem about [47mstobj-mem[0m, expecting
+  that function to expand and then the lemma to hit it and complete
+  the proof.  But that won't work without a little more help!  The
+  problem is that the lemma mentions [47mstp[0m, [47mfld[0m, and [47mupdate-fld[0m in its
+  left-hand side and those are non-recursively defined functions that
+  will expand.  So to make the lemma match the rewritten main theorem
+  we must disable those three functions.
+
+    (defthm stobj-mem-correct
+      (implies (and (stp st)
+                    (true-listp (fld st))
+                    (warrant fld update-fld))
+               (let ((st1 (stobj-mem e st)))
+                 (and (stp st1)
+                      (equal (fld st1)
+                             (member e (fld st))))))
+      :hints ((\"Goal\" :in-theory (disable stp fld update-fld))))
+
 
 The Secret [47mSetq[0m Problem
 
@@ -142874,7 +143097,7 @@ The Secret [47mSetq[0m Problem
                              (setq j (+ 1 j)))))))
 
   The function counts [47mj[0m up from [47m0[0m until it is equal to [47mk[0m, while [47mcdr[0ming
-  [47mx[0m.  It returns [47mgood[0m if it [47mj[0m reaches [47mk[0m before the list is exhausted,
+  [47mx[0m.  It returns [47mgood[0m if [47mj[0m reaches [47mk[0m before the list is exhausted,
   and returns [47mbad[0m otherwise.  Thus, this is a theorem.
 
     (defthm secret-setq-problem-main
@@ -142971,7 +143194,7 @@ The Secret [47mSetq[0m Problem
                       (LIST (CONS 'X (CDR (ASSOC-EQ-SAFE 'X ALIST)))
                             (CONS 'J (CDR (ASSOC-EQ-SAFE 'J ALIST)))
                             (CONS 'K (CDR (ASSOC-EQ-SAFE 'K ALIST))))))
-                (NIL) NIL)
+                '(NIL) NIL)
     Rhs:     'GOOD
     Backchain-limit-lst: NIL
     Subclass: BACKCHAIN
@@ -143007,7 +143230,7 @@ The Secret [47mSetq[0m Problem
              (LIST (CONS 'X (CDR (ASSOC-EQ-SAFE 'X ALIST)))
                    (CONS 'J (CDR (ASSOC-EQ-SAFE 'J ALIST)))
                    (CONS 'K (CDR (ASSOC-EQ-SAFE 'K ALIST))))))
-       (NIL) NIL)
+       '(NIL) NIL)
 
   Note that the [47mLhs[0m matches the actual term, when [47mJ[0m is instantiated
   with [47m0[0m, [3mexcept[0m in one place: the alist constructed in the [47m(LIST
@@ -143060,8 +143283,8 @@ The Secret [47mSetq[0m Problem
   new subterms to the translation, it merely allows assignment to a
   previously used but never assigned variable.  The order of the [47mwith[0m
   clauses determines the order of the alists being constructed, so
-  this pay attention to where [47m'k[0m is bound in the alists.  Also note
-  that the new [47msetq[0m does not add any new subterms to the translation,
+  pay attention to where [47m'k[0m is bound in the alists.  Also note that
+  the new [47msetq[0m does not add any new subterms to the translation; it
   just affects the final value of [47m'k[0m on that branch of the [47mif[0m tree.
   Finally note that we phrase the [47mloop$[0m this way in the lemma [3mwithout
   changing how we write the [47mloop$[0m[3m in the [47mdefun[0m[3m.[0m Writing the [47mloop$[0m
@@ -143143,7 +143366,7 @@ The Hidden Hypothesis Problem
           'good
           (derived-fn lo (- j 1)))).
 
-  That derived function doesn't terminate.
+  That derived function doesn't necessarily terminate.
 
   Now let's try to prove that the [47mloop$[0m always returns [47m'good[0m.  Note
   that it doesn't matter if we include guards in the conjecture or
@@ -143254,9 +143477,10 @@ The Hidden Hypothesis Problem
   the hidden hypothesis problem.
 
   Note that the derived function from the [47mloop$[0m in the hint doesn't
-  terminate either (because no mention is made that [47mJ[0m is a natural).
-  But the induction-time proof obligation is provable because it is
-  still augmented by [47m(INTEGERP J)[0m and [47m(<= 0 J)[0m as before.
+  necessarily terminate either (because no mention is made that [47mJ[0m is
+  a natural).  But the induction-time proof obligation is provable
+  because it is still augmented by [47m(INTEGERP J)[0m and [47m(<= 0 J)[0m as
+  before.
 
 
 Avoiding Some Specially Defined Hint Functions
@@ -145645,14 +145869,16 @@ GitHub Distributions
 
   See [stobj] for relevant background on single-threaded objects.
 
-  The macro call [47m(swap-stobjs st1 st2)[0m is allowed exactly when [47mst1[0m and
-  [47mst2[0m are congruent [stobj]s.  The logical meaning is simply to
-  return the two stobjs in reverse order, [47m(list st2 st1)[0m:
+  The macro call [47m(swap-stobjs st1 st2)[0m is allowed when [47mst1[0m and [47mst2[0m are
+  congruent [stobj]s.  The logical meaning is simply to return the
+  two stobjs in reverse order, [47m(list st2 st1)[0m:
 
   [31;1mMacro: [0m<swap-stobjs>
 
     (defmacro swap-stobjs (x y)
-      (cons 'mv (cons y (cons x 'nil))))
+      (cons 'progn$
+            (cons (cons 'mv (cons y (cons x 'nil)))
+                  'nil)))
 
   However, for purposes of tracking single-threadedness, the result [47m(mv
   st2 st1)[0m of [47m(swap-stobjs st1 st2)[0m is treated as a list of new
@@ -145683,7 +145909,18 @@ GitHub Distributions
   even when stobjs are involved that are bound by [47m[with-local-stobj][0m
   or [47m[stobj-let][0m.  It also explains subtle interaction with
   [47m[trans-eval][0m.  For another example, see
-  [47mbooks/demos/swap-stobj-fields.lisp[0m")
+  [47mbooks/demos/swap-stobj-fields.lisp[0m.
+
+  In the example above, we call [47mfoo[0m rather than calling [47mswap-stobjs[0m
+  directly.  That is because [47mswap-stobjs[0m calls must not be made
+  directly in the top-level loop.  Instead, put those calls in
+  function bodies or in theorems.
+
+  Both inputs to [47mswap-stobjs[0m are required to be [stobj]s.  However, the
+  usual tracking of stobjs is relaxed during proofs.  See
+  [live-stobj-in-proof] for an error caused by [47m[swap-stobjs][0m during a
+  proof when exactly one of the arguments is truly a stobj (i.e., a
+  so-called ``live'' stobj).")
  (SYMBOL-ALISTP
   (ALISTS ACL2-BUILT-INS)
   "Recognizer for association lists with symbols as keys
