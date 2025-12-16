@@ -3935,16 +3935,41 @@ and @(tsee include-book)"
  <p>This example associates the function symbol @(tsee binary-append) with the
  macro name @(tsee append).  As a result, the name @(tsee append) may be used
  as a runic designator (see @(see theories)) by the various theory functions.
- See @(see macro-aliases-table) for more details.  Also see @(see add-macro-fn)
- for an extension of this utility that also affects printing.</p>
+ See @(see add-macro-fn) and @(see add-binop) for extensions of this utility
+ that also affect printing.</p>
 
  @({
   General Form:
-  (add-macro-alias macro-name function-name)
+  (add-macro-alias macro-name sym)
  })
 
- <p>This is a convenient way to add an entry to @(tsee macro-aliases-table).
- See @(see macro-aliases-table) and also see @(see remove-macro-alias).</p>")
+ <p>where @('macro-name') is a macro name and @('sym') is a symbol.  If
+ @('sym') is a function symbol, then this event establishes @('macro-name') as
+ a <i>macro-alias</i> for @('sym') by associating @('macro-name') with @('sym')
+ in the @(see table), @('macro-aliases-table'); see @(see macro-aliases-table)
+ for detailed discussion.  In particular, that discussion explains the use of
+ macro-aliases to allow a macro name as the second argument of
+ @('add-macro-alias'), as in the example below.</p>
+
+ @({
+ (defun fn (x) x)
+ (defmacro mac1 (x) (fn x))
+ (defmacro mac2 (x) (list 'mac1 x))
+ (add-macro-alias mac1 fn); or (table macro-aliases-table 'mac1 'fn)
+
+ ; The following is equivalent to (add-macro-alias mac2 fn), since
+ ; mac1 is a macro-alias for fn by virtue of the preceding event.
+ ; Note that the form (table macro-aliases-table 'mac2 'mac1)
+ ; would not suffice here; that is, the in-theory event below would cause an
+ ; error, because mac1 is not a function symbol.
+ (add-macro-alias mac2 mac1)
+
+ ; Success:
+ (in-theory (disable mac2))
+ })
+
+ <p>Also see @(see macro-aliases-table) and also see @(see
+ remove-macro-alias).</p>")
 
 (defxdoc add-macro-fn
   :parents (macros)
@@ -70663,8 +70688,8 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
   :parents (macros)
   :short "A @(see table) used to associate function names with macro names"
   :long "@({
-  Example:
-  (table macro-aliases-table 'append 'binary-append)
+ Example Form:
+ (table macro-aliases-table 'append 'binary-append)
  })
 
  <p>This example associates the function symbol @(tsee binary-append) with the
@@ -70673,68 +70698,128 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
  Thus, for example, it will be legal to write</p>
 
  @({
-  (in-theory (disable append))
+ (in-theory (disable append))
  })
 
  <p>as an abbreviation for</p>
 
  @({
-  (in-theory (disable binary-append))
+ (in-theory (disable binary-append)).
+
+ General Form:
+
+ (table macro-aliases-table 'macro-name 'function-name)
  })
 
- <p>which in turn really abbreviates</p>
+ <p>or more generally</p>
 
  @({
-  (in-theory (set-difference-theories (current-theory :here)
-                                      '(binary-append)))
-
-  General Form:
-
-  (table macro-aliases-table 'macro-name 'function-name)
+ (table macro-aliases-table macro-name-form function-name-form)
  })
 
- <p>or very generally</p>
+ <p>where @('macro-name-form') and @('function-name-form') evaluate to values
+ @('MAC') and @('FN'), subject to the following requirements.</p>
+
+ <ul>
+
+ <li>@('MAC') is a symbol that is a macro name.</li>
+
+ <li>@('FN') is a symbol.</li>
+
+ <li>@('FN') is either a function symbol or else a symbol that does not have a
+ definition (a <i>new name</i>).  In particular, @('FN') is not a macro
+ name.</li>
+
+ </ul>
+
+ <p>After admitting the @(see table) event displayed above, we may say that
+ @('MAC') is a <i>macro-alias for</i> @('FN').</p>
+
+ <h3>Further Explanation</h3>
+
+ <p>See @(see table) for a general discussion of tables and the @('table')
+ @(see event), which is used to manipulate tables.  The table, @(tsee
+ macro-aliases-table), is an alist that can associate macro symbols with
+ function symbols, so that macro names may be used as runic designators (see
+ @(see theories) and discussion below).  For a convenient way to add entries to
+ this @(see table), see @(see add-macro-alias), which allows the second
+ argument to be, itself, a macro-alias.  To remove entries conveniently from
+ the @(see table), see @(see remove-macro-alias).</p>
+
+ <p>As hinted above, this @(see table) is used by theory functions; see @(see
+ theories).  For example, in order that @('(disable append)') be interpreted as
+ @('(disable binary-append)'), it suffices that @('(table macro-aliases-table
+ 'append 'binary-append)'), has been executed.  In fact, this @(see table) does
+ indeed establish many of the macros provided by the ACL2 system as
+ macro-aliases, such as establishing @(tsee append) as a macro-alias for @(tsee
+ binary-append).  This only takes place when the macro is &ldquo;essentially
+ the same thing as&rdquo; a corresponding function; for example, @('(append x
+ y)') and @('(binary-append x y)') represent the same term, for any expressions
+ @('x') and @('y').</p>
+
+ <p>Note that the value @('FN') of @('function-name-form') (above) is allowed
+ to be a symbol to be defined later as a function symbol.  The following
+ examples illustrate some approaches that work and some that do not.</p>
 
  @({
-  (table macro-aliases-table macro-name-form function-name-form)
- })
+ ;;;;;;;;;;
+ ;;; Example 1: No errors, with function defined before setting the table.
+ ;;;;;;;;;;
 
- <p>where @('macro-name-form') and @('function-name-form') evaluate,
- respectively, to a macro name and a symbol in the current ACL2 @(see world).
- See @(see table) for a general discussion of tables and the @('table') event
- used to manipulate tables.</p>
+ (defun fn (x) x)
+ (defmacro mac (x) (list 'fn x))
+ (table macro-aliases-table 'mac 'fn) ; or (add-macro-alias mac fn)
+ (in-theory (disable mac))
 
- <p>Note that @('function-name-form') (above) does not need to evaluate to a
- function symbol, but only to a symbol.  As a result, one can introduce the
- alias before defining a recursive function, as follows.</p>
+ ;;;;;;;;;;
+ ;;; Example 2: No errors, with function defined after setting the table.
+ ;;;;;;;;;;
 
- @({
-  (table macro-aliases-table 'mac 'fn)
-  (defun fn (x)
-    (if (consp x)
-        (mac (cdr x))
-      x))
- })
+ (defmacro mac (x) (list 'fn x))
 
- <p>Although this is obviously a contrived example, this flexibility can be
- useful to macro writers; see for example the definition of ACL2 system macro
- @(tsee defun-inline).</p>
+ ; Legal, even though fn is not yet defined:
+ (table macro-aliases-table 'mac 'fn) ; or (add-macro-alias mac fn)
 
- <p>The @(tsee table) @(tsee macro-aliases-table) is an alist that associates
- macro symbols with function symbols, so that macro names may be used as runic
- designators (see @(see theories)).  For a convenient way to add entries to
- this @(see table), see @(see add-macro-alias).  To remove entries from the
- @(see table) with ease, see @(see remove-macro-alias).</p>
+ (defun fn (x) x)
+ (in-theory (disable mac))
 
- <p>This @(see table) is used by the theory functions; see @(see theories).
- For example, in order that @('(disable append)') be interpreted as @('(disable
- binary-append)'), it is necessary that the example form above has been
- executed.  In fact, this @(see table) does indeed associate many of the macros
- provided by the ACL2 system, including @(tsee append), with function symbols.
- Loosely speaking, it only does so when the macro is ``essentially the same
- thing as'' a corresponding function; for example, @('(append x y)') and
- @('(binary-append x y)') represent the same term, for any expressions @('x')
- and @('y').</p>")
+ ;;;;;;;;;;
+ ;;; Example 3: ERROR.
+ ;;;;;;;;;;
+
+ (defun fn (x) x)
+ (defmacro mac1 (x) (fn x))
+ (defmacro mac2 (x) (list 'mac1 x))
+
+ ; BAD, since the table event above anticipates fn to be defined as
+ ; a function, not a macro (but, no error yet) -- but not (yet) an error:
+ (table macro-aliases-table 'mac2 'mac1) ; or (add-macro-alias mac2 mac1)
+
+ ; ERROR, since mac2 does not designate rules, because it aliases a macro:
+ (in-theory (disable mac2))
+
+ ; OK, but too late to help with that in-theory event; see below:
+ (table macro-aliases-table 'mac1 'fn) ; or (add-macro-alias mac1 fn)
+
+ ; ERROR, since mac2 is still associated with mac1, not with fn:
+ (in-theory (disable mac2))
+
+ ;;;;;;;;;;
+ ;;; Example 4: Fixed version of Example 3.
+ ;;;;;;;;;;
+
+ (defun fn (x) x)
+ (defmacro mac1 (x) (fn x))
+ (defmacro mac2 (x) (list 'mac1 x))
+ (add-macro-alias mac1 fn); or (table macro-aliases-table 'mac1 'fn)
+
+ ; The following is equivalent to (add-macro-alias mac2 fn), since
+ ; mac1 is a macro-alias for fn by virtue of the preceding event.
+ (add-macro-alias mac2 mac1)
+
+ ; Success:
+ (in-theory (disable mac2))
+ })")
 
 (defxdoc macro-args
   :parents (macros)
@@ -109178,6 +109263,22 @@ it."
  <p>Improved the error message when the package name is missing immediately
  after `#!', as in #!(foo).</p>
 
+ <p>It was the case that in an @(see event) @('(add-macro-alias mac fn)'),
+ @('(add-macro-fn mac fn)'), or @('(add-binop mac fn)'), if @('fn') was a macro
+ name then this event generally had no effect.  Now, if in addition an event
+ @('(add-macro-alias fn fn2)') has first been admitted (and no later such event
+ has been admitted), then in these three events, @('fn') will be treated as
+ @('fn2').  See @(see add-macro-alias).  Thanks to Grant Jurgensen for sending
+ an example that showed how a confusing @(tsee in-theory) error could occur
+ before this change, in the situation described above: after the change,
+ @('(in-theory (disable mac))') is treated as a directive to @(see disable)
+ @('fn2'); but before the change it was treated as an attempt to @(see disable)
+ the macro, @('fn'), which caused an error.</p>
+
+ <p>The utility @(':')@(tsee trans*) new uses the @(':TERM') @(see evisc-tuple)
+ (see @(see set-evisc-tuple)) to print terms, as was already being done by
+ @(':')@(tsee trans).</p>
+
  <h3>New Features</h3>
 
  <p>The new function symbol @('strict-table-guard') returns its single argument
@@ -109230,10 +109331,10 @@ it."
 
  <p>Sped up @(tsee include-book) by significantly reducing time in translating
  calls of @(tsee with-output) and some other macros (for some technical details
- see ACL2 source function @('macroexpand1*-cmp') and in creatiion of the
+ see ACL2 source function @('macroexpand1*-cmp')) and in creatiion of the
  so-called post-alist in a @(see certificate) (for relevant code, which shows
  the use of @(see fast-alists), see ACL2 source function
- @('accumulate-post-alist').)  For examples showing reduction by about 1/3 in
+ @('accumulate-post-alist')).  For examples showing reduction by about 1/3 in
  include-book time, see the comment &ldquo;Here are sample time reports (...)
  for include-book speedups due to...&rdquo; in the form @('(defxdoc note-8-7
  ...)') in @(see community-book) @('books/system/doc/acl2-doc.lisp').  Thanks
@@ -109387,9 +109488,9 @@ it."
  <p>The @(':native') option of @(tsee trace!) and @(tsee trace$) did not work
  as one would reasonably expect when SBCL is the host Lisp; now it does.</p>
 
- <p>Some ill-formed hard errors, for example from calls of @('er'), caused raw
- Lisp errors.  This has been fixed.  Thanks to Eric Smith for reporting this
- bug with an example.</p>
+ <p>Some ill-formed hard errors, for example from calls of @(tsee er), caused
+ raw Lisp errors.  This has been fixed.  Thanks to Eric Smith for reporting
+ this bug with an example.</p>
 
  <p>@('DO') @(tsee Loop$) expressions (see @(see do-loop$)) are now allowed
  that have no @('WITH') clauses.  Formerly, an expression @('(loop$ do ...)')
@@ -109490,11 +109591,11 @@ it."
 
  <p>By default, the directory where an ACL2 executable is to be built must not
  have a pathname that contains spaces, as before.  However, now there is a
- variable, @('ACL2_ALLOW_SPACES_IN_DIRECTORIES'), that may be set to a
- non-empty value in order to build an ACL2 executable in such a directory, as
- noted in the error message.  That message points out that there may be errors,
- however, when certifying books.  Thanks to Eric Smith for a discussion leading
- to this change.</p>
+ `@('make')' variable, @('ACL2_ALLOW_SPACES_IN_DIRECTORIES'), that may be set
+ to a non-empty value in order to build an ACL2 executable in such a directory,
+ as noted in the error message.  That message points out that there may be
+ errors, however, when certifying books.  Thanks to Eric Smith for a discussion
+ leading to this change.</p>
 
  <p>References to the old &ldquo;bleeding edge&rdquo; manual
  (<a
@@ -153391,12 +153492,15 @@ work on <tt>(q x)</tt>.</p>
   :trans (cond (p q) (r))
  })
 
- <p>ACL2 accepts user-level syntax as input, but <i>translates</i> it to an
- internal syntax.  This translation includes macroexpansion, replacing @(tsee
- let) forms by @(tsee lambda) expressions, quoting constants, and so on.  See
- @(see term) for relevant background.</p>
+ <p>ACL2 accepts user-level syntax as input, and it prints the result of
+ <i>translating</i> it to an internal syntax.  This translation includes
+ macroexpansion, replacing @(tsee let) forms by @(tsee lambda) expressions,
+ quoting constants, and so on.  See @(see term) for relevant background.  The
+ printing can be abbreviated, as it uses the @(':term') @(see evisc-tuple)
+ (with a @('flg') of @('nil'), hence without any abbreviation by default; see
+ @(see set-evisc-tuple)).</p>
 
- <p>Note that the @('trans') command produces a @(tsee term) that need not obey
+ <p>Note that the @('trans') command prints a @(tsee term) that need not obey
  code restrictions: that term can be used in theorems but might not be allowed
  in definitions (except in @(see non-executable) contexts; see @(see defun-nx)
  and see @(see non-exec)).</p>
@@ -153404,7 +153508,7 @@ work on <tt>(q x)</tt>.</p>
  <p>@('Trans') takes one argument, an alleged term in user syntax, and
  translates it, expanding the macros in it completely.  Either an error is
  caused or the internal syntax for the term (representing its formal meaning)
- is printed.  We also print the ``output signature'' which indicates how many
+ is printed.  It also prints the ``output signature'' which indicates how many
  results are returned and which are single-threaded objects.  For example, a
  term that returns one ordinary object (e.g., an object other than @(tsee
  STATE) or a user-defined single-threaded object (see @(see defstobj))) has the
@@ -153440,8 +153544,8 @@ work on <tt>(q x)</tt>.</p>
  be dfs (see @(see df)).  For example, @(':trans (df+ x y)') causes an error;
  to see the desired translation use @(':trans! (df+ x y)').</p>
 
- <p>It is sometimes more convenient to use @(tsee trans1) which is like trans
- but which only does top-level macroexpansion.</p>
+ <p>It is sometimes more convenient to use @(':')@(tsee trans1), which, unlike
+ @(':trans'), only does top-level macroexpansion.</p>
 
  <p>For more, see @(see term).</p>")
 
@@ -153470,9 +153574,9 @@ work on <tt>(q x)</tt>.</p>
  terms.  See @(see trans), @(see trans!), and @(tsee trans1) for other
  utilities that expand and translate their input.</p>
 
- <p>Unlike @('trans'), the @('trans*') command can show not only the
+ <p>Unlike @('trans'), the @('trans*') command can print not only the
  translation of a given expression but also the intermediate expansions leading
- to that translation, and @('trans*') can also show @(tsee make-event)
+ to that translation, and @('trans*') can also print @(tsee make-event)
  expansions.  Another difference between @('trans*') and @('trans') is that
  @('trans*') does not enforce code restrictions; thus, multiple-value
  mismatches and violations of single-threadedness are permitted by @('trans*').
@@ -153480,10 +153584,12 @@ work on <tt>(q x)</tt>.</p>
  translated term, it does so as though one is translating a theorem statement,
  not a definition body.</p>
 
- <p>But like @('trans'), the @('trans*') command produces a @(tsee term) that
- need not obey code restrictions: that term can be used in theorems but might
- not be allowed in definitions (except in @(see non-executable) contexts; see
- @(see defun-nx) and see @(see non-exec)).</p>
+ <p>But like @('trans'), the @('trans*') command prints @(tsee term)s that need
+ not obey code restrictions: they can be used in theorems but might not be
+ allowed in definitions (except in @(see non-executable) contexts; see @(see
+ defun-nx) and see @(see non-exec)).  Also like @('trans'), the printing uses
+ the @(':term') @(see evisc-tuple) (with a @('flg') of @('nil'), hence without
+ any abbreviation by default; see @(see set-evisc-tuple)).</p>
 
  <p>For discussion of how one may use a keyword command like @(':trans*') in
  place of calling the corresponding utility, in this case @('trans*'), see
