@@ -3935,16 +3935,41 @@ and @(tsee include-book)"
  <p>This example associates the function symbol @(tsee binary-append) with the
  macro name @(tsee append).  As a result, the name @(tsee append) may be used
  as a runic designator (see @(see theories)) by the various theory functions.
- See @(see macro-aliases-table) for more details.  Also see @(see add-macro-fn)
- for an extension of this utility that also affects printing.</p>
+ See @(see add-macro-fn) and @(see add-binop) for extensions of this utility
+ that also affect printing.</p>
 
  @({
   General Form:
-  (add-macro-alias macro-name function-name)
+  (add-macro-alias macro-name sym)
  })
 
- <p>This is a convenient way to add an entry to @(tsee macro-aliases-table).
- See @(see macro-aliases-table) and also see @(see remove-macro-alias).</p>")
+ <p>where @('macro-name') is a macro name and @('sym') is a symbol.  If
+ @('sym') is a function symbol, then this event establishes @('macro-name') as
+ a <i>macro-alias</i> for @('sym') by associating @('macro-name') with @('sym')
+ in the @(see table), @('macro-aliases-table'); see @(see macro-aliases-table)
+ for detailed discussion.  In particular, that discussion explains the use of
+ macro-aliases to allow a macro name as the second argument of
+ @('add-macro-alias'), as in the example below.</p>
+
+ @({
+ (defun fn (x) x)
+ (defmacro mac1 (x) (fn x))
+ (defmacro mac2 (x) (list 'mac1 x))
+ (add-macro-alias mac1 fn); or (table macro-aliases-table 'mac1 'fn)
+
+ ; The following is equivalent to (add-macro-alias mac2 fn), since
+ ; mac1 is a macro-alias for fn by virtue of the preceding event.
+ ; Note that the form (table macro-aliases-table 'mac2 'mac1)
+ ; would not suffice here; that is, the in-theory event below would cause an
+ ; error, because mac1 is not a function symbol.
+ (add-macro-alias mac2 mac1)
+
+ ; Success:
+ (in-theory (disable mac2))
+ })
+
+ <p>Also see @(see macro-aliases-table) and also see @(see
+ remove-macro-alias).</p>")
 
 (defxdoc add-macro-fn
   :parents (macros)
@@ -30007,6 +30032,31 @@ ld) and @(tsee include-book)"
  be declared in a @('WITH') clause or be a known stobj.  Of course, here
  @('st') is a known stobj.  In fact, stobjs are not allowed to be declared in
  @('WITH') clauses (and that is not necessary for assigning to them).</p>
+
+ <p>Note that it is possible to write @('DO') loops without any @('WITH')
+ clauses, provided a stobj is being manipulated and measured in the body.  For
+ example, using the stobj declared in the previous example,</p>
+
+ @({
+ (loop$ do
+        :values (st)
+        :measure (acl2-count (fld st))
+        (if (endp (fld st))
+            (return st)
+            (if (equal 3 (car (fld st)))
+                (return st)
+                (setq st (update-fld (cdr (fld st)) st)))))
+ })
+
+ <p>is acceptable.  In Common Lisp, @('(loop$ do <body>)') loops until a
+ @('return') is executed and so to be admissible in ACL2 some @(':measure')
+ must be specified (unless there is @('return') on every branch through
+ @('<body>')).  If there are no @('WITH') clauses, stobjs are the only objects
+ that might be measured to explain termination, and ACL2 cannot guess effective
+ measures of stobjs.</p>
+
+ <p>To see some advice about proving inductive theorems about @('DO') loops
+ measured by stobjs, see @(see stating-and-proving-lemmas-about-loop$s).</p>
 
  <p><b>The @('OF-TYPE') Keyword</b></p>
 
@@ -62881,11 +62931,11 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
  })
 
  <p>The solution is generally to @(see disable) the @(see
- executable-counterpart) of the offending function.  As of this writing (in
- July, 2025), the only way to get an unexpected &ldquo;live&rdquo; @(see stobj)
- is by the use of @(tsee swap-stobjs), as suggested by the example shown
- below (essentially provided by Sol Swords) &mdash; which results in a
- different error message, shown below, than the one above.</p>
+ executable-counterpart) of the offending function.  It may well be that the
+ only way to get an unexpected &ldquo;live&rdquo; @(see stobj) is by the use of
+ @(tsee swap-stobjs), as suggested by the example shown below (essentially
+ provided by Sol Swords) &mdash; which results in a different error message,
+ shown below, than the one above.</p>
 
  <p>First introduce a pair of congruent @(see stobj)s.</p>
 
@@ -68415,7 +68465,9 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
       (DO$
        (LAMBDA$ (ALIST)
                 (ACL2-COUNT (CDR (ASSOC-EQ-SAFE 'I ALIST))))
-       (CONS (CONS 'I N) (cons 'ans ans0)) ; note generalization of 0!
+       (CONS (CONS 'I N)
+             (cons (cons 'ans ans0)
+                   nil)) ; note generalization of 0!
        (LAMBDA$
         (ALIST)
         (IF (INTEGERP (CDR (ASSOC-EQ-SAFE 'I ALIST)))
@@ -68444,11 +68496,11 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
 
   <p>The UPPERCASE part above was just copied from the checkpoint and then the
   pair in the initial alist binding @('ANS'), which was @(''(ANS . 0)'), was
-  replaced by @('(cons 'ans ans0)').  So while it looks messy, it's not hard to
-  enter.  Furthermore, it saves us from having to figure out the normal form
-  &mdash; it's already in the checkpoint.  The @('DO$') term in this version of
-  @('lemma1') is just the formal translation of the generalized @('DO')
-  @('loop$') we wrote in the earlier version of @('lemma1').</p>
+  replaced by @('(cons (cons 'ans ans0) nil)').  So while it looks messy, it's
+  not hard to enter.  Furthermore, it saves us from having to figure out the
+  normal form &mdash; it's already in the checkpoint.  The @('DO$') term in
+  this version of @('lemma1') is just the formal translation of the generalized
+  @('DO') @('loop$') we wrote in the earlier version of @('lemma1').</p>
 
   <p>Next we prove &ldquo;lemma 2&rdquo; equating the recursive function with
   the (generalized) specification.  This theorem does not involve @('loop$')
@@ -68512,8 +68564,8 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
                            do
                            (if (zp i)
                                (return ans)
-  			   (progn (setq ans (+ 1 ans))
-  				  (setq i (- i 1)))))
+                           (progn (setq ans (+ 1 ans))
+                                  (setq i (- i 1)))))
                     n)))
   })
 
@@ -70636,8 +70688,8 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
   :parents (macros)
   :short "A @(see table) used to associate function names with macro names"
   :long "@({
-  Example:
-  (table macro-aliases-table 'append 'binary-append)
+ Example Form:
+ (table macro-aliases-table 'append 'binary-append)
  })
 
  <p>This example associates the function symbol @(tsee binary-append) with the
@@ -70646,68 +70698,128 @@ forms allowed for a @('let') form are  @('ignore'), @('ignorable'), and
  Thus, for example, it will be legal to write</p>
 
  @({
-  (in-theory (disable append))
+ (in-theory (disable append))
  })
 
  <p>as an abbreviation for</p>
 
  @({
-  (in-theory (disable binary-append))
+ (in-theory (disable binary-append)).
+
+ General Form:
+
+ (table macro-aliases-table 'macro-name 'function-name)
  })
 
- <p>which in turn really abbreviates</p>
+ <p>or more generally</p>
 
  @({
-  (in-theory (set-difference-theories (current-theory :here)
-                                      '(binary-append)))
-
-  General Form:
-
-  (table macro-aliases-table 'macro-name 'function-name)
+ (table macro-aliases-table macro-name-form function-name-form)
  })
 
- <p>or very generally</p>
+ <p>where @('macro-name-form') and @('function-name-form') evaluate to values
+ @('MAC') and @('FN'), subject to the following requirements.</p>
+
+ <ul>
+
+ <li>@('MAC') is a symbol that is a macro name.</li>
+
+ <li>@('FN') is a symbol.</li>
+
+ <li>@('FN') is either a function symbol or else a symbol that does not have a
+ definition (a <i>new name</i>).  In particular, @('FN') is not a macro
+ name.</li>
+
+ </ul>
+
+ <p>After admitting the @(see table) event displayed above, we may say that
+ @('MAC') is a <i>macro-alias for</i> @('FN').</p>
+
+ <h3>Further Explanation</h3>
+
+ <p>See @(see table) for a general discussion of tables and the @('table')
+ @(see event), which is used to manipulate tables.  The table, @(tsee
+ macro-aliases-table), is an alist that can associate macro symbols with
+ function symbols, so that macro names may be used as runic designators (see
+ @(see theories) and discussion below).  For a convenient way to add entries to
+ this @(see table), see @(see add-macro-alias), which allows the second
+ argument to be, itself, a macro-alias.  To remove entries conveniently from
+ the @(see table), see @(see remove-macro-alias).</p>
+
+ <p>As hinted above, this @(see table) is used by theory functions; see @(see
+ theories).  For example, in order that @('(disable append)') be interpreted as
+ @('(disable binary-append)'), it suffices that @('(table macro-aliases-table
+ 'append 'binary-append)'), has been executed.  In fact, this @(see table) does
+ indeed establish many of the macros provided by the ACL2 system as
+ macro-aliases, such as establishing @(tsee append) as a macro-alias for @(tsee
+ binary-append).  This only takes place when the macro is &ldquo;essentially
+ the same thing as&rdquo; a corresponding function; for example, @('(append x
+ y)') and @('(binary-append x y)') represent the same term, for any expressions
+ @('x') and @('y').</p>
+
+ <p>Note that the value @('FN') of @('function-name-form') (above) is allowed
+ to be a symbol to be defined later as a function symbol.  The following
+ examples illustrate some approaches that work and some that do not.</p>
 
  @({
-  (table macro-aliases-table macro-name-form function-name-form)
- })
+ ;;;;;;;;;;
+ ;;; Example 1: No errors, with function defined before setting the table.
+ ;;;;;;;;;;
 
- <p>where @('macro-name-form') and @('function-name-form') evaluate,
- respectively, to a macro name and a symbol in the current ACL2 @(see world).
- See @(see table) for a general discussion of tables and the @('table') event
- used to manipulate tables.</p>
+ (defun fn (x) x)
+ (defmacro mac (x) (list 'fn x))
+ (table macro-aliases-table 'mac 'fn) ; or (add-macro-alias mac fn)
+ (in-theory (disable mac))
 
- <p>Note that @('function-name-form') (above) does not need to evaluate to a
- function symbol, but only to a symbol.  As a result, one can introduce the
- alias before defining a recursive function, as follows.</p>
+ ;;;;;;;;;;
+ ;;; Example 2: No errors, with function defined after setting the table.
+ ;;;;;;;;;;
 
- @({
-  (table macro-aliases-table 'mac 'fn)
-  (defun fn (x)
-    (if (consp x)
-        (mac (cdr x))
-      x))
- })
+ (defmacro mac (x) (list 'fn x))
 
- <p>Although this is obviously a contrived example, this flexibility can be
- useful to macro writers; see for example the definition of ACL2 system macro
- @(tsee defun-inline).</p>
+ ; Legal, even though fn is not yet defined:
+ (table macro-aliases-table 'mac 'fn) ; or (add-macro-alias mac fn)
 
- <p>The @(tsee table) @(tsee macro-aliases-table) is an alist that associates
- macro symbols with function symbols, so that macro names may be used as runic
- designators (see @(see theories)).  For a convenient way to add entries to
- this @(see table), see @(see add-macro-alias).  To remove entries from the
- @(see table) with ease, see @(see remove-macro-alias).</p>
+ (defun fn (x) x)
+ (in-theory (disable mac))
 
- <p>This @(see table) is used by the theory functions; see @(see theories).
- For example, in order that @('(disable append)') be interpreted as @('(disable
- binary-append)'), it is necessary that the example form above has been
- executed.  In fact, this @(see table) does indeed associate many of the macros
- provided by the ACL2 system, including @(tsee append), with function symbols.
- Loosely speaking, it only does so when the macro is ``essentially the same
- thing as'' a corresponding function; for example, @('(append x y)') and
- @('(binary-append x y)') represent the same term, for any expressions @('x')
- and @('y').</p>")
+ ;;;;;;;;;;
+ ;;; Example 3: ERROR.
+ ;;;;;;;;;;
+
+ (defun fn (x) x)
+ (defmacro mac1 (x) (fn x))
+ (defmacro mac2 (x) (list 'mac1 x))
+
+ ; BAD, since the table event above anticipates fn to be defined as
+ ; a function, not a macro (but, no error yet) -- but not (yet) an error:
+ (table macro-aliases-table 'mac2 'mac1) ; or (add-macro-alias mac2 mac1)
+
+ ; ERROR, since mac2 does not designate rules, because it aliases a macro:
+ (in-theory (disable mac2))
+
+ ; OK, but too late to help with that in-theory event; see below:
+ (table macro-aliases-table 'mac1 'fn) ; or (add-macro-alias mac1 fn)
+
+ ; ERROR, since mac2 is still associated with mac1, not with fn:
+ (in-theory (disable mac2))
+
+ ;;;;;;;;;;
+ ;;; Example 4: Fixed version of Example 3.
+ ;;;;;;;;;;
+
+ (defun fn (x) x)
+ (defmacro mac1 (x) (fn x))
+ (defmacro mac2 (x) (list 'mac1 x))
+ (add-macro-alias mac1 fn); or (table macro-aliases-table 'mac1 'fn)
+
+ ; The following is equivalent to (add-macro-alias mac2 fn), since
+ ; mac1 is a macro-alias for fn by virtue of the preceding event.
+ (add-macro-alias mac2 mac1)
+
+ ; Success:
+ (in-theory (disable mac2))
+ })")
 
 (defxdoc macro-args
   :parents (macros)
@@ -109151,6 +109263,22 @@ it."
  <p>Improved the error message when the package name is missing immediately
  after `#!', as in #!(foo).</p>
 
+ <p>It was the case that in an @(see event) @('(add-macro-alias mac fn)'),
+ @('(add-macro-fn mac fn)'), or @('(add-binop mac fn)'), if @('fn') was a macro
+ name then this event generally had no effect.  Now, if in addition an event
+ @('(add-macro-alias fn fn2)') has first been admitted (and no later such event
+ has been admitted), then in these three events, @('fn') will be treated as
+ @('fn2').  See @(see add-macro-alias).  Thanks to Grant Jurgensen for sending
+ an example that showed how a confusing @(tsee in-theory) error could occur
+ before this change, in the situation described above: after the change,
+ @('(in-theory (disable mac))') is treated as a directive to @(see disable)
+ @('fn2'); but before the change it was treated as an attempt to @(see disable)
+ the macro, @('fn'), which caused an error.</p>
+
+ <p>The utility @(':')@(tsee trans*) new uses the @(':TERM') @(see evisc-tuple)
+ (see @(see set-evisc-tuple)) to print terms, as was already being done by
+ @(':')@(tsee trans).</p>
+
  <h3>New Features</h3>
 
  <p>The new function symbol @('strict-table-guard') returns its single argument
@@ -109203,10 +109331,10 @@ it."
 
  <p>Sped up @(tsee include-book) by significantly reducing time in translating
  calls of @(tsee with-output) and some other macros (for some technical details
- see ACL2 source function @('macroexpand1*-cmp') and in creatiion of the
+ see ACL2 source function @('macroexpand1*-cmp')) and in creatiion of the
  so-called post-alist in a @(see certificate) (for relevant code, which shows
  the use of @(see fast-alists), see ACL2 source function
- @('accumulate-post-alist').)  For examples showing reduction by about 1/3 in
+ @('accumulate-post-alist')).  For examples showing reduction by about 1/3 in
  include-book time, see the comment &ldquo;Here are sample time reports (...)
  for include-book speedups due to...&rdquo; in the form @('(defxdoc note-8-7
  ...)') in @(see community-book) @('books/system/doc/acl2-doc.lisp').  Thanks
@@ -109360,9 +109488,9 @@ it."
  <p>The @(':native') option of @(tsee trace!) and @(tsee trace$) did not work
  as one would reasonably expect when SBCL is the host Lisp; now it does.</p>
 
- <p>Some ill-formed hard errors, for example from calls of @('er'), caused raw
- Lisp errors.  This has been fixed.  Thanks to Eric Smith for reporting this
- bug with an example.</p>
+ <p>Some ill-formed hard errors, for example from calls of @(tsee er), caused
+ raw Lisp errors.  This has been fixed.  Thanks to Eric Smith for reporting
+ this bug with an example.</p>
 
  <p>@('DO') @(tsee Loop$) expressions (see @(see do-loop$)) are now allowed
  that have no @('WITH') clauses.  Formerly, an expression @('(loop$ do ...)')
@@ -109463,11 +109591,11 @@ it."
 
  <p>By default, the directory where an ACL2 executable is to be built must not
  have a pathname that contains spaces, as before.  However, now there is a
- variable, @('ACL2_ALLOW_SPACES_IN_DIRECTORIES'), that may be set to a
- non-empty value in order to build an ACL2 executable in such a directory, as
- noted in the error message.  That message points out that there may be errors,
- however, when certifying books.  Thanks to Eric Smith for a discussion leading
- to this change.</p>
+ `@('make')' variable, @('ACL2_ALLOW_SPACES_IN_DIRECTORIES'), that may be set
+ to a non-empty value in order to build an ACL2 executable in such a directory,
+ as noted in the error message.  That message points out that there may be
+ errors, however, when certifying books.  Thanks to Eric Smith for a discussion
+ leading to this change.</p>
 
  <p>References to the old &ldquo;bleeding edge&rdquo; manual
  (<a
@@ -143076,7 +143204,7 @@ work on <tt>(q x)</tt>.</p>
                       (setq tail (cdr tail))))))
   })
 
-  <p>The experienced ACL2 user would not attept to prove that @('(rev-loop$
+  <p>The experienced ACL2 user would not attempt to prove that @('(rev-loop$
   x)') is @('(rev x)') by induction!  The problem is the same as before: the
   @('nil') initialization of the iterative variable @('a') in the @('do')
   @('loop$') does not permit an appropriate inductive hypothesis.  Instead, the
@@ -143267,6 +143395,110 @@ work on <tt>(q x)</tt>.</p>
   @('defun') of @('rev-loop$') but lemma deals with the normalized form of that
   body.</p>
 
+  <p>Here is another example, this one involving a @('do') loop without any
+  @('WITH') clauses.  That in itself causes no special proof problems, but as
+  noted in @(see do-loop$), it necessitates the use of a stobj in the body and
+  that raises issues similar to those just mentioned.  So below we introduce a
+  stobj, @('st'), with one field, @('fld').  We define @(tsee warrant)s for
+  both @('fld') and @('update-fld'), and then we define a function,
+  @('stobj-mem'), that uses a @('do') loop to determine whether a given element
+  occurs in the field, simultaneously shortening the list in the field so that
+  its @('car') is the element in question.  Here is the setup.</p>
+
+  @({
+  (defstobj st fld)
+  (defwarrant fld)
+  (defwarrant update-fld)
+
+  (defun stobj-mem (e st)
+    (declare (xargs :stobjs (st)
+                    :guard (true-listp (fld st))))
+    (loop$ do
+           :values (st)
+           :guard (and (stp st)
+                       (true-listp (fld st)))
+           :measure (acl2-count (fld st))
+           (if (endp (fld st))
+               (return st)
+               (if (equal e (car (fld st)))
+                   (return st)
+                   (setq st (update-fld (cdr (fld st)) st))))))
+  })
+
+  <p>Note that there is no @('WITH') clause but the size of @('(fld st)') is
+  decreasing.</p>
+
+  <p>Suppose we want to prove that after running @('(stobj-mem e st)') on proper
+  input, the final value of @('fld') is equal to @('(member e (fld st))').  The
+  desired formal statement is</p>
+
+  @({
+  (defthm stobj-mem-correct
+    (implies (and (stp st)
+                  (true-listp (fld st))
+                  (warrant fld update-fld))
+             (let ((st1 (stobj-mem e st)))
+               (and (stp st1)
+                    (equal (fld st1)
+                           (member e (fld st))))))
+    :hints ...)
+  })
+
+  <p>Note that in the theorem we use @('st1') to denote the final value of the
+  stobj whose initial value is @('st').  We have to provide the warrants for the
+  accessor and updater used in the body of the @('loop$').</p>
+
+  <p>This theorem is a little tricky to prove because we're proving a
+  conjunction and after the @('(stobj-mem e st)') and the @('(stp st)') expand
+  we get several conjectures, each of which requires induction.  It is simply
+  easier to prove that the @('loop$') in @('stobj-mem') has the desired
+  property and then use that lemma.  So we first prove:</p>
+
+  @({
+  (defthm stobj-mem-correct-lemma
+    (implies (and (stp st)
+                  (true-listp (fld st))
+                  (warrant fld update-fld))
+             (let ((st1 (loop$ do
+                               :values (st)
+                               :guard (and (stp st)
+                                           (true-listp (fld st)))
+                               :measure (acl2-count (fld st))
+                               (if (consp (fld st))
+                                   (if (equal e (car (fld st)))
+                                       (return st)
+                                       (setq st (update-fld (cdr (fld st)) st)))
+                                   (return st)))))
+               (and (stp st1)
+                    (equal (fld st1)
+                           (member e (fld st)))))))
+  })
+
+  <p>But note that we expanded the @('endp') in the statement of this lemma because
+  @('endp') is built-in in a way that causes it often to expand even when disabled
+  (as is actually noted in a warning message if we'd left the @('endp') in place).
+  We also normalized the resulting @('(if (not (consp (fld st))) ...)') as explained
+  in Lesson 2 above.</p>
+
+  <p>Now we'd like to prove the desired theorem about @('stobj-mem'), expecting that
+  function to expand and then the lemma to hit it and complete the proof.  But
+  that won't work without a little more help!  The problem is that the lemma
+  mentions @('stp'), @('fld'), and @('update-fld') in its left-hand side and those
+  are non-recursively defined functions that will expand.  So to make the lemma
+  match the rewritten main theorem we must disable those three functions.</p>
+
+  @({
+  (defthm stobj-mem-correct
+    (implies (and (stp st)
+                  (true-listp (fld st))
+                  (warrant fld update-fld))
+             (let ((st1 (stobj-mem e st)))
+               (and (stp st1)
+                    (equal (fld st1)
+                           (member e (fld st))))))
+    :hints ((\"Goal\" :in-theory (disable stp fld update-fld))))
+  })
+
   <h3>The Secret @('Setq') Problem</h3>
 
   <p>Another issue that comes up when posing lemmas about @('loop$')s is called
@@ -143286,7 +143518,7 @@ work on <tt>(q x)</tt>.</p>
   })
 
   <p>The function counts @('j') up from @('0') until it is equal to @('k'),
-  while @('cdr')ing @('x').  It returns @('good') if it @('j') reaches @('k')
+  while @('cdr')ing @('x').  It returns @('good') if @('j') reaches @('k')
   before the list is exhausted, and returns @('bad') otherwise.  Thus, this is
   a theorem.</p>
 
@@ -143330,8 +143562,8 @@ work on <tt>(q x)</tt>.</p>
   stays fixed, which is necessary if the generalized hypothesis is going to
   survive induction.</p>
 
-  <p>Following Lesson 2, we normalized the body.  We replaced the @('(endp x)') by @('(not (consp x))')
-  and normalized the resulting @('IF') nest.</p>
+  <p>Following Lesson 2, we normalized the body.  We replaced the @('(endp x)')
+  by @('(not (consp x))') and normalized the resulting @('IF') nest.</p>
 
   <p>The lemma is proved automatically by ACL2, using the induction suggested
   by the @('loop$').</p>
@@ -143389,7 +143621,7 @@ work on <tt>(q x)</tt>.</p>
                     (LIST (CONS 'X (CDR (ASSOC-EQ-SAFE 'X ALIST)))
                           (CONS 'J (CDR (ASSOC-EQ-SAFE 'J ALIST)))
                           (CONS 'K (CDR (ASSOC-EQ-SAFE 'K ALIST))))))
-              (NIL) NIL)
+              '(NIL) NIL)
   Rhs:     'GOOD
   Backchain-limit-lst: NIL
   Subclass: BACKCHAIN
@@ -143427,7 +143659,7 @@ work on <tt>(q x)</tt>.</p>
            (LIST (CONS 'X (CDR (ASSOC-EQ-SAFE 'X ALIST)))
                  (CONS 'J (CDR (ASSOC-EQ-SAFE 'J ALIST)))
                  (CONS 'K (CDR (ASSOC-EQ-SAFE 'K ALIST))))))
-     (NIL) NIL)
+     '(NIL) NIL)
   })
 
   <p>Note that the @('Lhs') matches the actual term, when @('J') is
@@ -143482,9 +143714,9 @@ work on <tt>(q x)</tt>.</p>
   <p>Note that the inclusion of the new &ldquo;@('with k = k')&rdquo; does not
   add any new subterms to the translation, it merely allows assignment to a
   previously used but never assigned variable.  The order of the @('with')
-  clauses determines the order of the alists being constructed, so this pay
+  clauses determines the order of the alists being constructed, so pay
   attention to where @(''k') is bound in the alists.  Also note that the new
-  @('setq') does not add any new subterms to the translation, just affects the
+  @('setq') does not add any new subterms to the translation; it just affects the
   final value of @(''k') on that branch of the @('if') tree.  Finally note that
   we phrase the @('loop$') this way in the lemma <i>without changing how we
   write the @('loop$') in the @('defun').</i>  Writing the @('loop$') this way in
@@ -143566,7 +143798,7 @@ work on <tt>(q x)</tt>.</p>
         (derived-fn lo (- j 1)))).
   })
 
-  <p>That derived function doesn't terminate.</p>
+  <p>That derived function doesn't necessarily terminate.</p>
 
   <p>Now let's try to prove that the @('loop$') always returns @(''good').
   Note that it doesn't matter if we include guards in the conjecture or not.
@@ -143684,9 +143916,9 @@ work on <tt>(q x)</tt>.</p>
   hidden hypothesis problem.</p>
 
   <p>Note that the derived function from the @('loop$') in the hint doesn't
-  terminate either (because no mention is made that @('J') is a natural).  But
-  the induction-time proof obligation is provable because it is still augmented
-  by @('(INTEGERP J)') and @('(<= 0 J)') as before.</p>
+  necessarily terminate either (because no mention is made that @('J') is a
+  natural).  But the induction-time proof obligation is provable because it is
+  still augmented by @('(INTEGERP J)') and @('(<= 0 J)') as before.</p>
 
   <h3>Avoiding Some Specially Defined Hint Functions</h3>
 
@@ -153260,12 +153492,15 @@ work on <tt>(q x)</tt>.</p>
   :trans (cond (p q) (r))
  })
 
- <p>ACL2 accepts user-level syntax as input, but <i>translates</i> it to an
- internal syntax.  This translation includes macroexpansion, replacing @(tsee
- let) forms by @(tsee lambda) expressions, quoting constants, and so on.  See
- @(see term) for relevant background.</p>
+ <p>ACL2 accepts user-level syntax as input, and it prints the result of
+ <i>translating</i> it to an internal syntax.  This translation includes
+ macroexpansion, replacing @(tsee let) forms by @(tsee lambda) expressions,
+ quoting constants, and so on.  See @(see term) for relevant background.  The
+ printing can be abbreviated, as it uses the @(':term') @(see evisc-tuple)
+ (with a @('flg') of @('nil'), hence without any abbreviation by default; see
+ @(see set-evisc-tuple)).</p>
 
- <p>Note that the @('trans') command produces a @(tsee term) that need not obey
+ <p>Note that the @('trans') command prints a @(tsee term) that need not obey
  code restrictions: that term can be used in theorems but might not be allowed
  in definitions (except in @(see non-executable) contexts; see @(see defun-nx)
  and see @(see non-exec)).</p>
@@ -153273,7 +153508,7 @@ work on <tt>(q x)</tt>.</p>
  <p>@('Trans') takes one argument, an alleged term in user syntax, and
  translates it, expanding the macros in it completely.  Either an error is
  caused or the internal syntax for the term (representing its formal meaning)
- is printed.  We also print the ``output signature'' which indicates how many
+ is printed.  It also prints the ``output signature'' which indicates how many
  results are returned and which are single-threaded objects.  For example, a
  term that returns one ordinary object (e.g., an object other than @(tsee
  STATE) or a user-defined single-threaded object (see @(see defstobj))) has the
@@ -153309,8 +153544,8 @@ work on <tt>(q x)</tt>.</p>
  be dfs (see @(see df)).  For example, @(':trans (df+ x y)') causes an error;
  to see the desired translation use @(':trans! (df+ x y)').</p>
 
- <p>It is sometimes more convenient to use @(tsee trans1) which is like trans
- but which only does top-level macroexpansion.</p>
+ <p>It is sometimes more convenient to use @(':')@(tsee trans1), which, unlike
+ @(':trans'), only does top-level macroexpansion.</p>
 
  <p>For more, see @(see term).</p>")
 
@@ -153339,9 +153574,9 @@ work on <tt>(q x)</tt>.</p>
  terms.  See @(see trans), @(see trans!), and @(tsee trans1) for other
  utilities that expand and translate their input.</p>
 
- <p>Unlike @('trans'), the @('trans*') command can show not only the
+ <p>Unlike @('trans'), the @('trans*') command can print not only the
  translation of a given expression but also the intermediate expansions leading
- to that translation, and @('trans*') can also show @(tsee make-event)
+ to that translation, and @('trans*') can also print @(tsee make-event)
  expansions.  Another difference between @('trans*') and @('trans') is that
  @('trans*') does not enforce code restrictions; thus, multiple-value
  mismatches and violations of single-threadedness are permitted by @('trans*').
@@ -153349,10 +153584,12 @@ work on <tt>(q x)</tt>.</p>
  translated term, it does so as though one is translating a theorem statement,
  not a definition body.</p>
 
- <p>But like @('trans'), the @('trans*') command produces a @(tsee term) that
- need not obey code restrictions: that term can be used in theorems but might
- not be allowed in definitions (except in @(see non-executable) contexts; see
- @(see defun-nx) and see @(see non-exec)).</p>
+ <p>But like @('trans'), the @('trans*') command prints @(tsee term)s that need
+ not obey code restrictions: they can be used in theorems but might not be
+ allowed in definitions (except in @(see non-executable) contexts; see @(see
+ defun-nx) and see @(see non-exec)).  Also like @('trans'), the printing uses
+ the @(':term') @(see evisc-tuple) (with a @('flg') of @('nil'), hence without
+ any abbreviation by default; see @(see set-evisc-tuple)).</p>
 
  <p>For discussion of how one may use a keyword command like @(':trans*') in
  place of calling the corresponding utility, in this case @('trans*'), see

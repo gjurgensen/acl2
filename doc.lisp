@@ -6461,15 +6461,36 @@ Subtopics
   This example associates the function symbol [47m[binary-append][0m with the
   macro name [47m[append][0m.  As a result, the name [47m[append][0m may be used as
   a runic designator (see [theories]) by the various theory
-  functions.  See [macro-aliases-table] for more details.  Also see
-  [add-macro-fn] for an extension of this utility that also affects
-  printing.
+  functions.  See [add-macro-fn] and [add-binop] for extensions of
+  this utility that also affect printing.
 
     General Form:
-    (add-macro-alias macro-name function-name)
+    (add-macro-alias macro-name sym)
 
-  This is a convenient way to add an entry to [47m[macro-aliases-table][0m.
-  See [macro-aliases-table] and also see [remove-macro-alias].")
+  where [47mmacro-name[0m is a macro name and [47msym[0m is a symbol.  If [47msym[0m is a
+  function symbol, then this event establishes [47mmacro-name[0m as a
+  [3mmacro-alias[0m for [47msym[0m by associating [47mmacro-name[0m with [47msym[0m in the
+  [table], [47mmacro-aliases-table[0m; see [macro-aliases-table] for
+  detailed discussion.  In particular, that discussion explains the
+  use of macro-aliases to allow a macro name as the second argument
+  of [47madd-macro-alias[0m, as in the example below.
+
+    (defun fn (x) x)
+    (defmacro mac1 (x) (fn x))
+    (defmacro mac2 (x) (list 'mac1 x))
+    (add-macro-alias mac1 fn); or (table macro-aliases-table 'mac1 'fn)
+
+    ; The following is equivalent to (add-macro-alias mac2 fn), since
+    ; mac1 is a macro-alias for fn by virtue of the preceding event.
+    ; Note that the form (table macro-aliases-table 'mac2 'mac1)
+    ; would not suffice here; that is, the in-theory event below would cause an
+    ; error, because mac1 is not a function symbol.
+    (add-macro-alias mac2 mac1)
+
+    ; Success:
+    (in-theory (disable mac2))
+
+  Also see [macro-aliases-table] and also see [remove-macro-alias].")
  (ADD-MACRO-FN
   (MACROS)
   "Associate a function name with a macro name
@@ -33531,6 +33552,29 @@ INFORMAL INTRODUCTION
   in a [47mWITH[0m clause or be a known stobj.  Of course, here [47mst[0m is a
   known stobj.  In fact, stobjs are not allowed to be declared in
   [47mWITH[0m clauses (and that is not necessary for assigning to them).
+
+  Note that it is possible to write [47mDO[0m loops without any [47mWITH[0m clauses,
+  provided a stobj is being manipulated and measured in the body.
+  For example, using the stobj declared in the previous example,
+
+    (loop$ do
+           :values (st)
+           :measure (acl2-count (fld st))
+           (if (endp (fld st))
+               (return st)
+               (if (equal 3 (car (fld st)))
+                   (return st)
+                   (setq st (update-fld (cdr (fld st)) st)))))
+
+  is acceptable.  In Common Lisp, [47m(loop$ do <body>)[0m loops until a
+  [47mreturn[0m is executed and so to be admissible in ACL2 some [47m:measure[0m
+  must be specified (unless there is [47mreturn[0m on every branch through
+  [47m<body>[0m).  If there are no [47mWITH[0m clauses, stobjs are the only objects
+  that might be measured to explain termination, and ACL2 cannot
+  guess effective measures of stobjs.
+
+  To see some advice about proving inductive theorems about [47mDO[0m loops
+  measured by stobjs, see [stating-and-proving-lemmas-about-loop$s].
 
   [31;1mThe [47mOF-TYPE[0m[31;1m Keyword[0m
 
@@ -67114,11 +67158,11 @@ Subtopics
     ***********************************************
 
   The solution is generally to [disable] the [executable-counterpart]
-  of the offending function.  As of this writing (in July, 2025), the
-  only way to get an unexpected ``live'' [stobj] is by the use of
-  [47m[swap-stobjs][0m, as suggested by the example shown below (essentially
-  provided by Sol Swords) --- which results in a different error
-  message, shown below, than the one above.
+  of the offending function.  It may well be that the only way to get
+  an unexpected ``live'' [stobj] is by the use of [47m[swap-stobjs][0m, as
+  suggested by the example shown below (essentially provided by Sol
+  Swords) --- which results in a different error message, shown
+  below, than the one above.
 
   First introduce a pair of congruent [stobj]s.
 
@@ -73012,7 +73056,9 @@ LP16: Proving Theorems about [47mDO[0m [47mLoop$[0ms
         (DO$
          (LAMBDA$ (ALIST)
                   (ACL2-COUNT (CDR (ASSOC-EQ-SAFE 'I ALIST))))
-         (CONS (CONS 'I N) (cons 'ans ans0)) ; note generalization of 0!
+         (CONS (CONS 'I N)
+               (cons (cons 'ans ans0)
+                     nil)) ; note generalization of 0!
          (LAMBDA$
           (ALIST)
           (IF (INTEGERP (CDR (ASSOC-EQ-SAFE 'I ALIST)))
@@ -73040,11 +73086,12 @@ LP16: Proving Theorems about [47mDO[0m [47mLoop$[0ms
 
   The UPPERCASE part above was just copied from the checkpoint and then
   the pair in the initial alist binding [47mANS[0m, which was [47m'(ANS . 0)[0m,
-  was replaced by [47m(cons 'ans ans0)[0m.  So while it looks messy, it's
-  not hard to enter.  Furthermore, it saves us from having to figure
-  out the normal form --- it's already in the checkpoint.  The [47mDO$[0m
-  term in this version of [47mlemma1[0m is just the formal translation of
-  the generalized [47mDO[0m [47mloop$[0m we wrote in the earlier version of [47mlemma1[0m.
+  was replaced by [47m(cons (cons 'ans ans0) nil)[0m.  So while it looks
+  messy, it's not hard to enter.  Furthermore, it saves us from
+  having to figure out the normal form --- it's already in the
+  checkpoint.  The [47mDO$[0m term in this version of [47mlemma1[0m is just the
+  formal translation of the generalized [47mDO[0m [47mloop$[0m we wrote in the
+  earlier version of [47mlemma1[0m.
 
   Next we prove ``lemma 2'' equating the recursive function with the
   (generalized) specification.  This theorem does not involve [47mloop$[0m
@@ -73103,8 +73150,8 @@ LP16: Proving Theorems about [47mDO[0m [47mLoop$[0ms
                              do
                              (if (zp i)
                                  (return ans)
-    			   (progn (setq ans (+ 1 ans))
-    				  (setq i (- i 1)))))
+                             (progn (setq ans (+ 1 ans))
+                                    (setq i (- i 1)))))
                       n)))
 
   For more details about rewriting [47mlambda[0m objects you can leave the
@@ -74424,7 +74471,7 @@ LP9: Semantics of [47mFOR[0m [47mLoop$[0ms
   (MACROS)
   "A [table] used to associate function names with macro names
 
-    Example:
+    Example Form:
     (table macro-aliases-table 'append 'binary-append)
 
   This example associates the function symbol [47m[binary-append][0m with the
@@ -74436,56 +74483,116 @@ LP9: Semantics of [47mFOR[0m [47mLoop$[0ms
 
   as an abbreviation for
 
-    (in-theory (disable binary-append))
-
-  which in turn really abbreviates
-
-    (in-theory (set-difference-theories (current-theory :here)
-                                        '(binary-append)))
+    (in-theory (disable binary-append)).
 
     General Form:
 
     (table macro-aliases-table 'macro-name 'function-name)
 
-  or very generally
+  or more generally
 
     (table macro-aliases-table macro-name-form function-name-form)
 
-  where [47mmacro-name-form[0m and [47mfunction-name-form[0m evaluate, respectively,
-  to a macro name and a symbol in the current ACL2 [world].  See
-  [table] for a general discussion of tables and the [47mtable[0m event used
-  to manipulate tables.
+  where [47mmacro-name-form[0m and [47mfunction-name-form[0m evaluate to values [47mMAC[0m
+  and [47mFN[0m, subject to the following requirements.
 
-  Note that [47mfunction-name-form[0m (above) does not need to evaluate to a
-  function symbol, but only to a symbol.  As a result, one can
-  introduce the alias before defining a recursive function, as
-  follows.
+    * [47mMAC[0m is a symbol that is a macro name.
 
-    (table macro-aliases-table 'mac 'fn)
-    (defun fn (x)
-      (if (consp x)
-          (mac (cdr x))
-        x))
+    * [47mFN[0m is a symbol.
 
-  Although this is obviously a contrived example, this flexibility can
-  be useful to macro writers; see for example the definition of ACL2
-  system macro [47m[defun-inline][0m.
+    * [47mFN[0m is either a function symbol or else a symbol that does not have a
+      definition (a [3mnew name[0m).  In particular, [47mFN[0m is not a macro
+      name.
 
-  The [47m[table][0m [47m[macro-aliases-table][0m is an alist that associates macro
-  symbols with function symbols, so that macro names may be used as
-  runic designators (see [theories]).  For a convenient way to add
-  entries to this [table], see [add-macro-alias].  To remove entries
-  from the [table] with ease, see [remove-macro-alias].
+  After admitting the [table] event displayed above, we may say that
+  [47mMAC[0m is a [3mmacro-alias for[0m [47mFN[0m.
 
-  This [table] is used by the theory functions; see [theories].  For
-  example, in order that [47m(disable append)[0m be interpreted as [47m(disable
-  binary-append)[0m, it is necessary that the example form above has
-  been executed.  In fact, this [table] does indeed associate many of
-  the macros provided by the ACL2 system, including [47m[append][0m, with
-  function symbols.  Loosely speaking, it only does so when the macro
-  is ``essentially the same thing as'' a corresponding function; for
-  example, [47m(append x y)[0m and [47m(binary-append x y)[0m represent the same
-  term, for any expressions [47mx[0m and [47my[0m.")
+
+Further Explanation
+
+  See [table] for a general discussion of tables and the [47mtable[0m [event],
+  which is used to manipulate tables.  The table,
+  [47m[macro-aliases-table][0m, is an alist that can associate macro symbols
+  with function symbols, so that macro names may be used as runic
+  designators (see [theories] and discussion below).  For a
+  convenient way to add entries to this [table], see
+  [add-macro-alias], which allows the second argument to be, itself,
+  a macro-alias.  To remove entries conveniently from the [table],
+  see [remove-macro-alias].
+
+  As hinted above, this [table] is used by theory functions; see
+  [theories].  For example, in order that [47m(disable append)[0m be
+  interpreted as [47m(disable binary-append)[0m, it suffices that [47m(table
+  macro-aliases-table 'append 'binary-append)[0m, has been executed.  In
+  fact, this [table] does indeed establish many of the macros
+  provided by the ACL2 system as macro-aliases, such as establishing
+  [47m[append][0m as a macro-alias for [47m[binary-append][0m.  This only takes
+  place when the macro is ``essentially the same thing as'' a
+  corresponding function; for example, [47m(append x y)[0m and
+  [47m(binary-append x y)[0m represent the same term, for any expressions [47mx[0m
+  and [47my[0m.
+
+  Note that the value [47mFN[0m of [47mfunction-name-form[0m (above) is allowed to be
+  a symbol to be defined later as a function symbol.  The following
+  examples illustrate some approaches that work and some that do not.
+
+    ;;;;;;;;;;
+    ;;; Example 1: No errors, with function defined before setting the table.
+    ;;;;;;;;;;
+
+    (defun fn (x) x)
+    (defmacro mac (x) (list 'fn x))
+    (table macro-aliases-table 'mac 'fn) ; or (add-macro-alias mac fn)
+    (in-theory (disable mac))
+
+    ;;;;;;;;;;
+    ;;; Example 2: No errors, with function defined after setting the table.
+    ;;;;;;;;;;
+
+    (defmacro mac (x) (list 'fn x))
+
+    ; Legal, even though fn is not yet defined:
+    (table macro-aliases-table 'mac 'fn) ; or (add-macro-alias mac fn)
+
+    (defun fn (x) x)
+    (in-theory (disable mac))
+
+    ;;;;;;;;;;
+    ;;; Example 3: ERROR.
+    ;;;;;;;;;;
+
+    (defun fn (x) x)
+    (defmacro mac1 (x) (fn x))
+    (defmacro mac2 (x) (list 'mac1 x))
+
+    ; BAD, since the table event above anticipates fn to be defined as
+    ; a function, not a macro (but, no error yet) -- but not (yet) an error:
+    (table macro-aliases-table 'mac2 'mac1) ; or (add-macro-alias mac2 mac1)
+
+    ; ERROR, since mac2 does not designate rules, because it aliases a macro:
+    (in-theory (disable mac2))
+
+    ; OK, but too late to help with that in-theory event; see below:
+    (table macro-aliases-table 'mac1 'fn) ; or (add-macro-alias mac1 fn)
+
+    ; ERROR, since mac2 is still associated with mac1, not with fn:
+    (in-theory (disable mac2))
+
+    ;;;;;;;;;;
+    ;;; Example 4: Fixed version of Example 3.
+    ;;;;;;;;;;
+
+    (defun fn (x) x)
+    (defmacro mac1 (x) (fn x))
+    (defmacro mac2 (x) (list 'mac1 x))
+    (add-macro-alias mac1 fn); or (table macro-aliases-table 'mac1 'fn)
+
+    ; The following is equivalent to (add-macro-alias mac2 fn), since
+    ; mac1 is a macro-alias for fn by virtue of the preceding event.
+    (add-macro-alias mac2 mac1)
+
+    ; Success:
+    (in-theory (disable mac2))")
  (MACRO-ARGS
   (MACROS)
   "The formals list of a macro definition
@@ -106281,6 +106388,23 @@ Changes to Existing Features
   Improved the error message when the package name is missing
   immediately after `#!', as in #!(foo).
 
+  It was the case that in an [event] [47m(add-macro-alias mac fn)[0m,
+  [47m(add-macro-fn mac fn)[0m, or [47m(add-binop mac fn)[0m, if [47mfn[0m was a macro
+  name then this event generally had no effect.  Now, if in addition
+  an event [47m(add-macro-alias fn fn2)[0m has first been admitted (and no
+  later such event has been admitted), then in these three events, [47mfn[0m
+  will be treated as [47mfn2[0m.  See [add-macro-alias].  Thanks to Grant
+  Jurgensen for sending an example that showed how a confusing
+  [47m[in-theory][0m error could occur before this change, in the situation
+  described above: after the change, [47m(in-theory (disable mac))[0m is
+  treated as a directive to [disable] [47mfn2[0m; but before the change it
+  was treated as an attempt to [disable] the macro, [47mfn[0m, which caused
+  an error.
+
+  The utility [47m:[0m[47m[trans*][0m new uses the [47m:TERM[0m [evisc-tuple] (see
+  [set-evisc-tuple]) to print terms, as was already being done by
+  [47m:[0m[47m[trans][0m.
+
 
 New Features
 
@@ -106336,13 +106460,13 @@ Heuristic and Efficiency Improvements
 
   Sped up [47m[include-book][0m by significantly reducing time in translating
   calls of [47m[with-output][0m and some other macros (for some technical
-  details see ACL2 source function [47mmacroexpand1*-cmp[0m and in creatiion
-  of the so-called post-alist in a [certificate] (for relevant code,
-  which shows the use of [fast-alists], see ACL2 source function
-  [47maccumulate-post-alist[0m.)  For examples showing reduction by about
-  1/3 in include-book time, see the comment ``Here are sample time
-  reports (...)  for include-book speedups due to...'' in the form
-  [47m(defxdoc note-8-7 ...)[0m in [community-book]
+  details see ACL2 source function [47mmacroexpand1*-cmp[0m) and in
+  creatiion of the so-called post-alist in a [certificate] (for
+  relevant code, which shows the use of [fast-alists], see ACL2
+  source function [47maccumulate-post-alist[0m).  For examples showing
+  reduction by about 1/3 in include-book time, see the comment ``Here
+  are sample time reports (...)  for include-book speedups due
+  to...'' in the form [47m(defxdoc note-8-7 ...)[0m in [community-book]
   [47mbooks/system/doc/acl2-doc.lisp[0m.  Thanks to Eric Smith for sending
   an example book for which to speed up [47m[include-book][0m.
 
@@ -106486,8 +106610,8 @@ Bug Fixes
   The [47m:native[0m option of [47m[trace!][0m and [47m[trace$][0m did not work as one would
   reasonably expect when SBCL is the host Lisp; now it does.
 
-  Some ill-formed hard errors, for example from calls of [47mer[0m, caused raw
-  Lisp errors.  This has been fixed.  Thanks to Eric Smith for
+  Some ill-formed hard errors, for example from calls of [47m[er][0m, caused
+  raw Lisp errors.  This has been fixed.  Thanks to Eric Smith for
   reporting this bug with an example.
 
   [47mDO[0m [47m[Loop$][0m expressions (see [do-loop$]) are now allowed that have no
@@ -106589,12 +106713,12 @@ Changes at the System Level
 
   By default, the directory where an ACL2 executable is to be built
   must not have a pathname that contains spaces, as before.  However,
-  now there is a variable, [47mACL2_ALLOW_SPACES_IN_DIRECTORIES[0m, that may
-  be set to a non-empty value in order to build an ACL2 executable in
-  such a directory, as noted in the error message.  That message
-  points out that there may be errors, however, when certifying
-  books.  Thanks to Eric Smith for a discussion leading to this
-  change.
+  now there is a `[47mmake[0m' variable, [47mACL2_ALLOW_SPACES_IN_DIRECTORIES[0m,
+  that may be set to a non-empty value in order to build an ACL2
+  executable in such a directory, as noted in the error message.
+  That message points out that there may be errors, however, when
+  certifying books.  Thanks to Eric Smith for a discussion leading to
+  this change.
 
   References to the old ``bleeding edge'' manual
   ({https://www.cs.utexas.edu/users/moore/acl2/manuals/latest/' |
@@ -142776,7 +142900,7 @@ Generalizing the Initial Values
                 (progn (setq a (cons (car tail) a))
                         (setq tail (cdr tail))))))
 
-  The experienced ACL2 user would not attept to prove that [47m(rev-loop$
+  The experienced ACL2 user would not attempt to prove that [47m(rev-loop$
   x)[0m is [47m(rev x)[0m by induction!  The problem is the same as before: the
   [47mnil[0m initialization of the iterative variable [47ma[0m in the [47mdo[0m [47mloop$[0m does
   not permit an appropriate inductive hypothesis.  Instead, the user
@@ -142955,6 +143079,104 @@ Normal Forms in [47mLoop$[0m Bodies
   tail)[0m in the [47mdefun[0m of [47mrev-loop$[0m but lemma deals with the normalized
   form of that body.
 
+  Here is another example, this one involving a [47mdo[0m loop without any
+  [47mWITH[0m clauses.  That in itself causes no special proof problems, but
+  as noted in [do-loop$], it necessitates the use of a stobj in the
+  body and that raises issues similar to those just mentioned.  So
+  below we introduce a stobj, [47mst[0m, with one field, [47mfld[0m.  We define
+  [47m[warrant][0ms for both [47mfld[0m and [47mupdate-fld[0m, and then we define a
+  function, [47mstobj-mem[0m, that uses a [47mdo[0m loop to determine whether a
+  given element occurs in the field, simultaneously shortening the
+  list in the field so that its [47mcar[0m is the element in question.  Here
+  is the setup.
+
+    (defstobj st fld)
+    (defwarrant fld)
+    (defwarrant update-fld)
+
+    (defun stobj-mem (e st)
+      (declare (xargs :stobjs (st)
+                      :guard (true-listp (fld st))))
+      (loop$ do
+             :values (st)
+             :guard (and (stp st)
+                         (true-listp (fld st)))
+             :measure (acl2-count (fld st))
+             (if (endp (fld st))
+                 (return st)
+                 (if (equal e (car (fld st)))
+                     (return st)
+                     (setq st (update-fld (cdr (fld st)) st))))))
+
+  Note that there is no [47mWITH[0m clause but the size of [47m(fld st)[0m is
+  decreasing.
+
+  Suppose we want to prove that after running [47m(stobj-mem e st)[0m on
+  proper input, the final value of [47mfld[0m is equal to [47m(member e (fld
+  st))[0m.  The desired formal statement is
+
+    (defthm stobj-mem-correct
+      (implies (and (stp st)
+                    (true-listp (fld st))
+                    (warrant fld update-fld))
+               (let ((st1 (stobj-mem e st)))
+                 (and (stp st1)
+                      (equal (fld st1)
+                             (member e (fld st))))))
+      :hints ...)
+
+  Note that in the theorem we use [47mst1[0m to denote the final value of the
+  stobj whose initial value is [47mst[0m.  We have to provide the warrants
+  for the accessor and updater used in the body of the [47mloop$[0m.
+
+  This theorem is a little tricky to prove because we're proving a
+  conjunction and after the [47m(stobj-mem e st)[0m and the [47m(stp st)[0m expand
+  we get several conjectures, each of which requires induction.  It
+  is simply easier to prove that the [47mloop$[0m in [47mstobj-mem[0m has the
+  desired property and then use that lemma.  So we first prove:
+
+    (defthm stobj-mem-correct-lemma
+      (implies (and (stp st)
+                    (true-listp (fld st))
+                    (warrant fld update-fld))
+               (let ((st1 (loop$ do
+                                 :values (st)
+                                 :guard (and (stp st)
+                                             (true-listp (fld st)))
+                                 :measure (acl2-count (fld st))
+                                 (if (consp (fld st))
+                                     (if (equal e (car (fld st)))
+                                         (return st)
+                                         (setq st (update-fld (cdr (fld st)) st)))
+                                     (return st)))))
+                 (and (stp st1)
+                      (equal (fld st1)
+                             (member e (fld st)))))))
+
+  But note that we expanded the [47mendp[0m in the statement of this lemma
+  because [47mendp[0m is built-in in a way that causes it often to expand
+  even when disabled (as is actually noted in a warning message if
+  we'd left the [47mendp[0m in place).  We also normalized the resulting [47m(if
+  (not (consp (fld st))) ...)[0m as explained in Lesson 2 above.
+
+  Now we'd like to prove the desired theorem about [47mstobj-mem[0m, expecting
+  that function to expand and then the lemma to hit it and complete
+  the proof.  But that won't work without a little more help!  The
+  problem is that the lemma mentions [47mstp[0m, [47mfld[0m, and [47mupdate-fld[0m in its
+  left-hand side and those are non-recursively defined functions that
+  will expand.  So to make the lemma match the rewritten main theorem
+  we must disable those three functions.
+
+    (defthm stobj-mem-correct
+      (implies (and (stp st)
+                    (true-listp (fld st))
+                    (warrant fld update-fld))
+               (let ((st1 (stobj-mem e st)))
+                 (and (stp st1)
+                      (equal (fld st1)
+                             (member e (fld st))))))
+      :hints ((\"Goal\" :in-theory (disable stp fld update-fld))))
+
 
 The Secret [47mSetq[0m Problem
 
@@ -142973,7 +143195,7 @@ The Secret [47mSetq[0m Problem
                              (setq j (+ 1 j)))))))
 
   The function counts [47mj[0m up from [47m0[0m until it is equal to [47mk[0m, while [47mcdr[0ming
-  [47mx[0m.  It returns [47mgood[0m if it [47mj[0m reaches [47mk[0m before the list is exhausted,
+  [47mx[0m.  It returns [47mgood[0m if [47mj[0m reaches [47mk[0m before the list is exhausted,
   and returns [47mbad[0m otherwise.  Thus, this is a theorem.
 
     (defthm secret-setq-problem-main
@@ -143070,7 +143292,7 @@ The Secret [47mSetq[0m Problem
                       (LIST (CONS 'X (CDR (ASSOC-EQ-SAFE 'X ALIST)))
                             (CONS 'J (CDR (ASSOC-EQ-SAFE 'J ALIST)))
                             (CONS 'K (CDR (ASSOC-EQ-SAFE 'K ALIST))))))
-                (NIL) NIL)
+                '(NIL) NIL)
     Rhs:     'GOOD
     Backchain-limit-lst: NIL
     Subclass: BACKCHAIN
@@ -143106,7 +143328,7 @@ The Secret [47mSetq[0m Problem
              (LIST (CONS 'X (CDR (ASSOC-EQ-SAFE 'X ALIST)))
                    (CONS 'J (CDR (ASSOC-EQ-SAFE 'J ALIST)))
                    (CONS 'K (CDR (ASSOC-EQ-SAFE 'K ALIST))))))
-       (NIL) NIL)
+       '(NIL) NIL)
 
   Note that the [47mLhs[0m matches the actual term, when [47mJ[0m is instantiated
   with [47m0[0m, [3mexcept[0m in one place: the alist constructed in the [47m(LIST
@@ -143159,8 +143381,8 @@ The Secret [47mSetq[0m Problem
   new subterms to the translation, it merely allows assignment to a
   previously used but never assigned variable.  The order of the [47mwith[0m
   clauses determines the order of the alists being constructed, so
-  this pay attention to where [47m'k[0m is bound in the alists.  Also note
-  that the new [47msetq[0m does not add any new subterms to the translation,
+  pay attention to where [47m'k[0m is bound in the alists.  Also note that
+  the new [47msetq[0m does not add any new subterms to the translation; it
   just affects the final value of [47m'k[0m on that branch of the [47mif[0m tree.
   Finally note that we phrase the [47mloop$[0m this way in the lemma [3mwithout
   changing how we write the [47mloop$[0m[3m in the [47mdefun[0m[3m.[0m Writing the [47mloop$[0m
@@ -143242,7 +143464,7 @@ The Hidden Hypothesis Problem
           'good
           (derived-fn lo (- j 1)))).
 
-  That derived function doesn't terminate.
+  That derived function doesn't necessarily terminate.
 
   Now let's try to prove that the [47mloop$[0m always returns [47m'good[0m.  Note
   that it doesn't matter if we include guards in the conjecture or
@@ -143353,9 +143575,10 @@ The Hidden Hypothesis Problem
   the hidden hypothesis problem.
 
   Note that the derived function from the [47mloop$[0m in the hint doesn't
-  terminate either (because no mention is made that [47mJ[0m is a natural).
-  But the induction-time proof obligation is provable because it is
-  still augmented by [47m(INTEGERP J)[0m and [47m(<= 0 J)[0m as before.
+  necessarily terminate either (because no mention is made that [47mJ[0m is
+  a natural).  But the induction-time proof obligation is provable
+  because it is still augmented by [47m(INTEGERP J)[0m and [47m(<= 0 J)[0m as
+  before.
 
 
 Avoiding Some Specially Defined Hint Functions
@@ -154132,12 +154355,15 @@ Remarks
     :trans (caddr x)
     :trans (cond (p q) (r))
 
-  ACL2 accepts user-level syntax as input, but [3mtranslates[0m it to an
-  internal syntax.  This translation includes macroexpansion,
-  replacing [47m[let][0m forms by [47m[lambda][0m expressions, quoting constants,
-  and so on.  See [term] for relevant background.
+  ACL2 accepts user-level syntax as input, and it prints the result of
+  [3mtranslating[0m it to an internal syntax.  This translation includes
+  macroexpansion, replacing [47m[let][0m forms by [47m[lambda][0m expressions,
+  quoting constants, and so on.  See [term] for relevant background.
+  The printing can be abbreviated, as it uses the [47m:term[0m [evisc-tuple]
+  (with a [47mflg[0m of [47mnil[0m, hence without any abbreviation by default; see
+  [set-evisc-tuple]).
 
-  Note that the [47mtrans[0m command produces a [47m[term][0m that need not obey code
+  Note that the [47mtrans[0m command prints a [47m[term][0m that need not obey code
   restrictions: that term can be used in theorems but might not be
   allowed in definitions (except in [non-executable] contexts; see
   [defun-nx] and see [non-exec]).
@@ -154145,7 +154371,7 @@ Remarks
   [47mTrans[0m takes one argument, an alleged term in user syntax, and
   translates it, expanding the macros in it completely.  Either an
   error is caused or the internal syntax for the term (representing
-  its formal meaning) is printed.  We also print the ``output
+  its formal meaning) is printed.  It also prints the ``output
   signature'' which indicates how many results are returned and which
   are single-threaded objects.  For example, a term that returns one
   ordinary object (e.g., an object other than [47m[state][0m or a
@@ -154177,8 +154403,8 @@ Remarks
   causes an error; to see the desired translation use [47m:trans! (df+ x
   y)[0m.
 
-  It is sometimes more convenient to use [47m[trans1][0m which is like trans
-  but which only does top-level macroexpansion.
+  It is sometimes more convenient to use [47m:[0m[47m[trans1][0m, which, unlike
+  [47m:trans[0m, only does top-level macroexpansion.
 
   For more, see [term].")
  (TRANS!
@@ -154205,20 +154431,22 @@ Remarks
   [trans], [trans!], and [47m[trans1][0m for other utilities that expand and
   translate their input.
 
-  Unlike [47mtrans[0m, the [47mtrans*[0m command can show not only the translation of
-  a given expression but also the intermediate expansions leading to
-  that translation, and [47mtrans*[0m can also show [47m[make-event][0m expansions.
-  Another difference between [47mtrans*[0m and [47mtrans[0m is that [47mtrans*[0m does not
-  enforce code restrictions; thus, multiple-value mismatches and
-  violations of single-threadedness are permitted by [47mtrans*[0m.  That
-  is: when [47mtrans*[0m takes steps to convert an untranslated term to a
-  translated term, it does so as though one is translating a theorem
-  statement, not a definition body.
+  Unlike [47mtrans[0m, the [47mtrans*[0m command can print not only the translation
+  of a given expression but also the intermediate expansions leading
+  to that translation, and [47mtrans*[0m can also print [47m[make-event][0m
+  expansions.  Another difference between [47mtrans*[0m and [47mtrans[0m is that
+  [47mtrans*[0m does not enforce code restrictions; thus, multiple-value
+  mismatches and violations of single-threadedness are permitted by
+  [47mtrans*[0m.  That is: when [47mtrans*[0m takes steps to convert an
+  untranslated term to a translated term, it does so as though one is
+  translating a theorem statement, not a definition body.
 
-  But like [47mtrans[0m, the [47mtrans*[0m command produces a [47m[term][0m that need not
-  obey code restrictions: that term can be used in theorems but might
-  not be allowed in definitions (except in [non-executable] contexts;
-  see [defun-nx] and see [non-exec]).
+  But like [47mtrans[0m, the [47mtrans*[0m command prints [47m[term][0ms that need not obey
+  code restrictions: they can be used in theorems but might not be
+  allowed in definitions (except in [non-executable] contexts; see
+  [defun-nx] and see [non-exec]).  Also like [47mtrans[0m, the printing uses
+  the [47m:term[0m [evisc-tuple] (with a [47mflg[0m of [47mnil[0m, hence without any
+  abbreviation by default; see [set-evisc-tuple]).
 
   For discussion of how one may use a keyword command like [47m:trans*[0m in
   place of calling the corresponding utility, in this case [47mtrans*[0m,
