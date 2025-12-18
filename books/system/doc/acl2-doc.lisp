@@ -2759,7 +2759,7 @@
   i             acl2-doc-index
      Go to the specified topic or else one containing it as a substring;
      performs completion.  If the empty string is supplied, then go to the
-     index buffer.  Otherwise, with prefix argument, consider only descendents
+     index buffer.  Otherwise, with prefix argument, consider only descendants
      of the topic supplied in response to a prompt.  Note that the index buffer
      is in ACL2-Doc mode; thus, in particular, you can type <RETURN> while
      standing on a topic in order to go directly to that topic.
@@ -2811,14 +2811,14 @@
      search succeeds, then go to that topic with the cursor put immediately
      after the found text, with the topic name displayed in the minibuffer.
      With prefix argument, consider (also for subsequent \"n\" and \"p\"
-     commands) only descendents of the topic supplied in response to a prompt.
+     commands) only descendants of the topic supplied in response to a prompt.
 
   S             acl2-doc-re-search
      Perform a regular expression search, forward from the top of the manual,
      for the input string.  If the search succeeds, then go to that topic with
      the cursor put immediately after the found text, with the topic name
      displayed in the minibuffer.  With prefix argument, consider (also for
-     subsequent \"n\" and \"p\" commands) only descendents of the topic
+     subsequent \"n\" and \"p\" commands) only descendants of the topic
      supplied in response to a prompt.
 
   t             acl2-doc-top
@@ -46208,7 +46208,7 @@ current fast alists."
  to specify the goal to which the @(see hints) are to be applied.  The @(see
  hints) provided are carried along innocuously until the named goal arises.
  When it arises, the @(see hints) are ``activated'' for that goal and its
- descendents.</p>
+ descendants.</p>
 
  <p>A legal goal specification may be extracted from the theorem prover's
  output.  Certain lines clearly label formulas, as in</p>
@@ -56157,8 +56157,8 @@ tables in the current Hons Space."
   ``mapping functions'' because they map another function over some range.  We
   would call them ``functionals'' except that suggests ACL2 is higher-order and
   it is not!  So we most often call them @(see scion)s of @('apply$').  In
-  ordinary English usage, a ``scion'' is a descendent of an important family or
-  individual; our scions are ``descendents'' of @('apply$') and inherit its
+  ordinary English usage, a ``scion'' is a descendant of an important family or
+  individual; our scions are ``descendants'' of @('apply$') and inherit its
   power and restrictions.</p>
 
   @({
@@ -56625,7 +56625,7 @@ tables in the current Hons Space."
  children, where <i>hints2</i> is used instead.</p>
 
  <p>There are a few hints which ``take effect'' exactly on the subgoal to which
- they are attached and are not inherited by their descendents.</p>
+ they are attached and are not inherited by their descendants.</p>
 
  <p>Here is an incomplete list of some of the more common hints; we note the
  ones that do not pass on their effects to their descendants.  We recommend
@@ -56680,13 +56680,13 @@ tables in the current Hons Space."
  immediately into induction for the subgoal in question, and to use the
  induction scheme suggested by the hint rather than the one suggested by the
  terms in the subgoal itself.  This hint is not inherited by its
- descendents.</p>
+ descendants.</p>
 
  <p>See @(see hints) <see topic='ACL2____A_02Tiny_02Warning_02Sign'><icon
  src='res/tours/twarning.gif'/></see> for a complete list of all hints, and see @(see
  hints-and-the-waterfall) <see topic='ACL2____A_02Tiny_02Warning_02Sign'><icon
  src='res/tours/twarning.gif'/></see> for a more thorough description of how the effects
- of hints at a subgoal are inherited by the descendents.</p>
+ of hints at a subgoal are inherited by the descendants.</p>
 
  <p>If you are reading this as part of the tutorial introduction to the theorem
  prover, use your browser's <b>Back Button</b> now to return to @(see
@@ -108446,7 +108446,7 @@ it."
  @('\"Subgoal 2\"'), @('\"Subgoal 2.1\"'), @('\"Subgoal 2.1.3.4.5\"'),
  @('\"Subgoal 2.1.3.4.5'\"'), and @('\"Subgoal 2.1.3.4.5''\"') &mdash; in
  general, such addition of equalities can only be performed five times along a
- chain of goals where each is a descendent (not necessarily an immediate
+ chain of goals where each is a descendant (not necessarily an immediate
  subgoal) of the one before, and each induction and forcing round provides a
  fresh start.  You can change that default from 5 to @('n'), where @('n') is a
  natural number, by evaluating the following form.</p>
@@ -135896,10 +135896,10 @@ work on <tt>(q x)</tt>.</p>
  is @('Subgoal 3'), and the constraint tracking flag is set, then @('Subgoal
  3') will have an @('extra-info') hypothesis indicating the origin of that
  subgoal.  If the rewrite rule above is available, the @('extra-info') will
- have disappeared in the descendents of @('Subgoal 3').  So if you find
+ have disappeared in the descendants of @('Subgoal 3').  So if you find
  yourself asking ``Where did this goal come from?''  you might refer back to
  the parent, @('Subgoal 3'), produced by the functional instance
- hint.  (Remember, descendent subgoals, e.g., @('Subgoal 3.17'''), have @(see
+ hint.  (Remember, descendant subgoals, e.g., @('Subgoal 3.17'''), have @(see
  clause-identifier)s that indicate their parentage, @('Subgoal 3').)</p>
 
  <p>That said, some proof strategies employed in the regression (including the
@@ -139396,7 +139396,7 @@ work on <tt>(q x)</tt>.</p>
  :short "Set the maximum length and repetition count of the subgoal path"
  :long "<p>The ACL2 ``waterfall'' (see @(see hints-and-the-waterfall)) produces
  a tree of Goals and Subgoals.  Consider a path through this tree in which each
- formula is an immediate descendent of the previous formula.  More precisely,
+ formula is an immediate descendant of the previous formula.  More precisely,
  each element of the path records a goal formula (represented as a @(see
  clause)), the name by which the user may refer to it, e.g., @('\"Goal''\"') or
  @('\"Subgoal *1/2.3\"') (represented as a @(see clause-identifier)), the
