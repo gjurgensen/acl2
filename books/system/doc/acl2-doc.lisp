@@ -108888,8 +108888,8 @@ it."
  past standalone versions and integrated into the rest of the
  documentation.</li>
 
- <li>@(see Loop$-primer) provides an extensive primer on the the ACL2 @(tsee
- loop$) feature.</li>
+ <li>@(see Loop$-primer) provides an extensive primer on the ACL2 @(tsee loop$)
+ feature.</li>
 
  <li>@(see Type-reasoning) gives a basic introduction to what has sometimes
  been called ``type-set reasoning'' but is now generally referred to as
@@ -111863,7 +111863,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   order to do that, we must prevent the prover from rearranging our clocks!
   That is, @('(m1 s (+ i j))') will decompose differently than @('(m1 s (+ j
   i))'), but the arithmetic library might rearrange the clock, e.g., by using
-  the commutativity of addition.  So instead of using @('+') to express the the
+  the commutativity of addition.  So instead of using @('+') to express the
   addition of two clocks we define @('clk+') to be @('+'), but we'll disable
   its definition to protect clocks from arithmetic reasoning.  We will arrange
   for @('clk+') to take more than just two arguments and will reveal that it is
@@ -130084,8 +130084,8 @@ work on <tt>(q x)</tt>.</p>
  })
 
  <p>The first top-level form sets the values of @(tsee state) globals
- @('my-w1') and @('my-w3') to to the worlds obtained by extending the empty
- world one or three times, respectively, as shown.  The second top-level form
+ @('my-w1') and @('my-w3') to the worlds obtained by extending the empty world
+ one or three times, respectively, as shown.  The second top-level form
  <i>installs</i> the value of @('my-w1') as the world that is current for the
  name @(''my-world').  The third top-level form returns the @(''my-key1')
  property for the symbol @(''my-sym1') in the installed world @('(@ my-w1)'),
@@ -143237,10 +143237,10 @@ work on <tt>(q x)</tt>.</p>
   @('loop$') confuses the heuristics that enable the prover to
   &ldquo;discover&rdquo; the associativity of @('append').)</p>
 
-  <p><b>Lesson 1</b>:  If a @('loop$') has iterative variables initialized to
+  <p><b>Lesson 1</b>: If a @('loop$') has iterative variables initialized to
   non-variables, generalize them before expecting an induction to work!  If the
-  @('loop$') is buried in a definition you'll have to lift the @('loop$') out of
-  the definition to generalize it and prove a theorem about the the generalized
+  @('loop$') is buried in a definition you'll have to lift the @('loop$') out
+  of the definition to generalize it and prove a theorem about the generalized
   @('loop$').</p>
 
   <h3>Normal Forms in @('Loop$') Bodies</h3>
@@ -167699,12 +167699,12 @@ created from the original fast alist during @('form') must be manually freed."
  terminology: When the above @('wormhole') is evaluated, the
  @('lambda')-expression is applied to the persistent-whs and the result is
  stored as the new persistent-whs.  Then, if the entry-code of the new status
- is @(':ENTER') (actually, if it is not @(':SKIP')), @(tsee ld) is invoked on
- a copy of the ``current state'' with the specified @('ld-') ``special
+ is @(':ENTER') (actually, if it is not @(':SKIP')), @(tsee ld) is invoked on a
+ copy of the ``current state'' with the specified @('ld-') ``special
  variables;'' output is directed to the comment window.  In that copy of the
  state, the state global variables @('wormhole-name'), @('wormhole-input') and
- @('wormhole-status') are assigned @('name'), the the value of @('input') and
- the persistent-whs, respectively.  Thus, inside the wormhole, @('(@
+ @('wormhole-status') are assigned @('name'), the value of @('input') and the
+ persistent-whs, respectively.  Thus, inside the wormhole, @('(@
  wormhole-name)') returns the name of the current wormhole, @('(@
  wormhole-input)') returns the list of inputs, @('(@ wormhole-status)') returns
  the ephemeral-whs.  The first form executed by the @('ld') is the value of
