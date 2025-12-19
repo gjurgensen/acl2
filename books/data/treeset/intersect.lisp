@@ -12,13 +12,19 @@
 (include-book "std/util/defrule" :dir :system)
 (include-book "xdoc/constructors" :dir :system)
 
+(include-book "data/utilities/oset-defs" :dir :system)
+
 (include-book "internal/tree-defs")
 (include-book "internal/intersect-defs")
 (include-book "set-defs")
 (include-book "subset-defs")
+(include-book "insert-defs")
+(include-book "to-oset-defs")
 
 (local (include-book "std/basic/controlled-configuration" :dir :system))
 (local (acl2::controlled-configuration :hooks nil))
+
+(local (include-book "std/osets/top" :dir :system))
 
 (local (include-book "kestrel/alists-light/assoc-equal" :dir :system))
 (local (include-book "kestrel/alists-light/symbol-alistp" :dir :system))
@@ -30,9 +36,35 @@
 (local (include-book "internal/tree"))
 (local (include-book "internal/intersect"))
 (local (include-book "internal/in"))
+(local (include-book "internal/in-order"))
 (local (include-book "set"))
 (local (include-book "in"))
 (local (include-book "subset"))
+(local (include-book "insert"))
+(local (include-book "to-oset"))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defxdoc intersect
+  :parents (treeset)
+  :short "An @($n$)-ary set intersection on @(see treeset)s."
+  :long
+  (xdoc::topstring
+    (xdoc::p
+      "Time complexity: @($O(n\\log(m/n))$) (for binary intersection, where
+       @($n < m$)).")
+    (xdoc::section
+      "General form"
+      (xdoc::codeblock
+        "(intersect set-0 set-1 ... set-n :test test)")
+      (xdoc::desc
+        "@(':test') &mdash; optional"
+        (xdoc::p
+          "One of: @('equal'), @('='), @('eq'), or @('eql'). If no value is
+           provided, the default is @('equal'). Specifying an alternative test
+           allows for a more performant implementation, at the cost of a
+           stronger guard. The guard asserts that the set consists of elements
+           suitable for comparison with the specified equality variant.")))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -78,54 +110,11 @@
                  (intersect-macro-loop 'intersect$inline rest))))))
   :guard-hints (("Goal" :in-theory (enable acl2::alistp-when-symbol-alistp))))
 
-;; TODO: custom macro for rest + :test keyword argument
 (defmacro intersect (&rest forms)
   (declare (xargs :guard t))
   (intersect-macro-fn forms))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; (defsection intersect
-;;   :parents (set)
-;;   :short "An @($n$)-ary set intersection."
-;;   :long
-;;   (xdoc::topstring
-;;     (xdoc::p
-;;       "Time complexity: @($O(n\\log(m/n))$) (for binary intersection, where @($n < m$))."))
-;;
-;;   (define binary-intersect
-;;     ((x setp)
-;;      (y setp))
-;;     :returns (set setp
-;;                   :hints (("Goal" :in-theory (enable setp
-;;                                                      fix
-;;                                                      empty))))
-;;     (tree-intersect (fix x) (fix y))
-;;     :inline t
-;;     :guard-hints (("Goal" :in-theory (enable setp))))
-;;
-;;   ;;;;;;;;;;;;;;;;;;;;
-;;
-;;   (define intersect-macro-loop
-;;     ((list true-listp))
-;;     :guard (and (consp list)
-;;                 (consp (rest list)))
-;;     (if (endp (rest (rest list)))
-;;         (list 'binary-intersect
-;;               (first list)
-;;               (second list))
-;;       (list 'binary-intersect
-;;             (first list)
-;;             (intersect-macro-loop (rest list))))
-;;     :hints (("Goal" :in-theory (enable o< o-finp acl2-count))))
-;;
-;;   (defmacro intersect (x y &rest rst)
-;;     (declare (xargs :guard t))
-;;     (intersect-macro-loop (list* x y rst)))
-;;
-;;   (add-macro-fn intersect binary-intersect$inline t)
-;;
-;;   "@(def intersect)")
 
 (define intersect$inline
   ((x setp)
@@ -135,12 +124,22 @@
                                                    fix
                                                    empty))))
   (tree-intersect (fix x) (fix y))
-  :guard-hints (("Goal" :in-theory (enable setp)))
+  :guard-hints (("Goal" :in-theory (enable* break-abstraction)))
 
   ///
   (add-macro-fn intersect intersect$inline t))
 
 ;;;;;;;;;;;;;;;;;;;;
+
+(in-theory (disable (:t intersect)))
+
+(defruled intersect-type-prescription
+  (or (consp (intersect x y))
+      (equal (intersect x y) nil))
+  :rule-classes :type-prescription
+  :enable intersect)
+
+(add-to-ruleset break-abstraction '(intersect-type-prescription))
 
 (defrule intersect-when-set-equiv-of-arg1-congruence
   (implies (equiv x0 x1)
@@ -210,6 +209,44 @@
   :enable (double-containment
            pick-a-point))
 
+;;;;;;;;;;;;;;;;;;;;
+
+(defrule oset-intersect-of-to-oset
+  (equal (set::intersect (to-oset x)
+                         (to-oset y))
+         (to-oset (intersect x y)))
+  :enable (to-oset
+           intersect
+           fix
+           setp
+           empty))
+
+(add-to-ruleset from-oset-theory '(oset-intersect-of-to-oset))
+
+(defrule from-oset-of-oset-intersect
+  (equal (from-oset (set::intersect x y))
+         (intersect (from-oset x)
+                    (from-oset y)))
+  :enable (double-containment
+           pick-a-point))
+
+(add-to-ruleset from-oset-theory '(from-oset-of-oset-intersect))
+
+(defruled oset-intersect-becomes-intersect
+  (equal (set::intersect x y)
+         (to-oset (intersect (from-oset x)
+                             (from-oset y))))
+  :enable set::expensive-rules)
+
+(add-to-ruleset from-oset-theory '(oset-intersect-becomes-intersect))
+
+(defruled intersect-becomes-oset-intersect
+  (equal (intersect x y)
+         (from-oset (set::intersect (to-oset x)
+                                    (to-oset y)))))
+
+(add-to-ruleset to-oset-theory '(intersect-becomes-oset-intersect))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define intersect-=
@@ -219,9 +256,9 @@
        :exec (acl2-number-tree-intersect x y))
   :enabled t
   :inline t
-  :guard-hints (("Goal" :in-theory (enable setp
-                                           set-all-acl2-numberp
-                                           intersect))))
+  :guard-hints (("Goal" :in-theory (enable* break-abstraction
+                                            set-all-acl2-numberp
+                                            intersect))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -232,9 +269,9 @@
        :exec (symbol-tree-intersect x y))
   :enabled t
   :inline t
-  :guard-hints (("Goal" :in-theory (enable setp
-                                           set-all-symbolp
-                                           intersect))))
+  :guard-hints (("Goal" :in-theory (enable* break-abstraction
+                                            set-all-symbolp
+                                            intersect))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -245,6 +282,6 @@
        :exec (eqlable-tree-intersect x y))
   :enabled t
   :inline t
-  :guard-hints (("Goal" :in-theory (enable setp
-                                           set-all-eqlablep
-                                           intersect))))
+  :guard-hints (("Goal" :in-theory (enable* break-abstraction
+                                            set-all-eqlablep
+                                            intersect))))

@@ -425,7 +425,12 @@
   :long
   (xdoc::topstring
    (xdoc::p
-     "For empty trees, returns @(tsee irr-tagged-element)."))
+     "For empty trees, this is logically @(tsee irr-tagged-element).")
+   (xdoc::p
+     "For a tree recognized by @(tsee heapp) (including @(see treeset)s), this
+      is the largest element with respect to the @(tsee heap<) ordering. More
+      precisely, it is the pair of the element along with its hash.
+      @(tsee head) will project out just the element."))
   :guard (not (tree-empty-p tree))
   :returns (elem tagged-element-p
                  :hints (("Goal" :in-theory (enable tree-empty-p

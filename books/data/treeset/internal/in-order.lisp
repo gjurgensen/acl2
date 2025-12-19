@@ -13,9 +13,9 @@
 ;; (include-book "xdoc/constructors" :dir :system)
 ;; (include-book "xdoc/defxdoc-plus" :dir :system)
 
+(include-book "data/utilities/list-defs" :dir :system)
 (include-book "data/utilities/oset-defs" :dir :system)
 (include-book "data/utilities/total-order/total-order-defs" :dir :system)
-(include-book "data/utilities/true-list-defs" :dir :system)
 
 (include-book "tree-defs")
 (include-book "bst-defs")
@@ -38,7 +38,7 @@
 (local (include-book "kestrel/lists-light/member-equal" :dir :system))
 
 (local (include-book "data/utilities/total-order/total-order" :dir :system))
-(local (include-book "data/utilities/true-list" :dir :system))
+(local (include-book "data/utilities/list" :dir :system))
 
 (local (include-book "std/osets/top" :dir :system))
 
@@ -377,7 +377,7 @@
   :induct t
   :enable (set::cardinality
            set::emptyp
-           tail
+           set::tail
            set::setp))
 
 ;; MOVE up
@@ -396,12 +396,18 @@
 
 ;;;;;;;;;;
 
+(defrule tree-in-order-under-iff
+  (iff (tree-in-order tree)
+       (not (tree-empty-p tree)))
+  :induct t
+  :enable tree-in-order)
+
 (defrule tree-in-order-of-tree-insert
   (implies (bstp tree)
-           (equal (tree-in-order (tree-insert x hash tree))
+           (equal (tree-in-order (mv-nth 1 (tree-insert x hash tree)))
                   (set::insert x (tree-in-order tree))))
   :use (:instance osetp-of-tree-in-order-when-bstp
-                  (tree (tree-insert x hash tree)))
+                  (tree (mv-nth 1 (tree-insert x hash tree))))
   :enable set::expensive-rules
   :disable osetp-of-tree-in-order-when-bstp)
 

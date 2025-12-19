@@ -12,8 +12,11 @@
 (include-book "std/util/defrule" :dir :system)
 (include-book "xdoc/constructors" :dir :system)
 
+(include-book "data/utilities/oset-defs" :dir :system)
+
 (include-book "internal/count-defs")
 (include-book "set-defs")
+(include-book "to-oset-defs")
 
 (local (include-book "std/basic/controlled-configuration" :dir :system))
 (local (acl2::controlled-configuration :hooks nil))
@@ -22,12 +25,14 @@
 
 (local (include-book "internal/tree"))
 (local (include-book "internal/count"))
+(local (include-book "internal/in-order"))
 (local (include-book "set"))
+(local (include-book "to-oset"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define cardinality ((set setp))
-  :parents (set)
+  :parents (treeset)
   :short "The number of elements in a @(see treeset)."
   :long
   (xdoc::topstring
@@ -69,3 +74,22 @@
            (emptyp set))
   :rule-classes :forward-chaining
   :enable equal-of-cardinality-and-0-becomes-emptyp)
+
+;;;;;;;;;;;;;;;;;;;;
+
+(defrule oset-cardinality-of-to-oset
+  (equal (set::cardinality (to-oset set))
+         (cardinality set))
+  :enable (to-oset
+           cardinality
+           fix
+           setp
+           empty))
+
+(add-to-ruleset from-oset-theory '(oset-cardinality-of-to-oset))
+
+(defruled cardinality-becomes-oset-cardinality
+  (equal (cardinality set)
+         (set::cardinality (to-oset set))))
+
+(add-to-ruleset to-oset-theory '(cardinality-becomes-oset-cardinality))

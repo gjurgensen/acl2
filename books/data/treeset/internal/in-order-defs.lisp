@@ -8,7 +8,7 @@
 
 (in-package "TREESET")
 
-(include-book "data/utilities/true-list-defs" :dir :system)
+(include-book "data/utilities/list-defs" :dir :system)
 
 (include-book "tree-defs")
 

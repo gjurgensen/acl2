@@ -9,7 +9,9 @@
 (in-package "DATA")
 
 (local (include-book "std/util/defredundant" :dir :system))
-(local (include-book "true-list"))
+(local (include-book "std/lists/list-defuns" :dir :system))
+
+(local (include-book "list"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -19,7 +21,11 @@
           acl2::fast-list-equiv
           list-equiv
           list-equal
+          set-equiv
           ))
 
 (defequiv list-equiv
+  :package :equiv)
+
+(defequiv set-equiv
   :package :equiv)

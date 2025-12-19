@@ -30,30 +30,46 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defxdoc subset
+  :parents (set)
+  :short "Check if one set is a subset of the other."
+  :long
+  (xdoc::topstring
+    (xdoc::p
+      "Time complexity: @($O(n\\log(m))$) (Note: the current implementation is
+       slightly inefficient. This should eventually be @($O(n\\log(m/n))$),
+       where @($n < m$). This may be implemented similar to @(tsee diff).)")
+    (xdoc::section
+      "General form"
+      (xdoc::codeblock
+        "(subset x y :test test)")
+      (xdoc::desc
+        "@(':test') &mdash; optional"
+        (xdoc::p
+          "One of: @('equal'), @('='), @('eq'), or @('eql'). If no value is
+           provided, the default is @('equal'). Specifying an alternative test
+           allows for a more performant implementation, at the cost of a
+           stronger guard. The guard asserts that the set consists of elements
+           suitable for comparison with the specified equality variant.")))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defmacro subset (x set &key (test 'equal))
   (declare (xargs :guard (member-eq test '(equal = eq eql))))
   (case test
     (equal `(subset$inline ,x ,set))
-    (=     `(in-=          ,x ,set))
-    (eq    `(in-eq         ,x ,set))
-    (eql   `(in-eql        ,x ,set))))
+    (=     `(subset-=      ,x ,set))
+    (eq    `(subset-eq     ,x ,set))
+    (eql   `(subset-eql    ,x ,set))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define subset$inline
   ((x setp)
    (y setp))
-  :parents (set)
-  :short "Check if one set is a subset of the other."
-  :long
-  (xdoc::topstring
-   (xdoc::p
-     "Time complexity: @($O(n\\log(m))$) (Note: the current implementation is
-      slightly inefficient. This should eventually be @($O(n\\log(m/n))$),
-      where @($n < m$). This may be implemented similar to @(tsee diff).)"))
   :returns (yes/no booleanp :rule-classes :type-prescription)
   (tree-subset-p (fix x) (fix y))
-  :guard-hints (("Goal" :in-theory (enable setp)))
+  :guard-hints (("Goal" :in-theory (enable* break-abstraction)))
 
   ///
   (add-macro-fn subset subset$inline))
@@ -102,80 +118,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;
 
-(defruled subset-when-subset-of-arg1-and-left
-  (implies (subset x (left y))
-           (subset x y))
-  :enable (subset
-           left
-           fix
-           empty))
-
-(defrule subset-when-subset-of-arg1-and-left-forward-chaining
-  (implies (subset x (left y))
-           (subset x y))
-  :rule-classes :forward-chaining
-  :by subset-when-subset-of-arg1-and-left)
-
-(defruled subset-when-subset-of-arg1-and-right
-  (implies (subset x (right y))
-           (subset x y))
-  :enable (subset
-           right
-           fix
-           empty))
-
-(defrule subset-when-subset-of-arg1-and-right-forward-chaining
-  (implies (subset x (right y))
-           (subset x y))
-  :rule-classes :forward-chaining
-  :by subset-when-subset-of-arg1-and-right)
-
-;;;;;;;;;;;;;;;;;;;;
-
-(defruled subset-of-left-when-when-subset
-  (implies (subset x y)
-           (subset (left x) y))
-  :enable (subset
-           left
-           fix
-           empty))
-
-(defrule subset-of-left-when-when-subset-cheap
-  (implies (subset x y)
-           (subset (left x) y))
-  :rule-classes ((:rewrite :backchain-limit-lst (0)))
-  :by subset-of-left-when-when-subset)
-
-(defruled subset-of-right-when-when-subset
-  (implies (subset x y)
-           (subset (right x) y))
-  :enable (subset
-           right
-           fix
-           empty))
-
-(defrule subset-of-right-when-when-subset-cheap
-  (implies (subset x y)
-           (subset (right x) y))
-  :rule-classes ((:rewrite :backchain-limit-lst (0)))
-  :by subset-of-right-when-when-subset)
-
-;;;;;;;;;;;;;;;;;;;;
-
-(defrule subset-of-left
-  (subset (left x) x)
-  :enable (subset
-           left
-           fix
-           empty))
-
-(defrule subset-of-right
-  (subset (right x) x)
-  :enable (subset
-           right
-           fix
-           empty))
-
 (defrule subset-reflexivity
   (subset x x)
   :enable subset)
@@ -220,7 +162,7 @@
 
 (defsection double-containment
   :parents (set)
-  :short "Prove set equalities via tree-subset-p antisymmetry."
+  :short "Prove set equalities via @(see subset) antisymmetry."
   :long
   (xdoc::topstring
     (xdoc::p
@@ -319,9 +261,9 @@
        :exec (tree-subset-p x y))
   :enabled t
   :inline t
-  :guard-hints (("Goal" :in-theory (enable setp
-                                           set-all-acl2-numberp
-                                           subset))))
+  :guard-hints (("Goal" :in-theory (enable* break-abstraction
+                                            set-all-acl2-numberp
+                                            subset))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -332,9 +274,9 @@
        :exec (tree-subset-p x y))
   :enabled t
   :inline t
-  :guard-hints (("Goal" :in-theory (enable setp
-                                           set-all-symbolp
-                                           subset))))
+  :guard-hints (("Goal" :in-theory (enable* break-abstraction
+                                            set-all-symbolp
+                                            subset))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -345,15 +287,11 @@
        :exec (tree-subset-p x y))
   :enabled t
   :inline t
-  :guard-hints (("Goal" :in-theory (enable setp
-                                           set-all-eqlablep
-                                           subset))))
+  :guard-hints (("Goal" :in-theory (enable* break-abstraction
+                                            set-all-eqlablep
+                                            subset))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defthy subset-extra-rules
-  '(subset-when-subset-of-arg1-and-left
-    subset-when-subset-of-arg1-and-right
-    subset-of-left-when-when-subset
-    subset-of-right-when-when-subset
-    subset-when-not-in-of-head))
+  '(subset-when-not-in-of-head))

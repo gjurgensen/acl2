@@ -12,14 +12,20 @@
 (include-book "std/util/defrule" :dir :system)
 (include-book "xdoc/constructors" :dir :system)
 
+(include-book "data/utilities/oset-defs" :dir :system)
+
 (include-book "internal/tree-defs")
 (include-book "internal/union-defs")
 (include-book "set-defs")
 (include-book "in-defs")
 (include-book "subset-defs")
+(include-book "insert-defs")
+(include-book "to-oset-defs")
 
 (local (include-book "std/basic/controlled-configuration" :dir :system))
 (local (acl2::controlled-configuration :hooks nil))
+
+(local (include-book "std/osets/top" :dir :system))
 
 (local (include-book "kestrel/alists-light/assoc-equal" :dir :system))
 (local (include-book "kestrel/alists-light/symbol-alistp" :dir :system))
@@ -30,11 +36,36 @@
 
 (local (include-book "internal/tree"))
 (local (include-book "internal/union"))
+(local (include-book "internal/in-order"))
 (local (include-book "set"))
 (local (include-book "cardinality"))
 (local (include-book "in"))
 (local (include-book "insert"))
 (local (include-book "subset"))
+(local (include-book "to-oset"))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defxdoc union
+  :parents (treeset)
+  :short "An @($n$)-ary set union on @(see treeset)s."
+  :long
+  (xdoc::topstring
+    (xdoc::p
+      "Time complexity: @($O(n\\log(m/n))$) (for binary union, where
+       @($n < m$)).")
+    (xdoc::section
+      "General form"
+      (xdoc::codeblock
+        "(union set-0 set-1 ... set-n :test test)")
+      (xdoc::desc
+        "@(':test') &mdash; optional"
+        (xdoc::p
+          "One of: @('equal'), @('='), @('eq'), or @('eql'). If no value is
+           provided, the default is @('equal'). Specifying an alternative test
+           allows for a more performant implementation, at the cost of a
+           stronger guard. The guard asserts that the set consists of elements
+           suitable for comparison with the specified equality variant.")))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -79,52 +110,11 @@
                  (union-macro-loop 'union$inline rest))))))
   :guard-hints (("Goal" :in-theory (enable acl2::alistp-when-symbol-alistp))))
 
-;; TODO: custom macro for rest + :test keyword argument
 (defmacro union (&rest forms)
   (declare (xargs :guard t))
   (union-macro-fn forms))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; (defsection union
-;;   :parents (set)
-;;   :short "An @($n$)-ary set union."
-;;   :long
-;;   (xdoc::topstring
-;;     (xdoc::p
-;;       "Time complexity: @($O(n\\log(m/n))$) (for binary union, where @($n < m$))."))
-;;
-;;   (define binary-union
-;;     ((x setp)
-;;      (y setp))
-;;     :returns (set setp
-;;                   :hints (("Goal" :in-theory (enable setp
-;;                                                      fix
-;;                                                      empty))))
-;;     (tree-union (fix x) (fix y))
-;;     :inline t
-;;     :guard-hints (("Goal" :in-theory (enable setp))))
-;;
-;;   ;;;;;;;;;;;;;;;;;;;;
-;;
-;;   (define union-macro-loop
-;;     ((list true-listp))
-;;     :guard (and (consp list)
-;;                 (consp (rest list)))
-;;     (if (endp (rest (rest list)))
-;;         (list 'binary-union
-;;               (first list)
-;;               (second list))
-;;       (list 'binary-union
-;;             (first list)
-;;             (union-macro-loop (rest list))))
-;;     :hints (("Goal" :in-theory (enable o< o-finp acl2-count))))
-;;
-;;   (defmacro union (x y &rest rst)
-;;     (declare (xargs :guard t))
-;;     (union-macro-loop (list* x y rst)))
-;;
-;;   (add-macro-fn union binary-union$inline t))
 
 (define union$inline
   ((x setp)
@@ -141,6 +131,14 @@
 ;;;;;;;;;;;;;;;;;;;;
 
 (in-theory (disable (:t union)))
+
+(defruled union-type-prescription
+  (or (consp (union x y))
+      (equal (union x y) nil))
+  :rule-classes :type-prescription
+  :enable union)
+
+(add-to-ruleset break-abstraction '(union-type-prescription))
 
 (defrule union-when-equiv-of-arg1-congruence
   (implies (equiv x0 x1)
@@ -207,6 +205,44 @@
   :enable (double-containment
            pick-a-point))
 
+;;;;;;;;;;;;;;;;;;;;
+
+(defrule oset-union-of-to-oset
+  (equal (set::union (to-oset x)
+                     (to-oset y))
+         (to-oset (union x y)))
+  :enable (to-oset
+           union
+           fix
+           setp
+           empty))
+
+(add-to-ruleset from-oset-theory '(oset-union-of-to-oset))
+
+(defrule from-oset-of-oset-union
+  (equal (from-oset (set::union x y))
+         (union (from-oset x)
+                (from-oset y)))
+  :enable (double-containment
+           pick-a-point))
+
+(add-to-ruleset from-oset-theory '(from-oset-of-oset-union))
+
+(defruled oset-union-becomes-union
+  (equal (set::union x y)
+         (to-oset (union (from-oset x)
+                         (from-oset y))))
+  :enable set::expensive-rules)
+
+(add-to-ruleset from-oset-theory '(oset-union-becomes-union))
+
+(defruled union-becomes-oset-union
+  (equal (union x y)
+         (from-oset (set::union (to-oset x)
+                                (to-oset y)))))
+
+(add-to-ruleset from-oset-theory '(union-becomes-oset-union))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define union-=
@@ -216,9 +252,9 @@
        :exec (acl2-number-tree-union x y))
   :enabled t
   :inline t
-  :guard-hints (("Goal" :in-theory (enable setp
-                                           set-all-acl2-numberp
-                                           union))))
+  :guard-hints (("Goal" :in-theory (enable* break-abstraction
+                                            set-all-acl2-numberp
+                                            union))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -229,9 +265,9 @@
        :exec (symbol-tree-union x y))
   :enabled t
   :inline t
-  :guard-hints (("Goal" :in-theory (enable setp
-                                           set-all-symbolp
-                                           union))))
+  :guard-hints (("Goal" :in-theory (enable* break-abstraction
+                                            set-all-symbolp
+                                            union))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -242,6 +278,6 @@
        :exec (eqlable-tree-union x y))
   :enabled t
   :inline t
-  :guard-hints (("Goal" :in-theory (enable setp
-                                           set-all-eqlablep
-                                           union))))
+  :guard-hints (("Goal" :in-theory (enable* break-abstraction
+                                            set-all-eqlablep
+                                            union))))

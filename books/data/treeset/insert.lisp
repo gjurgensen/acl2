@@ -13,6 +13,7 @@
 (include-book "xdoc/constructors" :dir :system)
 
 (include-book "data/utilities/fixed-size-words/u32-defs" :dir :system)
+(include-book "data/utilities/list-defs" :dir :system)
 (include-book "data/utilities/oset-defs" :dir :system)
 
 (include-book "internal/insert-defs")
@@ -20,6 +21,7 @@
 (include-book "set-defs")
 (include-book "cardinality-defs")
 (include-book "in-defs")
+(include-book "to-oset-defs")
 
 (local (include-book "std/basic/controlled-configuration" :dir :system))
 (local (acl2::controlled-configuration :hooks nil))
@@ -28,6 +30,8 @@
 
 (local (include-book "kestrel/alists-light/assoc-equal" :dir :system))
 (local (include-book "kestrel/alists-light/symbol-alistp" :dir :system))
+
+(local (include-book "kestrel/lists-light/subsetp-equal" :dir :system))
 
 (local (include-book "kestrel/utilities/ordinals" :dir :system))
 
@@ -39,11 +43,35 @@
 (local (include-book "internal/heap-order"))
 (local (include-book "internal/heap"))
 (local (include-book "internal/insert"))
+(local (include-book "internal/in-order"))
 (local (include-book "hash"))
 (local (include-book "set"))
 (local (include-book "cardinality"))
 (local (include-book "in"))
 (local (include-book "subset"))
+(local (include-book "to-oset"))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defxdoc insert
+  :parents (treeset)
+  :short "Add a value (or multiples values) to a @(see treeset)."
+  :long
+  (xdoc::topstring
+    (xdoc::p
+      "Time complexity: @($O(\\log(n))$) (for a single insert).")
+    (xdoc::section
+      "General form"
+      (xdoc::codeblock
+        "(insert x-0 x-1 ... x-n set :test test)")
+      (xdoc::desc
+        "@(':test') &mdash; optional"
+        (xdoc::p
+          "One of: @('equal'), @('='), @('eq'), or @('eql'). If no value is
+           provided, the default is @('equal'). Specifying an alternative test
+           allows for a more performant implementation, at the cost of a
+           stronger guard. The guard asserts that the set consists of elements
+           suitable for comparison with the specified equality variant.")))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -88,57 +116,24 @@
                  (insert-macro-loop 'insert$inline rest))))))
   :guard-hints (("Goal" :in-theory (enable acl2::alistp-when-symbol-alistp))))
 
-;; TODO: custom macro for rest + :test keyword argument
 (defmacro insert (&rest forms)
   (declare (xargs :guard t))
   (insert-macro-fn forms))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; TODO: add back this topic
-
-;; (defsection insert
-;;   :parents (set)
-;;   :short "Add a value (or multiples values) to the set."
-;;   :long
-;;   (xdoc::topstring
-;;     (xdoc::p
-;;       "Time complexity: @($O(\\log(n))$)."))
-;;
-;;   (define insert-macro-loop
-;;     ((list true-listp))
-;;     :guard (and (consp list)
-;;                 (consp (rest list)))
-;;     (if (endp (rest (rest list)))
-;;         (list 'insert1
-;;               (first list)
-;;               (second list))
-;;       (list 'insert1
-;;             (first list)
-;;             (insert-macro-loop (rest list))))
-;;     :hints (("Goal" :in-theory (enable acl2-count))))
-;;
-;;   ;; TODO: custom macro for rest + :test keyword argument
-;;   (defmacro insert (x y &rest rst)
-;;     (declare (xargs :guard t))
-;;     (insert-macro-loop (list* x y rst)))
-;;
-;;   (add-macro-fn insert insert1$inline t))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; Note: we don't want to use define's `:inline t` feature here, because that
-;; would introduce a macro alias attached to insert$inline that will conflict
-;; with the one we wish to provide.
 (define insert$inline
   (x
    (set setp))
   :returns (set$ setp
-                 :hints (("Goal" :in-theory (enable setp
-                                                    fix
-                                                    empty))))
-  (tree-insert x (hash x) (fix set))
-  :guard-hints (("Goal" :in-theory (enable setp)))
+                 :hints (("Goal" :in-theory (enable* break-abstraction
+                                                     setp
+                                                     fix))))
+  (mv-let (inp set$)
+          (tree-insert x (hash x) (fix set))
+    (declare (ignore inp))
+    set$)
+  :guard-hints (("Goal" :in-theory (enable* break-abstraction)))
 
   ///
   (add-macro-fn insert insert$inline t))
@@ -161,11 +156,14 @@
            fix
            setp))
 
-;; (defrule insert-type-prescription
-;;   (consp (insert x set))
-;;   :rule-classes :type-prescription
-;;   :disable emptyp-of-insert
-;;   :use emptyp-of-insert)
+(defruled insert-type-prescription
+  (consp (insert x set))
+  :rule-classes :type-prescription
+  :enable emptyp
+  :disable emptyp-of-insert
+  :use emptyp-of-insert)
+
+(add-to-ruleset break-abstraction '(insert-type-prescription))
 
 (defrule in-of-insert
   (equal (in x (insert y set))
@@ -208,6 +206,25 @@
            (equal (cardinality (insert x set))
                   (+ 1 (cardinality set))))
   :enable cardinality-of-insert)
+
+;;;;;;;;;;;;;;;;;;;;
+
+(defrule oset-insert-of-arg1-and-to-oset
+  (equal (set::insert x (to-oset set))
+         (to-oset (insert x set)))
+  :enable (to-oset
+           insert
+           fix
+           setp
+           empty))
+
+(add-to-ruleset from-oset-theory '(oset-insert-of-arg1-and-to-oset))
+
+(defruled to-oset-of-insert
+  (equal (to-oset (insert x set))
+         (set::insert x (to-oset set))))
+
+(add-to-ruleset to-oset-theory '(to-oset-of-insert))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -254,24 +271,30 @@
 
 (in-theory (disable (:t insert-all)))
 
-;; (defrule insert-all-type-prescription
-;;   (or (consp (insert-all list set))
-;;       (equal (insert-all list set) nil))
-;;   :rule-classes :type-prescription
-;;   :induct t
-;;   :enable (insert-all
-;;            sfix))
+(defruled insert-all-type-prescription
+  (or (consp (insert-all list set))
+      (equal (insert-all list set) nil))
+  :rule-classes :type-prescription
+  :induct t
+  :enable (insert-all
+           break-abstraction))
 
-;; (defrule insert-all-when-consp-of-arg1-type-prescription
-;;   (implies (consp list)
-;;            (consp (insert-all list set)))
-;;   :rule-classes :type-prescription
-;;   :induct t
-;;   :enable insert-all)
+(add-to-ruleset break-abstraction '(insert-all-type-prescription))
+
+(defruled insert-all-when-consp-of-arg1-type-prescription
+  (implies (consp list)
+           (consp (insert-all list set)))
+  :rule-classes :type-prescription
+  :induct t
+  :enable (insert-all
+           break-abstraction))
+
+(add-to-ruleset break-abstraction
+  '(insert-all-when-consp-of-arg1-type-prescription))
 
 ;;;;;;;;;;;;;;;;;;;;
 
-(defrule insert-all-when-set-equiv-congruence
+(defrule insert-all-when-equiv-congruence
   (implies (equiv set0 set1)
            (equal (insert-all list set0)
                   (insert-all list set1)))
@@ -300,16 +323,13 @@
      :induct t
      :enable insert-all)))
 
-;; TODO
-;; (defrule insert-all-when-acl2-set-equiv
-;;   (implies (acl2::set-equiv x y)
-;;            (equal (insert-all x set)
-;;                   (insert-all y set)))
-;;   :enable (double-containment
-;;            pick-a-point
-;;            subset))
-
-;; TODO: cardinality
+(defrule insert-all-when-set-equiv-congruence
+  (implies (set-equiv list0 list1)
+           (equal (insert-all list0 set)
+                  (insert-all list1 set)))
+  :rule-classes :congruence
+  :enable (double-containment
+           pick-a-point))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -331,6 +351,27 @@
 
 (in-theory (disable (:t from-list)))
 
+(defruled from-list-type-prescription
+  (or (consp (from-list list))
+      (equal (from-list list) nil))
+  :rule-classes :type-prescription
+  :enable (from-list
+           break-abstraction))
+
+(add-to-ruleset break-abstraction '(from-list-type-prescription))
+
+(defruled consp-of-from-list-when-consp-of-arg1-type-prescription
+  (implies (consp list)
+           (consp (from-list list)))
+  :rule-classes :type-prescription
+  :enable (from-list
+           break-abstraction))
+
+(add-to-ruleset break-abstraction
+  '(consp-of-from-list-when-consp-of-arg1-type-prescription))
+
+;;;;;;;;;;;;;;;;;;;;
+
 (defrule emptyp-of-from-list
   (equal (emptyp (from-list list))
          (not (consp list)))
@@ -341,21 +382,141 @@
          (and (member-equal x list) t))
   :enable from-list)
 
-;; TODO
-;; (defrule from-list-when-acl2-set-equiv
-;;   (implies (acl2::set-equiv x y)
-;;            (equal (insert-all x)
-;;                   (insert-all y)))
-;;   :enable from-list)
+(defrule from-list-when-set-equiv-congruence
+  (implies (set-equiv list0 list1)
+           (equal (from-list list0)
+                  (from-list list1)))
+  :rule-classes :congruence
+  :enable from-list
+  :disable set-equiv)
 
-;; TODO: cardinality
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define from-oset ((oset set::setp))
+  :parents (insert)
+  :short "Build a @(see treeset) from an oset."
+  :long
+  (xdoc::topstring
+   (xdoc::p
+     "Time complexity: @($O(n\\log(n))$).")
+   (xdoc::p
+     "This is the inverse of @(tsee to-oset). See @(tsee to-oset) for more
+      information."))
+  :returns (set setp)
   (from-list (set::sfix oset)))
 
-;; TODO
+;;;;;;;;;;;;;;;;;;;;
+
+(in-theory (disable (:t from-oset)))
+
+(defruled from-oset-type-prescription
+  (or (consp (from-oset oset))
+      (equal (from-oset oset) nil))
+  :rule-classes :type-prescription
+  :enable (from-oset
+           break-abstraction))
+
+(add-to-ruleset break-abstraction '(from-oset-type-prescription))
+
+;;;;;;;;;;;;;;;;;;;;
+
+(defrule from-oset-of-sfix
+  (equal (from-oset (sfix oset))
+         (from-oset oset))
+  :enable from-oset)
+
+(defrule emptyp-of-from-oset
+  (equal (emptyp (from-oset oset))
+         (set::emptyp oset))
+  :enable (from-oset
+           set::emptyp
+           sfix))
+
+(add-to-ruleset to-oset-theory '(emptyp-of-from-oset))
+
+(defruled oset-emptyp-becomes-emptyp
+  (equal (set::emptyp oset)
+         (emptyp (from-oset oset))))
+
+(add-to-ruleset from-oset-theory '(oset-emptyp-becomes-emptyp))
+
+(defrule in-of-from-oset
+  (equal (in x (from-oset oset))
+         (set::in x oset))
+  :enable (from-oset
+           set::in-to-member
+           sfix))
+
+(add-to-ruleset to-oset-theory '(emptyp-of-from-oset))
+
+(defruled oset-in-becomes-in
+  (equal (set::in x oset)
+         (in x (from-oset oset))))
+
+(add-to-ruleset from-oset-theory '(oset-in-becomes-in))
+
+(defrule to-oset-of-from-oset
+  (equal (to-oset (from-oset oset))
+         (sfix oset))
+  :enable set::expensive-rules)
+
+(add-to-ruleset to-oset-theory '(to-oset-of-from-oset))
+
+(defruled sfix-becomes-to-oset
+  (equal (sfix oset)
+         (to-oset (from-oset oset))))
+
+(add-to-ruleset from-oset-theory '(sfix-becomes-to-oset))
+
+(defrule cardinality-of-from-oset
+  (equal (cardinality (from-oset oset))
+         (set::cardinality oset))
+  :disable oset-cardinality-of-to-oset
+  :use (:instance oset-cardinality-of-to-oset
+                  (set (from-oset oset))))
+
+(add-to-ruleset to-oset-theory '(cardinality-of-from-oset))
+
+(defruled oset-cardinality-becomes-cardinality
+  (equal (set::cardinality oset)
+         (cardinality (from-oset oset))))
+
+(add-to-ruleset from-oset-theory '(oset-cardinality-becomes-cardinality))
+
+(defrule from-oset-of-to-oset
+  (equal (from-oset (to-oset set))
+         (fix set))
+  :enable (double-containment
+           pick-a-point))
+
+(add-to-ruleset from-oset-theory '(from-oset-of-to-oset))
+
+(defruled fix-becomes-from-oset
+  (equal (fix set)
+         (from-oset (to-oset set))))
+
+(add-to-ruleset to-oset-theory '(fix-becomes-from-oset))
+
+(defrule from-oset-of-oset-insert
+  (equal (from-oset (set::insert x oset))
+         (insert x (from-oset oset)))
+  :enable (double-containment
+           pick-a-point))
+
+(add-to-ruleset from-oset-theory '(from-oset-of-oset-insert))
+
+(defruled oset-insert-becomes-insert
+  (equal (set::insert x oset)
+         (to-oset (insert x (from-oset oset))))
+  :enable set::expensive-rules)
+
+(add-to-ruleset from-oset-theory '(from-oset-of-oset-insert))
+
+(defruled insert-becomes-oset-insert
+  (equal (insert x set)
+         (from-oset (set::insert x (to-oset set)))))
+
+(add-to-ruleset to-oset-theory '(insert-becomes-oset-insert))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -363,33 +524,42 @@
   ((x acl2-numberp)
    (set acl2-number-setp))
   (mbe :logic (insert x set)
-       :exec (acl2-number-tree-insert x (hash x) (fix set)))
+       :exec (mv-let (inp set$)
+                     (acl2-number-tree-insert x (hash x) (fix set))
+               (declare (ignore inp))
+               set$))
   :enabled t
   :inline t
-  :guard-hints (("Goal" :in-theory (enable setp
-                                           set-all-acl2-numberp
-                                           insert))))
+  :guard-hints (("Goal" :in-theory (enable* break-abstraction
+                                            set-all-acl2-numberp
+                                            insert))))
 
 (define insert-eq
   ((x symbolp)
    (set symbol-setp))
   (mbe :logic (insert x set)
-       :exec (symbol-tree-insert x (hash x) (fix set)))
+       :exec (mv-let (inp set$)
+                     (symbol-tree-insert x (hash x) (fix set))
+               (declare (ignore inp))
+               set$))
   :enabled t
   :inline t
-  :guard-hints (("Goal" :in-theory (enable setp
-                                           set-all-symbolp
-                                           insert))))
+  :guard-hints (("Goal" :in-theory (enable* break-abstraction
+                                            set-all-symbolp
+                                            insert))))
 (define insert-eql
   ((x eqlablep)
    (set eqlable-setp))
   (mbe :logic (insert x set)
-       :exec (eqlable-tree-insert x (hash x) (fix set)))
+       :exec (mv-let (inp set$)
+                     (eqlable-tree-insert x (hash x) (fix set))
+               (declare (ignore inp))
+               set$))
   :enabled t
   :inline t
-  :guard-hints (("Goal" :in-theory (enable setp
-                                           set-all-eqlablep
-                                           insert))))
+  :guard-hints (("Goal" :in-theory (enable* break-abstraction
+                                            set-all-eqlablep
+                                            insert))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -400,9 +570,12 @@
   :guard (mbe :logic (equal (hash x) hash)
               :exec (data::u32-equal (hash x) hash))
   (mbe :logic (insert x set)
-       :exec (tree-insert x hash set))
+       :exec (mv-let (inp set$)
+                     (tree-insert x hash set)
+               (declare (ignore inp))
+               set$))
   :enabled t
   :inline t
-  :guard-hints (("Goal" :in-theory (enable data::u32-equal
-                                           setp
-                                           insert))))
+  :guard-hints (("Goal" :in-theory (enable* data::u32-equal
+                                            break-abstraction
+                                            insert))))

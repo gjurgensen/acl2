@@ -10,6 +10,7 @@
 
 (include-book "std/util/define" :dir :system)
 (include-book "std/util/defrule" :dir :system)
+(include-book "tools/rulesets" :dir :system)
 (include-book "xdoc/constructors" :dir :system)
 
 (include-book "internal/tree-defs")
@@ -24,6 +25,10 @@
 (local (include-book "internal/tree"))
 (local (include-book "internal/bst"))
 (local (include-book "internal/heap"))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(def-ruleset! break-abstraction ())
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -43,14 +48,39 @@
 
 (in-theory (disable (:t setp)))
 
-;; Exposes implementation
-;; (defrule setp-compound-recognizer
-;;   (if (setp set)
-;;       (or (consp set)
-;;           (equal set nil))
-;;     (not (equal set nil)))
-;;   :rule-classes :compound-recognizer
-;;   :enable setp)
+(defruled setp-compound-recognizer
+  (if (setp set)
+      (or (consp set)
+          (equal set nil))
+    (not (equal set nil)))
+  :rule-classes :compound-recognizer
+  :enable setp)
+
+(add-to-ruleset break-abstraction '(setp-compound-recognizer))
+
+(defruled treep-when-setp-forward-chaining
+  (implies (setp set)
+           (treep set))
+  :rule-classes :forward-chaining
+  :enable setp)
+
+(add-to-ruleset break-abstraction '(treep-when-setp-forward-chaining))
+
+(defruled bstp-when-setp-forward-chaining
+  (implies (setp set)
+           (bstp set))
+  :rule-classes :forward-chaining
+  :enable setp)
+
+(add-to-ruleset break-abstraction '(bstp-when-setp-forward-chaining))
+
+(defruled heapp-when-setp-forward-chaining
+  (implies (setp set)
+           (heapp set))
+  :rule-classes :forward-chaining
+  :enable setp)
+
+(add-to-ruleset break-abstraction '(heapp-when-setp-forward-chaining))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -62,6 +92,8 @@
 ;;;;;;;;;;;;;;;;;;;;
 
 (in-theory (disable (:t empty) (:e empty)))
+
+(add-to-ruleset break-abstraction '((:t empty)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -79,6 +111,16 @@
 ;;;;;;;;;;;;;;;;;;;;
 
 (in-theory (disable (:t fix)))
+
+(defruled fix-type-prescription
+  (or (consp (fix set))
+      (equal (fix set) nil))
+  :rule-classes :type-prescription
+  :enable (fix
+           setp
+           empty))
+
+(add-to-ruleset break-abstraction '(fix-type-prescription))
 
 (defrule fix-when-setp
   (implies (setp set)
@@ -118,6 +160,18 @@
 
 (in-theory (disable (:t equiv)))
 
+(defruled equiv-when-tree-equiv-refinement
+  (implies (tree-equiv tree0 tree1)
+           (equiv tree0 tree1))
+  :rule-classes :refinement
+  :enable (equiv
+           tree-equiv
+           setp
+           fix
+           empty))
+
+(add-to-ruleset break-abstraction '(equiv-when-tree-equiv-refinement))
+
 (defrule fix-under-equiv
   (equiv (fix set)
          set)
@@ -143,6 +197,14 @@
 ;;;;;;;;;;;;;;;;;;;;
 
 (in-theory (disable (:t emptyp)))
+
+(defruled emptyp-compound-recognizer
+  (implies (not (emptyp set))
+           (not (equal set nil)))
+  :rule-classes :compound-recognizer
+  :enable emptyp)
+
+(add-to-ruleset break-abstraction '(emptyp-compound-recognizer))
 
 (defrule emptyp-when-equiv-congruence
   (implies (equiv set0 set1)
@@ -194,13 +256,11 @@
   :long
   (xdoc::topstring
    (xdoc::p
-     "For empty trees, returns @('nil').")
+     "For empty trees, the logical result is @('nil').")
    (xdoc::p
-     "From a user perspective, this should likely be viewed as an arbitrary
-      element of the set, to be used only in conjunction with @(tsee left) and
-      @(tsee right) to fold over the set. Under the hood, this is the root
-      element of the underlying tree, which will be the unique maximum value
-      with respect to @(tsee heap<)."))
+     "From a user perspective, this should be viewed as an arbitrary element of
+      the set. For a description of which element this actually provides, see
+      @(tsee tree->head)."))
   :guard (not (emptyp set))
   (tagged-element->elem (tree->head (fix set)))
   :inline t
@@ -230,218 +290,6 @@
                   nil))
   :rule-classes ((:rewrite :backchain-limit-lst (0)))
   :enable head-when-emptyp)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(define left ((set setp))
-  :parents (set)
-  :short "Get the \"left\" subset of the nonempty @(see treeset)."
-  :long
-  (xdoc::topstring
-   (xdoc::p
-     "For empty sets, returns @('nil').")
-   (xdoc::p
-     "From a user perspective, this should likely be viewed as an arbitrary
-      proper subset excluding the @(tsee head) and disjoint from the @(tsee
-      right) subset. Concretely, it is the subset for which all elements are
-      @(tsee bst<) the @(tsee head). In terms of the underlying tree
-      representation, this is the left subtree."))
-  :returns (left setp
-                 :hints (("Goal" :in-theory (enable setp
-                                                    fix
-                                                    empty))))
-  (tree->left (fix set))
-  :inline t
-  :guard-hints (("Goal" :in-theory (enable setp))))
-
-;;;;;;;;;;;;;;;;;;;;
-
-(in-theory (disable (:t left)))
-
-;; (defrule left-type-prescription
-;;   (setp (left set))
-;;   :rule-classes ((:type-prescription :typed-term (left set))))
-
-(defrule left-when-equiv-congruence
-  (implies (equiv set0 set1)
-           (equal (left set0)
-                  (left set1)))
-  :rule-classes :congruence
-  :enable left)
-
-(defruled left-when-emptyp
-  (implies (emptyp set)
-           (equal (left set)
-                  (empty)))
-  :enable (left
-           empty))
-
-(defrule left-when-emptyp-cheap
-  (implies (emptyp set)
-           (equal (left set)
-                  (empty)))
-  :rule-classes ((:rewrite :backchain-limit-lst (0)))
-  :enable left-when-emptyp)
-
-(defrule emptyp-when-not-emptyp-of-left-forward-chaining
-  (implies (not (emptyp (left set)))
-           (not (emptyp set)))
-  :rule-classes :forward-chaining)
-
-(defrule equal-of-left-of-arg2-when-setp
-  ;; TODO: Does this trigger on the symmetric equality form? I think so.
-  (implies (setp x)
-           (equal (equal (left x) x)
-                  (emptyp x)))
-  :enable (left
-           emptyp
-           setp))
-
-(defrule acl2-count-of-left-linear
-  (<= (acl2-count (left set))
-      (acl2-count set))
-  :rule-classes :linear
-  :enable (left
-           fix
-           empty))
-
-(defrule acl2-count-of-left-when-not-emptyp-linear
-  (implies (not (emptyp set))
-           (< (acl2-count (left set))
-              (acl2-count set)))
-  :rule-classes :linear
-  :enable (emptyp
-           left
-           fix
-           empty))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(define right ((set setp))
-  :parents (set)
-  :short "Get the \"right\" subset of the nonempty @(see treeset)."
-  :long
-  (xdoc::topstring
-   (xdoc::p
-     "For empty sets, returns @('nil').")
-   (xdoc::p
-     "From a user perspective, this should likely be viewed as an arbitrary
-      proper subset excluding the @(tsee head) and disjoint from the @(tsee
-      left) subset. Concretely, it is the subset for which the @(tsee head) is
-      @(tsee bst<) all elements. In terms of the underlying tree representation,
-      this is the right subtree."))
-  :returns (right setp
-                  :hints (("Goal" :in-theory (enable setp
-                                                     fix
-                                                     empty))))
-  (tree->right (fix set))
-  :inline t
-  :guard-hints (("Goal" :in-theory (enable setp))))
-
-;;;;;;;;;;;;;;;;;;;;
-
-(in-theory (disable (:t right)))
-
-;; (defrule right-type-prescription
-;;   (setp (right set))
-;;   :rule-classes ((:type-prescription :typed-term (right set))))
-
-(defrule right-when-equiv-congruence
-  (implies (equiv set0 set1)
-           (equal (right set0)
-                  (right set1)))
-  :rule-classes :congruence
-  :enable right)
-
-(defruled right-when-emptyp
-  (implies (emptyp set)
-           (equal (right set)
-                  (empty)))
-  :enable (right
-           empty))
-
-(defrule right-when-emptyp-cheap
-  (implies (emptyp set)
-           (equal (right set)
-                  (empty)))
-  :rule-classes ((:rewrite :backchain-limit-lst (0)))
-  :enable right-when-emptyp)
-
-(defrule emptyp-when-not-emptyp-of-right-forward-chaining
-  (implies (not (emptyp (right set)))
-           (not (emptyp set)))
-  :rule-classes :forward-chaining)
-
-(defrule equal-of-right-of-arg2-when-setp
-  ;; TODO: Does this trigger on the symmetric equality form? I think so.
-  (implies (setp x)
-           (equal (equal (right x) x)
-                  (emptyp x)))
-  :enable (right
-           emptyp
-           setp))
-
-(defrule acl2-count-of-right-linear
-  (<= (acl2-count (right set))
-      (acl2-count set))
-  :rule-classes :linear
-  :enable (right
-           fix
-           empty))
-
-(defrule acl2-count-of-right-when-not-emptyp-linear
-  (implies (not (emptyp set))
-           (< (acl2-count (right set))
-              (acl2-count set)))
-  :rule-classes :linear
-  :enable (emptyp
-           right
-           fix
-           empty))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; TODO: probably remove these. I don't think we want to expose the
-;; implementation view. At the same time, remove left/right.
-
-(define set-induct (set)
-  :parents (set)
-  :short "Induct over the structure of a set."
-  (or (emptyp set)
-      (let ((left (set-induct (left set)))
-            (right (set-induct (right set))))
-        (declare (ignore left right))
-        t))
-  :verify-guards nil)
-
-(in-theory (enable (:i set-induct)))
-
-(defruled set-induction
-  t
-  :rule-classes
-  ((:induction :pattern (setp set)
-               :scheme (set-induct set))))
-
-(defruled nonempty-set-induction
-  t
-  :rule-classes
-  ((:induction :pattern (not (emptyp set))
-               :scheme (set-induct set))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(define set-bi-induct (x y)
-  :parents (set)
-  :short "Induct over the structure of two sets simultaneously."
-  (or (emptyp x)
-      (emptyp y)
-      (let ((left (set-bi-induct (left x) (left y)))
-            (right (set-bi-induct (right x) (right y))))
-        (declare (ignore left right))
-        t))
-  :verify-guards nil)
-
-(in-theory (enable (:i set-bi-induct)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -484,16 +332,25 @@
 ;; simultaneously).
 
 (define acl2-number-setp (x)
+  :parents (setp)
+  :short "Refinement of @(tsee setp) to sets whose elements are recognized by
+          @(tsee acl2-numberp)."
   (and (setp x)
        (set-all-acl2-numberp x))
   :enabled t)
 
 (define symbol-setp (x)
+  :parents (setp)
+  :short "Refinement of @(tsee setp) to sets whose elements are recognized by
+          @(tsee symbolp)."
   (and (setp x)
        (set-all-symbolp x))
   :enabled t)
 
 (define eqlable-setp (x)
+  :parents (setp)
+  :short "Refinement of @(tsee setp) to sets whose elements are recognized by
+          @(tsee eqlablep)."
   (and (setp x)
        (set-all-eqlablep x))
   :enabled t)
@@ -504,7 +361,4 @@
   '(fix-when-not-setp
     fix-when-emptyp
     head-when-emptyp
-    left-when-emptyp
-    right-when-emptyp
-    set-induction
-    nonempty-set-induction))
+    ))

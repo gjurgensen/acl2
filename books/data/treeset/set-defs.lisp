@@ -24,8 +24,6 @@
           equiv
           emptyp
           head
-          left
-          right
           set-all-acl2-numberp
           set-all-symbolp
           set-all-eqlablep

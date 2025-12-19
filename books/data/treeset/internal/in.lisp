@@ -307,6 +307,19 @@
   :induct t
   :enable tree-search-in)
 
+(defruled tree-in-when-tree-search-in
+  (implies (tree-search-in x tree)
+           (tree-in x tree))
+  :induct t
+  :enable (tree-search-in
+           tree-in))
+
+(defrule tree-in-when-tree-search-in-forward-chaining
+  (implies (tree-search-in x tree)
+           (tree-in x tree))
+  :rule-classes :forward-chaining
+  :by tree-in-when-tree-search-in)
+
 (defrule tree-search-in-becomes-tree-in-when
   (implies (bstp tree)
            (equal (tree-search-in x tree)

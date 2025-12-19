@@ -112,6 +112,19 @@
            (tree-empty-p (tree-diff x y)))
   :enable tree-diff)
 
+(defruled tree-diff-when-tree-empty-p-of-arg1
+  (implies (tree-empty-p x)
+           (equal (tree-diff x y)
+                  nil))
+  :enable tree-diff)
+
+(defrule tree-diff-when-tree-empty-p-of-arg1-cheap
+  (implies (tree-empty-p x)
+           (equal (tree-diff x y)
+                  nil))
+  :rule-classes ((:rewrite :backchain-limit-lst (0)))
+  :by tree-diff-when-tree-empty-p-of-arg1)
+
 (defrule tree-empty-p-of-tree-diff-when-tree-empty-p-of-arg2
   (implies (tree-empty-p y)
            (equal (tree-diff x y)

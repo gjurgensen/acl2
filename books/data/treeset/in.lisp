@@ -12,16 +12,45 @@
 (include-book "std/util/defrule" :dir :system)
 (include-book "xdoc/constructors" :dir :system)
 
+(include-book "data/utilities/oset-defs" :dir :system)
+
 (include-book "internal/tree-defs")
 (include-book "internal/in-defs")
 (include-book "set-defs")
+(include-book "to-oset-defs")
 
 (local (include-book "std/basic/controlled-configuration" :dir :system))
 (local (acl2::controlled-configuration :hooks nil))
 
+(local (include-book "std/osets/top" :dir :system))
+
 (local (include-book "internal/tree"))
 (local (include-book "internal/in"))
+(local (include-book "internal/in-order"))
 (local (include-book "set"))
+(local (include-book "to-oset"))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defxdoc in
+  :parents (treeset)
+  :short "Determine if a value is a member of a @(see treeset)."
+  :long
+  (xdoc::topstring
+    (xdoc::p
+      "Time complexity: @($O(log(n))$).")
+    (xdoc::section
+      "General form"
+      (xdoc::codeblock
+        "(in x set :test test)")
+      (xdoc::desc
+        "@(':test') &mdash; optional"
+        (xdoc::p
+          "One of: @('equal'), @('='), @('eq'), or @('eql'). If no value is
+           provided, the default is @('equal'). Specifying an alternative test
+           allows for a more performant implementation, at the cost of a
+           stronger guard. The guard asserts that the set consists of elements
+           suitable for comparison with the specified equality variant.")))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -39,16 +68,10 @@
 (define in$inline
   (x
    (set setp))
-  :parents (set)
-  :short "Determine if a value is a member of the @(see treeset)."
-  :long
-  (xdoc::topstring
-   (xdoc::p
-     "Time complexity: @($O(log(n))$)."))
   :returns (yes/no booleanp :rule-classes (:rewrite :type-prescription))
   (mbe :logic (tree-in x (fix set))
        :exec (tree-search-in x set))
-  :guard-hints (("Goal" :in-theory (enable setp)))
+  :guard-hints (("Goal" :in-theory (enable* break-abstraction)))
 
   ///
   (add-macro-fn in in$inline))
@@ -85,63 +108,24 @@
            head
            emptyp))
 
-(defruled in-when-in-of-left
-  (implies (in x (left set))
-           (in x set))
-  :enable (in
-           left
-           fix
-           empty))
+;;;;;;;;;;;;;;;;;;;;
 
-(defrule in-when-in-of-left-forward-chaining
-  (implies (in x (left set))
-           (in x set))
-  :rule-classes :forward-chaining
-  :enable in-when-in-of-left)
-
-(defrule in-of-left-when-not-in-cheap
-  (implies (not (in x set))
-           (not (in x (left set))))
-  :rule-classes ((:rewrite :backchain-limit-lst (0))))
-
-(defruled in-when-in-of-right
-  (implies (in x (right set))
-           (in x set))
-  :enable (in
-           right
-           fix
-           empty))
-
-(defrule in-when-in-of-right-forward-chaining
-  (implies (in x (right set))
-           (in x set))
-  :rule-classes :forward-chaining
-  :enable in-when-in-of-right)
-
-(defrule in-of-right-when-not-in-cheap
-  (implies (not (in x set))
-           (not (in x (right set))))
-  :rule-classes ((:rewrite :backchain-limit-lst (0))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defrule in-of-head-and-left
-  (not (in (head set) (left set)))
-  :enable (in
-           head
-           left
+(defrule oset-in-of-to-oset
+  (equal (set::in x (to-oset set))
+         (in x set))
+  :enable (to-oset
+           in
            fix
            setp
            empty))
 
-(defrule in-of-head-and-right
-  (not (in (head set) (right set)))
-  :enable (in
-           head
-           right
-           fix
-           setp
-           empty))
+(add-to-ruleset from-oset-theory '(oset-in-of-to-oset))
+
+(defruled in-becomes-oset-in
+  (equal (in x set)
+         (set::in x (to-oset set))))
+
+(add-to-ruleset to-oset-theory '(in-becomes-oset-in))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -152,9 +136,9 @@
        :exec (acl2-number-tree-search-in x set))
   :enabled t
   :inline t
-  :guard-hints (("Goal" :in-theory (enable setp
-                                           set-all-acl2-numberp
-                                           in))))
+  :guard-hints (("Goal" :in-theory (enable* break-abstraction
+                                            set-all-acl2-numberp
+                                            in))))
 
 (define in-eq
   ((x symbolp)
@@ -163,9 +147,9 @@
        :exec (symbol-tree-search-in x set))
   :enabled t
   :inline t
-  :guard-hints (("Goal" :in-theory (enable setp
-                                           set-all-symbolp
-                                           in))))
+  :guard-hints (("Goal" :in-theory (enable* break-abstraction
+                                            set-all-symbolp
+                                            in))))
 
 (define in-eql
   ((x eqlablep)
@@ -174,13 +158,11 @@
        :exec (eqlable-tree-search-in x set))
   :enabled t
   :inline t
-  :guard-hints (("Goal" :in-theory (enable setp
-                                           set-all-eqlablep
-                                           in))))
+  :guard-hints (("Goal" :in-theory (enable* break-abstraction
+                                            set-all-eqlablep
+                                            in))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defthy in-extra-rules
-  '(in-when-emptyp
-    in-when-in-of-left
-    in-when-in-of-right))
+  '(in-when-emptyp))

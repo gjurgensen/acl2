@@ -8,6 +8,8 @@
 
 (in-package "TREESET")
 
+(include-book "data/utilities/oset-defs" :dir :system)
+
 (include-book "internal/insert-defs")
 (include-book "set-defs")
 
@@ -25,6 +27,7 @@
           singleton
           insert-all
           from-list
+          from-oset
           insert-=
           insert-eq
           insert-eql

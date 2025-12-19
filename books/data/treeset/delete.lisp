@@ -17,9 +17,13 @@
 (include-book "set-defs")
 (include-book "cardinality-defs")
 (include-book "in-defs")
+(include-book "insert-defs")
+(include-book "to-oset-defs")
 
 (local (include-book "std/basic/controlled-configuration" :dir :system))
 (local (acl2::controlled-configuration :hooks nil))
+
+(local (include-book "std/osets/top" :dir :system))
 
 (local (include-book "kestrel/alists-light/assoc-equal" :dir :system))
 (local (include-book "kestrel/alists-light/symbol-alistp" :dir :system))
@@ -33,9 +37,35 @@
 (local (include-book "internal/delete"))
 (local (include-book "internal/count"))
 (local (include-book "internal/in"))
+(local (include-book "internal/in-order"))
 (local (include-book "set"))
 (local (include-book "cardinality"))
 (local (include-book "in"))
+(local (include-book "subset"))
+(local (include-book "insert"))
+(local (include-book "to-oset"))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defxdoc delete
+  :parents (treeset)
+  :short "Remove a value (or multiple values) from a @(see treeset)."
+  :long
+  (xdoc::topstring
+    (xdoc::p
+      "Time complexity: @($O(\\log(n))$) (for a single delete).")
+    (xdoc::section
+      "General form"
+      (xdoc::codeblock
+        "(delete x-0 x-1 ... x-n set :test test)")
+      (xdoc::desc
+        "@(':test') &mdash; optional"
+        (xdoc::p
+          "One of: @('equal'), @('='), @('eq'), or @('eql'). If no value is
+           provided, the default is @('equal'). Specifying an alternative test
+           allows for a more performant implementation, at the cost of a
+           stronger guard. The guard asserts that the set consists of elements
+           suitable for comparison with the specified equality variant.")))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -80,54 +110,11 @@
                  (delete-macro-loop 'delete$inline rest))))))
   :guard-hints (("Goal" :in-theory (enable acl2::alistp-when-symbol-alistp))))
 
-;; TODO: custom macro for rest + :test keyword argument
 (defmacro delete (&rest forms)
   (declare (xargs :guard t))
   (delete-macro-fn forms))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; (defsection delete
-;;   :parents (set)
-;;   :short "Remove a value from the set."
-;;   :long
-;;   (xdoc::topstring
-;;     (xdoc::p
-;;       "Time complexity: @($O(\\log(n))$)."))
-;;
-;;   (define delete1
-;;     (x
-;;      (set setp))
-;;     ;; (declare (xargs :type-prescription (or (consp (delete1 x set))
-;;     ;;                                        (equal (delete1 x set) nil))))
-;;     :returns (set$ setp
-;;                    :hints (("Goal" :in-theory (enable setp
-;;                                                       fix
-;;                                                       empty))))
-;;     (tree-delete x (fix set))
-;;     :inline t
-;;     :guard-hints (("Goal" :in-theory (enable setp))))
-;;
-;;   ;;;;;;;;;;;;;;;;;;;;
-;;
-;;   (define delete-macro-loop
-;;     ((list true-listp))
-;;     :guard (and (consp list)
-;;                 (consp (rest list)))
-;;     (if (endp (rest (rest list)))
-;;         (list 'delete1
-;;               (first list)
-;;               (second list))
-;;       (list 'delete1
-;;             (first list)
-;;             (delete-macro-loop (rest list))))
-;;     :hints (("Goal" :in-theory (enable acl2-count))))
-;;
-;;   (defmacro delete (x y &rest rst)
-;;     (declare (xargs :guard t))
-;;     (delete-macro-loop (list* x y rst)))
-;;
-;;   (add-macro-fn delete delete1$inline t))
 
 (define delete$inline
   (x
@@ -137,7 +124,7 @@
                                                     fix
                                                     empty))))
   (tree-delete x (fix set))
-  :guard-hints (("Goal" :in-theory (enable setp)))
+  :guard-hints (("Goal" :in-theory (enable* break-abstraction)))
 
   ///
   (add-macro-fn delete delete$inline t))
@@ -146,21 +133,20 @@
 
 (in-theory (disable (:t delete)))
 
+(defruled delete-type-prescription
+  (or (consp (delete x set))
+      (equal (delete x set) nil))
+  :rule-classes :type-prescription
+  :enable delete)
+
+(add-to-ruleset break-abstraction '(delete-type-prescription))
+
 (defrule delete-when-set-equiv-congruence
   (implies (equiv set0 set1)
            (equal (delete x set0)
                   (delete x set1)))
   :rule-classes :congruence
   :enable delete)
-
-;; TODO: remove/localize after introduction of more general rule
-(defrule emptyp-of-delete-when-emptyp
-  (implies (emptyp set)
-           (emptyp (delete x set)))
-  :enable (emptyp
-           delete
-           fix
-           empty))
 
 (defrule in-of-delete
   (equal (in x (delete y set))
@@ -172,23 +158,37 @@
            setp
            empty))
 
-;; TODO
-;; (defrule delete-commutative
-;;   (equal (delete y x set)
-;;          (delete x y set))
-;;   :enable (double-containment
-;;            pick-a-point
-;;            subset))
+(defrule delete-commutative
+  (equal (delete y x set)
+         (delete x y set))
+  :enable (double-containment
+           pick-a-point))
 
-;; TODO
-;; (include-book "insert")
+;;;;;;;;;;;;;;;;;;;;
+
+(defruled emptyp-of-delete-when-emptyp
+  (implies (emptyp set)
+           (emptyp (delete x set)))
+  :enable (emptyp
+           delete
+           fix
+           empty))
+
+;; MOVE
+;; (defruled emptyp-becomes-equal-empty
+;;   (equal (emptyp set)
+;;          (equal (fix set)
+;;                 (empty))))
+
+;; TODO: use oset isomorphism
 ;; (defrule emptyp-of-delete
 ;;   (equal (emptyp (delete x set))
 ;;          (or (emptyp set)
 ;;              (equal set (insert x set))))
 ;;   :enable (double-containment
 ;;            pick-a-point
-;;            subset))
+;;            emptyp-of-delete-when-emptyp
+;;            ))
 
 ;;;;;;;;;;;;;;;;;;;;
 
@@ -216,6 +216,58 @@
                   (cardinality set)))
   :use cardinality-of-delete)
 
+;;;;;;;;;;;;;;;;;;;;
+
+(defrule oset-delete-of-arg1-and-to-oset
+  (equal (set::delete x (to-oset set))
+         (to-oset (delete x set)))
+  :enable (to-oset
+           delete
+           fix
+           setp
+           empty))
+
+(add-to-ruleset from-oset-theory '(oset-delete-of-arg1-and-to-oset))
+
+(defrule from-oset-of-oset-delete
+  (equal (from-oset (set::delete x oset))
+         (delete x (from-oset oset)))
+  :enable (double-containment
+           pick-a-point))
+
+(add-to-ruleset from-oset-theory '(from-oset-of-oset-delete))
+
+(defruled oset-delete-becomes-delete
+  (equal (set::delete x oset)
+         (to-oset (delete x (from-oset oset))))
+  :enable set::expensive-rules)
+
+(add-to-ruleset from-oset-theory '(oset-delete-becomes-delete))
+
+(defruled delete-becomes-oset-delete
+  (equal (delete x set)
+         (from-oset (set::delete x (to-oset set)))))
+
+(add-to-ruleset to-oset-theory '(delete-becomes-oset-delete))
+
+;;;;;;;;;;;;;;;;;;;;
+
+;; TODO: why doesn't this have rules like
+;;   insert-becomes-oset-insert
+;; and
+;;   emptyp-becomes-oset-emptyp
+;; ?
+;; (acl2::expand-ruleset '(to-oset-theory) (w state))
+
+;; (defrule emptyp-of-delete
+;;   (equal (emptyp (delete x set))
+;;          (or (emptyp set)
+;;              (equal set (insert x set))))
+;;   :enable (to-oset-theory
+;;             )
+;;   :disable from-oset-theory
+;;   )
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define delete-=
@@ -225,9 +277,9 @@
        :exec (acl2-number-tree-delete x (fix set)))
   :enabled t
   :inline t
-  :guard-hints (("Goal" :in-theory (enable delete
-                                           setp
-                                           set-all-acl2-numberp))))
+  :guard-hints (("Goal" :in-theory (enable* break-abstraction
+                                            delete
+                                            set-all-acl2-numberp))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -238,9 +290,9 @@
        :exec (symbol-tree-delete x (fix set)))
   :enabled t
   :inline t
-  :guard-hints (("Goal" :in-theory (enable delete
-                                           setp
-                                           set-all-symbolp))))
+  :guard-hints (("Goal" :in-theory (enable* break-abstraction
+                                            delete
+                                            set-all-symbolp))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -251,23 +303,33 @@
        :exec (eqlable-tree-delete x (fix set)))
   :enabled t
   :inline t
-  :guard-hints (("Goal" :in-theory (enable delete
-                                           setp
-                                           set-all-eqlablep))))
+  :guard-hints (("Goal" :in-theory (enable* break-abstraction
+                                            delete
+                                            set-all-eqlablep))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; TODO: document
+;; TODO: how should people iterate?
 (define tail
   ((set setp))
+  :parents (delete)
+  :short "Remove the @(see head) from a nonempty @(see treeset)."
+  :long
+  (xdoc::topstring
+   (xdoc::p
+     "This is slightly faster than calling @(tsee delete) on the head.")
+   (xdoc::p
+     "Note: it is <emph>not</emph> recommended to iterate over a @(see treeset)
+      using @(tsee tail) (unless you need to maintain a set of the remaining
+      elements)."))
   :guard (not (emptyp set))
   (mbe :logic (delete (head set) set)
        :exec (tree-join (tree->left set)
                         (tree->right set)))
   :enabled t
   :inline t
-  :guard-hints (("Goal" :in-theory (enable setp
-                                           delete
-                                           head
-                                           tree-delete
-                                           tree-join-at))))
+  :guard-hints (("Goal" :in-theory (enable* break-abstraction
+                                            delete
+                                            head
+                                            tree-delete
+                                            tree-join-at))))

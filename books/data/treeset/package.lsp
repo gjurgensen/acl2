@@ -19,6 +19,7 @@
               defxdoc+
               data::min-<<
               data::max-<<
+              enable*
               )
             (set-difference-eq *std-pkg-symbols*
                                #!STD
@@ -29,6 +30,7 @@
                                  emptyp
                                  fix
                                  head
+                                 tail
                                  in
                                  insert
                                  intersect

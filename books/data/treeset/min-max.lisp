@@ -25,8 +25,14 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; TODO: document
 (define min ((set setp))
+  :parents (treeset)
+  :short "The minimum element of a @(see treeset) (with respect to
+          @(tsee <<))."
+  :long
+  (xdoc::topstring
+    (xdoc::p
+      "Time complexity: @($O(\\log(n))$)."))
   :guard (not (emptyp set))
   (mbe :logic (tree-min (fix set))
        :exec (tree-leftmost set))
@@ -66,8 +72,14 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; TODO: document
 (define max ((set setp))
+  :parents (treeset)
+  :short "The maximum element of a @(see treeset) (with respect to
+          @(tsee <<))."
+  :long
+  (xdoc::topstring
+    (xdoc::p
+      "Time complexity: @($O(\\log(n))$)."))
   :guard (not (emptyp set))
   (mbe :logic (tree-max (fix set))
        :exec (tree-rightmost set))
