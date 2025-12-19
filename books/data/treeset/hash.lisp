@@ -33,3 +33,29 @@
       this function instead of @(tsee hash::jenkins)."))
   (hash::jenkins x)
   :inline t)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define acl2-number-hash
+  ((x acl2-numberp))
+  (mbe :logic (hash x)
+       :exec (hash::acl2-number-jenkins x))
+  :enabled t
+  :inline t
+  :guard-hints (("Goal" :in-theory (enable hash))))
+
+(define symbol-hash
+  ((x symbolp))
+  (mbe :logic (hash x)
+       :exec (hash::symbol-jenkins x))
+  :enabled t
+  :inline t
+  :guard-hints (("Goal" :in-theory (enable hash))))
+
+(define eqlable-hash
+  ((x eqlablep))
+  (mbe :logic (hash x)
+       :exec (hash::eqlable-jenkins x))
+  :enabled t
+  :inline t
+  :guard-hints (("Goal" :in-theory (enable hash))))

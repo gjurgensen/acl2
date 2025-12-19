@@ -32,4 +32,7 @@
           jenkins-acc-atom
           jenkins-acc
           jenkins
+          acl2-number-jenkins
+          symbol-jenkins
+          eqlable-jenkins
           ))

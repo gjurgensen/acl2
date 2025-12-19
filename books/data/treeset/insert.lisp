@@ -525,7 +525,7 @@
    (set acl2-number-setp))
   (mbe :logic (insert x set)
        :exec (mv-let (inp set$)
-                     (acl2-number-tree-insert x (hash x) (fix set))
+                     (acl2-number-tree-insert x (acl2-number-hash x) (fix set))
                (declare (ignore inp))
                set$))
   :enabled t
@@ -539,7 +539,7 @@
    (set symbol-setp))
   (mbe :logic (insert x set)
        :exec (mv-let (inp set$)
-                     (symbol-tree-insert x (hash x) (fix set))
+                     (symbol-tree-insert x (symbol-hash x) (fix set))
                (declare (ignore inp))
                set$))
   :enabled t
@@ -552,7 +552,7 @@
    (set eqlable-setp))
   (mbe :logic (insert x set)
        :exec (mv-let (inp set$)
-                     (eqlable-tree-insert x (hash x) (fix set))
+                     (eqlable-tree-insert x (eqlable-hash x) (fix set))
                (declare (ignore inp))
                set$))
   :enabled t

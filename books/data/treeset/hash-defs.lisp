@@ -17,4 +17,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (std::defredundant
-  :names (hash))
+  :names (hash
+          acl2-number-hash
+          symbol-hash
+          eqlable-hash
+          ))

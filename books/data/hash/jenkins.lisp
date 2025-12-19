@@ -449,3 +449,52 @@
   (natp (jenkins x))
   :rule-classes :type-prescription
   :enable jenkins)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define acl2-number-jenkins
+  ((x acl2-numberp))
+  (mbe :logic (jenkins x)
+       :exec (the (unsigned-byte 32)
+               (let* ((acc (the (unsigned-byte 32)
+                             (jenkins-acc-acl2-number x 0)))
+                      (acc (data::u32-plus acc (data::u32-shl acc 3)))
+                      (acc (data::u32-xor acc (data::u32-shr acc 11))))
+                 (data::u32-plus acc (data::u32-shl acc 15)))))
+  :enabled t
+  :guard-hints (("Goal" :in-theory (enable jenkins
+                                           jenkins-acc
+                                           jenkins-acc-atom))))
+
+(define symbol-jenkins
+  ((x symbolp))
+  (mbe :logic (jenkins x)
+       :exec (the (unsigned-byte 32)
+               (let* ((acc (the (unsigned-byte 32)
+                             (jenkins-acc-symbol x 0)))
+                      (acc (data::u32-plus acc (data::u32-shl acc 3)))
+                      (acc (data::u32-xor acc (data::u32-shr acc 11))))
+                 (data::u32-plus acc (data::u32-shl acc 15)))))
+  :enabled t
+  :guard-hints (("Goal" :in-theory (enable jenkins
+                                           jenkins-acc
+                                           jenkins-acc-atom))))
+
+(define eqlable-jenkins
+  ((x eqlablep))
+  (mbe :logic (jenkins x)
+       :exec (the (unsigned-byte 32)
+               (let* ((acc (the (unsigned-byte 32)
+                             (cond ((symbolp x)
+                                    (jenkins-acc-symbol x 0))
+                                   ((acl2-numberp x)
+                                    (jenkins-acc-acl2-number x 0))
+                                   (t
+                                    (jenkins-acc-character x 0)))))
+                      (acc (data::u32-plus acc (data::u32-shl acc 3)))
+                      (acc (data::u32-xor acc (data::u32-shr acc 11))))
+                 (data::u32-plus acc (data::u32-shl acc 15)))))
+  :enabled t
+  :guard-hints (("Goal" :in-theory (enable jenkins
+                                           jenkins-acc
+                                           jenkins-acc-atom))))
