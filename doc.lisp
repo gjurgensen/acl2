@@ -5109,7 +5109,7 @@ Silent loading of ACL2 customization files
     i             acl2-doc-index
        Go to the specified topic or else one containing it as a substring;
        performs completion.  If the empty string is supplied, then go to the
-       index buffer.  Otherwise, with prefix argument, consider only descendents
+       index buffer.  Otherwise, with prefix argument, consider only descendants
        of the topic supplied in response to a prompt.  Note that the index buffer
        is in ACL2-Doc mode; thus, in particular, you can type <RETURN> while
        standing on a topic in order to go directly to that topic.
@@ -5161,14 +5161,14 @@ Silent loading of ACL2 customization files
        search succeeds, then go to that topic with the cursor put immediately
        after the found text, with the topic name displayed in the minibuffer.
        With prefix argument, consider (also for subsequent \"n\" and \"p\"
-       commands) only descendents of the topic supplied in response to a prompt.
+       commands) only descendants of the topic supplied in response to a prompt.
 
     S             acl2-doc-re-search
        Perform a regular expression search, forward from the top of the manual,
        for the input string.  If the search succeeds, then go to that topic with
        the cursor put immediately after the found text, with the topic name
        displayed in the minibuffer.  With prefix argument, consider (also for
-       subsequent \"n\" and \"p\" commands) only descendents of the topic
+       subsequent \"n\" and \"p\" commands) only descendants of the topic
        supplied in response to a prompt.
 
     t             acl2-doc-top
@@ -49541,7 +49541,7 @@ Contribute Your Changes
   to specify the goal to which the [hints] are to be applied.  The
   [hints] provided are carried along innocuously until the named goal
   arises.  When it arises, the [hints] are ``activated'' for that
-  goal and its descendents.
+  goal and its descendants.
 
   A legal goal specification may be extracted from the theorem prover's
   output.  Certain lines clearly label formulas, as in
@@ -59755,8 +59755,8 @@ Exercises and Lessons
   range.  We would call them ``functionals'' except that suggests
   ACL2 is higher-order and it is not!  So we most often call them
   [scion]s of [47mapply$[0m.  In ordinary English usage, a ``scion'' is a
-  descendent of an important family or individual; our scions are
-  ``descendents'' of [47mapply$[0m and inherit its power and restrictions.
+  descendant of an important family or individual; our scions are
+  ``descendants'' of [47mapply$[0m and inherit its power and restrictions.
 
     ACL2 !>(defun$ my-collect$ (fn lst)
              (if (endp lst)
@@ -60181,7 +60181,7 @@ Some Practice Problems
   and its children, where [3mhints2[0m is used instead.
 
   There are a few hints which ``take effect'' exactly on the subgoal to
-  which they are attached and are not inherited by their descendents.
+  which they are attached and are not inherited by their descendants.
 
   Here is an incomplete list of some of the more common hints; we note
   the ones that do not pass on their effects to their descendants.
@@ -60233,12 +60233,12 @@ Some Practice Problems
   theorem prover to go immediately into induction for the subgoal in
   question, and to use the induction scheme suggested by the hint
   rather than the one suggested by the terms in the subgoal itself.
-  This hint is not inherited by its descendents.
+  This hint is not inherited by its descendants.
 
   See [hints] {ICON} (see [A_Tiny_Warning_Sign]) for a complete list of
   all hints, and see [hints-and-the-waterfall] {ICON} (see
   [A_Tiny_Warning_Sign]) for a more thorough description of how the
-  effects of hints at a subgoal are inherited by the descendents.
+  effects of hints at a subgoal are inherited by the descendants.
 
   If you are reading this as part of the tutorial introduction to the
   theorem prover, use your browser's [31;1mBack Button[0m now to return to
@@ -105799,7 +105799,7 @@ Heuristic and Efficiency Improvements
   2.1\"[0m, [47m\"Subgoal 2.1.3.4.5\"[0m, [47m\"Subgoal 2.1.3.4.5'\"[0m, and [47m\"Subgoal
   2.1.3.4.5''\"[0m --- in general, such addition of equalities can only
   be performed five times along a chain of goals where each is a
-  descendent (not necessarily an immediate subgoal) of the one
+  descendant (not necessarily an immediate subgoal) of the one
   before, and each induction and forcing round provides a fresh
   start.  You can change that default from 5 to [47mn[0m, where [47mn[0m is a
   natural number, by evaluating the following form.
@@ -106208,7 +106208,7 @@ Changes at the System Level
       past standalone versions and integrated into the rest of the
       documentation.
 
-    * [Loop$-primer] provides an extensive primer on the the ACL2 [47m[loop$][0m
+    * [Loop$-primer] provides an extensive primer on the ACL2 [47m[loop$][0m
       feature.
 
     * [Type-reasoning] gives a basic introduction to what has sometimes
@@ -109383,7 +109383,7 @@ Programming M1
   rearranging our clocks!  That is, [47m(m1 s (+ i j))[0m will decompose
   differently than [47m(m1 s (+ j i))[0m, but the arithmetic library might
   rearrange the clock, e.g., by using the commutativity of addition.
-  So instead of using [47m+[0m to express the the addition of two clocks we
+  So instead of using [47m+[0m to express the addition of two clocks we
   define [47mclk+[0m to be [47m+[0m, but we'll disable its definition to protect
   clocks from arithmetic reasoning.  We will arrange for [47mclk+[0m to take
   more than just two arguments and will reveal that it is
@@ -130052,7 +130052,7 @@ Subtopics
     ACL2 !>
 
   The first top-level form sets the values of [47m[state][0m globals [47mmy-w1[0m and
-  [47mmy-w3[0m to to the worlds obtained by extending the empty world one or
+  [47mmy-w3[0m to the worlds obtained by extending the empty world one or
   three times, respectively, as shown.  The second top-level form
   [3minstalls[0m the value of [47mmy-w1[0m as the world that is current for the
   name [47m'my-world[0m.  The third top-level form returns the [47m'my-key1[0m
@@ -135807,10 +135807,10 @@ Subtopics
   tracking flag is set, then [47mSubgoal 3[0m will have an [47mextra-info[0m
   hypothesis indicating the origin of that subgoal.  If the rewrite
   rule above is available, the [47mextra-info[0m will have disappeared in
-  the descendents of [47mSubgoal 3[0m.  So if you find yourself asking
+  the descendants of [47mSubgoal 3[0m.  So if you find yourself asking
   ``Where did this goal come from?'' you might refer back to the
   parent, [47mSubgoal 3[0m, produced by the functional instance hint.
-  (Remember, descendent subgoals, e.g., [47mSubgoal 3.17''[0m, have
+  (Remember, descendant subgoals, e.g., [47mSubgoal 3.17''[0m, have
   [clause-identifier]s that indicate their parentage, [47mSubgoal 3[0m.)
 
   That said, some proof strategies employed in the regression
@@ -139198,7 +139198,7 @@ Subtopics
 
   The ACL2 ``waterfall'' (see [hints-and-the-waterfall]) produces a
   tree of Goals and Subgoals.  Consider a path through this tree in
-  which each formula is an immediate descendent of the previous
+  which each formula is an immediate descendant of the previous
   formula.  More precisely, each element of the path records a goal
   formula (represented as a [clause]), the name by which the user may
   refer to it, e.g., [47m\"Goal''\"[0m or [47m\"Subgoal *1/2.3\"[0m (represented as a
@@ -142935,7 +142935,7 @@ Generalizing the Initial Values
   non-variables, generalize them before expecting an induction to
   work!  If the [47mloop$[0m is buried in a definition you'll have to lift
   the [47mloop$[0m out of the definition to generalize it and prove a
-  theorem about the the generalized [47mloop$[0m.
+  theorem about the generalized [47mloop$[0m.
 
 
 Normal Forms in [47mLoop$[0m Bodies
@@ -167316,7 +167316,7 @@ Subtopics
   ``special variables;'' output is directed to the comment window.
   In that copy of the state, the state global variables
   [47mwormhole-name[0m, [47mwormhole-input[0m and [47mwormhole-status[0m are assigned
-  [47mname[0m, the the value of [47minput[0m and the persistent-whs, respectively.
+  [47mname[0m, the value of [47minput[0m and the persistent-whs, respectively.
   Thus, inside the wormhole, [47m(@ wormhole-name)[0m returns the name of
   the current wormhole, [47m(@ wormhole-input)[0m returns the list of
   inputs, [47m(@ wormhole-status)[0m returns the ephemeral-whs.  The first
