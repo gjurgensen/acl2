@@ -54463,32 +54463,32 @@ Subtopics
         [47m:restrict[0m hints, at least if the rules in question are
         abbreviations (see [simple]).
 
-        [47mValue[0m is an association list.  Its members are of the form [47m(x subst1
-        subst2 ...)[0m, where: [47mx[0m is either (1) a [rune] whose [47m[car][0m is
+        [47mValue[0m is an association list.  Its members are of the form [47m(x subst_1
+        subst_2 ...)[0m, where: [47mx[0m is either (1) a [rune] whose [47m[car][0m is
         [47m:[0m[47m[rewrite][0m or [47m:[0m[47m[definition][0m or (2) an event name
-        corresponding to one or more such [rune]s; and [47m(subst1 subst2
-        ...)[0m is a non-empty list of substitutions, i.e., of
+        corresponding to one or more such [rune]s; and [47m(subst_1
+        subst_2 ...)[0m is a non-empty list of substitutions, i.e., of
         association lists pairing variables with terms.  First
         consider the case that [47mx[0m is a [47m:[0m[47m[rewrite][0m or [47m:[0m[47m[definition][0m
         [rune].  Recall that without this hint, the rule named [47mx[0m is
         used by matching its left-hand side (call it [47mlhs[0m) against the
         term currently being considered by the rewriter, that is, by
-        attempting to find a substitution [47ms[0m such that the
+        attempting to find a [3mmatching substitution[0m, [47ms[0m, such that the
         instantiation of [47mlhs[0m using [47ms[0m is equal to that term.  If
-        however the [47m:restrict[0m hint contains [47m(x subst1 subst2 ...)[0m,
+        however the [47m:restrict[0m hint contains [47m(x subst_1 subst_2 ...)[0m,
         then this behavior will be modified by restricting [47ms[0m so that
-        it must extend [47msubst1[0m; and if there is no such [47ms[0m, then [47ms[0m is
-        restricted so that it must extend [47msubst2[0m; and so on, until
-        the list of substitutions is exhausted.  If no such [47ms[0m is
-        found, then the rewrite or definition rule named [47mx[0m is not
-        applied to that term.  Finally, if [47mx[0m is an event name
-        corresponding to one or more [47m:[0m[47m[rewrite][0m or [47m:[0m[47m[definition][0m
-        [rune]s (that is, [47mx[0m is the ``base symbol'' of such [rune]s;
-        see [rune]), say [rune]s [47mr1[0m, ... [47mrn[0m, then the meaning is the
-        same except that [47m(x subst1 subst2 ...)[0m is replaced by [47m(ri
-        subst1 subst2 ...)[0m for each [47mi[0m.  Once this replacement is
-        complete, the hint may not contain two members whose [47m[car][0m is
-        the same [rune].
+        it must extend [47msubst_1[0m; and if there is no such [47ms[0m, then [47ms[0m is
+        restricted so that it must extend [47msubst_2[0m; and so on, until
+        such [47ms[0m is produced --- or, the list of substitutions is
+        exhausted without producing a matching substitution, in which
+        case the rewrite or definition rule named [47mx[0m is not applied to
+        that term.  Finally, if [47mx[0m is an event name corresponding to
+        one or more [47m:[0m[47m[rewrite][0m or [47m:[0m[47m[definition][0m [rune]s (that is, [47mx[0m
+        is the ``base symbol'' of such [rune]s; see [rune]), say
+        [rune]s [47mr1[0m, ... [47mrn[0m, then the meaning is the same except that
+        [47m(x subst_1 subst_2 ...)[0m is replaced by [47m(rj subst_1 subst_2
+        ...)[0m for each [47mj[0m.  Once this replacement is complete, the hint
+        may not contain two members whose [47m[car][0m is the same [rune].
 
         Note that the substitutions in [47m:restrict[0m hints refer to the variables
         actually appearing in the goals, not to the variables
