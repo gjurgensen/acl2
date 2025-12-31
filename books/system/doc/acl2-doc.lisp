@@ -51123,28 +51123,29 @@ current fast alists."
  question are abbreviations (see @(see simple)).</p>
 
  <p>@('Value') is an association list.  Its members are of the form @('(x
- subst1 subst2 ...)'), where: @('x') is either (1) a @(see rune) whose @(tsee
+ subst_1 subst_2 ...)'), where: @('x') is either (1) a @(see rune) whose @(tsee
  car) is @(':')@(tsee rewrite) or @(':')@(tsee definition) or (2) an event name
- corresponding to one or more such @(see rune)s; and @('(subst1 subst2 ...)')
+ corresponding to one or more such @(see rune)s; and @('(subst_1 subst_2 ...)')
  is a non-empty list of substitutions, i.e., of association lists pairing
  variables with terms.  First consider the case that @('x') is a @(':')@(tsee
  rewrite) or @(':')@(tsee definition) @(see rune).  Recall that without this
  hint, the rule named @('x') is used by matching its left-hand side (call it
  @('lhs')) against the term currently being considered by the rewriter, that
- is, by attempting to find a substitution @('s') such that the instantiation of
- @('lhs') using @('s') is equal to that term.  If however the @(':restrict')
- hint contains @('(x subst1 subst2 ...)'), then this behavior will be modified
- by restricting @('s') so that it must extend @('subst1'); and if there is no
- such @('s'), then @('s') is restricted so that it must extend @('subst2'); and
- so on, until the list of substitutions is exhausted.  If no such @('s') is
- found, then the rewrite or definition rule named @('x') is not applied to that
- term.  Finally, if @('x') is an event name corresponding to one or more
- @(':')@(tsee rewrite) or @(':')@(tsee definition) @(see rune)s (that is,
- @('x') is the ``base symbol'' of such @(see rune)s; see @(see rune)), say
- @(see rune)s @('r1'), ... @('rn'), then the meaning is the same except that
- @('(x subst1 subst2 ...)') is replaced by @('(ri subst1 subst2 ...)') for each
- @('i').  Once this replacement is complete, the hint may not contain two
- members whose @(tsee car) is the same @(see rune).</p>
+ is, by attempting to find a <i>matching substitution</i>, @('s'), such that
+ the instantiation of @('lhs') using @('s') is equal to that term.  If however
+ the @(':restrict') hint contains @('(x subst_1 subst_2 ...)'), then this
+ behavior will be modified by restricting @('s') so that it must extend
+ @('subst_1'); and if there is no such @('s'), then @('s') is restricted so
+ that it must extend @('subst_2'); and so on, until such @('s') is produced
+ &mdash; or, the list of substitutions is exhausted without producing a
+ matching substitution, in which case the rewrite or definition rule named
+ @('x') is not applied to that term.  Finally, if @('x') is an event name
+ corresponding to one or more @(':')@(tsee rewrite) or @(':')@(tsee definition)
+ @(see rune)s (that is, @('x') is the ``base symbol'' of such @(see rune)s; see
+ @(see rune)), say @(see rune)s @('r1'), ... @('rn'), then the meaning is the
+ same except that @('(x subst_1 subst_2 ...)') is replaced by @('(rj subst_1
+ subst_2 ...)') for each @('j').  Once this replacement is complete, the hint
+ may not contain two members whose @(tsee car) is the same @(see rune).</p>
 
  <p>Note that the substitutions in @(':restrict') hints refer to the variables
  actually appearing in the goals, not to the variables appearing in the rule
