@@ -123051,7 +123051,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  ***********************************************
  ************ ABORTING from raw Lisp ***********
  ********** (see :DOC raw-lisp-error) **********
- Error:  Apparently READ-FILE-INTO-STRING has previously closed the stream 
+ Error:  Apparently READ-FILE-INTO-STRING has previously closed the stream
  that is associated with file
  \"tmp.txt\".
  Consider evaluating (INCREMENT-FILE-CLOCK STATE).
@@ -146343,8 +146343,14 @@ work on <tt>(q x)</tt>.</p>
   :parents (programming)
   :short "Symbols in ACL2 and operations on them"
   :long "<p>Symbols are a basic datatype in ACL2 and Common Lisp.  Every symbol
-  has two components: its name (see @(see symbol-name)) and its package name
-  (see @(see symbol-package-name)).</p>")
+ has two components: its name (see @(see symbol-name)) and its package name
+ (see @(see symbol-package-name)).</p>
+
+ <p>Note that ACL2 is case-insensitive when dealing with symbols.  The symbol
+ @('a') is read in as the symbol @('A').  Thus, when writing function names,
+ for example, we can write @('rev'), @('Rev'), @('REV'), or even @('ReV') and
+ always be referring to the function @('REV').  By default, ACL2 prints symbols
+ in uppercase.</p>")
 
 (defxdoc sync-ephemeral-whs-with-persistent-whs
   :parents (wormhole)
@@ -149966,12 +149972,14 @@ work on <tt>(q x)</tt>.</p>
  entity denoting some object in the universe of individuals.  Often, for
  example, the syntactic characterization of a term is that it is either a
  variable symbol or the application of a function symbol to the appropriate
- number of argument terms.  Traditionally, ``atomic formulas'' are built from
- terms with predicate symbols such as ``equal'' and ``member;'' ``formulas''
- are then built from atomic formulas with propositional ``operators'' like
- ``not,'' ``and,'' and ``implies.'' Theorems are formulas.  Theorems are
- ``valid'' in the sense that the value of a theorem is true, in any model of
- the axioms and under all possible assignments of individuals to variables.</p>
+ number of argument terms.  (Note that ACL2 is case-insensitive when dealing
+ with symbols; see @(see symbols).)  Traditionally, ``atomic formulas'' are
+ built from terms with predicate symbols such as ``equal'' and ``member;''
+ ``formulas'' are then built from atomic formulas with propositional
+ ``operators'' like ``not,'' ``and,'' and ``implies.'' Theorems are formulas.
+ Theorems are ``valid'' in the sense that the value of a theorem is true, in
+ any model of the axioms and under all possible assignments of individuals to
+ variables.</p>
 
  <p>However, in ACL2, terms are used in place of both atomic formulas and
  formulas.  ACL2 does not have predicate symbols or propositional operators as

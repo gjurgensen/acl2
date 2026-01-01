@@ -146274,6 +146274,12 @@ Subtopics
   has two components: its name (see [symbol-name]) and its package
   name (see [symbol-package-name]).
 
+  Note that ACL2 is case-insensitive when dealing with symbols.  The
+  symbol [47ma[0m is read in as the symbol [47mA[0m.  Thus, when writing function
+  names, for example, we can write [47mrev[0m, [47mRev[0m, [47mREV[0m, or even [47mReV[0m and
+  always be referring to the function [47mREV[0m.  By default, ACL2 prints
+  symbols in uppercase.
+
 
 Subtopics
 
@@ -149809,9 +149815,10 @@ Subtopics
   individuals.  Often, for example, the syntactic characterization of
   a term is that it is either a variable symbol or the application of
   a function symbol to the appropriate number of argument terms.
-  Traditionally, ``atomic formulas'' are built from terms with
-  predicate symbols such as ``equal'' and ``member;'' ``formulas''
-  are then built from atomic formulas with propositional
+  (Note that ACL2 is case-insensitive when dealing with symbols; see
+  [symbols].)  Traditionally, ``atomic formulas'' are built from
+  terms with predicate symbols such as ``equal'' and ``member;''
+  ``formulas'' are then built from atomic formulas with propositional
   ``operators'' like ``not,'' ``and,'' and ``implies.'' Theorems are
   formulas.  Theorems are ``valid'' in the sense that the value of a
   theorem is true, in any model of the axioms and under all possible
