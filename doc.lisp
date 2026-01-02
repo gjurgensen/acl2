@@ -4203,7 +4203,7 @@ Subtopics
       Control radix in which numbers are printed and printing of the radix
 
   [Set-print-case]
-      Control whether symbols are printed in upper case or in lower case
+      Control whether [symbols] are printed in upper case or in lower case
 
   [Set-print-radix]
       Control printing of the radix for numbers
@@ -5954,14 +5954,14 @@ Subtopics
   symbols but [47m+12[0m is a number.  Roughly speaking, when symbols are
   read lower case characters are converted to upper case, so we
   frequently do not distinguish [47mABC[0m from [47mAbc[0m or [47mabc[0m.  Click here (see
-  [Conversion]) for information about case conversion when symbols
-  are read.  However, any character can be used in a symbol, but some
-  characters must be ``escaped'' to allow the Lisp reader to parse
-  the sequence as a symbol.  For example, [47m|Abc|[0m is a symbol whose
-  first character is capitalized and whose remaining characters are
-  in lower case.  [47m|An odd duck|[0m is a symbol containing two #\\Space
-  characters.  See any Common Lisp documentation for the syntactic
-  rules for symbols.
+  [SYMBOLS]) {ICON} (see [A_Tiny_Warning_Sign]) for information about
+  case conversion when symbols are read.  However, any character can
+  be used in a symbol, but some characters must be ``escaped'' to
+  allow the Lisp reader to parse the sequence as a symbol.  For
+  example, [47m|Abc|[0m is a symbol whose first character is capitalized and
+  whose remaining characters are in lower case.  [47m|An odd duck|[0m is a
+  symbol containing two #\\Space characters.  See any Common Lisp
+  documentation for the syntactic rules for symbols.
 
   Technically, a symbol is a special kind of pair consisting of a
   package name (which is a string) and a symbol name (which is also a
@@ -22657,22 +22657,6 @@ See [47m[set-constraint-tracking][0m.")
                                (value-cmp (* 3 4)))
           (NIL 12)
           ACL2 !>")
- (CONVERSION
-  (PAGES_WRITTEN_ESPECIALLY_FOR_THE_TOURS)
-  "Conversion to Uppercase
-
-  When symbols are read by Common Lisp they are converted to upper
-  case.  Note carefully that this remark applies to the characters in
-  [3msymbols[0m.  The characters in strings are not converted upper case.
-
-  To type a symbol containing lower case characters you can enclose the
-  symbol in vertical bars, as in [47m|AbC|[0m or you can put a ``backslash''
-  before each lower case character you wish to preserve, as in [47mA\\bC[0m.
-  [47m|AbC|[0m and [47mA\\bC[0m are two different ways of writing the same symbol
-  (just like 2/4 and 1/2 are two different ways of writing the same
-  rational and 123 and 0123 are two different ways to write the same
-  natural number).  The symbol has three characters in its name, the
-  middle one of which is a lower case b.")
  (COPYRIGHT
   (ABOUT-ACL2)
   "ACL2 copyright, license, authorship
@@ -37749,13 +37733,16 @@ Subtopics
 
   {IMAGE}
 
+  Click here (see [SYMBOLS]) {ICON} (see [A_Tiny_Warning_Sign]) for an
+  explanation of conversion of symbols to upper case.
+
     ACL2 !>[31;1m(app nil '(x y z))[0m
     (X Y Z)
 
     ACL2 !>[31;1m(app '(1 2 3) '(4 5 6 7))[0m
     (1 2 3 4 5 6 7)
 
-    ACL2 !>[31;1m(app '(a b c d e f g) '(x y z))[0m   ; click here (see [Conversion]) for an explanation
+    ACL2 !>[31;1m(app '(a b c d e f g) '(x y z))[0m
     (A B C D E F G X Y Z)
 
     ACL2 !>[31;1m(app (app '(1 2) '(3 4)) '(5 6))[0m
@@ -63735,7 +63722,7 @@ Subtopics
       Control radix in which numbers are printed and printing of the radix
 
   [Set-print-case]
-      Control whether symbols are printed in upper case or in lower case
+      Control whether [symbols] are printed in upper case or in lower case
 
   [Set-print-radix]
       Control printing of the radix for numbers
@@ -112274,9 +112261,6 @@ Subtopics
   [Common_Lisp_as_a_Modeling_Language]
       Common Lisp as a Modeling Language
 
-  [Conversion]
-      Conversion to Uppercase
-
   [Corroborating_Models]
       Corroborating Models
 
@@ -118438,11 +118422,12 @@ Subtopics
   [31;1mQ[0m: How did [47mrev[0m change the case of the elements, e.g., lowercase [47ma[0m was
   in the input list but uppercase [47mA[0m was in the output?  [31;1mA[0m: This is a
   trick question.  [47mRev[0m doesn't change the case of the elements.  ACL2
-  is case-insensitive when dealing with symbols.  The symbol [47ma[0m is
-  read in as the symbol [47mA[0m.  Thus, when writing function names, for
-  example, we can write [47mrev[0m, [47mRev[0m, [47mREV[0m, or even [47mReV[0m and always be
-  referring to the function [47mREV[0m.  By default, ACL2 prints symbols in
-  uppercase.
+  typically converts to upper case when reading symbols (see
+  [symbols] {ICON} (see [A_Tiny_Warning_Sign]) for details).  The
+  symbol [47ma[0m is read in as the symbol [47mA[0m.  Thus, when writing function
+  names, for example, we can write [47mrev[0m, [47mRev[0m, [47mREV[0m, or even [47mReV[0m and
+  always be referring to the function [47mREV[0m.  By default, ACL2 prints
+  symbols in uppercase.
 
   [31;1mQ[0m: What does [47m(rev '((a b c) \"Abc\" \"a\" b #\\c))[0m return?  [31;1mA[0m: [47m(#\\c B \"a\"
   \"Abc\" (A B C))[0m.  If you thought the answer was either of these,
@@ -138318,13 +138303,13 @@ Example
     (25 25/3)
     ACL2 !>")
  (SET-PRINT-CASE
-  (IO ACL2-BUILT-INS)
-  "Control whether symbols are printed in upper case or in lower case
+  (IO ACL2-BUILT-INS SYMBOLS)
+  "Control whether [symbols] are printed in upper case or in lower case
 
-  By default, symbols are printed in upper case when vertical bars are
-  not required, as specified by Common Lisp.  As with Common Lisp,
-  ACL2 supports printing in a \"downcase\" mode, where symbols are
-  printed in lower case.  Many printing functions (some details
+  By default, [symbols] are printed in upper case when vertical bars
+  are not required, as specified by Common Lisp.  As with Common
+  Lisp, ACL2 supports printing in a \"downcase\" mode, where symbols
+  are printed in lower case.  Many printing functions (some details
   below) print characters in lower case for a symbol when the ACL2
   [state] global variable [47mprint-case[0m has value [47m:downcase[0m and vertical
   bars are not necessary for printing that symbol.  (Thus, this state
@@ -146274,11 +146259,20 @@ Subtopics
   has two components: its name (see [symbol-name]) and its package
   name (see [symbol-package-name]).
 
-  Note that ACL2 is case-insensitive when dealing with symbols.  The
-  symbol [47ma[0m is read in as the symbol [47mA[0m.  Thus, when writing function
-  names, for example, we can write [47mrev[0m, [47mRev[0m, [47mREV[0m, or even [47mReV[0m and
-  always be referring to the function [47mREV[0m.  By default, ACL2 prints
-  symbols in uppercase.
+  When symbols are read by Common Lisp or ACL2, they are converted to
+  upper case.  Note carefully that this remark applies to the
+  characters in [3msymbols[0m.  The characters in strings are not converted
+  to upper case.
+
+  To type a symbol containing lower case characters you can enclose the
+  symbol in vertical bars, as in [47m|AbC|[0m, or you can put a
+  ``backslash'' before each lower case character you wish to
+  preserve, as in [47mA\\bC[0m.  [47m|AbC|[0m and [47mA\\bC[0m are two different ways of
+  writing the same symbol (just like 2/4 and 1/2 are two different
+  ways of writing the same rational and 123 and 0123 are two
+  different ways to write the same natural number).  The symbol has
+  three characters in its name, the middle one of which is a lower
+  case b.
 
 
 Subtopics
@@ -146294,6 +146288,9 @@ Subtopics
 
   [Packn-pos]
       Build a symbol in a specified package from a list
+
+  [Set-print-case]
+      Control whether [symbols] are printed in upper case or in lower case
 
   [Symbol-listp]
       Recognizer for a true list of symbols

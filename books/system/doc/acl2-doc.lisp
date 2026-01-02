@@ -1781,13 +1781,14 @@
  but @('+12') is a number.  Roughly speaking, when symbols are read lower case
  characters are converted to upper case, so we frequently do not distinguish
  @('ABC') from @('Abc') or @('abc').  Click <see topic='@(url
- |Conversion|)'>here</see> for information about case conversion when symbols
- are read.  However, any character can be used in a symbol, but some characters
- must be ``escaped'' to allow the Lisp reader to parse the sequence as a
- symbol.  For example, @('|Abc|') is a symbol whose first character is
- capitalized and whose remaining characters are in lower case.  @('|An odd
- duck|') is a symbol containing two #\\Space characters.  See any Common Lisp
- documentation for the syntactic rules for symbols.</p>
+ symbols)'>here</see> <see topic='ACL2____A_02Tiny_02Warning_02Sign'><icon
+ src='res/tours/twarning.gif'/></see> for information about case conversion
+ when symbols are read.  However, any character can be used in a symbol, but
+ some characters must be ``escaped'' to allow the Lisp reader to parse the
+ sequence as a symbol.  For example, @('|Abc|') is a symbol whose first
+ character is capitalized and whose remaining characters are in lower case.
+ @('|An odd duck|') is a symbol containing two #\\Space characters.  See any
+ Common Lisp documentation for the syntactic rules for symbols.</p>
 
  <p>Technically, a symbol is a special kind of pair consisting of a package
  name (which is a string) and a symbol name (which is also a string).  (See
@@ -20083,22 +20084,6 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
  <p>Click <see topic='@(url |Analyzing Common Lisp Models|)'>here</see> to
  continue.</p>")
 
-(defxdoc |Conversion|
-  :parents (|Pages Written Especially for the Tours|)
-  :short "Conversion to Uppercase"
-  :long "<p>When symbols are read by Common Lisp they are converted to upper
- case.  Note carefully that this remark applies to the characters in
- <i>symbols</i>.  The characters in strings are not converted upper case.</p>
-
- <p>To type a symbol containing lower case characters you can enclose the
- symbol in vertical bars, as in @('|AbC|') or you can put a ``backslash''
- before each lower case character you wish to preserve, as in @('A\\bC').
- @('|AbC|') and @('A\\bC') are two different ways of writing the same symbol
- (just like 2/4 and 1/2 are two different ways of writing the same rational and
- 123 and 0123 are two different ways to write the same natural number).  The
- symbol has three characters in its name, the middle one of which is a lower
- case b.</p>")
-
 (defxdoc |Corroborating Models|
   :parents (|Pages Written Especially for the Tours|)
   :short "Corroborating Models"
@@ -36849,6 +36834,11 @@ ld) and @(tsee include-book)"
 
  <p><img src='res/tours/green-line.gif'></img></p>
 
+ <p>Click <see topic='@(url symbols)'>here</see> <see
+ topic='ACL2____A_02Tiny_02Warning_02Sign'><icon
+ src='res/tours/twarning.gif'/></see> for an explanation of conversion of
+ symbols to upper case.</p>
+
  <code>
  ACL2 !&gt;<b>(app nil '(x y z))</b>
  (X Y Z)
@@ -36856,7 +36846,7 @@ ld) and @(tsee include-book)"
  ACL2 !&gt;<b>(app '(1 2 3) '(4 5 6 7))</b>
  (1 2 3 4 5 6 7)
 
- ACL2 !&gt;<b>(app '(a b c d e f g) '(x y z))</b>   ; click <see topic='@(url |Conversion|)'>here</see> for an explanation
+ ACL2 !&gt;<b>(app '(a b c d e f g) '(x y z))</b>
  (A B C D E F G X Y Z)
 
  ACL2 !&gt;<b>(app (app '(1 2) '(3 4)) '(5 6))</b>
@@ -118336,11 +118326,13 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p><b>Q</b>: How did @('rev') change the case of the elements, e.g., lowercase
  @('a') was in the input list but uppercase @('A') was in the output?
  <b>A</b>: This is a trick question.  @('Rev') doesn't change the case of the
- elements.  ACL2 is case-insensitive when dealing with symbols.  The symbol
- @('a') is read in as the symbol @('A').  Thus, when writing function names,
- for example, we can write @('rev'), @('Rev'), @('REV'), or even @('ReV') and
- always be referring to the function @('REV').  By default, ACL2 prints symbols
- in uppercase.</p>
+ elements.  ACL2 typically converts to upper case when reading symbols
+ (see @(see symbols) <see topic='ACL2____A_02Tiny_02Warning_02Sign'><icon
+ src='res/tours/twarning.gif'/></see> for details).  The symbol @('a') is read
+ in as the symbol @('A').  Thus, when writing function names, for example, we
+ can write @('rev'), @('Rev'), @('REV'), or even @('ReV') and always be
+ referring to the function @('REV').  By default, ACL2 prints symbols in
+ uppercase.</p>
 
  <p><b>Q</b>: What does @('(rev '((a b c) \"Abc\" \"a\" b #\\c))') return?
  <b>A</b>: @('(#\\c B \"a\" \"Abc\" (A B C))').  If you thought the answer was
@@ -138493,10 +138485,10 @@ work on <tt>(q x)</tt>.</p>
  })")
 
 (defxdoc set-print-case
-  :parents (io acl2-built-ins)
-  :short "Control whether symbols are printed in upper case or in lower case"
-  :long "<p>By default, symbols are printed in upper case when vertical bars
- are not required, as specified by Common Lisp.  As with Common Lisp, ACL2
+  :parents (io acl2-built-ins symbols)
+  :short "Control whether @(see symbols) are printed in upper case or in lower case"
+  :long "<p>By default, @(see symbols) are printed in upper case when vertical
+ bars are not required, as specified by Common Lisp.  As with Common Lisp, ACL2
  supports printing in a \"downcase\" mode, where symbols are printed in lower
  case.  Many printing functions (some details below) print characters in lower
  case for a symbol when the ACL2 @(see state) global variable @('print-case')
@@ -146346,11 +146338,19 @@ work on <tt>(q x)</tt>.</p>
  has two components: its name (see @(see symbol-name)) and its package name
  (see @(see symbol-package-name)).</p>
 
- <p>Note that ACL2 is case-insensitive when dealing with symbols.  The symbol
- @('a') is read in as the symbol @('A').  Thus, when writing function names,
- for example, we can write @('rev'), @('Rev'), @('REV'), or even @('ReV') and
- always be referring to the function @('REV').  By default, ACL2 prints symbols
- in uppercase.</p>")
+ <p>When symbols are read by Common Lisp or ACL2, they are converted to upper
+ case.  Note carefully that this remark applies to the characters in
+ <i>symbols</i>.  The characters in strings are not converted to upper
+ case.</p>
+
+ <p>To type a symbol containing lower case characters you can enclose the
+ symbol in vertical bars, as in @('|AbC|'), or you can put a
+ &ldquo;backslash&rdquo; before each lower case character you wish to preserve,
+ as in @('A\\bC').  @('|AbC|') and @('A\\bC') are two different ways of writing
+ the same symbol (just like 2/4 and 1/2 are two different ways of writing the
+ same rational and 123 and 0123 are two different ways to write the same
+ natural number).  The symbol has three characters in its name, the middle one
+ of which is a lower case b.</p>")
 
 (defxdoc sync-ephemeral-whs-with-persistent-whs
   :parents (wormhole)
