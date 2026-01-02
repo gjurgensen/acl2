@@ -106405,6 +106405,10 @@ Changes to Existing Features
   [set-evisc-tuple]) to print terms, as was already being done by
   [47m:[0m[47m[trans][0m.
 
+  The behavior and documentation for [47m[read-file-into-string][0m have been
+  cleaned up and put in sync.  Thanks to Eric Smith and Grant
+  Jurgensen for communication that led to these improvements.
+
 
 New Features
 
@@ -126763,11 +126767,14 @@ Subtopics
   (IO)
   "The contents of a file (or part of it) as a string
 
-  When this macro is passed a valid filename and the ACL2 [state], it
-  generally returns the contents of the file (or a specified part of
-  the file) as a string.  Otherwise, it returns [47mnil[0m or causes an
-  error.  Unlike other ACL2 functions for reading a file, this one
-  does not return the ACL2 [47mstate[0m, and it is generally much faster.
+  This macro returns the contents of the file, or a specified part of
+  the file, as a string.  Otherwise, it returns [47mnil[0m or causes an
+  error.  Although this macro implicitly takes the ACL2 [state], it
+  differs from other ACL2 file-reading utilities in that it does not
+  return the ACL2 [47mstate[0m, and it is generally [3mmuch[0m faster.
+
+
+Summary
 
     Example Forms:
 
@@ -126785,107 +126792,200 @@ Subtopics
                            )
 
   where [47mfilename[0m is a string, which is typically the name of a file,
-  and the keyword argument are optional and evaluated, as follows: [47ms[0m
-  has default [47m0[0m and its value is a natural number (except, an error
-  occurs if that number exceeds the length of the given file), [47mb[0m has
-  default [47mnil[0m and its value is either a natural number or [47mnil[0m, and [47mc[0m
-  has default [47m:default[0m and its value is otherwise considered to be
-  false (when [47mnil[0m) or true (when not [47mnil[0m).
+  and the keyword arguments, which are optional and evaluated, are as
+  follows: [47ms[0m has default [47m0[0m and its value is a natural number, where
+  an error occurs if that number exceeds the length of the given
+  file; [47mb[0m has default [47mnil[0m and its value is either a natural number or
+  [47mnil[0m; and [47mc[0m has default [47m:default[0m and its value is otherwise
+  considered to be false (when [47mnil[0m) or true (when not [47mnil[0m).  The
+  effects of these arguments are described below.
 
   For examples, see [community-books] file
   [47mbooks/system/tests/read-file-into-string.lisp[0m.
+
+
+Summary documentation
+
+  Typical use of [47mread-file-into-string[0m will either return the contents
+  of the given file (as a string) or will return specified segments
+  of the file.  Here is a log illustrating how we can read the full
+  contents of a file and then read it in pieces.  The form
+  [47m(INCREMENT-FILE-CLOCK STATE)[0m is necessary in order to make certain
+  successive calls; this is discussed further below.
+
+    ACL2 !>(read-file-into-string \"tmp.txt\")
+    \"Hello
+    world.
+    \"
+    ACL2 !>(INCREMENT-FILE-CLOCK STATE)
+    <state>
+    ACL2 !>(read-file-into-string \"tmp.txt\" :start 0 :bytes 3)
+    \"Hel\"
+    ACL2 !>(read-file-into-string \"tmp.txt\" :start 3 :bytes 2)
+    \"lo\"
+    ACL2 !>(read-file-into-string \"tmp.txt\" :start 5)
+    \"
+    world.
+    \"
+    ACL2 !>
+
+  For two successive calls of [47mread-file-into-string[0m on the same input
+  string, the second call must generally start beyond the last byte
+  that was read by the first call.  An exception is made when the
+  second call specifies [47m:bytes 0[0m, when [47m:start[0m is either omitted or
+  has value 0; in that case, the empty string is returned without
+  error.  An exception is also made when the form
+  [47m(INCREMENT-FILE-CLOCK STATE)[0m is evaluated between the two calls.
+
+  It may seem odd to require a call of [47mincrement-file-clock[0m to avoid
+  errors from successive reads.  The reason stems from the fact that
+  [47mincrement-file-clock[0m is a function.  The concern is that the file
+  may change between successive calls of [47mread-file-into-string[0m
+  (perhaps made hours apart!), for reasons external to ACL2, in which
+  case it could appear that [47mread-file-into-string[0m returns different
+  values for the same inputs.  By evaluating [47m(INCREMENT-FILE-CLOCK
+  STATE)[0m, one is incrementing the file-clock field of the [47mstate[0m
+  argument, so the next call is on a different [47mstate[0m argument.  This
+  is all explained logically by the definitions of
+  [47mread-file-into-string[0m and its subroutines in ACL2, as shown in the
+  final section of this documentation.  (But the implementation of
+  [47mread-file-into-string[0m involves raw Lisp code.)  ACL2 causes various
+  informative Lisp errors when functional semantics could otherwise
+  be violated, and some of these errors are shown below.
+
+  Note that ACL2 characters always fit into a single byte, which is why
+  we can can talk about ``bytes''.
+
+  Compared with the usual [io] routines provided by ACL2,
+  [47mread-file-into-string[0m is generally much more efficient, and also it
+  does not return [47m[state][0m.  Note that the macroexpansion of a call of
+  this macro takes [47mstate[0m as an argument; so if you call it in the
+  body of a function definition, then --- as usual for functions that
+  take [47mstate[0m --- either [47m(set-state-ok t)[0m must have been evaluated or
+  else a suitable [47m:stobjs[0m declaration, typically [47m:stobjs state[0m, must
+  be provided (see [xargs]).
+
+  The very large constant [47m*read-file-into-string-bound*[0m, whose
+  definition is shown in the final section below, establishes a
+  strict upper bound on the size of the string returned.  If the file
+  (or specified portion thereof) contains more bytes than this, then
+  [47mnil[0m is returned.
+
+
+Detailed discussion of keyword arguments
 
   The result, when not [47mnil[0m or an error, is a string representing the
   specified file contents.  For the default of [47m:start 0[0m and [47m:bytes
   nil[0m, or equivalently, when no keyword arguments are specified, the
   entire file contents are returned as a string.  In general, [47m:start
   s[0m specifies the part of the file starting at byte position [47ms[0m of the
-  file, and [47m:bytes b[0m specifies that only the first [47mb[0m bytes are to be
-  read starting at that position --- however, stopping at the end of
-  the file if [47mb+s[0m exceeds the length [47mL[0m of the file.  Below we call
-  this case that [47mb+s>L[0m the ``truncation case''.
-
-  Note that ACL2 characters always fit into a single byte, which is why
-  we can talk about ``bytes'' here.
+  file, and the [47m:bytes[0m argument specifies the number of consecutive
+  bytes to be included starting at that position: [47m:bytes nil[0m
+  specifies that the rest of the file is to be included, while for a
+  natural number [47mb[0m, [47m:bytes b[0m specifies that only the next [47mb[0m bytes are
+  to be included --- but, stopping at the end of the file if [47mb+s[0m
+  exceeds the length [47mL[0m of the file.  Below we call this case that
+  [47mb+s>L[0m the [3mtruncation case[0m.
 
   The [47m:close[0m argument affects handling of the Lisp stream that is
   created for the specified file.  When the value of [47m:close[0m is the
-  default, [47m:default[0m, this stream is closed immediately after the read
-  exactly when either [47m:bytes[0m has value [47mnil[0m (the default) or we are in
-  the truncation case [47mb+s>L[0m described above.  But otherwise the
-  stream remains open, which could cause a problem since operating
-  systems can complain when too many streams are open at the same
-  time.  If the value of [47m:bytes[0m is non-[47mnil[0m (hence, a natural number),
-  then you may want to specify [47m:close t[0m to prevent that problem,
-  unless you plan to read more bytes from the same file.  If you
-  decide to close the file later, this can be accomplished
-  efficiently by evaluating the following form for your file,
-  [47m\"<file>\"[0m.
+  default, [47m:default[0m, the criterion for closing the stream immediately
+  after the read completes is that either [47m:bytes[0m has value [47mnil[0m (the
+  default) or we are in the truncation case [47mb+s>L[0m described above.
+  Once this stream is closed, a Lisp error occurs if
+  [47mread-file-with-string[0m is called when either [47m:start[0m or [47m:bytes[0m
+  specifies a non-zero value unless the file-clock of the state is
+  advanced first by evaluating [47m(INCREMENT-FILE-CLOCK STATE)[0m.  See
+  [state] for a discussion of the logical role of the file-clock of
+  the state.
 
-    (time$ (read-file-into-string \"<file>\" :start 0 :bytes 0 :close t))
+  Here is a typical log showing such an error message from successive
+  reads, together with the evaluation of [47m(INCREMENT-FILE-CLOCK STATE)[0m
+  as a remedy.  The next section, further below, discusses the
+  closing of streams.
 
-  Compared with the usual [io] routines provided by ACL2,
-  [47mread-file-into-string[0m is generally much more efficient, and also it
-  does not return [47m[state][0m.  Note that the expansion of a call of this
-  macro takes [47mstate[0m as an argument; so if you call it in the body of
-  a function definition, then --- as usual for functions that take
-  [47mstate[0m --- either [47m(set-state-ok t)[0m must have been evaluated or else
-  a suitable [47m:stobjs[0m declaration, typically [47m:stobjs state[0m, must be
-  provided (see [xargs]).
-
-  The constant [47m*read-file-into-string-bound*[0m (see the definition below)
-  establishes a strict upper bound on the size of the string
-  returned.  If the file (or specified portion thereof) contains more
-  bytes than this, then [47mnil[0m is returned.
-
-  There are two checks to guarantee that [47mread-file-into-string[0m is truly
-  a function --- that is, it returns the same value for two calls
-  with the same inputs.  The primary check ensures that the write
-  date of the file has not changed in the interval between two such
-  calls unless the [47mfile-clock[0m component of the ACL2 state has been
-  updated within that interval.  That update takes place when an
-  input or output channel is opened or closed in the usual way (that
-  is, using [47mopen-input-channel[0m, [47mopen-output-channel[0m,
-  [47mclose-input-channel[0m, or [47mclose-output-channel[0m; see [io]).  However,
-  it suffices to evaluate the following form, which returns the
-  [47m[state][0m obtained by incrementing its [47mfile-clock[0m.
-
-    (increment-file-clock state)
-
-  If however you make illegal successive reads as described above, a
-  Lisp error will occur with a message of the following form.
+    ACL2 !>(read-file-into-string \"tmp.txt\")
+    \"Hello
+    world.
+    \"
+    ACL2 !>(read-file-into-string \"tmp.txt\")
 
     ***********************************************
     ************ ABORTING from raw Lisp ***********
     ********** (see :DOC raw-lisp-error) **********
-    Error:  Illegal consecutive reads from file
-    \"<some_filename>\",
-    which appears to have been written between the two reads.
-    Execute (INCREMENT-FILE-CLOCK STATE) to avoid this error.
+    Error:  Apparently READ-FILE-INTO-STRING has previously closed the stream
+    that is associated with file
+    \"tmp.txt\".
+    Consider evaluating (INCREMENT-FILE-CLOCK STATE).
     See :DOC read-file-into-string.
     While executing: READ-FILE-INTO-STRING2
     ***********************************************
 
-  A similar error may occur when a call of [47mread-file-into-string[0m is
-  followed by a call of [47m[open-input-channel][0m on the same filename
-  when that file is modified between the two calls.  For low-level
-  details about logical issues being addressed by such errors, see
-  the comment in the definition of [47m*read-file-into-string-alist*[0m in
-  the ACL2 sources.
+    The message above might explain the error.  If not, and
+    if you didn't cause an explicit interrupt (Control-C),
+    then it may help to see :DOC raw-lisp-error.
 
-  The other check ensures that the write date of the file has not
-  changed while a call is in progress.  When that check fails the
-  corresponding Lisp error is of the following form.
+    To enable breaks into the debugger (also see :DOC acl2-customization):
+    (SET-DEBUGGER-ENABLE T)
+    ACL2 !>(INCREMENT-FILE-CLOCK STATE)
+    <state>
+    ACL2 !>(read-file-into-string \"tmp.txt\")
+    \"Hello
+    world.
+    \"
+    ACL2 !>
 
+  The implementation of [47mread-file-into-string[0m advances a pointer with
+  each successive read while the stream is open.  An error is
+  signaled when attempting to call [47mread-file-into-string[0m with a
+  [47m:start[0m value that points to a byte that is not beyond all bytes
+  already read by previous calls (unless there is an intervening
+  evaluation of [47m(INCREMENT-FILE-CLOCK STATE)[0m).  Here is a sample log
+  to illustrate this point.
+
+    ACL2 !>(read-file-into-string \"tmp.txt\" :bytes 3)
+    \"Hel\"
+    ACL2 !>(read-file-into-string \"tmp.txt\" :start 3 :bytes 2)
+    \"lo\"
+    ACL2 !>(read-file-into-string \"tmp.txt\" :start 4)
+
+    ***********************************************
     ************ ABORTING from raw Lisp ***********
     ********** (see :DOC raw-lisp-error) **********
-    Error:  Illegal attempt to call READ-FILE-INTO-STRING concurrently
-    with some write to that file!  See :DOC read-file-into-string.
+    Error:  The :start value, 4, specified for a call of READ-FILE-INTO-STRING,
+    is less than the position 5 immediately after a previous read of file
+    \"tmp.txt\" at the same file-clock.
+    Consider evaluating (INCREMENT-FILE-CLOCK STATE).
+    See :DOC read-file-into-string.
+    While executing: READ-FILE-INTO-STRING2
     ***********************************************
 
-  We close by showing the relevant ACL2 definitions in the logic, that
-  is, not including the special raw Lisp (under the hood) code in the
-  definition of [47mread-file-into-string2[0m.
+
+Closing streams
+
+  A call of [47mread-file-into-string[0m on a given filename opens a Lisp
+  stream connected to the given file.  ACL2 keeps track of such an
+  association of filenames with streams.
+
+  If the stream remains open for numerous calls of
+  [47mread-file-into-string[0m, the operating system could eventually
+  complain because too many streams are open at the same time.
+  Recall that if the value of [47m:bytes[0m is non-[47mnil[0m (hence, a natural
+  number), then, except in the truncation case, the stream remains
+  open.  In such cases may want to specify [47m:close t[0m to prevent
+  leaving too many streams open, unless you plan to read more bytes
+  from the same file.  If you decide to close the stream later, this
+  can be accomplished efficiently without reading any bytes by
+  evaluating the following form for your file, [47m\"<file>\"[0m.
+
+    (read-file-into-string \"<file>\" :bytes 0 :close t)
+
+
+Logical definitions
+
+  We close by showing the relevant ACL2 definitions in the logic.
+  Thus, these do not show the special raw Lisp (under the hood) code
+  in the definition of [47mread-file-into-string2[0m.
 
   [31;1mFunction: [0m<read-file-into-string1>
 
@@ -146174,6 +146274,12 @@ Subtopics
   has two components: its name (see [symbol-name]) and its package
   name (see [symbol-package-name]).
 
+  Note that ACL2 is case-insensitive when dealing with symbols.  The
+  symbol [47ma[0m is read in as the symbol [47mA[0m.  Thus, when writing function
+  names, for example, we can write [47mrev[0m, [47mRev[0m, [47mREV[0m, or even [47mReV[0m and
+  always be referring to the function [47mREV[0m.  By default, ACL2 prints
+  symbols in uppercase.
+
 
 Subtopics
 
@@ -149709,9 +149815,10 @@ Subtopics
   individuals.  Often, for example, the syntactic characterization of
   a term is that it is either a variable symbol or the application of
   a function symbol to the appropriate number of argument terms.
-  Traditionally, ``atomic formulas'' are built from terms with
-  predicate symbols such as ``equal'' and ``member;'' ``formulas''
-  are then built from atomic formulas with propositional
+  (Note that ACL2 is case-insensitive when dealing with symbols; see
+  [symbols].)  Traditionally, ``atomic formulas'' are built from
+  terms with predicate symbols such as ``equal'' and ``member;''
+  ``formulas'' are then built from atomic formulas with propositional
   ``operators'' like ``not,'' ``and,'' and ``implies.'' Theorems are
   formulas.  Theorems are ``valid'' in the sense that the value of a
   theorem is true, in any model of the axioms and under all possible
