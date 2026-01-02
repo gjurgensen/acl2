@@ -122908,23 +122908,111 @@ Subtopics
   (RECURSION-AND-INDUCTION)
   "Recursion and Induction: Abbreviations for Terms
 
-  If [3mx[0m  is [47mt[0m, [47mnil[0m, an integer, a character object, or a string, and [3mx[0m
-  is used where a term is expected, then [3mx[0m  abbreviates the quoted
-  constant [47m'[0m[3mx[0m.  Recall that a single quote mark followed by a symbol,
-  e.g., [47m'load[0m, is a quoted constant.
+  Recall that a term is a variable symbol, a quoted constant, or a
+  function application written as a sequence, enclosed in
+  parentheses, consisting of a function symbol of arity [3mn[0m  followed
+  by [3mn[0m  terms.  See Terms (see [R-AND-I-TERMS]).  However, we
+  implement certain conventions that allow terms to be abbreviated.
+  The conventions allow case to be ignored (when writing symbols),
+  certain constants to be written without being quoted, and certain
+  primitive functions to be given more arguments than their arity
+  implies.  The ACL2 implementation also supports a powerful macro
+  facility inherited from Lisp, but we do not discuss macros in this
+  course.
 
-  In the following, an [3mexpression[0m  is an integer, a character object,
-  a string, a symbol, an optionally dotted parenthesized sequence of
+  When input is being read in and parsed into lexical tokens, the
+  characters in tokens parsed as Lisp symbols are converted to upper
+  case.  Thus, the following are three different ways to type in the
+  same symbol: [47mNIL[0m, [47mNil[0m, and [47mnil[0m.  Similarly, [47m(cons 'e x)[0m and [47m(Cons
+  'E x)[0m are both read the same way as [47m(CONS 'E X)[0m.  It may seem
+  strange to have different ways to write the same symbol but you're
+  very familiar with the similar conventions applied to numbers: 123,
+  +123, and 0123 are three different ways to write the same integer.
+  If you wish to type a symbol whose name includes lower case
+  characters you must surround the whole symbol with vertical bars.
+  E.g., [47m|nil|[0m is a different symbol than [47mnil[0m.  But in this course we
+  do not use symbols whose names include lower case characters.
+
+  The conversion to upper case only happens when parsing symbols.
+  Strings and character objects are not automatically converted to
+  upper case.  Thus, [47m\"NIL\"[0m, [47m\"Nil\"[0m and [47m\"nil\"[0m are three different
+  strings, and [47m#\\a[0m is a different character object than [47m#\\A[0m.
+
+  In this document, when we write symbols we generally write them in
+  lower case typewriter font, e.g., [47mnil[0m, and we capitalize them when
+  used as the first word of a sentence, e.g., [47mNil[0m. Occasionally we
+  write them in all upper case, e.g., [47mNIL[0m, to emphasize that
+  particular symbol or to further distinguish the symbol from a
+  nearby English word with the same spelling, as in the sentence
+  ``[47mAND[0m and [47mOR[0m denote conjunction and disjunction.'' But regardless
+  of the case we use --- whether lower case, captialized, or upper
+  case --- we are referring to the same upper case symbol.
+
+  The next convention allows you to drop the single quote mark on
+  certain constants.  The definition of a term requires constants to
+  be quoted.  E.g., since [47mevenp[0m is a function symbol of arity 1,
+  [47m(evenp '3)[0m is a term but [47m(evenp 3)[0m is not because [47m3[0m is neither a
+  variable symbol, a [3mquoted[0m  constant, or a function application.
+  But we accept the latter as an abbreviation of the former because
+  what else could it mean?  To see that ambiguity is lurking if quote
+  marks are dropped, consider [47m(member 'e '(a b c))[0m, where [47mmember[0m is a
+  function symbol of arity 2.  What happens if we drop either or both
+  of the quote marks?  Then we might still get a term that means
+  something completely different.  Here, the function [47mmember[0m means
+  ``is the first argument an element of the second?''
+
+    * [47m(member 'e '(a b c))[0m: is the constant symbol [47me[0m an element of the
+      constant list [47m(a b c)[0m?
+
+    * [47m(member e '(a b c))[0m: is the value of the variable [47me[0m an element of the
+      constant list [47m(a b c)[0m?
+
+    * [47m(member 'e (a b c))[0m: is the constant symbol [47me[0m an element of the list
+      computed by applying the function [47ma[0m to the values of variables
+      [47mb[0m and [47mc[0m?
+
+    * [47m(member e (a b c))[0m: is the value of the variable [47me[0m an element of the
+      list computed by applying the function [47ma[0m to the values of
+      variables [47mb[0m and [47mc[0m?
+
+  Meaning changes if quote marks are dropped from symbols and lists.
+  When the symbol [47me[0m is quoted in a term it denotes the constant [47me[0m;
+  when [47me[0m is not quoted it is a variable symbol and takes on whatever
+  value that variable has been assigned in the environment.
+  Similarly, when a list is quoted it denotes that list constant;
+  when it is not quoted it denotes the application of its first
+  element to the values of the other elements.
+
+  But unquoted numbers, character objects, and strings used as terms
+  cannot be confused with variable symbols or function applications,
+  so by convention they just abbreviate their own quotations.
+
+  More precisely, the quote convention for atomic objects is as
+  follows: If [3mx[0m  is the symbol [47mT[0m, the symbol [47mNIL[0m, an integer, a
+  character object, or a string, and [3mx[0m  is used where a term is
+  expected, then [3mx[0m  abbreviates the quoted constant [47m'[0m[3mx[0m.
+
+  Next we deal with quoted parenthesized expressions.  In the
+  following, an [3mexpression[0m  is an integer, a character object, a
+  string, a symbol, an optionally dotted parenthesized sequence of
   expressions, or a single quote mark followed by an expression.  By
   [3moptionally dotted parenthesized sequence of expressions[0m we mean a
   parenthesized non-empty sequence of expressions, optionally
   containing a dot (.) between the last two expressions in the
-  sequence.  For example ``[47m(A 123 . B)[0m'' and ``[47m(A (123 B) 'C)[0m'' are
-  both optionally dotted parenthesized sequences of expressions.
+  sequence.  For example ``[47m(A 123 B)[0m'' and ``[47m(A 123 . B)[0m'' are both
+  optionally dotted parenthesized sequences of expressions.  (There's
+  no dot in the first expression; the dot in the second one changes
+  the meaning.)
 
-  A single quote mark followed by an optionally dotted parenthesized
-  sequence of expressions, when used as a term, denotes a [47mcons[0m term
-  as follows, using these four rules:
+  We'll be precise in a moment, but [47m'(A 123 B)[0m is an abbreviation for
+  [47m(cons 'A (cons '123 (cons 'B 'nil)))[0m, which could also be written
+  [47m(cons 'A (cons 123 (cons 'B nil)))[0m.  Meanwhile, [47m'(A 123 . B)[0m is an
+  abbreviation for [47m(cons 'A (cons '123 'B))[0m which could also be
+  written [47m(cons 'A (cons 123 'B))[0m.
+
+  More generally, a single quote mark followed by an optionally dotted
+  parenthesized sequence of expressions, when used as a term, denotes
+  a [47mcons[0m term as follows, using these four rules:
 
   [3mNULL Rule:[0m  If '() is used as a term, it abbreviates [47m'nil[0m.
 
@@ -122944,10 +123032,13 @@ Subtopics
 
   If [47m'(A B . C)[0m is used as a term it denotes [47m(cons 'A (cons 'B 'C))[0m.
 
-  It remains to deal with cases like [47m'[0m[47m'A[0m and [47m'[0m[47m'(A 'B)[0m involving
-  multiple single quote marks.  We do not expect to use such
-  expressions in this course but we specify their meaning just for
-  completeness.
+  It remains to deal with cases like [47m'[0m[47m'A[0m and [47m'[0m[47m'(A 'B)[0m involving nested
+  single quote marks.  Expressions involving nested single quote
+  marks will not arise in this course.  But we specify their meaning
+  for completeness.
+
+  [3mYou may consider the following paragraph and the subsequent example
+  as optional![0m
 
   Let [3m\\alpha[0m  be an expression that does not start with a single quote
   mark.  Consider a sequence of two or more single quote marks
@@ -122974,19 +123065,20 @@ Subtopics
   Note that every occurrence of single quote now marks a quoted
   constant.
 
+  [3mEnd of optional material.[0m
+
   When [47m(list [3mx_1[0m[47m   ... )[0m is used as a term, it abbreviates [47m(cons [3mx_1[0m[47m
   (list  ... ))[0m.  When [47m(list)[0m is used as a term, it abbreviates [47mnil[0m.
   Thus [47m(list a b c)[0m abbreviates [47m(cons a (cons b (cons c nil)))[0m.
 
-  [47mAnd[0m and [47mor[0m will be defined as function symbols of two arguments.
-  But if [47mand[0m is used as though it were a function symbol of more than
-  two arguments, then it abbreviates the corresponding
-  right-associated nest of [47mand[0ms.  Thus, [47m(and p q r s)[0m, when used
-  where a term is expected, abbreviates [47m(and p (and q (and r s)))[0m.
-
-  If [47mor[0m is used as though it were a function symbol of more than two
-  arguments, then it abbreviates the corresponding right-associated
-  nest of [47mor[0ms.
+  For the purposes of this course you may imagine that [47mAND[0m and [47mOR[0m are
+  defined as function symbols of two arguments.  But we use them as
+  though they were function symbols of varying numbers of argument.
+  When [47mAND[0m and [47mOR[0m are provided more than two arguments it just
+  abbreviates the corresponding right-associated nest.  Thus, [47m(and p
+  q r s)[0m, when used where a term is expected, abbreviates [47m(and p (and
+  q (and r s)))[0m.  In the actual ACL2 implementation, [47mAND[0m and [47mOR[0m are
+  ``macros.''
 
   (Maybe explore term abbreviation in ACL2?  But abbreviation is
   complicated in ACL2 by the presence of a powerful macro facility.
@@ -125987,14 +126079,15 @@ Recursion and Induction Table of Contents
 
   For the purposes of this document, a [3mterm[0m  is a variable symbol, a
   quoted constant, or a function application written as a sequence,
-  enclosed in parenthesis, consisting of a function symbol of arity [3mn[0m
+  enclosed in parentheses, consisting of a function symbol of arity [3mn[0m
   followed by [3mn[0m  terms.
 
   Since [47mcar[0m is a function symbol of arity one and [47mcons[0m is a function
-  symbol of arity two, then [47m(cons (car x) y)[0m is a term.  In more
-  conventional notation this term would be written [3mcons[0m ([3mcar[0m ([3mx[0m ), [3my[0m
-  ).  We call [47m(car x)[0m and [47my[0m the [3mactual expressions[0m  or [3mactuals[0m  of
-  the [3mfunction call[0m  [47m(cons (car x) y)[0m.
+  symbol of arity two, and [47mx[0m and [47my[0m are variable symbols, then [47m(cons
+  (car x) y)[0m is a term.  In more conventional notation this term
+  would be written [3mcons[0m ([3mcar[0m ([3mx[0m ), [3my[0m ).  We call [47m(car x)[0m and [47my[0m the
+  [3mactual expressions[0m  or [3mactuals[0m  of the [3mfunction call[0m  [47m(cons (car x)
+  y)[0m.
 
   Semantically, terms are interpreted with respect to (i) an
   assignment binding variable symbols to constants and (ii) an

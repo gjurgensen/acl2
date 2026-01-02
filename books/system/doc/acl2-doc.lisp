@@ -123977,16 +123977,21 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   :long "<p>
  For the purposes of this document, a <i>term</i>&nbsp; is a variable symbol, a
  quoted constant, or a function application written as a sequence,
- enclosed in parenthesis, consisting of a function symbol of arity <i>n</i>&nbsp;
+ enclosed in parentheses, consisting of a function symbol of arity <i>n</i>&nbsp;
  followed by <i>n</i>&nbsp; terms.
  </p>
 
  <p>
- Since <tt>car</tt> is a function symbol of arity one and <tt>cons</tt> is a function
- symbol of arity two, then <tt>(cons (car x) y)</tt> is a term.  In more
- conventional notation this term would be written <i>cons</i>&nbsp;(<i>car</i>&nbsp;(<i>x</i>&nbsp;), <i>y</i>&nbsp;).  We call
- <tt>(car x)</tt> and <tt>y</tt> the <i>actual expressions</i>&nbsp; or <i>actuals</i>&nbsp; of
- the <i>function call</i>&nbsp; <tt>(cons (car x) y)</tt>.
+
+ Since <tt>car</tt> is a function symbol of arity one and <tt>cons</tt> is a
+ function symbol of arity two, and <tt>x</tt> and <tt>y</tt> are variable
+ symbols, then <tt>(cons (car x) y)</tt> is a term.  In more conventional
+ notation this term would be written
+ <i>cons</i>&nbsp;(<i>car</i>&nbsp;(<i>x</i>&nbsp;), <i>y</i>&nbsp;).  We call
+ <tt>(car x)</tt> and <tt>y</tt> the <i>actual expressions</i>&nbsp; or
+ <i>actuals</i>&nbsp; of the <i>function call</i>&nbsp; <tt>(cons (car x)
+ y)</tt>.
+
  </p>
 
  <p>
@@ -124204,27 +124209,127 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   :parents (recursion-and-induction)
   :short "Recursion and Induction: Abbreviations for Terms"
   :long "<p>
- If <i>x</i>&nbsp; is <tt>t</tt>, <tt>nil</tt>, an integer, a character object, or a
- string, and <i>x</i>&nbsp; is used where a term is expected, then <i>x</i>&nbsp; abbreviates
- the quoted constant <tt>'</tt><i>x</i>.  Recall that a single quote mark
- followed by a symbol, e.g., <tt>'load</tt>, is a quoted constant.
+ Recall that a term is a variable symbol, a quoted constant, or a function
+ application written as a sequence, enclosed in parentheses, consisting of a
+ function symbol of arity <i>n</i>&nbsp; followed by <i>n</i>&nbsp; terms.
+ See <see topic='@(url r-and-i-terms)'>Terms</see>.
+ However, we implement certain conventions that allow terms to be abbreviated.
+ The conventions allow case to be ignored (when writing symbols), certain
+ constants to be written without being quoted, and certain primitive
+ functions to be given more arguments than their arity implies.  The ACL2
+ implementation also supports a powerful macro facility inherited from Lisp,
+ but we do not discuss macros in this course.
  </p>
 
  <p>
- In the following, an <i>expression</i>&nbsp; is an integer, a character object, a
- string, a symbol, an optionally dotted parenthesized sequence of expressions,
- or a single quote mark followed by an expression.  By <i>optionally dotted
- parenthesized sequence of expressions</i> we mean a parenthesized non-empty
- sequence of expressions, optionally containing a dot (.) between the last two
- expressions in the sequence.  For example &ldquo;<tt>(A 123 . B)</tt>&rdquo; and &ldquo;<tt>(A
- (123 B) 'C)</tt>&rdquo; are both optionally dotted parenthesized sequences of
- expressions.
+ When input is being read in and parsed into lexical tokens, the characters in
+ tokens parsed as Lisp symbols are converted to upper case.  Thus, the
+ following are three different ways to type in the same symbol: @('NIL'),
+ @('Nil'), and @('nil').  Similarly, @('(cons 'e x)') and @('(Cons 'E x)') are
+ both read the same way as @('(CONS 'E X)').  It may seem strange to have
+ different ways to write the same symbol but you're very familiar with the
+ similar conventions applied to numbers: 123, +123, and 0123 are three
+ different ways to write the same integer.  If you wish to type a symbol whose
+ name includes lower case characters you must surround the whole symbol with
+ vertical bars.  E.g., @('|nil|') is a different symbol than @('nil').  But in
+ this course we do not use symbols whose names include lower case characters.
  </p>
 
  <p>
- A single quote mark followed by an optionally dotted parenthesized
- sequence of expressions, when used as a term, denotes a <tt>cons</tt>
- term as follows, using these four rules:
+ The conversion to upper case only happens when parsing symbols.  Strings and
+ character objects are not automatically converted to upper case.  Thus,
+ @('\"NIL\"'), @('\"Nil\"') and @('\"nil\"') are three different strings, and
+ @('#\\a') is a different character object than @('#\\A').
+ </p>
+
+ <p>
+ In this document, when we write symbols we generally write them in lower case
+ typewriter font, e.g., @('nil'), and we capitalize them when used as the first
+ word of a sentence, e.g., @('Nil'). Occasionally we write them in all upper
+ case, e.g., @('NIL'), to emphasize that particular symbol or to further
+ distinguish the symbol from a nearby English word with the same spelling, as
+ in the sentence ``<tt>AND</tt> and <tt>OR</tt> denote conjunction and
+ disjunction.''  But regardless of the case we use &mdash; whether lower case,
+ captialized, or upper case &mdash; we are referring to the same upper case
+ symbol.
+ </p>
+
+ <p> The next convention allows you to drop the single quote mark on certain
+ constants.  The definition of a term requires constants to be quoted.  E.g.,
+ since @('evenp') is a function symbol of arity 1, @('(evenp '3)') is a term
+ but @('(evenp 3)') is not because @('3') is neither a variable symbol, a
+ <i>quoted</i>&nbsp; constant, or a function application.  But we accept the
+ latter as an abbreviation of the former because what else could it mean?  To
+ see that ambiguity is lurking if quote marks are dropped, consider @('(member
+ 'e '(a b c))'), where @('member') is a function symbol of arity 2.  What
+ happens if we drop either or both of the quote marks?  Then we might still get
+ a term that means something completely different.  Here, the function
+ @('member') means ``is the first argument an element of the second?''  </p>
+
+ <ul>
+
+ <li>@('(member 'e '(a b c))'): is the constant symbol @('e') an element of the
+ constant list @('(a b c)')? </li>
+
+ <li>@('(member e '(a b c))'): is the value of the variable @('e') an element
+ of the constant list @('(a b c)')?</li>
+
+ <li>@('(member 'e (a b c))'): is the constant symbol @('e') an element of the
+ list computed by applying the function @('a') to the values of variables
+ @('b') and @('c')?</li>
+ 
+ <li>@('(member e (a b c))'): is the value of the variable @('e') an element of
+ the list computed by applying the function @('a') to the values of variables
+ @('b') and @('c')?</li>
+
+ </ul>
+
+ <p>
+ Meaning changes if quote marks are dropped from symbols and lists.  When
+ the symbol @('e') is quoted in a term it denotes the constant @('e'); when
+ @('e') is not quoted it is a variable symbol and takes on whatever value that
+ variable has been assigned in the environment.  Similarly, when a list is
+ quoted it denotes that list constant; when it is not quoted it denotes the
+ application of its first element to the values of the other elements.
+ </p>
+
+ <p>
+ But unquoted numbers, character objects, and strings used as terms cannot be
+ confused with variable symbols or function applications, so by convention they
+ just abbreviate their own quotations.
+ </p>
+
+ <p>
+ More precisely, the quote convention for atomic objects is as follows:
+ If <i>x</i>&nbsp; is the symbol <tt>T</tt>, the symbol <tt>NIL</tt>, an
+ integer, a character object, or a string, and <i>x</i>&nbsp; is used where a
+ term is expected, then <i>x</i>&nbsp; abbreviates the quoted constant
+ <tt>'</tt><i>x</i>.
+ </p>
+
+ <p>
+ Next we deal with quoted parenthesized expressions.  In the following, an
+ <i>expression</i>&nbsp; is an integer, a character object, a string, a symbol,
+ an optionally dotted parenthesized sequence of expressions, or a single quote
+ mark followed by an expression.  By <i>optionally dotted parenthesized
+ sequence of expressions</i> we mean a parenthesized non-empty sequence of
+ expressions, optionally containing a dot (.) between the last two expressions
+ in the sequence.  For example &ldquo;<tt>(A 123 B)</tt>&rdquo; and
+ &ldquo;<tt>(A 123 . B)</tt>&rdquo; are both optionally dotted parenthesized
+ sequences of expressions.  (There's no dot in the first expression; the dot in
+ the second one changes the meaning.)
+ </p>
+
+ <p>We'll be precise in a moment, but @(''(A 123 B)') is an abbreviation for
+ @('(cons 'A (cons '123 (cons 'B 'nil)))'), which could also be written
+ @('(cons 'A (cons 123 (cons 'B nil)))').  Meanwhile, @(''(A 123 . B)') is an
+ abbreviation for @('(cons 'A (cons '123 'B))') which could also be written
+ @('(cons 'A (cons 123 'B))').</p>
+
+ <p>
+ More generally, a single quote mark followed by an optionally dotted
+ parenthesized sequence of expressions, when used as a term, denotes a
+ <tt>cons</tt> term as follows, using these four rules:
  </p>
 
  <p>
@@ -124264,9 +124369,14 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>
  It remains to deal with cases like <tt>'</tt><tt>'A</tt> and
- <tt>'</tt><tt>'(A 'B)</tt> involving multiple single quote marks.
- We do not expect to use such expressions in this course
- but we specify their meaning just for completeness.
+ <tt>'</tt><tt>'(A 'B)</tt> involving nested single quote marks.
+ Expressions involving nested single quote marks will not arise in
+ this course.  But we specify their meaning for completeness.
+ </p>
+
+ <p>
+ <i>You may consider the following paragraph and the subsequent example as
+ optional!</i>
  </p>
 
  <p>
@@ -124298,6 +124408,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>Note that every occurrence of single quote now marks a quoted constant.</p>
 
+ <p><i>End of optional material.</i></p>
+
  <p>
  When <tt>(list <i>x_1</i>&nbsp; &nbsp;&hellip;&nbsp;)</tt> is used as a term, it abbreviates
  <tt>(cons <i>x_1</i>&nbsp; (list &nbsp;&hellip;&nbsp;))</tt>.  When <tt>(list)</tt> is used as a term,
@@ -124306,24 +124418,23 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  </p>
 
  <p>
- <tt>And</tt> and <tt>or</tt> will be defined as function symbols of two arguments.
- But if <tt>and</tt> is used as though it were a function symbol of more than two
- arguments, then it abbreviates the corresponding right-associated nest of
- <tt>and</tt>s.  Thus, <tt>(and p q r s)</tt>, when used where a term is expected,
- abbreviates <tt>(and p (and q (and r s)))</tt>.
+
+ For the purposes of this course you may imagine that <tt>AND</tt> and
+ <tt>OR</tt> are defined as function symbols of two arguments.  But we
+ use them as though they were function symbols of varying numbers of argument.
+ When <tt>AND</tt> and <tt>OR</tt> are provided more than two arguments it just
+ abbreviates the corresponding right-associated nest.  Thus, <tt>(and p q r
+ s)</tt>, when used where a term is expected, abbreviates <tt>(and p (and
+ q (and r s)))</tt>.  In the actual ACL2 implementation, @('AND') and @('OR')
+ are ``macros.''
+
  </p>
 
- <p>
- If <tt>or</tt> is used as though it were a function symbol of more than two
- arguments, then it abbreviates the corresponding right-associated nest of
- <tt>or</tt>s.
- </p>
-
-<p>(Maybe explore term abbreviation in ACL2?  But abbreviation is complicated in
-ACL2 by the presence of a powerful macro facility.  To learn about ACL2 term
-abbreviation, explore &lt;&lt;@(see term)&gt;&gt;, paying special attention to
-&ldquo;untranslated&rdquo; terms.  Maybe also explore &lt;&lt;@(see
-macros)&gt;&gt;.)</p>
+ <p>(Maybe explore term abbreviation in ACL2?  But abbreviation is complicated in
+ ACL2 by the presence of a powerful macro facility.  To learn about ACL2 term
+ abbreviation, explore &lt;&lt;@(see term)&gt;&gt;, paying special attention to
+ &ldquo;untranslated&rdquo; terms.  Maybe also explore &lt;&lt;@(see
+ macros)&gt;&gt;.)</p>
 
  <p>
  <b>Problem 7. <br/></b> Show the term abbreviated by each of the following:
