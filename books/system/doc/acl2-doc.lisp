@@ -55394,11 +55394,11 @@ tables in the current Hons Space."
  example, if @('\"P\"') were introduced with</p>
 
  @({
-  (defpkg \"P\" '(LISP::X))
+  (defpkg \"P\" '(COMMON-LISP::X))
  })
 
  <p>then in Common Lisp @('(symbol-package-name (intern \"X\" \"P\"))') returns
- @('\"LISP\"').</p>
+ @('\"COMMON-LISP\"').</p>
 
  <p>The obvious restriction on @('intern') is that its second argument be the
  name of a package known to ACL2.  We cannot express such a restriction
@@ -55462,7 +55462,7 @@ tables in the current Hons Space."
  <p>For example, suppose @('\"MY-PKG\"') was created by</p>
 
  @({
-  (defpkg \"MY-PKG\" '(ACL2::ABC LISP::CAR)).
+  (defpkg \"MY-PKG\" '(ACL2::ABC COMMON-LISP::CAR)).
  })
 
  <p>Let @('w') be @(''my-pkg::witness').  Observe that</p>
@@ -55485,7 +55485,7 @@ tables in the current Hons Space."
 
   (intern-in-package-of-symbol \"ABC\" w) is ACL2::ABC
 
-  (intern-in-package-of-symbol \"CAR\" w) is LISP::CAR
+  (intern-in-package-of-symbol \"CAR\" w) is COMMON-LISP::CAR (i.e., ACL2::CAR)
 
   (intern-in-package-of-symbol \"car\" w) is MY-PKG::|car|
  })")
@@ -115454,11 +115454,12 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  For example, suppose @('\"MY-PKG\"') was created by</p>
 
  @({
-  (defpkg \"MY-PKG\" '(ACL2::ABC LISP::CAR)).
+  (defpkg \"MY-PKG\" '(ACL2::ABC COMMON-LISP::CAR)).
  })
 
  <p>Then @('(pkg-imports \"MY-PKG\")') equals the list @('(ACL2::ABC
- LISP::CAR)').</p>
+ COMMON-LISP::CAR)').  Note that @('COMMON-LISP::CAR') is the same as
+ @('ACL2::CAR'), which is printed as just @('CAR').</p>
 
  <p>If @('pkg') is not a string, then @('(pkg-imports pkg)') is @('nil').  If
  @('pkg') is a string but not the name of a package known to ACL2, then the

@@ -59022,10 +59022,10 @@ Subtopics
   that would be premature because the imports to the package are
   unknown.  For example, if [47m\"P\"[0m were introduced with
 
-    (defpkg \"P\" '(LISP::X))
+    (defpkg \"P\" '(COMMON-LISP::X))
 
   then in Common Lisp [47m(symbol-package-name (intern \"X\" \"P\"))[0m returns
-  [47m\"LISP\"[0m.
+  [47m\"COMMON-LISP\"[0m.
 
   The obvious restriction on [47mintern[0m is that its second argument be the
   name of a package known to ACL2.  We cannot express such a
@@ -59082,7 +59082,7 @@ Subtopics
 
   For example, suppose [47m\"MY-PKG\"[0m was created by
 
-    (defpkg \"MY-PKG\" '(ACL2::ABC LISP::CAR)).
+    (defpkg \"MY-PKG\" '(ACL2::ABC COMMON-LISP::CAR)).
 
   Let [47mw[0m be [47m'my-pkg::witness[0m.  Observe that
 
@@ -59101,7 +59101,7 @@ Subtopics
 
     (intern-in-package-of-symbol \"ABC\" w) is ACL2::ABC
 
-    (intern-in-package-of-symbol \"CAR\" w) is LISP::CAR
+    (intern-in-package-of-symbol \"CAR\" w) is COMMON-LISP::CAR (i.e., ACL2::CAR)
 
     (intern-in-package-of-symbol \"car\" w) is MY-PKG::|car|")
  (INTERRUPTS (POINTERS)
@@ -114006,9 +114006,11 @@ Implementation
   imported into [47mpkg[0m, which should be the name of a package known to
   ACL2.  For example, suppose [47m\"MY-PKG\"[0m was created by
 
-    (defpkg \"MY-PKG\" '(ACL2::ABC LISP::CAR)).
+    (defpkg \"MY-PKG\" '(ACL2::ABC COMMON-LISP::CAR)).
 
-  Then [47m(pkg-imports \"MY-PKG\")[0m equals the list [47m(ACL2::ABC LISP::CAR)[0m.
+  Then [47m(pkg-imports \"MY-PKG\")[0m equals the list [47m(ACL2::ABC
+  COMMON-LISP::CAR)[0m.  Note that [47mCOMMON-LISP::CAR[0m is the same as
+  [47mACL2::CAR[0m, which is printed as just [47mCAR[0m.
 
   If [47mpkg[0m is not a string, then [47m(pkg-imports pkg)[0m is [47mnil[0m.  If [47mpkg[0m is a
   string but not the name of a package known to ACL2, then the value
