@@ -10966,8 +10966,8 @@ way to split up large ACL2 developments into separate modules."
 
  <p>The default @('make') target in @('books/GNUmakefile'), called
  @('basic'), is quite fast &mdash; it excludes many books and certifies only
- books listed below, which tend to be widely used.  <b>WARNING</b>: This
- basic build is insufficient for validating
+ the directories listed below, which tend to be widely used.  <b>WARNING</b>:
+ This basic build is insufficient for validating
  changes that will go into the @(see community-books); for that, see
  @(see how-to-contribute).</p>
 
@@ -10981,6 +10981,7 @@ way to split up large ACL2 developments into separate modules."
  <li>@(see std)</li>
  <li>@(see xdoc) (in part)</li>
  <li>data-structures</li>
+ <li>apply</li>
  </ul>
 
  <p>To certify these books, you should be able to run @('make') as follows.  The
