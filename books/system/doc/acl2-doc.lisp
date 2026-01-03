@@ -10947,14 +10947,12 @@ way to split up large ACL2 developments into separate modules."
  <h3>Prerequisites</h3>
 
  <p>We assume that you have already installed ACL2 as per the
- @(see installation-instructions).</p>
+ @(see installation-instructions).  In particular, the @(see community-books)
+ should be present as the @('books/') subdirectory of your ACL2
+ distribution.</p>
 
  <p>We assume you know the path to your ACL2 executable.  Typically this is a
  script named @('saved_acl2') in your @('acl2-sources') directory.</p>
-
- <p>We assume the ACL2 @(see community-books) are installed in the @('books/')
- subdirectory of your ACL2 distribution, as is the case when you have followed
- the ACL2 @(see installation) instructions.</p>
 
  <p>The instructions below are suitable for ACL2 and all of its experimental
  extensions, e.g., ACL2(p) and ACL2(r).</p>
@@ -10966,13 +10964,12 @@ way to split up large ACL2 developments into separate modules."
 
  <h3>A Basic Build</h3>
 
- <p>Before ACL2 Version 6.4, building the Community Books could take several
- hours.  Now, the default @('make') target in @('books/GNUmakefile'), called
- @('basic'), is much faster &mdash; it excludes many books and certifies only
- books listed below, which tend to be widely used.  <b>WARNING</b>: the
- @('basic') target of @('books/GNUmakefile') is insufficient for validating
- changes that will go into the @(see community-books); for that, use the
- @('all') target.</p>
+ <p>The default @('make') target in @('books/GNUmakefile'), called
+ @('basic'), is quite fast &mdash; it excludes many books and certifies only
+ books listed below, which tend to be widely used.  <b>WARNING</b>: This
+ basic build is insufficient for validating
+ changes that will go into the @(see community-books); for that, see
+ @(see how-to-contribute).</p>
 
  <ul>
  <li>arithmetic</li>
