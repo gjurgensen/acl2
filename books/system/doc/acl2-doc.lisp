@@ -54508,7 +54508,8 @@ tables in the current Hons Space."
 (defxdoc installation
   :parents (acl2 about-acl2)
   :short "Installing ACL2"
-  :long "<p>See the @(see installation-instructions) for steps to install ACL2.</p>
+  :long "<p>See the @(see installation-instructions) for steps to install ACL2
+ on Unix-like systems (Linux, macOS, and FreeBSD).</p>
 
  <p>If you encounter problems installing ACL2, or need more information, see @(see
  installation-support).</p>
