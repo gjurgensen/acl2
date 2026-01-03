@@ -39233,7 +39233,7 @@ current fast alists."
  and have the same behavior on well-formed input, and both return @('nil').
  See @(see cw) for documentation on how to use both utilities.  Unlike @('cw'),
  which has a @(see guard) of @('t'), @('fmx-cw') has a non-trivial guard that
- can can catch errors in the use of tilde-directives.  Here is an example of
+ can catch errors in the use of tilde-directives.  Here is an example of
  such a guard violation, where the corresponding call of @('cw') would instead
  cause a hard error.</p>
 
@@ -122997,7 +122997,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  and some of these errors are shown below.</p>
 
  <p>Note that ACL2 characters always fit into a single byte, which is why we
- can can talk about ``bytes''.</p>
+ can talk about ``bytes''.</p>
 
  <p>Compared with the usual @(see IO) routines provided by ACL2,
  @('read-file-into-string') is generally much more efficient, and also it does
