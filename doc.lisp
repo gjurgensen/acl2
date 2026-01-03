@@ -4203,7 +4203,7 @@ Subtopics
       Control radix in which numbers are printed and printing of the radix
 
   [Set-print-case]
-      Control whether symbols are printed in upper case or in lower case
+      Control whether [symbols] are printed in upper case or in lower case
 
   [Set-print-radix]
       Control printing of the radix for numbers
@@ -5954,14 +5954,14 @@ Subtopics
   symbols but [47m+12[0m is a number.  Roughly speaking, when symbols are
   read lower case characters are converted to upper case, so we
   frequently do not distinguish [47mABC[0m from [47mAbc[0m or [47mabc[0m.  Click here (see
-  [Conversion]) for information about case conversion when symbols
-  are read.  However, any character can be used in a symbol, but some
-  characters must be ``escaped'' to allow the Lisp reader to parse
-  the sequence as a symbol.  For example, [47m|Abc|[0m is a symbol whose
-  first character is capitalized and whose remaining characters are
-  in lower case.  [47m|An odd duck|[0m is a symbol containing two #\\Space
-  characters.  See any Common Lisp documentation for the syntactic
-  rules for symbols.
+  [SYMBOLS]) {ICON} (see [A_Tiny_Warning_Sign]) for information about
+  case conversion when symbols are read.  However, any character can
+  be used in a symbol, but some characters must be ``escaped'' to
+  allow the Lisp reader to parse the sequence as a symbol.  For
+  example, [47m|Abc|[0m is a symbol whose first character is capitalized and
+  whose remaining characters are in lower case.  [47m|An odd duck|[0m is a
+  symbol containing two #\\Space characters.  See any Common Lisp
+  documentation for the syntactic rules for symbols.
 
   Technically, a symbol is a special kind of pair consisting of a
   package name (which is a string) and a symbol name (which is also a
@@ -22657,22 +22657,6 @@ See [47m[set-constraint-tracking][0m.")
                                (value-cmp (* 3 4)))
           (NIL 12)
           ACL2 !>")
- (CONVERSION
-  (PAGES_WRITTEN_ESPECIALLY_FOR_THE_TOURS)
-  "Conversion to Uppercase
-
-  When symbols are read by Common Lisp they are converted to upper
-  case.  Note carefully that this remark applies to the characters in
-  [3msymbols[0m.  The characters in strings are not converted upper case.
-
-  To type a symbol containing lower case characters you can enclose the
-  symbol in vertical bars, as in [47m|AbC|[0m or you can put a ``backslash''
-  before each lower case character you wish to preserve, as in [47mA\\bC[0m.
-  [47m|AbC|[0m and [47mA\\bC[0m are two different ways of writing the same symbol
-  (just like 2/4 and 1/2 are two different ways of writing the same
-  rational and 123 and 0123 are two different ways to write the same
-  natural number).  The symbol has three characters in its name, the
-  middle one of which is a lower case b.")
  (COPYRIGHT
   (ABOUT-ACL2)
   "ACL2 copyright, license, authorship
@@ -37749,13 +37733,16 @@ Subtopics
 
   {IMAGE}
 
+  Click here (see [SYMBOLS]) {ICON} (see [A_Tiny_Warning_Sign]) for an
+  explanation of conversion of symbols to upper case.
+
     ACL2 !>[31;1m(app nil '(x y z))[0m
     (X Y Z)
 
     ACL2 !>[31;1m(app '(1 2 3) '(4 5 6 7))[0m
     (1 2 3 4 5 6 7)
 
-    ACL2 !>[31;1m(app '(a b c d e f g) '(x y z))[0m   ; click here (see [Conversion]) for an explanation
+    ACL2 !>[31;1m(app '(a b c d e f g) '(x y z))[0m
     (A B C D E F G X Y Z)
 
     ACL2 !>[31;1m(app (app '(1 2) '(3 4)) '(5 6))[0m
@@ -59035,10 +59022,10 @@ Subtopics
   that would be premature because the imports to the package are
   unknown.  For example, if [47m\"P\"[0m were introduced with
 
-    (defpkg \"P\" '(LISP::X))
+    (defpkg \"P\" '(COMMON-LISP::X))
 
   then in Common Lisp [47m(symbol-package-name (intern \"X\" \"P\"))[0m returns
-  [47m\"LISP\"[0m.
+  [47m\"COMMON-LISP\"[0m.
 
   The obvious restriction on [47mintern[0m is that its second argument be the
   name of a package known to ACL2.  We cannot express such a
@@ -59095,7 +59082,7 @@ Subtopics
 
   For example, suppose [47m\"MY-PKG\"[0m was created by
 
-    (defpkg \"MY-PKG\" '(ACL2::ABC LISP::CAR)).
+    (defpkg \"MY-PKG\" '(ACL2::ABC COMMON-LISP::CAR)).
 
   Let [47mw[0m be [47m'my-pkg::witness[0m.  Observe that
 
@@ -59114,7 +59101,7 @@ Subtopics
 
     (intern-in-package-of-symbol \"ABC\" w) is ACL2::ABC
 
-    (intern-in-package-of-symbol \"CAR\" w) is LISP::CAR
+    (intern-in-package-of-symbol \"CAR\" w) is COMMON-LISP::CAR (i.e., ACL2::CAR)
 
     (intern-in-package-of-symbol \"car\" w) is MY-PKG::|car|")
  (INTERRUPTS (POINTERS)
@@ -63735,7 +63722,7 @@ Subtopics
       Control radix in which numbers are printed and printing of the radix
 
   [Set-print-case]
-      Control whether symbols are printed in upper case or in lower case
+      Control whether [symbols] are printed in upper case or in lower case
 
   [Set-print-radix]
       Control printing of the radix for numbers
@@ -106405,6 +106392,10 @@ Changes to Existing Features
   [set-evisc-tuple]) to print terms, as was already being done by
   [47m:[0m[47m[trans][0m.
 
+  The behavior and documentation for [47m[read-file-into-string][0m have been
+  cleaned up and put in sync.  Thanks to Eric Smith and Grant
+  Jurgensen for communication that led to these improvements.
+
 
 New Features
 
@@ -112270,9 +112261,6 @@ Subtopics
   [Common_Lisp_as_a_Modeling_Language]
       Common Lisp as a Modeling Language
 
-  [Conversion]
-      Conversion to Uppercase
-
   [Corroborating_Models]
       Corroborating Models
 
@@ -114018,9 +114006,11 @@ Implementation
   imported into [47mpkg[0m, which should be the name of a package known to
   ACL2.  For example, suppose [47m\"MY-PKG\"[0m was created by
 
-    (defpkg \"MY-PKG\" '(ACL2::ABC LISP::CAR)).
+    (defpkg \"MY-PKG\" '(ACL2::ABC COMMON-LISP::CAR)).
 
-  Then [47m(pkg-imports \"MY-PKG\")[0m equals the list [47m(ACL2::ABC LISP::CAR)[0m.
+  Then [47m(pkg-imports \"MY-PKG\")[0m equals the list [47m(ACL2::ABC
+  COMMON-LISP::CAR)[0m.  Note that [47mCOMMON-LISP::CAR[0m is the same as
+  [47mACL2::CAR[0m, which is printed as just [47mCAR[0m.
 
   If [47mpkg[0m is not a string, then [47m(pkg-imports pkg)[0m is [47mnil[0m.  If [47mpkg[0m is a
   string but not the name of a package known to ACL2, then the value
@@ -118434,11 +118424,12 @@ Subtopics
   [31;1mQ[0m: How did [47mrev[0m change the case of the elements, e.g., lowercase [47ma[0m was
   in the input list but uppercase [47mA[0m was in the output?  [31;1mA[0m: This is a
   trick question.  [47mRev[0m doesn't change the case of the elements.  ACL2
-  is case-insensitive when dealing with symbols.  The symbol [47ma[0m is
-  read in as the symbol [47mA[0m.  Thus, when writing function names, for
-  example, we can write [47mrev[0m, [47mRev[0m, [47mREV[0m, or even [47mReV[0m and always be
-  referring to the function [47mREV[0m.  By default, ACL2 prints symbols in
-  uppercase.
+  typically converts to upper case when reading symbols (see
+  [symbols] {ICON} (see [A_Tiny_Warning_Sign]) for details).  The
+  symbol [47ma[0m is read in as the symbol [47mA[0m.  Thus, when writing function
+  names, for example, we can write [47mrev[0m, [47mRev[0m, [47mREV[0m, or even [47mReV[0m and
+  always be referring to the function [47mREV[0m.  By default, ACL2 prints
+  symbols in uppercase.
 
   [31;1mQ[0m: What does [47m(rev '((a b c) \"Abc\" \"a\" b #\\c))[0m return?  [31;1mA[0m: [47m(#\\c B \"a\"
   \"Abc\" (A B C))[0m.  If you thought the answer was either of these,
@@ -122919,23 +122910,111 @@ Subtopics
   (RECURSION-AND-INDUCTION)
   "Recursion and Induction: Abbreviations for Terms
 
-  If [3mx[0m  is [47mt[0m, [47mnil[0m, an integer, a character object, or a string, and [3mx[0m
-  is used where a term is expected, then [3mx[0m  abbreviates the quoted
-  constant [47m'[0m[3mx[0m.  Recall that a single quote mark followed by a symbol,
-  e.g., [47m'load[0m, is a quoted constant.
+  Recall that a term is a variable symbol, a quoted constant, or a
+  function application written as a sequence, enclosed in
+  parentheses, consisting of a function symbol of arity [3mn[0m  followed
+  by [3mn[0m  terms.  See Terms (see [R-AND-I-TERMS]).  However, we
+  implement certain conventions that allow terms to be abbreviated.
+  The conventions allow case to be ignored (when writing symbols),
+  certain constants to be written without being quoted, and certain
+  primitive functions to be given more arguments than their arity
+  implies.  The ACL2 implementation also supports a powerful macro
+  facility inherited from Lisp, but we do not discuss macros in this
+  course.
 
-  In the following, an [3mexpression[0m  is an integer, a character object,
-  a string, a symbol, an optionally dotted parenthesized sequence of
+  When input is being read in and parsed into lexical tokens, the
+  characters in tokens parsed as Lisp symbols are converted to upper
+  case.  Thus, the following are three different ways to type in the
+  same symbol: [47mNIL[0m, [47mNil[0m, and [47mnil[0m.  Similarly, [47m(cons 'e x)[0m and [47m(Cons
+  'E x)[0m are both read the same way as [47m(CONS 'E X)[0m.  It may seem
+  strange to have different ways to write the same symbol but you're
+  very familiar with the similar conventions applied to numbers: 123,
+  +123, and 0123 are three different ways to write the same integer.
+  If you wish to type a symbol whose name includes lower case
+  characters you must surround the whole symbol with vertical bars.
+  E.g., [47m|nil|[0m is a different symbol than [47mnil[0m.  But in this course we
+  do not use symbols whose names include lower case characters.
+
+  The conversion to upper case only happens when parsing symbols.
+  Strings and character objects are not automatically converted to
+  upper case.  Thus, [47m\"NIL\"[0m, [47m\"Nil\"[0m and [47m\"nil\"[0m are three different
+  strings, and [47m#\\a[0m is a different character object than [47m#\\A[0m.
+
+  In this document, when we write symbols we generally write them in
+  lower case typewriter font, e.g., [47mnil[0m, and we capitalize them when
+  used as the first word of a sentence, e.g., [47mNil[0m. Occasionally we
+  write them in all upper case, e.g., [47mNIL[0m, to emphasize that
+  particular symbol or to further distinguish the symbol from a
+  nearby English word with the same spelling, as in the sentence
+  ``[47mAND[0m and [47mOR[0m denote conjunction and disjunction.'' But regardless
+  of the case we use --- whether lower case, captialized, or upper
+  case --- we are referring to the same upper case symbol.
+
+  The next convention allows you to drop the single quote mark on
+  certain constants.  The definition of a term requires constants to
+  be quoted.  E.g., since [47mevenp[0m is a function symbol of arity 1,
+  [47m(evenp '3)[0m is a term but [47m(evenp 3)[0m is not because [47m3[0m is neither a
+  variable symbol, a [3mquoted[0m  constant, or a function application.
+  But we accept the latter as an abbreviation of the former because
+  what else could it mean?  To see that ambiguity is lurking if quote
+  marks are dropped, consider [47m(member 'e '(a b c))[0m, where [47mmember[0m is a
+  function symbol of arity 2.  What happens if we drop either or both
+  of the quote marks?  Then we might still get a term that means
+  something completely different.  Here, the function [47mmember[0m means
+  ``is the first argument an element of the second?''
+
+    * [47m(member 'e '(a b c))[0m: is the constant symbol [47me[0m an element of the
+      constant list [47m(a b c)[0m?
+
+    * [47m(member e '(a b c))[0m: is the value of the variable [47me[0m an element of the
+      constant list [47m(a b c)[0m?
+
+    * [47m(member 'e (a b c))[0m: is the constant symbol [47me[0m an element of the list
+      computed by applying the function [47ma[0m to the values of variables
+      [47mb[0m and [47mc[0m?
+
+    * [47m(member e (a b c))[0m: is the value of the variable [47me[0m an element of the
+      list computed by applying the function [47ma[0m to the values of
+      variables [47mb[0m and [47mc[0m?
+
+  Meaning changes if quote marks are dropped from symbols and lists.
+  When the symbol [47me[0m is quoted in a term it denotes the constant [47me[0m;
+  when [47me[0m is not quoted it is a variable symbol and takes on whatever
+  value that variable has been assigned in the environment.
+  Similarly, when a list is quoted it denotes that list constant;
+  when it is not quoted it denotes the application of its first
+  element to the values of the other elements.
+
+  But unquoted numbers, character objects, and strings used as terms
+  cannot be confused with variable symbols or function applications,
+  so by convention they just abbreviate their own quotations.
+
+  More precisely, the quote convention for atomic objects is as
+  follows: If [3mx[0m  is the symbol [47mT[0m, the symbol [47mNIL[0m, an integer, a
+  character object, or a string, and [3mx[0m  is used where a term is
+  expected, then [3mx[0m  abbreviates the quoted constant [47m'[0m[3mx[0m.
+
+  Next we deal with quoted parenthesized expressions.  In the
+  following, an [3mexpression[0m  is an integer, a character object, a
+  string, a symbol, an optionally dotted parenthesized sequence of
   expressions, or a single quote mark followed by an expression.  By
   [3moptionally dotted parenthesized sequence of expressions[0m we mean a
   parenthesized non-empty sequence of expressions, optionally
   containing a dot (.) between the last two expressions in the
-  sequence.  For example ``[47m(A 123 . B)[0m'' and ``[47m(A (123 B) 'C)[0m'' are
-  both optionally dotted parenthesized sequences of expressions.
+  sequence.  For example ``[47m(A 123 B)[0m'' and ``[47m(A 123 . B)[0m'' are both
+  optionally dotted parenthesized sequences of expressions.  (There's
+  no dot in the first expression; the dot in the second one changes
+  the meaning.)
 
-  A single quote mark followed by an optionally dotted parenthesized
-  sequence of expressions, when used as a term, denotes a [47mcons[0m term
-  as follows, using these four rules:
+  We'll be precise in a moment, but [47m'(A 123 B)[0m is an abbreviation for
+  [47m(cons 'A (cons '123 (cons 'B 'nil)))[0m, which could also be written
+  [47m(cons 'A (cons 123 (cons 'B nil)))[0m.  Meanwhile, [47m'(A 123 . B)[0m is an
+  abbreviation for [47m(cons 'A (cons '123 'B))[0m which could also be
+  written [47m(cons 'A (cons 123 'B))[0m.
+
+  More generally, a single quote mark followed by an optionally dotted
+  parenthesized sequence of expressions, when used as a term, denotes
+  a [47mcons[0m term as follows, using these four rules:
 
   [3mNULL Rule:[0m  If '() is used as a term, it abbreviates [47m'nil[0m.
 
@@ -122955,10 +123034,13 @@ Subtopics
 
   If [47m'(A B . C)[0m is used as a term it denotes [47m(cons 'A (cons 'B 'C))[0m.
 
-  It remains to deal with cases like [47m'[0m[47m'A[0m and [47m'[0m[47m'(A 'B)[0m involving
-  multiple single quote marks.  We do not expect to use such
-  expressions in this course but we specify their meaning just for
-  completeness.
+  It remains to deal with cases like [47m'[0m[47m'A[0m and [47m'[0m[47m'(A 'B)[0m involving nested
+  single quote marks.  Expressions involving nested single quote
+  marks will not arise in this course.  But we specify their meaning
+  for completeness.
+
+  [3mYou may consider the following paragraph and the subsequent example
+  as optional![0m
 
   Let [3m\\alpha[0m  be an expression that does not start with a single quote
   mark.  Consider a sequence of two or more single quote marks
@@ -122985,19 +123067,20 @@ Subtopics
   Note that every occurrence of single quote now marks a quoted
   constant.
 
+  [3mEnd of optional material.[0m
+
   When [47m(list [3mx_1[0m[47m   ... )[0m is used as a term, it abbreviates [47m(cons [3mx_1[0m[47m
   (list  ... ))[0m.  When [47m(list)[0m is used as a term, it abbreviates [47mnil[0m.
   Thus [47m(list a b c)[0m abbreviates [47m(cons a (cons b (cons c nil)))[0m.
 
-  [47mAnd[0m and [47mor[0m will be defined as function symbols of two arguments.
-  But if [47mand[0m is used as though it were a function symbol of more than
-  two arguments, then it abbreviates the corresponding
-  right-associated nest of [47mand[0ms.  Thus, [47m(and p q r s)[0m, when used
-  where a term is expected, abbreviates [47m(and p (and q (and r s)))[0m.
-
-  If [47mor[0m is used as though it were a function symbol of more than two
-  arguments, then it abbreviates the corresponding right-associated
-  nest of [47mor[0ms.
+  For the purposes of this course you may imagine that [47mAND[0m and [47mOR[0m are
+  defined as function symbols of two arguments.  But we use them as
+  though they were function symbols of varying numbers of argument.
+  When [47mAND[0m and [47mOR[0m are provided more than two arguments it just
+  abbreviates the corresponding right-associated nest.  Thus, [47m(and p
+  q r s)[0m, when used where a term is expected, abbreviates [47m(and p (and
+  q (and r s)))[0m.  In the actual ACL2 implementation, [47mAND[0m and [47mOR[0m are
+  ``macros.''
 
   (Maybe explore term abbreviation in ACL2?  But abbreviation is
   complicated in ACL2 by the presence of a powerful macro facility.
@@ -125998,14 +126081,15 @@ Recursion and Induction Table of Contents
 
   For the purposes of this document, a [3mterm[0m  is a variable symbol, a
   quoted constant, or a function application written as a sequence,
-  enclosed in parenthesis, consisting of a function symbol of arity [3mn[0m
+  enclosed in parentheses, consisting of a function symbol of arity [3mn[0m
   followed by [3mn[0m  terms.
 
   Since [47mcar[0m is a function symbol of arity one and [47mcons[0m is a function
-  symbol of arity two, then [47m(cons (car x) y)[0m is a term.  In more
-  conventional notation this term would be written [3mcons[0m ([3mcar[0m ([3mx[0m ), [3my[0m
-  ).  We call [47m(car x)[0m and [47my[0m the [3mactual expressions[0m  or [3mactuals[0m  of
-  the [3mfunction call[0m  [47m(cons (car x) y)[0m.
+  symbol of arity two, and [47mx[0m and [47my[0m are variable symbols, then [47m(cons
+  (car x) y)[0m is a term.  In more conventional notation this term
+  would be written [3mcons[0m ([3mcar[0m ([3mx[0m ), [3my[0m ).  We call [47m(car x)[0m and [47my[0m the
+  [3mactual expressions[0m  or [3mactuals[0m  of the [3mfunction call[0m  [47m(cons (car x)
+  y)[0m.
 
   Semantically, terms are interpreted with respect to (i) an
   assignment binding variable symbols to constants and (ii) an
@@ -126763,11 +126847,14 @@ Subtopics
   (IO)
   "The contents of a file (or part of it) as a string
 
-  When this macro is passed a valid filename and the ACL2 [state], it
-  generally returns the contents of the file (or a specified part of
-  the file) as a string.  Otherwise, it returns [47mnil[0m or causes an
-  error.  Unlike other ACL2 functions for reading a file, this one
-  does not return the ACL2 [47mstate[0m, and it is generally much faster.
+  This macro returns the contents of the file, or a specified part of
+  the file, as a string.  Otherwise, it returns [47mnil[0m or causes an
+  error.  Although this macro implicitly takes the ACL2 [state], it
+  differs from other ACL2 file-reading utilities in that it does not
+  return the ACL2 [47mstate[0m, and it is generally [3mmuch[0m faster.
+
+
+Summary
 
     Example Forms:
 
@@ -126785,107 +126872,200 @@ Subtopics
                            )
 
   where [47mfilename[0m is a string, which is typically the name of a file,
-  and the keyword argument are optional and evaluated, as follows: [47ms[0m
-  has default [47m0[0m and its value is a natural number (except, an error
-  occurs if that number exceeds the length of the given file), [47mb[0m has
-  default [47mnil[0m and its value is either a natural number or [47mnil[0m, and [47mc[0m
-  has default [47m:default[0m and its value is otherwise considered to be
-  false (when [47mnil[0m) or true (when not [47mnil[0m).
+  and the keyword arguments, which are optional and evaluated, are as
+  follows: [47ms[0m has default [47m0[0m and its value is a natural number, where
+  an error occurs if that number exceeds the length of the given
+  file; [47mb[0m has default [47mnil[0m and its value is either a natural number or
+  [47mnil[0m; and [47mc[0m has default [47m:default[0m and its value is otherwise
+  considered to be false (when [47mnil[0m) or true (when not [47mnil[0m).  The
+  effects of these arguments are described below.
 
   For examples, see [community-books] file
   [47mbooks/system/tests/read-file-into-string.lisp[0m.
+
+
+Summary documentation
+
+  Typical use of [47mread-file-into-string[0m will either return the contents
+  of the given file (as a string) or will return specified segments
+  of the file.  Here is a log illustrating how we can read the full
+  contents of a file and then read it in pieces.  The form
+  [47m(INCREMENT-FILE-CLOCK STATE)[0m is necessary in order to make certain
+  successive calls; this is discussed further below.
+
+    ACL2 !>(read-file-into-string \"tmp.txt\")
+    \"Hello
+    world.
+    \"
+    ACL2 !>(INCREMENT-FILE-CLOCK STATE)
+    <state>
+    ACL2 !>(read-file-into-string \"tmp.txt\" :start 0 :bytes 3)
+    \"Hel\"
+    ACL2 !>(read-file-into-string \"tmp.txt\" :start 3 :bytes 2)
+    \"lo\"
+    ACL2 !>(read-file-into-string \"tmp.txt\" :start 5)
+    \"
+    world.
+    \"
+    ACL2 !>
+
+  For two successive calls of [47mread-file-into-string[0m on the same input
+  string, the second call must generally start beyond the last byte
+  that was read by the first call.  An exception is made when the
+  second call specifies [47m:bytes 0[0m, when [47m:start[0m is either omitted or
+  has value 0; in that case, the empty string is returned without
+  error.  An exception is also made when the form
+  [47m(INCREMENT-FILE-CLOCK STATE)[0m is evaluated between the two calls.
+
+  It may seem odd to require a call of [47mincrement-file-clock[0m to avoid
+  errors from successive reads.  The reason stems from the fact that
+  [47mincrement-file-clock[0m is a function.  The concern is that the file
+  may change between successive calls of [47mread-file-into-string[0m
+  (perhaps made hours apart!), for reasons external to ACL2, in which
+  case it could appear that [47mread-file-into-string[0m returns different
+  values for the same inputs.  By evaluating [47m(INCREMENT-FILE-CLOCK
+  STATE)[0m, one is incrementing the file-clock field of the [47mstate[0m
+  argument, so the next call is on a different [47mstate[0m argument.  This
+  is all explained logically by the definitions of
+  [47mread-file-into-string[0m and its subroutines in ACL2, as shown in the
+  final section of this documentation.  (But the implementation of
+  [47mread-file-into-string[0m involves raw Lisp code.)  ACL2 causes various
+  informative Lisp errors when functional semantics could otherwise
+  be violated, and some of these errors are shown below.
+
+  Note that ACL2 characters always fit into a single byte, which is why
+  we can can talk about ``bytes''.
+
+  Compared with the usual [io] routines provided by ACL2,
+  [47mread-file-into-string[0m is generally much more efficient, and also it
+  does not return [47m[state][0m.  Note that the macroexpansion of a call of
+  this macro takes [47mstate[0m as an argument; so if you call it in the
+  body of a function definition, then --- as usual for functions that
+  take [47mstate[0m --- either [47m(set-state-ok t)[0m must have been evaluated or
+  else a suitable [47m:stobjs[0m declaration, typically [47m:stobjs state[0m, must
+  be provided (see [xargs]).
+
+  The very large constant [47m*read-file-into-string-bound*[0m, whose
+  definition is shown in the final section below, establishes a
+  strict upper bound on the size of the string returned.  If the file
+  (or specified portion thereof) contains more bytes than this, then
+  [47mnil[0m is returned.
+
+
+Detailed discussion of keyword arguments
 
   The result, when not [47mnil[0m or an error, is a string representing the
   specified file contents.  For the default of [47m:start 0[0m and [47m:bytes
   nil[0m, or equivalently, when no keyword arguments are specified, the
   entire file contents are returned as a string.  In general, [47m:start
   s[0m specifies the part of the file starting at byte position [47ms[0m of the
-  file, and [47m:bytes b[0m specifies that only the first [47mb[0m bytes are to be
-  read starting at that position --- however, stopping at the end of
-  the file if [47mb+s[0m exceeds the length [47mL[0m of the file.  Below we call
-  this case that [47mb+s>L[0m the ``truncation case''.
-
-  Note that ACL2 characters always fit into a single byte, which is why
-  we can talk about ``bytes'' here.
+  file, and the [47m:bytes[0m argument specifies the number of consecutive
+  bytes to be included starting at that position: [47m:bytes nil[0m
+  specifies that the rest of the file is to be included, while for a
+  natural number [47mb[0m, [47m:bytes b[0m specifies that only the next [47mb[0m bytes are
+  to be included --- but, stopping at the end of the file if [47mb+s[0m
+  exceeds the length [47mL[0m of the file.  Below we call this case that
+  [47mb+s>L[0m the [3mtruncation case[0m.
 
   The [47m:close[0m argument affects handling of the Lisp stream that is
   created for the specified file.  When the value of [47m:close[0m is the
-  default, [47m:default[0m, this stream is closed immediately after the read
-  exactly when either [47m:bytes[0m has value [47mnil[0m (the default) or we are in
-  the truncation case [47mb+s>L[0m described above.  But otherwise the
-  stream remains open, which could cause a problem since operating
-  systems can complain when too many streams are open at the same
-  time.  If the value of [47m:bytes[0m is non-[47mnil[0m (hence, a natural number),
-  then you may want to specify [47m:close t[0m to prevent that problem,
-  unless you plan to read more bytes from the same file.  If you
-  decide to close the file later, this can be accomplished
-  efficiently by evaluating the following form for your file,
-  [47m\"<file>\"[0m.
+  default, [47m:default[0m, the criterion for closing the stream immediately
+  after the read completes is that either [47m:bytes[0m has value [47mnil[0m (the
+  default) or we are in the truncation case [47mb+s>L[0m described above.
+  Once this stream is closed, a Lisp error occurs if
+  [47mread-file-with-string[0m is called when either [47m:start[0m or [47m:bytes[0m
+  specifies a non-zero value unless the file-clock of the state is
+  advanced first by evaluating [47m(INCREMENT-FILE-CLOCK STATE)[0m.  See
+  [state] for a discussion of the logical role of the file-clock of
+  the state.
 
-    (time$ (read-file-into-string \"<file>\" :start 0 :bytes 0 :close t))
+  Here is a typical log showing such an error message from successive
+  reads, together with the evaluation of [47m(INCREMENT-FILE-CLOCK STATE)[0m
+  as a remedy.  The next section, further below, discusses the
+  closing of streams.
 
-  Compared with the usual [io] routines provided by ACL2,
-  [47mread-file-into-string[0m is generally much more efficient, and also it
-  does not return [47m[state][0m.  Note that the expansion of a call of this
-  macro takes [47mstate[0m as an argument; so if you call it in the body of
-  a function definition, then --- as usual for functions that take
-  [47mstate[0m --- either [47m(set-state-ok t)[0m must have been evaluated or else
-  a suitable [47m:stobjs[0m declaration, typically [47m:stobjs state[0m, must be
-  provided (see [xargs]).
-
-  The constant [47m*read-file-into-string-bound*[0m (see the definition below)
-  establishes a strict upper bound on the size of the string
-  returned.  If the file (or specified portion thereof) contains more
-  bytes than this, then [47mnil[0m is returned.
-
-  There are two checks to guarantee that [47mread-file-into-string[0m is truly
-  a function --- that is, it returns the same value for two calls
-  with the same inputs.  The primary check ensures that the write
-  date of the file has not changed in the interval between two such
-  calls unless the [47mfile-clock[0m component of the ACL2 state has been
-  updated within that interval.  That update takes place when an
-  input or output channel is opened or closed in the usual way (that
-  is, using [47mopen-input-channel[0m, [47mopen-output-channel[0m,
-  [47mclose-input-channel[0m, or [47mclose-output-channel[0m; see [io]).  However,
-  it suffices to evaluate the following form, which returns the
-  [47m[state][0m obtained by incrementing its [47mfile-clock[0m.
-
-    (increment-file-clock state)
-
-  If however you make illegal successive reads as described above, a
-  Lisp error will occur with a message of the following form.
+    ACL2 !>(read-file-into-string \"tmp.txt\")
+    \"Hello
+    world.
+    \"
+    ACL2 !>(read-file-into-string \"tmp.txt\")
 
     ***********************************************
     ************ ABORTING from raw Lisp ***********
     ********** (see :DOC raw-lisp-error) **********
-    Error:  Illegal consecutive reads from file
-    \"<some_filename>\",
-    which appears to have been written between the two reads.
-    Execute (INCREMENT-FILE-CLOCK STATE) to avoid this error.
+    Error:  Apparently READ-FILE-INTO-STRING has previously closed the stream
+    that is associated with file
+    \"tmp.txt\".
+    Consider evaluating (INCREMENT-FILE-CLOCK STATE).
     See :DOC read-file-into-string.
     While executing: READ-FILE-INTO-STRING2
     ***********************************************
 
-  A similar error may occur when a call of [47mread-file-into-string[0m is
-  followed by a call of [47m[open-input-channel][0m on the same filename
-  when that file is modified between the two calls.  For low-level
-  details about logical issues being addressed by such errors, see
-  the comment in the definition of [47m*read-file-into-string-alist*[0m in
-  the ACL2 sources.
+    The message above might explain the error.  If not, and
+    if you didn't cause an explicit interrupt (Control-C),
+    then it may help to see :DOC raw-lisp-error.
 
-  The other check ensures that the write date of the file has not
-  changed while a call is in progress.  When that check fails the
-  corresponding Lisp error is of the following form.
+    To enable breaks into the debugger (also see :DOC acl2-customization):
+    (SET-DEBUGGER-ENABLE T)
+    ACL2 !>(INCREMENT-FILE-CLOCK STATE)
+    <state>
+    ACL2 !>(read-file-into-string \"tmp.txt\")
+    \"Hello
+    world.
+    \"
+    ACL2 !>
 
+  The implementation of [47mread-file-into-string[0m advances a pointer with
+  each successive read while the stream is open.  An error is
+  signaled when attempting to call [47mread-file-into-string[0m with a
+  [47m:start[0m value that points to a byte that is not beyond all bytes
+  already read by previous calls (unless there is an intervening
+  evaluation of [47m(INCREMENT-FILE-CLOCK STATE)[0m).  Here is a sample log
+  to illustrate this point.
+
+    ACL2 !>(read-file-into-string \"tmp.txt\" :bytes 3)
+    \"Hel\"
+    ACL2 !>(read-file-into-string \"tmp.txt\" :start 3 :bytes 2)
+    \"lo\"
+    ACL2 !>(read-file-into-string \"tmp.txt\" :start 4)
+
+    ***********************************************
     ************ ABORTING from raw Lisp ***********
     ********** (see :DOC raw-lisp-error) **********
-    Error:  Illegal attempt to call READ-FILE-INTO-STRING concurrently
-    with some write to that file!  See :DOC read-file-into-string.
+    Error:  The :start value, 4, specified for a call of READ-FILE-INTO-STRING,
+    is less than the position 5 immediately after a previous read of file
+    \"tmp.txt\" at the same file-clock.
+    Consider evaluating (INCREMENT-FILE-CLOCK STATE).
+    See :DOC read-file-into-string.
+    While executing: READ-FILE-INTO-STRING2
     ***********************************************
 
-  We close by showing the relevant ACL2 definitions in the logic, that
-  is, not including the special raw Lisp (under the hood) code in the
-  definition of [47mread-file-into-string2[0m.
+
+Closing streams
+
+  A call of [47mread-file-into-string[0m on a given filename opens a Lisp
+  stream connected to the given file.  ACL2 keeps track of such an
+  association of filenames with streams.
+
+  If the stream remains open for numerous calls of
+  [47mread-file-into-string[0m, the operating system could eventually
+  complain because too many streams are open at the same time.
+  Recall that if the value of [47m:bytes[0m is non-[47mnil[0m (hence, a natural
+  number), then, except in the truncation case, the stream remains
+  open.  In such cases may want to specify [47m:close t[0m to prevent
+  leaving too many streams open, unless you plan to read more bytes
+  from the same file.  If you decide to close the stream later, this
+  can be accomplished efficiently without reading any bytes by
+  evaluating the following form for your file, [47m\"<file>\"[0m.
+
+    (read-file-into-string \"<file>\" :bytes 0 :close t)
+
+
+Logical definitions
+
+  We close by showing the relevant ACL2 definitions in the logic.
+  Thus, these do not show the special raw Lisp (under the hood) code
+  in the definition of [47mread-file-into-string2[0m.
 
   [31;1mFunction: [0m<read-file-into-string1>
 
@@ -138218,13 +138398,13 @@ Example
     (25 25/3)
     ACL2 !>")
  (SET-PRINT-CASE
-  (IO ACL2-BUILT-INS)
-  "Control whether symbols are printed in upper case or in lower case
+  (IO ACL2-BUILT-INS SYMBOLS)
+  "Control whether [symbols] are printed in upper case or in lower case
 
-  By default, symbols are printed in upper case when vertical bars are
-  not required, as specified by Common Lisp.  As with Common Lisp,
-  ACL2 supports printing in a \"downcase\" mode, where symbols are
-  printed in lower case.  Many printing functions (some details
+  By default, [symbols] are printed in upper case when vertical bars
+  are not required, as specified by Common Lisp.  As with Common
+  Lisp, ACL2 supports printing in a \"downcase\" mode, where symbols
+  are printed in lower case.  Many printing functions (some details
   below) print characters in lower case for a symbol when the ACL2
   [state] global variable [47mprint-case[0m has value [47m:downcase[0m and vertical
   bars are not necessary for printing that symbol.  (Thus, this state
@@ -146174,6 +146354,21 @@ Subtopics
   has two components: its name (see [symbol-name]) and its package
   name (see [symbol-package-name]).
 
+  When symbols are read by Common Lisp or ACL2, they are converted to
+  upper case.  Note carefully that this remark applies to the
+  characters in [3msymbols[0m.  The characters in strings are not converted
+  to upper case.
+
+  To type a symbol containing lower case characters you can enclose the
+  symbol in vertical bars, as in [47m|AbC|[0m, or you can put a
+  ``backslash'' before each lower case character you wish to
+  preserve, as in [47mA\\bC[0m.  [47m|AbC|[0m and [47mA\\bC[0m are two different ways of
+  writing the same symbol (just like 2/4 and 1/2 are two different
+  ways of writing the same rational and 123 and 0123 are two
+  different ways to write the same natural number).  The symbol has
+  three characters in its name, the middle one of which is a lower
+  case b.
+
 
 Subtopics
 
@@ -146188,6 +146383,9 @@ Subtopics
 
   [Packn-pos]
       Build a symbol in a specified package from a list
+
+  [Set-print-case]
+      Control whether [symbols] are printed in upper case or in lower case
 
   [Symbol-listp]
       Recognizer for a true list of symbols
@@ -149709,9 +149907,10 @@ Subtopics
   individuals.  Often, for example, the syntactic characterization of
   a term is that it is either a variable symbol or the application of
   a function symbol to the appropriate number of argument terms.
-  Traditionally, ``atomic formulas'' are built from terms with
-  predicate symbols such as ``equal'' and ``member;'' ``formulas''
-  are then built from atomic formulas with propositional
+  (Note that ACL2 is case-insensitive when dealing with symbols; see
+  [symbols].)  Traditionally, ``atomic formulas'' are built from
+  terms with predicate symbols such as ``equal'' and ``member;''
+  ``formulas'' are then built from atomic formulas with propositional
   ``operators'' like ``not,'' ``and,'' and ``implies.'' Theorems are
   formulas.  Theorems are ``valid'' in the sense that the value of a
   theorem is true, in any model of the axioms and under all possible

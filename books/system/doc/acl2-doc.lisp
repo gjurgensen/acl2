@@ -1781,13 +1781,14 @@
  but @('+12') is a number.  Roughly speaking, when symbols are read lower case
  characters are converted to upper case, so we frequently do not distinguish
  @('ABC') from @('Abc') or @('abc').  Click <see topic='@(url
- |Conversion|)'>here</see> for information about case conversion when symbols
- are read.  However, any character can be used in a symbol, but some characters
- must be ``escaped'' to allow the Lisp reader to parse the sequence as a
- symbol.  For example, @('|Abc|') is a symbol whose first character is
- capitalized and whose remaining characters are in lower case.  @('|An odd
- duck|') is a symbol containing two #\\Space characters.  See any Common Lisp
- documentation for the syntactic rules for symbols.</p>
+ symbols)'>here</see> <see topic='ACL2____A_02Tiny_02Warning_02Sign'><icon
+ src='res/tours/twarning.gif'/></see> for information about case conversion
+ when symbols are read.  However, any character can be used in a symbol, but
+ some characters must be ``escaped'' to allow the Lisp reader to parse the
+ sequence as a symbol.  For example, @('|Abc|') is a symbol whose first
+ character is capitalized and whose remaining characters are in lower case.
+ @('|An odd duck|') is a symbol containing two #\\Space characters.  See any
+ Common Lisp documentation for the syntactic rules for symbols.</p>
 
  <p>Technically, a symbol is a special kind of pair consisting of a package
  name (which is a string) and a symbol name (which is also a string).  (See
@@ -20083,22 +20084,6 @@ href='http://www.cs.utexas.edu/users/moore/classes/index.html'>here</a>.</li>
  <p>Click <see topic='@(url |Analyzing Common Lisp Models|)'>here</see> to
  continue.</p>")
 
-(defxdoc |Conversion|
-  :parents (|Pages Written Especially for the Tours|)
-  :short "Conversion to Uppercase"
-  :long "<p>When symbols are read by Common Lisp they are converted to upper
- case.  Note carefully that this remark applies to the characters in
- <i>symbols</i>.  The characters in strings are not converted upper case.</p>
-
- <p>To type a symbol containing lower case characters you can enclose the
- symbol in vertical bars, as in @('|AbC|') or you can put a ``backslash''
- before each lower case character you wish to preserve, as in @('A\\bC').
- @('|AbC|') and @('A\\bC') are two different ways of writing the same symbol
- (just like 2/4 and 1/2 are two different ways of writing the same rational and
- 123 and 0123 are two different ways to write the same natural number).  The
- symbol has three characters in its name, the middle one of which is a lower
- case b.</p>")
-
 (defxdoc |Corroborating Models|
   :parents (|Pages Written Especially for the Tours|)
   :short "Corroborating Models"
@@ -36849,6 +36834,11 @@ ld) and @(tsee include-book)"
 
  <p><img src='res/tours/green-line.gif'></img></p>
 
+ <p>Click <see topic='@(url symbols)'>here</see> <see
+ topic='ACL2____A_02Tiny_02Warning_02Sign'><icon
+ src='res/tours/twarning.gif'/></see> for an explanation of conversion of
+ symbols to upper case.</p>
+
  <code>
  ACL2 !&gt;<b>(app nil '(x y z))</b>
  (X Y Z)
@@ -36856,7 +36846,7 @@ ld) and @(tsee include-book)"
  ACL2 !&gt;<b>(app '(1 2 3) '(4 5 6 7))</b>
  (1 2 3 4 5 6 7)
 
- ACL2 !&gt;<b>(app '(a b c d e f g) '(x y z))</b>   ; click <see topic='@(url |Conversion|)'>here</see> for an explanation
+ ACL2 !&gt;<b>(app '(a b c d e f g) '(x y z))</b>
  (A B C D E F G X Y Z)
 
  ACL2 !&gt;<b>(app (app '(1 2) '(3 4)) '(5 6))</b>
@@ -39233,7 +39223,7 @@ current fast alists."
  and have the same behavior on well-formed input, and both return @('nil').
  See @(see cw) for documentation on how to use both utilities.  Unlike @('cw'),
  which has a @(see guard) of @('t'), @('fmx-cw') has a non-trivial guard that
- can can catch errors in the use of tilde-directives.  Here is an example of
+ can catch errors in the use of tilde-directives.  Here is an example of
  such a guard violation, where the corresponding call of @('cw') would instead
  cause a hard error.</p>
 
@@ -54508,7 +54498,8 @@ tables in the current Hons Space."
 (defxdoc installation
   :parents (acl2 about-acl2)
   :short "Installing ACL2"
-  :long "<p>See the @(see installation-instructions) for steps to install ACL2.</p>
+  :long "<p>See the @(see installation-instructions) for steps to install ACL2
+ on Unix-like systems (Linux, macOS, and FreeBSD).</p>
 
  <p>If you encounter problems installing ACL2, or need more information, see @(see
  installation-support).</p>
@@ -55404,11 +55395,11 @@ tables in the current Hons Space."
  example, if @('\"P\"') were introduced with</p>
 
  @({
-  (defpkg \"P\" '(LISP::X))
+  (defpkg \"P\" '(COMMON-LISP::X))
  })
 
  <p>then in Common Lisp @('(symbol-package-name (intern \"X\" \"P\"))') returns
- @('\"LISP\"').</p>
+ @('\"COMMON-LISP\"').</p>
 
  <p>The obvious restriction on @('intern') is that its second argument be the
  name of a package known to ACL2.  We cannot express such a restriction
@@ -55472,7 +55463,7 @@ tables in the current Hons Space."
  <p>For example, suppose @('\"MY-PKG\"') was created by</p>
 
  @({
-  (defpkg \"MY-PKG\" '(ACL2::ABC LISP::CAR)).
+  (defpkg \"MY-PKG\" '(ACL2::ABC COMMON-LISP::CAR)).
  })
 
  <p>Let @('w') be @(''my-pkg::witness').  Observe that</p>
@@ -55495,7 +55486,7 @@ tables in the current Hons Space."
 
   (intern-in-package-of-symbol \"ABC\" w) is ACL2::ABC
 
-  (intern-in-package-of-symbol \"CAR\" w) is LISP::CAR
+  (intern-in-package-of-symbol \"CAR\" w) is COMMON-LISP::CAR (i.e., ACL2::CAR)
 
   (intern-in-package-of-symbol \"car\" w) is MY-PKG::|car|
  })")
@@ -109229,6 +109220,10 @@ it."
 ; This is related to the fix for :pr: both use a new function,
 ; world-to-next-non-deeper-event, in place of world-to-next-event.
 
+; The bound *read-file-into-string-bound* is documented to be strict, but in
+; source function read-file-into-string2 the corresponding test was non-strict.
+; This has been fixed.
+
   :parents (release-notes)
   :short "ACL2 Version  8.7 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -109279,6 +109274,10 @@ it."
  <p>The utility @(':')@(tsee trans*) new uses the @(':TERM') @(see evisc-tuple)
  (see @(see set-evisc-tuple)) to print terms, as was already being done by
  @(':')@(tsee trans).</p>
+
+ <p>The behavior and documentation for @(tsee read-file-into-string) have been
+ cleaned up and put in sync.  Thanks to Eric Smith and Grant Jurgensen for
+ communication that led to these improvements.</p>
 
  <h3>New Features</h3>
 
@@ -115456,11 +115455,12 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  For example, suppose @('\"MY-PKG\"') was created by</p>
 
  @({
-  (defpkg \"MY-PKG\" '(ACL2::ABC LISP::CAR)).
+  (defpkg \"MY-PKG\" '(ACL2::ABC COMMON-LISP::CAR)).
  })
 
  <p>Then @('(pkg-imports \"MY-PKG\")') equals the list @('(ACL2::ABC
- LISP::CAR)').</p>
+ COMMON-LISP::CAR)').  Note that @('COMMON-LISP::CAR') is the same as
+ @('ACL2::CAR'), which is printed as just @('CAR').</p>
 
  <p>If @('pkg') is not a string, then @('(pkg-imports pkg)') is @('nil').  If
  @('pkg') is a string but not the name of a package known to ACL2, then the
@@ -118328,11 +118328,13 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <p><b>Q</b>: How did @('rev') change the case of the elements, e.g., lowercase
  @('a') was in the input list but uppercase @('A') was in the output?
  <b>A</b>: This is a trick question.  @('Rev') doesn't change the case of the
- elements.  ACL2 is case-insensitive when dealing with symbols.  The symbol
- @('a') is read in as the symbol @('A').  Thus, when writing function names,
- for example, we can write @('rev'), @('Rev'), @('REV'), or even @('ReV') and
- always be referring to the function @('REV').  By default, ACL2 prints symbols
- in uppercase.</p>
+ elements.  ACL2 typically converts to upper case when reading symbols
+ (see @(see symbols) <see topic='ACL2____A_02Tiny_02Warning_02Sign'><icon
+ src='res/tours/twarning.gif'/></see> for details).  The symbol @('a') is read
+ in as the symbol @('A').  Thus, when writing function names, for example, we
+ can write @('rev'), @('Rev'), @('REV'), or even @('ReV') and always be
+ referring to the function @('REV').  By default, ACL2 prints symbols in
+ uppercase.</p>
 
  <p><b>Q</b>: What does @('(rev '((a b c) \"Abc\" \"a\" b #\\c))') return?
  <b>A</b>: @('(#\\c B \"a\" \"Abc\" (A B C))').  If you thought the answer was
@@ -122900,11 +122902,13 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 (defxdoc read-file-into-string
   :parents (io)
   :short "The contents of a file (or part of it) as a string"
-  :long "<p>When this macro is passed a valid filename and the ACL2 @(see
- state), it generally returns the contents of the file (or a specified part of
- the file) as a string.  Otherwise, it returns @('nil') or causes an error.
- Unlike other ACL2 functions for reading a file, this one does not return the
- ACL2 @('state'), and it is generally much faster.</p>
+  :long "<p>This macro returns the contents of the file, or a specified part of
+ the file, as a string.  Otherwise, it returns @('nil') or causes an error.
+ Although this macro implicitly takes the ACL2 @(see state), it differs from
+ other ACL2 file-reading utilities in that it does not return the ACL2
+ @('state'), and it is generally <i>much</i> faster.</p>
+
+ <h3>Summary</h3>
 
  @({
  Example Forms:
@@ -122924,112 +122928,197 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  })
 
  <p>where @('filename') is a string, which is typically the name of a file, and
- the keyword argument are optional and evaluated, as follows: @('s') has
- default @('0') and its value is a natural number (except, an error occurs if
- that number exceeds the length of the given file), @('b') has default @('nil')
- and its value is either a natural number or @('nil'), and @('c') has default
- @(':default') and its value is otherwise considered to be false (when
- @('nil')) or true (when not @('nil')).</p>
+ the keyword arguments, which are optional and evaluated, are as follows:
+ @('s') has default @('0') and its value is a natural number, where an error
+ occurs if that number exceeds the length of the given file; @('b') has default
+ @('nil') and its value is either a natural number or @('nil'); and @('c') has
+ default @(':default') and its value is otherwise considered to be false (when
+ @('nil')) or true (when not @('nil')).  The effects of these arguments are
+ described below.</p>
 
  <p>For examples, see @(see community-books) file
  @('books/system/tests/read-file-into-string.lisp').</p>
+
+ <h3>Summary documentation</h3>
+
+ <p>Typical use of @('read-file-into-string') will either return the contents
+ of the given file (as a string) or will return specified segments of the file.
+ Here is a log illustrating how we can read the full contents of a file and
+ then read it in pieces.  The form @('(INCREMENT-FILE-CLOCK STATE)') is
+ necessary in order to make certain successive calls; this is discussed further
+ below.</p>
+
+ @({
+ ACL2 !>(read-file-into-string \"tmp.txt\")
+ \"Hello
+ world.
+ \"
+ ACL2 !>(INCREMENT-FILE-CLOCK STATE)
+ <state>
+ ACL2 !>(read-file-into-string \"tmp.txt\" :start 0 :bytes 3)
+ \"Hel\"
+ ACL2 !>(read-file-into-string \"tmp.txt\" :start 3 :bytes 2)
+ \"lo\"
+ ACL2 !>(read-file-into-string \"tmp.txt\" :start 5)
+ \"
+ world.
+ \"
+ ACL2 !>
+ })
+
+ <p>For two successive calls of @('read-file-into-string') on the same input
+ string, the second call must generally start beyond the last byte that was
+ read by the first call.  An exception is made when the second call specifies
+ @(':bytes 0'), when @(':start') is either omitted or has value 0; in that
+ case, the empty string is returned without error.  An exception is also made
+ when the form @('(INCREMENT-FILE-CLOCK STATE)') is evaluated between the two
+ calls.</p>
+
+ <p>It may seem odd to require a call of @('increment-file-clock') to avoid
+ errors from successive reads.  The reason stems from the fact that
+ @('increment-file-clock') is a function.  The concern is that the file may
+ change between successive calls of @('read-file-into-string') (perhaps made
+ hours apart!), for reasons external to ACL2, in which case it could appear
+ that @('read-file-into-string') returns different values for the same inputs.
+ By evaluating @('(INCREMENT-FILE-CLOCK STATE)'), one is incrementing the
+ file-clock field of the @('state') argument, so the next call is on a
+ different @('state') argument.  This is all explained logically by the
+ definitions of @('read-file-into-string') and its subroutines in ACL2, as
+ shown in the final section of this documentation.  (But the implementation of
+ @('read-file-into-string') involves raw Lisp code.)  ACL2 causes various
+ informative Lisp errors when functional semantics could otherwise be violated,
+ and some of these errors are shown below.</p>
+
+ <p>Note that ACL2 characters always fit into a single byte, which is why we
+ can talk about ``bytes''.</p>
+
+ <p>Compared with the usual @(see IO) routines provided by ACL2,
+ @('read-file-into-string') is generally much more efficient, and also it does
+ not return @(tsee state).  Note that the macroexpansion of a call of this
+ macro takes @('state') as an argument; so if you call it in the body of a
+ function definition, then &mdash; as usual for functions that take @('state')
+ &mdash; either @('(set-state-ok t)') must have been evaluated or else a
+ suitable @(':stobjs') declaration, typically @(':stobjs state'), must be
+ provided (see @(see xargs)).</p>
+
+ <p>The very large constant @('*read-file-into-string-bound*'), whose
+ definition is shown in the final section below, establishes a strict upper
+ bound on the size of the string returned.  If the file (or specified portion
+ thereof) contains more bytes than this, then @('nil') is returned.</p>
+
+ <h3>Detailed discussion of keyword arguments</h3>
 
  <p>The result, when not @('nil') or an error, is a string representing the
  specified file contents.  For the default of @(':start 0') and @(':bytes
  nil'), or equivalently, when no keyword arguments are specified, the entire
  file contents are returned as a string.  In general, @(':start s') specifies
- the part of the file starting at byte position @('s') of the file, and
- @(':bytes b') specifies that only the first @('b') bytes are to be read
- starting at that position &mdash; however, stopping at the end of the file if
- @('b+s') exceeds the length @('L') of the file.  Below we call this case that
- @('b+s>L') the ``truncation case''.</p>
-
- <p>Note that ACL2 characters always fit into a single byte, which is why we
- can talk about ``bytes'' here.</p>
+ the part of the file starting at byte position @('s') of the file, and the
+ @(':bytes') argument specifies the number of consecutive bytes to be included
+ starting at that position: @(':bytes nil') specifies that the rest of the file
+ is to be included, while for a natural number @('b'), @(':bytes b') specifies
+ that only the next @('b') bytes are to be included &mdash; but, stopping at
+ the end of the file if @('b+s') exceeds the length @('L') of the file.  Below
+ we call this case that @('b+s>L') the <i>truncation case</i>.</p>
 
  <p>The @(':close') argument affects handling of the Lisp stream that is
  created for the specified file.  When the value of @(':close') is the default,
- @(':default'), this stream is closed immediately after the read exactly when
- either @(':bytes') has value @('nil') (the default) or we are in the
- truncation case @('b+s>L') described above.  But otherwise the stream remains
- open, which could cause a problem since operating systems can complain when
- too many streams are open at the same time.  If the value of @(':bytes') is
- non-@('nil') (hence, a natural number), then you may want to specify @(':close
- t') to prevent that problem, unless you plan to read more bytes from the same
- file.  If you decide to close the file later, this can be accomplished
- efficiently by evaluating the following form for your file,
- @('\"<file>\"').</p>
+ @(':default'), the criterion for closing the stream immediately after the read
+ completes is that either @(':bytes') has value @('nil') (the default) or we
+ are in the truncation case @('b+s>L') described above.  Once this stream is
+ closed, a Lisp error occurs if @('read-file-with-string') is called when
+ either @(':start') or @(':bytes') specifies a non-zero value unless the
+ file-clock of the state is advanced first by evaluating
+ @('(INCREMENT-FILE-CLOCK STATE)').  See @(see state) for a discussion of the
+ logical role of the file-clock of the state.</p>
+
+ <p>Here is a typical log showing such an error message from successive reads,
+ together with the evaluation of @('(INCREMENT-FILE-CLOCK STATE)') as a remedy.
+ The next section, further below, discusses the closing of streams.</p>
 
  @({
- (time$ (read-file-into-string \"<file>\" :start 0 :bytes 0 :close t))
- })
+ ACL2 !>(read-file-into-string \"tmp.txt\")
+ \"Hello
+ world.
+ \"
+ ACL2 !>(read-file-into-string \"tmp.txt\")
 
- <p>Compared with the usual @(see IO) routines provided by ACL2,
- @('read-file-into-string') is generally much more efficient, and also it does
- not return @(tsee state).  Note that the expansion of a call of this macro
- takes @('state') as an argument; so if you call it in the body of a function
- definition, then &mdash; as usual for functions that take @('state') &mdash;
- either @('(set-state-ok t)') must have been evaluated or else a suitable
- @(':stobjs') declaration, typically @(':stobjs state'), must be provided (see
- @(see xargs)).</p>
-
- <p>The constant @('*read-file-into-string-bound*') (see the definition below)
- establishes a strict upper bound on the size of the string returned.  If the
- file (or specified portion thereof) contains more bytes than this, then
- @('nil') is returned.</p>
-
- <p>There are two checks to guarantee that @('read-file-into-string') is truly
- a function &mdash; that is, it returns the same value for two calls with the
- same inputs.  The primary check ensures that the write date of the file has
- not changed in the interval between two such calls unless the @('file-clock')
- component of the ACL2 state has been updated within that interval.  That
- update takes place when an input or output channel is opened or closed in the
- usual way (that is, using @('open-input-channel'), @('open-output-channel'),
- @('close-input-channel'), or @('close-output-channel'); see @(see IO)).
- However, it suffices to evaluate the following form, which returns the @(tsee
- state) obtained by incrementing its @('file-clock').</p>
-
- @({
- (increment-file-clock state)
- })
-
- <p>If however you make illegal successive reads as described above, a Lisp
- error will occur with a message of the following form.</p>
-
- @({
  ***********************************************
  ************ ABORTING from raw Lisp ***********
  ********** (see :DOC raw-lisp-error) **********
- Error:  Illegal consecutive reads from file
- \"<some_filename>\",
- which appears to have been written between the two reads.
- Execute (INCREMENT-FILE-CLOCK STATE) to avoid this error.
+ Error:  Apparently READ-FILE-INTO-STRING has previously closed the stream
+ that is associated with file
+ \"tmp.txt\".
+ Consider evaluating (INCREMENT-FILE-CLOCK STATE).
+ See :DOC read-file-into-string.
+ While executing: READ-FILE-INTO-STRING2
+ ***********************************************
+
+ The message above might explain the error.  If not, and
+ if you didn't cause an explicit interrupt (Control-C),
+ then it may help to see :DOC raw-lisp-error.
+
+ To enable breaks into the debugger (also see :DOC acl2-customization):
+ (SET-DEBUGGER-ENABLE T)
+ ACL2 !>(INCREMENT-FILE-CLOCK STATE)
+ <state>
+ ACL2 !>(read-file-into-string \"tmp.txt\")
+ \"Hello
+ world.
+ \"
+ ACL2 !>
+ })
+
+ <p>The implementation of @('read-file-into-string') advances a pointer with
+ each successive read while the stream is open.  An error is signaled when
+ attempting to call @('read-file-into-string') with a @(':start') value that
+ points to a byte that is not beyond all bytes already read by previous calls
+ (unless there is an intervening evaluation of @('(INCREMENT-FILE-CLOCK
+ STATE)')).  Here is a sample log to illustrate this point.</p>
+
+ @({
+ ACL2 !>(read-file-into-string \"tmp.txt\" :bytes 3)
+ \"Hel\"
+ ACL2 !>(read-file-into-string \"tmp.txt\" :start 3 :bytes 2)
+ \"lo\"
+ ACL2 !>(read-file-into-string \"tmp.txt\" :start 4)
+
+ ***********************************************
+ ************ ABORTING from raw Lisp ***********
+ ********** (see :DOC raw-lisp-error) **********
+ Error:  The :start value, 4, specified for a call of READ-FILE-INTO-STRING,
+ is less than the position 5 immediately after a previous read of file
+ \"tmp.txt\" at the same file-clock.
+ Consider evaluating (INCREMENT-FILE-CLOCK STATE).
  See :DOC read-file-into-string.
  While executing: READ-FILE-INTO-STRING2
  ***********************************************
  })
 
- <p>A similar error may occur when a call of @('read-file-into-string') is
- followed by a call of @(tsee open-input-channel) on the same filename when
- that file is modified between the two calls.  For low-level details about
- logical issues being addressed by such errors, see the comment in the
- definition of @('*read-file-into-string-alist*') in the ACL2 sources.</p>
+ <h3>Closing streams</h3>
 
- <p>The other check ensures that the write date of the file has not changed
- while a call is in progress.  When that check fails the corresponding Lisp
- error is of the following form.</p>
+ <p>A call of @('read-file-into-string') on a given filename opens a Lisp
+ stream connected to the given file.  ACL2 keeps track of such an association
+ of filenames with streams.</p>
+
+ <p>If the stream remains open for numerous calls of
+ @('read-file-into-string'), the operating system could eventually complain
+ because too many streams are open at the same time.  Recall that if the value
+ of @(':bytes') is non-@('nil') (hence, a natural number), then, except in the
+ truncation case, the stream remains open.  In such cases may want to specify
+ @(':close t') to prevent leaving too many streams open, unless you plan to
+ read more bytes from the same file.  If you decide to close the stream later,
+ this can be accomplished efficiently without reading any bytes by evaluating
+ the following form for your file, @('\"<file>\"').</p>
 
  @({
- ************ ABORTING from raw Lisp ***********
- ********** (see :DOC raw-lisp-error) **********
- Error:  Illegal attempt to call READ-FILE-INTO-STRING concurrently
- with some write to that file!  See :DOC read-file-into-string.
- ***********************************************
+ (read-file-into-string \"<file>\" :bytes 0 :close t)
  })
 
- <p>We close by showing the relevant ACL2 definitions in the logic, that is,
- not including the special raw Lisp (under the hood) code in the definition of
- @('read-file-into-string2').</p>
+ <h3>Logical definitions</h3>
+
+ <p>We close by showing the relevant ACL2 definitions in the logic.  Thus,
+ these do not show the special raw Lisp (under the hood) code in the definition
+ of @('read-file-into-string2').</p>
 
  @(def read-file-into-string1)
 
@@ -123890,16 +123979,21 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   :long "<p>
  For the purposes of this document, a <i>term</i>&nbsp; is a variable symbol, a
  quoted constant, or a function application written as a sequence,
- enclosed in parenthesis, consisting of a function symbol of arity <i>n</i>&nbsp;
+ enclosed in parentheses, consisting of a function symbol of arity <i>n</i>&nbsp;
  followed by <i>n</i>&nbsp; terms.
  </p>
 
  <p>
- Since <tt>car</tt> is a function symbol of arity one and <tt>cons</tt> is a function
- symbol of arity two, then <tt>(cons (car x) y)</tt> is a term.  In more
- conventional notation this term would be written <i>cons</i>&nbsp;(<i>car</i>&nbsp;(<i>x</i>&nbsp;), <i>y</i>&nbsp;).  We call
- <tt>(car x)</tt> and <tt>y</tt> the <i>actual expressions</i>&nbsp; or <i>actuals</i>&nbsp; of
- the <i>function call</i>&nbsp; <tt>(cons (car x) y)</tt>.
+
+ Since <tt>car</tt> is a function symbol of arity one and <tt>cons</tt> is a
+ function symbol of arity two, and <tt>x</tt> and <tt>y</tt> are variable
+ symbols, then <tt>(cons (car x) y)</tt> is a term.  In more conventional
+ notation this term would be written
+ <i>cons</i>&nbsp;(<i>car</i>&nbsp;(<i>x</i>&nbsp;), <i>y</i>&nbsp;).  We call
+ <tt>(car x)</tt> and <tt>y</tt> the <i>actual expressions</i>&nbsp; or
+ <i>actuals</i>&nbsp; of the <i>function call</i>&nbsp; <tt>(cons (car x)
+ y)</tt>.
+
  </p>
 
  <p>
@@ -124117,27 +124211,127 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
   :parents (recursion-and-induction)
   :short "Recursion and Induction: Abbreviations for Terms"
   :long "<p>
- If <i>x</i>&nbsp; is <tt>t</tt>, <tt>nil</tt>, an integer, a character object, or a
- string, and <i>x</i>&nbsp; is used where a term is expected, then <i>x</i>&nbsp; abbreviates
- the quoted constant <tt>'</tt><i>x</i>.  Recall that a single quote mark
- followed by a symbol, e.g., <tt>'load</tt>, is a quoted constant.
+ Recall that a term is a variable symbol, a quoted constant, or a function
+ application written as a sequence, enclosed in parentheses, consisting of a
+ function symbol of arity <i>n</i>&nbsp; followed by <i>n</i>&nbsp; terms.
+ See <see topic='@(url r-and-i-terms)'>Terms</see>.
+ However, we implement certain conventions that allow terms to be abbreviated.
+ The conventions allow case to be ignored (when writing symbols), certain
+ constants to be written without being quoted, and certain primitive
+ functions to be given more arguments than their arity implies.  The ACL2
+ implementation also supports a powerful macro facility inherited from Lisp,
+ but we do not discuss macros in this course.
  </p>
 
  <p>
- In the following, an <i>expression</i>&nbsp; is an integer, a character object, a
- string, a symbol, an optionally dotted parenthesized sequence of expressions,
- or a single quote mark followed by an expression.  By <i>optionally dotted
- parenthesized sequence of expressions</i> we mean a parenthesized non-empty
- sequence of expressions, optionally containing a dot (.) between the last two
- expressions in the sequence.  For example &ldquo;<tt>(A 123 . B)</tt>&rdquo; and &ldquo;<tt>(A
- (123 B) 'C)</tt>&rdquo; are both optionally dotted parenthesized sequences of
- expressions.
+ When input is being read in and parsed into lexical tokens, the characters in
+ tokens parsed as Lisp symbols are converted to upper case.  Thus, the
+ following are three different ways to type in the same symbol: @('NIL'),
+ @('Nil'), and @('nil').  Similarly, @('(cons 'e x)') and @('(Cons 'E x)') are
+ both read the same way as @('(CONS 'E X)').  It may seem strange to have
+ different ways to write the same symbol but you're very familiar with the
+ similar conventions applied to numbers: 123, +123, and 0123 are three
+ different ways to write the same integer.  If you wish to type a symbol whose
+ name includes lower case characters you must surround the whole symbol with
+ vertical bars.  E.g., @('|nil|') is a different symbol than @('nil').  But in
+ this course we do not use symbols whose names include lower case characters.
  </p>
 
  <p>
- A single quote mark followed by an optionally dotted parenthesized
- sequence of expressions, when used as a term, denotes a <tt>cons</tt>
- term as follows, using these four rules:
+ The conversion to upper case only happens when parsing symbols.  Strings and
+ character objects are not automatically converted to upper case.  Thus,
+ @('\"NIL\"'), @('\"Nil\"') and @('\"nil\"') are three different strings, and
+ @('#\\a') is a different character object than @('#\\A').
+ </p>
+
+ <p>
+ In this document, when we write symbols we generally write them in lower case
+ typewriter font, e.g., @('nil'), and we capitalize them when used as the first
+ word of a sentence, e.g., @('Nil'). Occasionally we write them in all upper
+ case, e.g., @('NIL'), to emphasize that particular symbol or to further
+ distinguish the symbol from a nearby English word with the same spelling, as
+ in the sentence ``<tt>AND</tt> and <tt>OR</tt> denote conjunction and
+ disjunction.''  But regardless of the case we use &mdash; whether lower case,
+ captialized, or upper case &mdash; we are referring to the same upper case
+ symbol.
+ </p>
+
+ <p> The next convention allows you to drop the single quote mark on certain
+ constants.  The definition of a term requires constants to be quoted.  E.g.,
+ since @('evenp') is a function symbol of arity 1, @('(evenp '3)') is a term
+ but @('(evenp 3)') is not because @('3') is neither a variable symbol, a
+ <i>quoted</i>&nbsp; constant, or a function application.  But we accept the
+ latter as an abbreviation of the former because what else could it mean?  To
+ see that ambiguity is lurking if quote marks are dropped, consider @('(member
+ 'e '(a b c))'), where @('member') is a function symbol of arity 2.  What
+ happens if we drop either or both of the quote marks?  Then we might still get
+ a term that means something completely different.  Here, the function
+ @('member') means ``is the first argument an element of the second?''  </p>
+
+ <ul>
+
+ <li>@('(member 'e '(a b c))'): is the constant symbol @('e') an element of the
+ constant list @('(a b c)')? </li>
+
+ <li>@('(member e '(a b c))'): is the value of the variable @('e') an element
+ of the constant list @('(a b c)')?</li>
+
+ <li>@('(member 'e (a b c))'): is the constant symbol @('e') an element of the
+ list computed by applying the function @('a') to the values of variables
+ @('b') and @('c')?</li>
+ 
+ <li>@('(member e (a b c))'): is the value of the variable @('e') an element of
+ the list computed by applying the function @('a') to the values of variables
+ @('b') and @('c')?</li>
+
+ </ul>
+
+ <p>
+ Meaning changes if quote marks are dropped from symbols and lists.  When
+ the symbol @('e') is quoted in a term it denotes the constant @('e'); when
+ @('e') is not quoted it is a variable symbol and takes on whatever value that
+ variable has been assigned in the environment.  Similarly, when a list is
+ quoted it denotes that list constant; when it is not quoted it denotes the
+ application of its first element to the values of the other elements.
+ </p>
+
+ <p>
+ But unquoted numbers, character objects, and strings used as terms cannot be
+ confused with variable symbols or function applications, so by convention they
+ just abbreviate their own quotations.
+ </p>
+
+ <p>
+ More precisely, the quote convention for atomic objects is as follows:
+ If <i>x</i>&nbsp; is the symbol <tt>T</tt>, the symbol <tt>NIL</tt>, an
+ integer, a character object, or a string, and <i>x</i>&nbsp; is used where a
+ term is expected, then <i>x</i>&nbsp; abbreviates the quoted constant
+ <tt>'</tt><i>x</i>.
+ </p>
+
+ <p>
+ Next we deal with quoted parenthesized expressions.  In the following, an
+ <i>expression</i>&nbsp; is an integer, a character object, a string, a symbol,
+ an optionally dotted parenthesized sequence of expressions, or a single quote
+ mark followed by an expression.  By <i>optionally dotted parenthesized
+ sequence of expressions</i> we mean a parenthesized non-empty sequence of
+ expressions, optionally containing a dot (.) between the last two expressions
+ in the sequence.  For example &ldquo;<tt>(A 123 B)</tt>&rdquo; and
+ &ldquo;<tt>(A 123 . B)</tt>&rdquo; are both optionally dotted parenthesized
+ sequences of expressions.  (There's no dot in the first expression; the dot in
+ the second one changes the meaning.)
+ </p>
+
+ <p>We'll be precise in a moment, but @(''(A 123 B)') is an abbreviation for
+ @('(cons 'A (cons '123 (cons 'B 'nil)))'), which could also be written
+ @('(cons 'A (cons 123 (cons 'B nil)))').  Meanwhile, @(''(A 123 . B)') is an
+ abbreviation for @('(cons 'A (cons '123 'B))') which could also be written
+ @('(cons 'A (cons 123 'B))').</p>
+
+ <p>
+ More generally, a single quote mark followed by an optionally dotted
+ parenthesized sequence of expressions, when used as a term, denotes a
+ <tt>cons</tt> term as follows, using these four rules:
  </p>
 
  <p>
@@ -124177,9 +124371,14 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>
  It remains to deal with cases like <tt>'</tt><tt>'A</tt> and
- <tt>'</tt><tt>'(A 'B)</tt> involving multiple single quote marks.
- We do not expect to use such expressions in this course
- but we specify their meaning just for completeness.
+ <tt>'</tt><tt>'(A 'B)</tt> involving nested single quote marks.
+ Expressions involving nested single quote marks will not arise in
+ this course.  But we specify their meaning for completeness.
+ </p>
+
+ <p>
+ <i>You may consider the following paragraph and the subsequent example as
+ optional!</i>
  </p>
 
  <p>
@@ -124211,6 +124410,8 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
 
  <p>Note that every occurrence of single quote now marks a quoted constant.</p>
 
+ <p><i>End of optional material.</i></p>
+
  <p>
  When <tt>(list <i>x_1</i>&nbsp; &nbsp;&hellip;&nbsp;)</tt> is used as a term, it abbreviates
  <tt>(cons <i>x_1</i>&nbsp; (list &nbsp;&hellip;&nbsp;))</tt>.  When <tt>(list)</tt> is used as a term,
@@ -124219,24 +124420,23 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  </p>
 
  <p>
- <tt>And</tt> and <tt>or</tt> will be defined as function symbols of two arguments.
- But if <tt>and</tt> is used as though it were a function symbol of more than two
- arguments, then it abbreviates the corresponding right-associated nest of
- <tt>and</tt>s.  Thus, <tt>(and p q r s)</tt>, when used where a term is expected,
- abbreviates <tt>(and p (and q (and r s)))</tt>.
+
+ For the purposes of this course you may imagine that <tt>AND</tt> and
+ <tt>OR</tt> are defined as function symbols of two arguments.  But we
+ use them as though they were function symbols of varying numbers of argument.
+ When <tt>AND</tt> and <tt>OR</tt> are provided more than two arguments it just
+ abbreviates the corresponding right-associated nest.  Thus, <tt>(and p q r
+ s)</tt>, when used where a term is expected, abbreviates <tt>(and p (and
+ q (and r s)))</tt>.  In the actual ACL2 implementation, @('AND') and @('OR')
+ are ``macros.''
+
  </p>
 
- <p>
- If <tt>or</tt> is used as though it were a function symbol of more than two
- arguments, then it abbreviates the corresponding right-associated nest of
- <tt>or</tt>s.
- </p>
-
-<p>(Maybe explore term abbreviation in ACL2?  But abbreviation is complicated in
-ACL2 by the presence of a powerful macro facility.  To learn about ACL2 term
-abbreviation, explore &lt;&lt;@(see term)&gt;&gt;, paying special attention to
-&ldquo;untranslated&rdquo; terms.  Maybe also explore &lt;&lt;@(see
-macros)&gt;&gt;.)</p>
+ <p>(Maybe explore term abbreviation in ACL2?  But abbreviation is complicated in
+ ACL2 by the presence of a powerful macro facility.  To learn about ACL2 term
+ abbreviation, explore &lt;&lt;@(see term)&gt;&gt;, paying special attention to
+ &ldquo;untranslated&rdquo; terms.  Maybe also explore &lt;&lt;@(see
+ macros)&gt;&gt;.)</p>
 
  <p>
  <b>Problem 7. <br/></b> Show the term abbreviated by each of the following:
@@ -138398,10 +138598,10 @@ work on <tt>(q x)</tt>.</p>
  })")
 
 (defxdoc set-print-case
-  :parents (io acl2-built-ins)
-  :short "Control whether symbols are printed in upper case or in lower case"
-  :long "<p>By default, symbols are printed in upper case when vertical bars
- are not required, as specified by Common Lisp.  As with Common Lisp, ACL2
+  :parents (io acl2-built-ins symbols)
+  :short "Control whether @(see symbols) are printed in upper case or in lower case"
+  :long "<p>By default, @(see symbols) are printed in upper case when vertical
+ bars are not required, as specified by Common Lisp.  As with Common Lisp, ACL2
  supports printing in a \"downcase\" mode, where symbols are printed in lower
  case.  Many printing functions (some details below) print characters in lower
  case for a symbol when the ACL2 @(see state) global variable @('print-case')
@@ -146248,8 +146448,22 @@ work on <tt>(q x)</tt>.</p>
   :parents (programming)
   :short "Symbols in ACL2 and operations on them"
   :long "<p>Symbols are a basic datatype in ACL2 and Common Lisp.  Every symbol
-  has two components: its name (see @(see symbol-name)) and its package name
-  (see @(see symbol-package-name)).</p>")
+ has two components: its name (see @(see symbol-name)) and its package name
+ (see @(see symbol-package-name)).</p>
+
+ <p>When symbols are read by Common Lisp or ACL2, they are converted to upper
+ case.  Note carefully that this remark applies to the characters in
+ <i>symbols</i>.  The characters in strings are not converted to upper
+ case.</p>
+
+ <p>To type a symbol containing lower case characters you can enclose the
+ symbol in vertical bars, as in @('|AbC|'), or you can put a
+ &ldquo;backslash&rdquo; before each lower case character you wish to preserve,
+ as in @('A\\bC').  @('|AbC|') and @('A\\bC') are two different ways of writing
+ the same symbol (just like 2/4 and 1/2 are two different ways of writing the
+ same rational and 123 and 0123 are two different ways to write the same
+ natural number).  The symbol has three characters in its name, the middle one
+ of which is a lower case b.</p>")
 
 (defxdoc sync-ephemeral-whs-with-persistent-whs
   :parents (wormhole)
@@ -149871,12 +150085,14 @@ work on <tt>(q x)</tt>.</p>
  entity denoting some object in the universe of individuals.  Often, for
  example, the syntactic characterization of a term is that it is either a
  variable symbol or the application of a function symbol to the appropriate
- number of argument terms.  Traditionally, ``atomic formulas'' are built from
- terms with predicate symbols such as ``equal'' and ``member;'' ``formulas''
- are then built from atomic formulas with propositional ``operators'' like
- ``not,'' ``and,'' and ``implies.'' Theorems are formulas.  Theorems are
- ``valid'' in the sense that the value of a theorem is true, in any model of
- the axioms and under all possible assignments of individuals to variables.</p>
+ number of argument terms.  (Note that ACL2 is case-insensitive when dealing
+ with symbols; see @(see symbols).)  Traditionally, ``atomic formulas'' are
+ built from terms with predicate symbols such as ``equal'' and ``member;''
+ ``formulas'' are then built from atomic formulas with propositional
+ ``operators'' like ``not,'' ``and,'' and ``implies.'' Theorems are formulas.
+ Theorems are ``valid'' in the sense that the value of a theorem is true, in
+ any model of the axioms and under all possible assignments of individuals to
+ variables.</p>
 
  <p>However, in ACL2, terms are used in place of both atomic formulas and
  formulas.  ACL2 does not have predicate symbols or propositional operators as
