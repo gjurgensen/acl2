@@ -10946,9 +10946,8 @@ way to split up large ACL2 developments into separate modules."
 
  <h3>Prerequisites</h3>
 
- <p>We assume that you have already downloaded and installed ACL2 as per the
- ACL2 installation instructions, which you can access from the ACL2 home page,
- or see @(see installation).</p>
+ <p>We assume that you have already installed ACL2 as per the
+ @(see installation-instructions).</p>
 
  <p>We assume you know the path to your ACL2 executable.  Typically this is a
  script named @('saved_acl2') in your @('acl2-sources') directory.</p>
@@ -124279,7 +124278,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <li>@('(member 'e (a b c))'): is the constant symbol @('e') an element of the
  list computed by applying the function @('a') to the values of variables
  @('b') and @('c')?</li>
- 
+
  <li>@('(member e (a b c))'): is the value of the variable @('e') an element of
  the list computed by applying the function @('a') to the values of variables
  @('b') and @('c')?</li>
