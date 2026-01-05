@@ -109221,6 +109221,14 @@ it."
 ; source function read-file-into-string2 the corresponding test was non-strict.
 ; This has been fixed.
 
+; When a DECLARE form is for a symbol that matches a key of
+; *acceptable-dcls-alist* except for being in the wrong package, the error
+; message adds a note to that effect.  Thanks to Eric McCarthy for supplying a
+; fix, which he produced with the assistance of Claude Code.  Also thanks to
+; Grant Jurgensen for supplying an example that led to this improvement, and to
+; the participants in a Zulip chat on the topic (those two and Eric Smith,
+; Alessandro Coglio, and Sol Swords).
+
   :parents (release-notes)
   :short "ACL2 Version  8.7 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
