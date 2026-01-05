@@ -10946,16 +10946,13 @@ way to split up large ACL2 developments into separate modules."
 
  <h3>Prerequisites</h3>
 
- <p>We assume that you have already downloaded and installed ACL2 as per the
- ACL2 installation instructions, which you can access from the ACL2 home page,
- or see @(see installation).</p>
+ <p>We assume that you have already installed ACL2 as per the
+ @(see installation-instructions).  In particular, the @(see community-books)
+ should be present as the @('books/') subdirectory of your ACL2
+ distribution.</p>
 
  <p>We assume you know the path to your ACL2 executable.  Typically this is a
  script named @('saved_acl2') in your @('acl2-sources') directory.</p>
-
- <p>We assume the ACL2 @(see community-books) are installed in the @('books/')
- subdirectory of your ACL2 distribution, as is the case when you have followed
- the ACL2 @(see installation) instructions.</p>
 
  <p>The instructions below are suitable for ACL2 and all of its experimental
  extensions, e.g., ACL2(p) and ACL2(r).</p>
@@ -10967,13 +10964,12 @@ way to split up large ACL2 developments into separate modules."
 
  <h3>A Basic Build</h3>
 
- <p>Before ACL2 Version 6.4, building the Community Books could take several
- hours.  Now, the default @('make') target in @('books/GNUmakefile'), called
- @('basic'), is much faster &mdash; it excludes many books and certifies only
- books listed below, which tend to be widely used.  <b>WARNING</b>: the
- @('basic') target of @('books/GNUmakefile') is insufficient for validating
- changes that will go into the @(see community-books); for that, use the
- @('all') target.</p>
+ <p>The default @('make') target in @('books/GNUmakefile'), called
+ @('basic'), is quite fast &mdash; it excludes many books and certifies only
+ the directories listed below, which tend to be widely used.  <b>WARNING</b>:
+ This basic build is insufficient for validating
+ changes that will go into the @(see community-books); for that, see
+ @(see how-to-contribute).</p>
 
  <ul>
  <li>arithmetic</li>
@@ -10985,6 +10981,7 @@ way to split up large ACL2 developments into separate modules."
  <li>@(see std)</li>
  <li>@(see xdoc) (in part)</li>
  <li>data-structures</li>
+ <li>apply</li>
  </ul>
 
  <p>To certify these books, you should be able to run @('make') as follows.  The
@@ -39223,7 +39220,7 @@ current fast alists."
  and have the same behavior on well-formed input, and both return @('nil').
  See @(see cw) for documentation on how to use both utilities.  Unlike @('cw'),
  which has a @(see guard) of @('t'), @('fmx-cw') has a non-trivial guard that
- can can catch errors in the use of tilde-directives.  Here is an example of
+ can catch errors in the use of tilde-directives.  Here is an example of
  such a guard violation, where the corresponding call of @('cw') would instead
  cause a hard error.</p>
 
@@ -54498,7 +54495,8 @@ tables in the current Hons Space."
 (defxdoc installation
   :parents (acl2 about-acl2)
   :short "Installing ACL2"
-  :long "<p>See the @(see installation-instructions) for steps to install ACL2.</p>
+  :long "<p>See the @(see installation-instructions) for steps to install ACL2
+ on Unix-like systems (Linux, macOS, and FreeBSD).</p>
 
  <p>If you encounter problems installing ACL2, or need more information, see @(see
  installation-support).</p>
@@ -122989,7 +122987,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  and some of these errors are shown below.</p>
 
  <p>Note that ACL2 characters always fit into a single byte, which is why we
- can can talk about ``bytes''.</p>
+ can talk about ``bytes''.</p>
 
  <p>Compared with the usual @(see IO) routines provided by ACL2,
  @('read-file-into-string') is generally much more efficient, and also it does
@@ -124278,7 +124276,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <li>@('(member 'e (a b c))'): is the constant symbol @('e') an element of the
  list computed by applying the function @('a') to the values of variables
  @('b') and @('c')?</li>
- 
+
  <li>@('(member e (a b c))'): is the value of the variable @('e') an element of
  the list computed by applying the function @('a') to the values of variables
  @('b') and @('c')?</li>
