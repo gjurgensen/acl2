@@ -3,7 +3,7 @@
 ; acl2-doc.lisp - Documentation for the ACL2 Theorem Prover
 ;
 ; ACL2 Version 8.6 -- A Computational Logic for Applicative Common Lisp
-; Copyright (C) 2025, Regents of the University of Texas
+; Copyright (C) 2026, Regents of the University of Texas
 ;
 ; This documentation was derived from the ACL2 system in October 2013, which
 ; was a descendant of ACL2 Version 1.9, Copyright (C) 1997 Computational Logic,
@@ -818,7 +818,7 @@
 (defxdoc about-acl2
   :parents (start-here)
   :short "General information About ACL2"
-  :long "<p>This is @(`(:raw (@ acl2-version))`), @(see copyright) (C) 2025,
+  :long "<p>This is @(`(:raw (@ acl2-version))`), @(see copyright) (C) 2026,
  Regents of the University of Texas, authored by Matt Kaufmann and J Strother
  Moore.</p>
 
@@ -19274,7 +19274,7 @@ subtree of X with T, without duplication.</p>
  <p>@(`(:raw (@ acl2-version))`) &mdash; A Computational Logic for Applicative
  Common Lisp</p>
 
- <p>Copyright (C) 2025, Regents of the University of Texas</p>
+ <p>Copyright (C) 2026, Regents of the University of Texas</p>
 
  <p>This version of ACL2 is a descendant of ACL2 Version 1.9, Copyright (C)
  1997 Computational Logic, Inc.  See the documentation topic NOTE-2-0.</p>
@@ -143037,9 +143037,9 @@ work on <tt>(q x)</tt>.</p>
  @({
   ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   + ACL2 Version 8.6+ (a development snapshot based on ACL2 Version 8.6) +
-  +   built January 14, 2025  10:09:28.                                  +
-  +   (Git commit hash: 89b2701f59f8e561b17121cf0a25cb8d1910377f)        +
-  + Copyright (C) 2025, Regents of the University of Texas.              +
+  +   built January 14, 2026  10:09:28.                                  +
+  +   (Git commit hash: 1234567890abcdefghijklmnopqrstuvwxyz!@#$)        +
+  + Copyright (C) 2026, Regents of the University of Texas.              +
   + ACL2 comes with ABSOLUTELY NO WARRANTY.  This is free software and   +
   + you are welcome to redistribute it under certain conditions.  For    +
   + details, see the LICENSE file distributed with ACL2.                 +
@@ -143055,10 +143055,10 @@ work on <tt>(q x)</tt>.</p>
  @({
  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  + ACL2 Version 8.6+ (a development snapshot based on ACL2 Version 8.6) +
- +   built January 14, 2025  09:56:49.                                  +
+ +   built January 14, 2026  09:56:49.                                  +
  +   (Note from the environment when this executable was saved:         +
  +    This is my private executable.)                                   +
- + Copyright (C) 2025, Regents of the University of Texas.              +
+ + Copyright (C) 2026, Regents of the University of Texas.              +
  + ACL2 comes with ABSOLUTELY NO WARRANTY.  This is free software and   +
  + you are welcome to redistribute it under certain conditions.  For    +
  + details, see the LICENSE file distributed with ACL2.                 +
