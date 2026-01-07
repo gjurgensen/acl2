@@ -109229,6 +109229,9 @@ it."
 ; the participants in a Zulip chat on the topic (those two and Eric Smith,
 ; Alessandro Coglio, and Sol Swords).
 
+; Fixed a low-level bug in equational-polyp-ok that prevented building ACL2
+; built on SBCL with safety 3.
+
   :parents (release-notes)
   :short "ACL2 Version  8.7 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
