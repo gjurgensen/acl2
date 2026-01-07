@@ -1625,7 +1625,7 @@ Subtopics
   (START-HERE)
   "General information About ACL2
 
-  This is ACL2 Version 8.6, [copyright] (C) 2025, Regents of the
+  This is ACL2 Version 8.6, [copyright] (C) 2026, Regents of the
   University of Texas, authored by Matt Kaufmann and J Strother
   Moore.
 
@@ -22666,7 +22666,7 @@ See [47m[set-constraint-tracking][0m.")
   ACL2 Version 8.6 --- A Computational Logic for Applicative Common
   Lisp
 
-  Copyright (C) 2025, Regents of the University of Texas
+  Copyright (C) 2026, Regents of the University of Texas
 
   This version of ACL2 is a descendant of ACL2 Version 1.9, Copyright
   (C) 1997 Computational Logic, Inc.  See the documentation topic
@@ -142667,9 +142667,9 @@ Subtopics
 
     ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     + ACL2 Version 8.6+ (a development snapshot based on ACL2 Version 8.6) +
-    +   built January 14, 2025  10:09:28.                                  +
-    +   (Git commit hash: 89b2701f59f8e561b17121cf0a25cb8d1910377f)        +
-    + Copyright (C) 2025, Regents of the University of Texas.              +
+    +   built January 14, 2026  10:09:28.                                  +
+    +   (Git commit hash: 1234567890abcdefghijklmnopqrstuvwxyz!@#$)        +
+    + Copyright (C) 2026, Regents of the University of Texas.              +
     + ACL2 comes with ABSOLUTELY NO WARRANTY.  This is free software and   +
     + you are welcome to redistribute it under certain conditions.  For    +
     + details, see the LICENSE file distributed with ACL2.                 +
@@ -142683,10 +142683,10 @@ Subtopics
 
     ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     + ACL2 Version 8.6+ (a development snapshot based on ACL2 Version 8.6) +
-    +   built January 14, 2025  09:56:49.                                  +
+    +   built January 14, 2026  09:56:49.                                  +
     +   (Note from the environment when this executable was saved:         +
     +    This is my private executable.)                                   +
-    + Copyright (C) 2025, Regents of the University of Texas.              +
+    + Copyright (C) 2026, Regents of the University of Texas.              +
     + ACL2 comes with ABSOLUTELY NO WARRANTY.  This is free software and   +
     + you are welcome to redistribute it under certain conditions.  For    +
     + details, see the LICENSE file distributed with ACL2.                 +
