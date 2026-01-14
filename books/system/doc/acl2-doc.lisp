@@ -3,7 +3,7 @@
 ; acl2-doc.lisp - Documentation for the ACL2 Theorem Prover
 ;
 ; ACL2 Version 8.6 -- A Computational Logic for Applicative Common Lisp
-; Copyright (C) 2025, Regents of the University of Texas
+; Copyright (C) 2026, Regents of the University of Texas
 ;
 ; This documentation was derived from the ACL2 system in October 2013, which
 ; was a descendant of ACL2 Version 1.9, Copyright (C) 1997 Computational Logic,
@@ -818,7 +818,7 @@
 (defxdoc about-acl2
   :parents (start-here)
   :short "General information About ACL2"
-  :long "<p>This is @(`(:raw (@ acl2-version))`), @(see copyright) (C) 2025,
+  :long "<p>This is @(`(:raw (@ acl2-version))`), @(see copyright) (C) 2026,
  Regents of the University of Texas, authored by Matt Kaufmann and J Strother
  Moore.</p>
 
@@ -10946,16 +10946,13 @@ way to split up large ACL2 developments into separate modules."
 
  <h3>Prerequisites</h3>
 
- <p>We assume that you have already downloaded and installed ACL2 as per the
- ACL2 installation instructions, which you can access from the ACL2 home page,
- or see @(see installation).</p>
+ <p>We assume that you have already installed ACL2 as per the
+ @(see installation-instructions).  In particular, the @(see community-books)
+ should be present as the @('books/') subdirectory of your ACL2
+ distribution.</p>
 
  <p>We assume you know the path to your ACL2 executable.  Typically this is a
  script named @('saved_acl2') in your @('acl2-sources') directory.</p>
-
- <p>We assume the ACL2 @(see community-books) are installed in the @('books/')
- subdirectory of your ACL2 distribution, as is the case when you have followed
- the ACL2 @(see installation) instructions.</p>
 
  <p>The instructions below are suitable for ACL2 and all of its experimental
  extensions, e.g., ACL2(p) and ACL2(r).</p>
@@ -10967,13 +10964,12 @@ way to split up large ACL2 developments into separate modules."
 
  <h3>A Basic Build</h3>
 
- <p>Before ACL2 Version 6.4, building the Community Books could take several
- hours.  Now, the default @('make') target in @('books/GNUmakefile'), called
- @('basic'), is much faster &mdash; it excludes many books and certifies only
- books listed below, which tend to be widely used.  <b>WARNING</b>: the
- @('basic') target of @('books/GNUmakefile') is insufficient for validating
- changes that will go into the @(see community-books); for that, use the
- @('all') target.</p>
+ <p>The default @('make') target in @('books/GNUmakefile'), called
+ @('basic'), is quite fast &mdash; it excludes many books and certifies only
+ the directories listed below, which tend to be widely used.  <b>WARNING</b>:
+ This basic build is insufficient for validating
+ changes that will go into the @(see community-books); for that, see
+ @(see how-to-contribute).</p>
 
  <ul>
  <li>arithmetic</li>
@@ -10985,6 +10981,7 @@ way to split up large ACL2 developments into separate modules."
  <li>@(see std)</li>
  <li>@(see xdoc) (in part)</li>
  <li>data-structures</li>
+ <li>apply</li>
  </ul>
 
  <p>To certify these books, you should be able to run @('make') as follows.  The
@@ -19277,7 +19274,7 @@ subtree of X with T, without duplication.</p>
  <p>@(`(:raw (@ acl2-version))`) &mdash; A Computational Logic for Applicative
  Common Lisp</p>
 
- <p>Copyright (C) 2025, Regents of the University of Texas</p>
+ <p>Copyright (C) 2026, Regents of the University of Texas</p>
 
  <p>This version of ACL2 is a descendant of ACL2 Version 1.9, Copyright (C)
  1997 Computational Logic, Inc.  See the documentation topic NOTE-2-0.</p>
@@ -109224,6 +109221,17 @@ it."
 ; source function read-file-into-string2 the corresponding test was non-strict.
 ; This has been fixed.
 
+; When a DECLARE form is for a symbol that matches a key of
+; *acceptable-dcls-alist* except for being in the wrong package, the error
+; message adds a note to that effect.  Thanks to Eric McCarthy for supplying a
+; fix, which he produced with the assistance of Claude Code.  Also thanks to
+; Grant Jurgensen for supplying an example that led to this improvement, and to
+; the participants in a Zulip chat on the topic (those two and Eric Smith,
+; Alessandro Coglio, and Sol Swords).
+
+; Fixed a low-level bug in equational-polyp-ok that prevented building ACL2
+; built on SBCL with safety 3.
+
   :parents (release-notes)
   :short "ACL2 Version  8.7 (xxx, 20xx) Notes"
   :long "<p>NOTE!  New users can ignore these release notes, because the @(see
@@ -109545,6 +109553,13 @@ it."
  ; But (fld st) has indeed changed:
  (assert-event (equal (fld st) nil))
  })
+
+ <p>We fixed a low-level bug in @(tsee include-book), which we have only
+ observed using ACL2 built on host Lisp SBCL with safety 3 (an optimization
+ setting that causes more runtime checks at the cost of longer run times).
+ (Technical note: The bug was in bogus type declarations in the definition of
+ ACL2 source macro @('with-hcomp-bindings').)  Thanks to Jim White for
+ reporting the bug.</p>
 
  <h3>Changes at the System Level</h3>
 
@@ -124279,7 +124294,7 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  <li>@('(member 'e (a b c))'): is the constant symbol @('e') an element of the
  list computed by applying the function @('a') to the values of variables
  @('b') and @('c')?</li>
- 
+
  <li>@('(member e (a b c))'): is the value of the variable @('e') an element of
  the list computed by applying the function @('a') to the values of variables
  @('b') and @('c')?</li>
@@ -143032,9 +143047,9 @@ work on <tt>(q x)</tt>.</p>
  @({
   ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   + ACL2 Version 8.6+ (a development snapshot based on ACL2 Version 8.6) +
-  +   built January 14, 2025  10:09:28.                                  +
-  +   (Git commit hash: 89b2701f59f8e561b17121cf0a25cb8d1910377f)        +
-  + Copyright (C) 2025, Regents of the University of Texas.              +
+  +   built January 14, 2026  10:09:28.                                  +
+  +   (Git commit hash: 1234567890abcdefghijklmnopqrstuvwxyz!@#$)        +
+  + Copyright (C) 2026, Regents of the University of Texas.              +
   + ACL2 comes with ABSOLUTELY NO WARRANTY.  This is free software and   +
   + you are welcome to redistribute it under certain conditions.  For    +
   + details, see the LICENSE file distributed with ACL2.                 +
@@ -143050,10 +143065,10 @@ work on <tt>(q x)</tt>.</p>
  @({
  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  + ACL2 Version 8.6+ (a development snapshot based on ACL2 Version 8.6) +
- +   built January 14, 2025  09:56:49.                                  +
+ +   built January 14, 2026  09:56:49.                                  +
  +   (Note from the environment when this executable was saved:         +
  +    This is my private executable.)                                   +
- + Copyright (C) 2025, Regents of the University of Texas.              +
+ + Copyright (C) 2026, Regents of the University of Texas.              +
  + ACL2 comes with ABSOLUTELY NO WARRANTY.  This is free software and   +
  + you are welcome to redistribute it under certain conditions.  For    +
  + details, see the LICENSE file distributed with ACL2.                 +

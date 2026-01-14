@@ -1625,7 +1625,7 @@ Subtopics
   (START-HERE)
   "General information About ACL2
 
-  This is ACL2 Version 8.6, [copyright] (C) 2025, Regents of the
+  This is ACL2 Version 8.6, [copyright] (C) 2026, Regents of the
   University of Texas, authored by Matt Kaufmann and J Strother
   Moore.
 
@@ -13876,16 +13876,13 @@ Subtopics
 
 Prerequisites
 
-  We assume that you have already downloaded and installed ACL2 as per
-  the ACL2 installation instructions, which you can access from the
-  ACL2 home page, or see [installation].
+  We assume that you have already installed ACL2 as per the
+  [installation-instructions].  In particular, the [community-books]
+  should be present as the [47mbooks/[0m subdirectory of your ACL2
+  distribution.
 
   We assume you know the path to your ACL2 executable.  Typically this
   is a script named [47msaved_acl2[0m in your [47macl2-sources[0m directory.
-
-  We assume the ACL2 [community-books] are installed in the [47mbooks/[0m
-  subdirectory of your ACL2 distribution, as is the case when you
-  have followed the ACL2 [installation] instructions.
 
   The instructions below are suitable for ACL2 and all of its
   experimental extensions, e.g., ACL2(p) and ACL2(r).
@@ -13898,13 +13895,11 @@ Prerequisites
 
 A Basic Build
 
-  Before ACL2 Version 6.4, building the Community Books could take
-  several hours.  Now, the default [47mmake[0m target in [47mbooks/GNUmakefile[0m,
-  called [47mbasic[0m, is much faster --- it excludes many books and
-  certifies only books listed below, which tend to be widely used.
-  [31;1mWARNING[0m: the [47mbasic[0m target of [47mbooks/GNUmakefile[0m is insufficient for
-  validating changes that will go into the [community-books]; for
-  that, use the [47mall[0m target.
+  The default [47mmake[0m target in [47mbooks/GNUmakefile[0m, called [47mbasic[0m, is quite
+  fast --- it excludes many books and certifies only the directories
+  listed below, which tend to be widely used.  [31;1mWARNING[0m: This basic
+  build is insufficient for validating changes that will go into the
+  [community-books]; for that, see [how-to-contribute].
 
     * arithmetic
 
@@ -13923,6 +13918,8 @@ A Basic Build
     * [xdoc] (in part)
 
     * data-structures
+
+    * apply
 
   To certify these books, you should be able to run [47mmake[0m as follows.
   The [47m-j 2[0m part of this command is suitable for a computer with two
@@ -22669,7 +22666,7 @@ See [47m[set-constraint-tracking][0m.")
   ACL2 Version 8.6 --- A Computational Logic for Applicative Common
   Lisp
 
-  Copyright (C) 2025, Regents of the University of Texas
+  Copyright (C) 2026, Regents of the University of Texas
 
   This version of ACL2 is a descendant of ACL2 Version 1.9, Copyright
   (C) 1997 Computational Logic, Inc.  See the documentation topic
@@ -42944,10 +42941,10 @@ Example 2
   [47mFmx-cw[0m is a variant of [47mcw[0m: both take the same arguments and have the
   same behavior on well-formed input, and both return [47mnil[0m.  See [cw]
   for documentation on how to use both utilities.  Unlike [47mcw[0m, which
-  has a [guard] of [47mt[0m, [47mfmx-cw[0m has a non-trivial guard that can can
-  catch errors in the use of tilde-directives.  Here is an example of
-  such a guard violation, where the corresponding call of [47mcw[0m would
-  instead cause a hard error.
+  has a [guard] of [47mt[0m, [47mfmx-cw[0m has a non-trivial guard that can catch
+  errors in the use of tilde-directives.  Here is an example of such
+  a guard violation, where the corresponding call of [47mcw[0m would instead
+  cause a hard error.
 
     ACL2 !>(fmx-cw \"Hello ~s0.\" '(world))
 
@@ -58087,7 +58084,8 @@ Subtopics
   (ACL2 ABOUT-ACL2)
   "Installing ACL2
 
-  See the [installation-instructions] for steps to install ACL2.
+  See the [installation-instructions] for steps to install ACL2 on
+  Unix-like systems (Linux, macOS, and FreeBSD).
 
   If you encounter problems installing ACL2, or need more information,
   see [installation-support].
@@ -106655,6 +106653,13 @@ Bug Fixes
     ; But (fld st) has indeed changed:
     (assert-event (equal (fld st) nil))
 
+  We fixed a low-level bug in [47m[include-book][0m, which we have only
+  observed using ACL2 built on host Lisp SBCL with safety 3 (an
+  optimization setting that causes more runtime checks at the cost of
+  longer run times).  (Technical note: The bug was in bogus type
+  declarations in the definition of ACL2 source macro
+  [47mwith-hcomp-bindings[0m.)  Thanks to Jim White for reporting the bug.
+
 
 Changes at the System Level
 
@@ -126934,7 +126939,7 @@ Summary documentation
   be violated, and some of these errors are shown below.
 
   Note that ACL2 characters always fit into a single byte, which is why
-  we can can talk about ``bytes''.
+  we can talk about ``bytes''.
 
   Compared with the usual [io] routines provided by ACL2,
   [47mread-file-into-string[0m is generally much more efficient, and also it
@@ -142669,9 +142674,9 @@ Subtopics
 
     ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     + ACL2 Version 8.6+ (a development snapshot based on ACL2 Version 8.6) +
-    +   built January 14, 2025  10:09:28.                                  +
-    +   (Git commit hash: 89b2701f59f8e561b17121cf0a25cb8d1910377f)        +
-    + Copyright (C) 2025, Regents of the University of Texas.              +
+    +   built January 14, 2026  10:09:28.                                  +
+    +   (Git commit hash: 1234567890abcdefghijklmnopqrstuvwxyz!@#$)        +
+    + Copyright (C) 2026, Regents of the University of Texas.              +
     + ACL2 comes with ABSOLUTELY NO WARRANTY.  This is free software and   +
     + you are welcome to redistribute it under certain conditions.  For    +
     + details, see the LICENSE file distributed with ACL2.                 +
@@ -142685,10 +142690,10 @@ Subtopics
 
     ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     + ACL2 Version 8.6+ (a development snapshot based on ACL2 Version 8.6) +
-    +   built January 14, 2025  09:56:49.                                  +
+    +   built January 14, 2026  09:56:49.                                  +
     +   (Note from the environment when this executable was saved:         +
     +    This is my private executable.)                                   +
-    + Copyright (C) 2025, Regents of the University of Texas.              +
+    + Copyright (C) 2026, Regents of the University of Texas.              +
     + ACL2 comes with ABSOLUTELY NO WARRANTY.  This is free software and   +
     + you are welcome to redistribute it under certain conditions.  For    +
     + details, see the LICENSE file distributed with ACL2.                 +
