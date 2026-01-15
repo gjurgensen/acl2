@@ -45,10 +45,12 @@
    (xdoc::p
      "Time complexity: @($O(n)$).")
    (xdoc::p
-     "@(see Treeset)s are isomorphic with @(std/osets). This function may be
-      used in combination with @(tsee from-oset) to go back and forth between
-      the two representations. There are rules relating all of the primitive
-      operations (@(tsee in), @(tsee insert), @(tsee union), etc.)."))
+     "@(see Treeset)s are isomorphic to "
+     (xdoc::seetopic "set::std/osets" "osets")
+     ". This function may be used in combination with @(tsee from-oset) to go
+      back and forth between the two representations. There are rules relating
+      all of the primitive operations (@(tsee in), @(tsee insert), @(tsee
+      union), etc.)."))
   :returns (oset set::setp
                  :hints (("Goal" :in-theory (enable fix
                                                     setp
@@ -97,13 +99,19 @@
 
 ;;;;;;;;;;;;;;;;;;;;
 
-(defruled emptyp-becomes-oset-emptyp
-  (equal (emptyp set)
-         (set::emptyp (to-oset set)))
+(defrule oset-emptyp-of-to-oset
+  (equal (set::emptyp (to-oset set))
+         (emptyp set))
   :enable (to-oset
            emptyp
            set::emptyp
            break-abstraction
            fix))
+
+(add-to-ruleset from-oset-theory '(oset-emptyp-of-to-oset))
+
+(defruled emptyp-becomes-oset-emptyp
+  (equal (emptyp set)
+         (set::emptyp (to-oset set))))
 
 (add-to-ruleset to-oset-theory '(emptyp-becomes-oset-emptyp))

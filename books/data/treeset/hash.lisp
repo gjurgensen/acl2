@@ -1,4 +1,4 @@
-; Copyright (C) 2025 Kestrel Institute (http://www.kestrel.edu)
+; Copyright (C) 2025-2026 Kestrel Institute (http://www.kestrel.edu)
 ;
 ; License: A 3-clause BSD license. See the LICENSE file distributed with ACL2.
 ;
@@ -9,6 +9,7 @@
 (in-package "TREESET")
 
 (include-book "std/util/define" :dir :system)
+(include-book "std/util/defrule" :dir :system)
 
 (include-book "data/hash/jenkins-defs" :dir :system)
 
@@ -20,7 +21,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define hash (x)
-  (declare (xargs :type-prescription (natp (hash x))))
   :returns (hash (unsigned-byte-p 32 hash))
   :parents (implementation)
   :short "The hash function used by @('heap<')."
@@ -35,6 +35,13 @@
   :inline t)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(in-theory (disable (:t hash)))
+
+(defrule hash-type-prescription
+  (natp (hash x))
+  :rule-classes :type-prescription
+  :enable hash)
 
 (define acl2-number-hash
   ((x acl2-numberp))

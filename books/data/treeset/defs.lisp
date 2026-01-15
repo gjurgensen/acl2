@@ -20,6 +20,7 @@
 (include-book "intersect-defs")
 (include-book "diff-defs")
 (include-book "to-oset-defs")
+(include-book "iter-defs")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

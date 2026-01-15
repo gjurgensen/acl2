@@ -73,6 +73,21 @@
   :rule-classes ((:rewrite :backchain-limit-lst (0)))
   :by tree-min-when-tree-empty-p)
 
+(defrule tree-min-of-tree-node
+  (equal (tree-min (tree-node head left right))
+         (if (tree-empty-p left)
+             (if (tree-empty-p right)
+                 (tagged-element->elem head)
+               (min-<< (tagged-element->elem head)
+                       (tree-min right)))
+           (if (tree-empty-p right)
+               (min-<< (tagged-element->elem head)
+                       (tree-min left))
+             (min-<< (tagged-element->elem head)
+                     (tree-min left)
+                     (tree-min right)))))
+  :enable tree-min)
+
 (defrule tree-in-of-tree-min
   (equal (tree-in (tree-min tree) tree)
          (not (tree-empty-p tree)))

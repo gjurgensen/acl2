@@ -16,11 +16,13 @@
 (include-book "tree-defs")
 (include-book "count-defs")
 (include-book "in-defs")
+(include-book "min-max-defs")
 
 (local (include-book "std/basic/controlled-configuration" :dir :system))
 (local (acl2::controlled-configuration :hooks nil))
 
 (local (include-book "data/utilities/total-order/total-order" :dir :system))
+(local (include-book "data/utilities/total-order/min" :dir :system))
 
 (local (include-book "tree"))
 (local (include-book "bst"))
@@ -28,6 +30,7 @@
 (local (include-book "heap-order"))
 (local (include-book "count"))
 (local (include-book "in"))
+(local (include-book "min-max"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -337,3 +340,17 @@
          (tree-nodes-count tree))
   :enable (tree-nodes-count
            rotate-right))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defrule tree-min-of-rotate-left
+  (equal (tree-min (rotate-left tree))
+         (tree-min tree))
+  :enable (rotate-left
+           tree-min))
+
+(defrule tree-min-of-rotate-right
+  (equal (tree-min (rotate-right tree))
+         (tree-min tree))
+  :enable (rotate-right
+           tree-min))

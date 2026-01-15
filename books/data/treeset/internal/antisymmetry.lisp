@@ -33,7 +33,6 @@
 ;; TODO: refactor to a less manual proof
 (defrulel tree->head-when-tree-subset-p-tree-subset-p
   (implies (and (tree-subset-p x y)
-                ;; TODO: use loop-stoppers instead of syntaxp?
                 (syntaxp (<< y x))
                 (tree-subset-p y x)
                 (heapp x)
@@ -250,35 +249,27 @@
 
 ;;;;;;;;;;;;;;;;;;;;
 
-;; (defsection double-containment
-;;   :parents (set)
-;;   :short "Prove set equalities via tree-subset-p antisymmetry."
-;;   :long
-;;   (xdoc::topstring
-;;     (xdoc::p
-;;       "This mirrors the @(see set::std/osets) rule, @(see
-;;        set::double-containment). Here, we disable it by default.")
-;;     (xdoc::p
-;;       "The proof of antisymmetry is nontrivial. The intuition is that for an
-;;        arbitrary nonempty set, the root of the tree is necessarily the maximum
-;;        element with respect to @(tsee heap<). Then which of the remaining elements
-;;        are in the left and right subtrees is determined by the binary search
-;;        tree property. This reasoning requires and induction over the tree
-;;        structure of both sets simultaneously."))
-;;
-;;   (defruled equal-becomes-tree-subset-p-when-setp
-;;     (implies (and (setp x)
-;;                   (setp y))
-;;              (equal (equal x y)
-;;                     (and (tree-subset-p x y)
-;;                          (tree-subset-p y x))))
-;;     :use tree-subset-p-antisymmetry)
-;;
-;;   (defruled double-containment
-;;     (implies (and (setp x)
-;;                   (setp y))
-;;              (equal (equal x y)
-;;                     (and (tree-subset-p x y)
-;;                          (tree-subset-p y x))))
-;;     :use tree-subset-p-antisymmetry
-;;     :rule-classes ((:rewrite :backchain-limit-lst (1 1)))))
+(defruled tree-double-containment-no-backchain-limit
+  (implies (and (treep x)
+                (treep y)
+                (bstp x)
+                (bstp y)
+                (heapp x)
+                (heapp y))
+           (equal (equal x y)
+                  (and (tree-subset-p x y)
+                       (tree-subset-p y x))))
+  :by tree-subset-p-antisymmetry)
+
+(defruled tree-double-containment
+  (implies (and (treep x)
+                (treep y)
+                (bstp x)
+                (bstp y)
+                (heapp x)
+                (heapp y))
+           (equal (equal x y)
+                  (and (tree-subset-p x y)
+                       (tree-subset-p y x))))
+  :rule-classes ((:rewrite :backchain-limit-lst 1))
+  :by tree-double-containment-no-backchain-limit)

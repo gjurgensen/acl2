@@ -41,6 +41,7 @@
 (local (include-book "in"))
 (local (include-book "subset"))
 (local (include-book "insert"))
+(local (include-book "extensionality"))
 (local (include-book "to-oset"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -51,8 +52,8 @@
   :long
   (xdoc::topstring
     (xdoc::p
-      "Time complexity: @($O(n\\log(m/n))$) (for binary intersection, where
-       @($n < m$)).")
+      "Time complexity: @($O(m\\log(n/m))$) (for binary intersection, where
+       @($m < n$)).")
     (xdoc::section
       "General form"
       (xdoc::codeblock
@@ -200,14 +201,12 @@
 (defrule associativity-of-intersect
   (equal (intersect (intersect x y) z)
          (intersect x y z))
-  :enable (double-containment
-           pick-a-point))
+  :enable extensionality)
 
 (defrule commutativity-of-intersect
   (equal (intersect y x)
          (intersect x y))
-  :enable (double-containment
-           pick-a-point))
+  :enable extensionality)
 
 ;;;;;;;;;;;;;;;;;;;;
 
@@ -227,8 +226,7 @@
   (equal (from-oset (set::intersect x y))
          (intersect (from-oset x)
                     (from-oset y)))
-  :enable (double-containment
-           pick-a-point))
+  :enable extensionality)
 
 (add-to-ruleset from-oset-theory '(from-oset-of-oset-intersect))
 

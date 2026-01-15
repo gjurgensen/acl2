@@ -256,6 +256,38 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defruled tree-in-of-tree->left-when-tree-in-of-tree->right
+  (implies (and (bstp tree)
+                (tree-in x (tree->right tree)))
+           (not (tree-in x (tree->left tree))))
+  :use (tree-in-tree->right-when-not-<<-of-tree->head
+        tree-in-tree->left-when-not->>-of-tree->head)
+  :enable data::<<-rules)
+
+(defrule tree-in-of-tree->left-when-tree-in-of-tree->right-forward-chaining
+  (implies (and (tree-in x (tree->right tree))
+                (bstp tree))
+           (not (tree-in x (tree->left tree))))
+  :rule-classes :forward-chaining
+  :by tree-in-of-tree->left-when-tree-in-of-tree->right)
+
+(defruled tree-in-of-tree->right-when-tree-in-of-tree->left
+  (implies (and (bstp tree)
+                (tree-in x (tree->left tree)))
+           (not (tree-in x (tree->right tree))))
+  :use (tree-in-tree->right-when-not-<<-of-tree->head
+        tree-in-tree->left-when-not->>-of-tree->head)
+  :enable data::<<-rules)
+
+(defrule tree-in-of-tree->right-when-tree-in-of-tree->left-forward-chaining
+  (implies (and (tree-in x (tree->left tree))
+                (bstp tree))
+           (not (tree-in x (tree->right tree))))
+  :rule-classes :forward-chaining
+  :by tree-in-of-tree->right-when-tree-in-of-tree->left)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defruled tree->head-when-heapp-and-tree-in-tree->head
   (implies (and (heapp x)
                 (heapp y)
@@ -281,6 +313,32 @@
            (equal (tagged-element->elem (tree->head x))
                   (tagged-element->elem (tree->head y))))
   :by tree->head-when-heapp-and-tree-in-tree->head)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defrule acl2-numberp-when-tree-in-and-tree-all-acl2-numberp
+  (implies (and (tree-in x tree)
+                (tree-all-acl2-numberp tree))
+           (acl2-numberp x))
+  :induct t
+  :enable (tree-in
+           tree-all-acl2-numberp))
+
+(defrule symbolp-when-tree-in-and-tree-all-symbolp
+  (implies (and (tree-in x tree)
+                (tree-all-symbolp tree))
+           (symbolp x))
+  :induct t
+  :enable (tree-in
+           tree-all-symbolp))
+
+(defrule eqlablep-when-tree-in-and-tree-all-acl2-numberp
+  (implies (and (tree-in x tree)
+                (tree-all-eqlablep tree))
+           (eqlablep x))
+  :induct t
+  :enable (tree-in
+           tree-all-eqlablep))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

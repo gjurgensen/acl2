@@ -681,16 +681,16 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defruled bstp-of-tree->left-when-tree-orderdp
+(defruled bstp-of-tree->left-when-bstp
   (implies (bstp tree)
            (bstp (tree->left tree)))
   :enable bstp)
 
-(defrule bstp-of-tree->left-when-tree-orderdp-cheap
+(defrule bstp-of-tree->left-when-bstp-cheap
   (implies (bstp tree)
            (bstp (tree->left tree)))
   :rule-classes ((:rewrite :backchain-limit-lst (0)))
-  :by bstp-of-tree->left-when-tree-orderdp)
+  :by bstp-of-tree->left-when-bstp)
 
 (defruled bstp-of-tree->right-when-bstp
   (implies (bstp tree)
@@ -795,7 +795,7 @@
     <<-all-r-weaken2))
 
 (defthy bstp-extra-rules
-  '(bstp-of-tree->left-when-tree-orderdp
+  '(bstp-of-tree->left-when-bstp
     bstp-of-tree->right-when-bstp
     bstp-when-tree-empty-p
     bstp-when-not-tree-empty-p

@@ -75,6 +75,11 @@
   :rule-classes :forward-chaining
   :enable equal-of-cardinality-and-0-becomes-emptyp)
 
+(defrule cardinality-of-empty
+  (equal (cardinality (empty))
+         0)
+  :enable empty)
+
 ;;;;;;;;;;;;;;;;;;;;
 
 (defrule oset-cardinality-of-to-oset

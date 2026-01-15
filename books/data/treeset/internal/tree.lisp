@@ -34,7 +34,8 @@
   :long
   (xdoc::topstring
     (xdoc::p
-      "This captures the structure of @(see set)s, without the invariants."))
+      "This captures the structure of @(see treeset)s, without the
+       invariants."))
   :order-subtopics t
   :default-parent t)
 
@@ -288,7 +289,7 @@
 
 (define tree-fix ((tree treep))
   :returns (tree$ treep)
-  :short "Fixer for @(see binary-tree)s."
+  :short "Fixer for @(see tree)s."
   (mbe :logic (if (treep tree) tree nil)
        :exec (the list tree))
   :inline t)
@@ -360,7 +361,7 @@
 
 (define tree-empty-p ((tree treep))
   (declare (xargs :type-prescription (booleanp (tree-empty-p tree))))
-  :short "Check if a @(see binary-tree) is empty."
+  :short "Check if a @(see tree) is empty."
   (endp (tree-fix tree))
   :inline t)
 
@@ -476,7 +477,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define tree->left ((tree treep))
-  :short "Get the left subtree of the nonempty @(see binary-tree)."
+  :short "Get the left subtree of the nonempty @(see tree)."
   :long
   (xdoc::topstring
    (xdoc::p
@@ -557,7 +558,7 @@
   :returns (right treep
                   :hints (("Goal" :in-theory (enable tree-fix
                                                      treep))))
-  :short "Get the right subtree of the nonempty @(see binary-tree)."
+  :short "Get the right subtree of the nonempty @(see tree)."
   :long
   (xdoc::topstring
    (xdoc::p
@@ -667,7 +668,7 @@
   (declare (xargs :type-prescription (consp (tree-node head left right))))
   :returns (tree treep
                 :hints (("Goal" :in-theory (enable treep))))
-  :short "Construct a nonempty @(see binary-tree)."
+  :short "Construct a nonempty @(see tree)."
   (cons (tagged-element-fix head)
         (cons (tree-fix left) (tree-fix right)))
   :inline t)
@@ -772,10 +773,10 @@
   ((:induction :pattern (not (tree-empty-p tree))
                :scheme (tree-induct tree))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define tree-bi-induct (x y)
-  :short "Induct over the structure of a binary tree."
+  :short "Induct over the structure of two binary trees simultaneously."
   (or (tree-empty-p x)
       (tree-empty-p y)
       (let ((left (tree-bi-induct (tree->left x) (tree->left y)))
@@ -788,8 +789,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; TODO: unused?
-
 (define tree-listp (x)
   (declare (xargs :type-prescription (booleanp (tree-listp x))))
   :short "Recognizer for a true list of @(see tree)s."
@@ -798,7 +797,7 @@
            (tree-listp (rest x)))
     (null x)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;
 
 (defrule tree-listp-compound-recognizer
   (if (tree-listp trees)
@@ -825,6 +824,52 @@
   :enable tree-listp)
 
 ;; TODO: other list theorems
+
+(defrule tree-listp-of-append
+  (implies (tree-listp x)
+           (equal (tree-listp (append x y))
+                  (tree-listp y)))
+  :induct t
+  :enable (append
+           tree-listp))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define tree-list-fix ((trees tree-listp))
+  :returns (trees$ tree-listp)
+  (mbe :logic (if (tree-listp trees)
+                  trees
+                nil)
+       :exec trees)
+  :inline t)
+
+;;;;;;;;;;;;;;;;;;;;
+
+(in-theory (disable (:t tree-list-fix)))
+
+(defrule tree-list-fix-type-prescription
+  (true-listp (tree-list-fix trees))
+  :rule-classes :type-prescription
+  :enable tree-list-fix)
+
+(defrule tree-list-fix-when-tree-listp
+  (implies (tree-listp trees)
+           (equal (tree-list-fix trees)
+                  trees))
+  :enable tree-list-fix)
+
+(defruled tree-list-fix-when-not-tree-listp
+  (implies (not (tree-listp trees))
+           (equal (tree-list-fix trees)
+                  nil))
+  :enable tree-list-fix)
+
+(defrule tree-list-fix-when-not-tree-listp-cheap
+  (implies (not (tree-listp trees))
+           (equal (tree-list-fix trees)
+                  nil))
+  :rule-classes ((:rewrite :backchain-limit-lst (0)))
+  :by tree-list-fix-when-not-tree-listp)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -958,4 +1003,5 @@
     tree->left-when-tree-empty-p
     tree->right-when-tree-empty-p
     tree-induction
-    nonempty-tree-induction))
+    nonempty-tree-induction
+    ))

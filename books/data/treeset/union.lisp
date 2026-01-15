@@ -42,6 +42,7 @@
 (local (include-book "in"))
 (local (include-book "insert"))
 (local (include-book "subset"))
+(local (include-book "extensionality"))
 (local (include-book "to-oset"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -52,8 +53,8 @@
   :long
   (xdoc::topstring
     (xdoc::p
-      "Time complexity: @($O(n\\log(m/n))$) (for binary union, where
-       @($n < m$)).")
+      "Time complexity: @($O(m\\log(n/m))$) (for binary union, where
+       @($m < n$)).")
     (xdoc::section
       "General form"
       (xdoc::codeblock
@@ -195,15 +196,12 @@
 (defrule associativity-of-union
   (equal (union (union x y) z)
          (union x y z))
-  :enable (double-containment
-           pick-a-point
-           subset))
+  :enable extensionality)
 
 (defrule commutativity-of-union
   (equal (union y x)
          (union x y))
-  :enable (double-containment
-           pick-a-point))
+  :enable extensionality)
 
 ;;;;;;;;;;;;;;;;;;;;
 
@@ -223,8 +221,7 @@
   (equal (from-oset (set::union x y))
          (union (from-oset x)
                 (from-oset y)))
-  :enable (double-containment
-           pick-a-point))
+  :enable extensionality)
 
 (add-to-ruleset from-oset-theory '(from-oset-of-oset-union))
 

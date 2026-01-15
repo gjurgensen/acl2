@@ -1,0 +1,12 @@
+- delete flag
+  - I'm thinking it is probably to complicated to try to do it for union, intersect, diff
+
+- induction.lisp
+
+- iterator
+
+- port over rules from oset
+
+- deffilter
+
+- speed test

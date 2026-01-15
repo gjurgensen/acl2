@@ -185,6 +185,32 @@
   :induct t
   :enable tree-diff)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defrule tree-all-acl2-numberp-of-tree-diff
+  (implies (tree-all-acl2-numberp x)
+           (tree-all-acl2-numberp (tree-diff x y)))
+  :induct t
+  :enable (tree-diff
+           tree-all-acl2-numberp
+           tree-join-at))
+
+(defrule tree-all-symbolp-of-tree-diff
+  (implies (tree-all-symbolp x)
+           (tree-all-symbolp (tree-diff x y)))
+  :induct t
+  :enable (tree-diff
+           tree-all-symbolp
+           tree-join-at))
+
+(defrule tree-all-eqlablep-of-tree-diff
+  (implies (tree-all-eqlablep x)
+           (tree-all-eqlablep (tree-diff x y)))
+  :induct t
+  :enable (tree-diff
+           tree-all-eqlablep
+           tree-join-at))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define acl2-number-tree-diff

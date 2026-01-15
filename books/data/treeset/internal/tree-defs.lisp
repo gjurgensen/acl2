@@ -34,6 +34,7 @@
           tree->right
           tree-node
           tree-listp
+          tree-list-fix
           tree-all-acl2-numberp
           tree-all-symbolp
           tree-all-eqlablep

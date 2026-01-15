@@ -49,6 +49,7 @@
 (local (include-book "cardinality"))
 (local (include-book "in"))
 (local (include-book "subset"))
+(local (include-book "extensionality"))
 (local (include-book "to-oset"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -178,8 +179,7 @@
 (defrule insert-commutative
   (equal (insert y x set)
          (insert x y set))
-  :enable (double-containment
-           pick-a-point))
+  :enable extensionality)
 
 ;;;;;;;;;;;;;;;;;;;;
 
@@ -225,6 +225,50 @@
          (set::insert x (to-oset set))))
 
 (add-to-ruleset to-oset-theory '(to-oset-of-insert))
+
+;;;;;;;;;;;;;;;;;;;;
+#|
+(defrule set-all-acl2-numberp-of-insert0
+  (implies (and (set-all-acl2-numberp set)
+                (acl2-numberp x)
+                )
+           (set-all-acl2-numberp (insert x set)))
+  :enable (set-all-acl2-numberp-pick-a-point
+           )
+  )
+
+(defrule set-all-acl2-numberp-of-insert1
+  (implies (and (set-all-acl2-numberp set)
+                (set-all-acl2-numberp (insert x set)))
+           (acl2-numberp x))
+  :enable (set-all-acl2-numberp-pick-a-point
+           )
+  )
+
+(defrule set-all-acl2-numberp-of-insert
+  (implies (set-all-acl2-numberp set)
+           (equal (set-all-acl2-numberp (insert x set))
+                  (acl2-numberp x)))
+  ;; :use (:instance set-all-acl2-numberp-becomes-set-all-acl2-numberp-sk
+  ;;                 (set (insert x set)))
+  ;; :enable (set-all-acl2-numberp-sk)
+  :expand ((set-all-acl2-numberp-sk (insert x set)))
+  :enable (set-all-acl2-numberp-becomes-set-all-acl2-numberp-sk
+           set-all-acl2-numberp-sk-necc
+           )
+  :disable in-of-insert
+  )
+|#
+
+(defrule set-all-acl2-numberp-of-insert
+  (implies (set-all-acl2-numberp set)
+           (equal (set-all-acl2-numberp (insert x set))
+                  (acl2-numberp x)))
+  :enable (set-all-acl2-numberp
+           insert
+           break-abstraction
+           fix
+           setp))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -328,8 +372,7 @@
            (equal (insert-all list0 set)
                   (insert-all list1 set)))
   :rule-classes :congruence
-  :enable (double-containment
-           pick-a-point))
+  :enable extensionality)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -486,8 +529,7 @@
 (defrule from-oset-of-to-oset
   (equal (from-oset (to-oset set))
          (fix set))
-  :enable (double-containment
-           pick-a-point))
+  :enable extensionality)
 
 (add-to-ruleset from-oset-theory '(from-oset-of-to-oset))
 
@@ -500,8 +542,7 @@
 (defrule from-oset-of-oset-insert
   (equal (from-oset (set::insert x oset))
          (insert x (from-oset oset)))
-  :enable (double-containment
-           pick-a-point))
+  :enable extensionality)
 
 (add-to-ruleset from-oset-theory '(from-oset-of-oset-insert))
 

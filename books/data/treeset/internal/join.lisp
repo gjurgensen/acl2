@@ -101,7 +101,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; TODO: inline?
 (define tree-join
   ((left treep)
    (right treep))
@@ -112,9 +111,10 @@
   (xdoc::topstring
    (xdoc::p
      "Technically it is not required that the two trees are a result of a
-      previous split call. It is only expected that, given a join @('(tree-join
-      left right)'), there exists some @('x') such that @('(<<-all-l left x)')
-      and @('(<<-all-r x right)'), as is produced by @('split')."))
+      previous split call. It is only expected that, given a join
+      @('(tree-join left right)'), there exists some @('x') such that
+      @('(<<-all-l left x)') and @('(<<-all-r x right)'), as is produced by
+      @('split')."))
   (cond ((tree-empty-p left)
          (tree-fix right))
         ((tree-empty-p right)
@@ -487,3 +487,29 @@
 
 ;; TODO
 ;; (subset right (tree-join left right))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defrule tree-all-acl2-numberp-of-tree-join
+  (implies (and (tree-all-acl2-numberp left)
+                (tree-all-acl2-numberp right))
+           (tree-all-acl2-numberp (tree-join left right)))
+  :induct (tree-join left right)
+  :enable (tree-join
+           tree-all-acl2-numberp))
+
+(defrule tree-all-symbolp-of-tree-join
+  (implies (and (tree-all-symbolp left)
+                (tree-all-symbolp right))
+           (tree-all-symbolp (tree-join left right)))
+  :induct (tree-join left right)
+  :enable (tree-join
+           tree-all-symbolp))
+
+(defrule tree-all-eqlablep-of-tree-join
+  (implies (and (tree-all-eqlablep left)
+                (tree-all-eqlablep right))
+           (tree-all-eqlablep (tree-join left right)))
+  :induct (tree-join left right)
+  :enable (tree-join
+           tree-all-eqlablep))

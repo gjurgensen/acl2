@@ -31,7 +31,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defxdoc subset
-  :parents (set)
+  :parents (treeset)
   :short "Check if one set is a subset of the other."
   :long
   (xdoc::topstring

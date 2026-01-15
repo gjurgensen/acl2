@@ -33,13 +33,13 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define setp (x)
-  :parents (set)
+  :returns (yes/no booleanp)
+  :parents (treeset)
   :short "Recognizer for @(see treeset)s."
   :long
   (xdoc::topstring
    (xdoc::p
      "Time complexity: @($O(n)$)."))
-  :returns (yes/no booleanp :rule-classes (:rewrite :type-prescription))
   (and (treep x)
        (bstp x)
        (heapp x)))
@@ -47,6 +47,10 @@
 ;;;;;;;;;;;;;;;;;;;;
 
 (in-theory (disable (:t setp)))
+
+(defrule setp-type-prescription
+  (booleanp (setp x))
+  :rule-classes ((:type-prescription :typed-term (setp x))))
 
 (defruled setp-compound-recognizer
   (if (setp set)
@@ -82,10 +86,28 @@
 
 (add-to-ruleset break-abstraction '(heapp-when-setp-forward-chaining))
 
+;;;;;;;;;;;;;;;;;;;;
+
+(defruled setp-of-tree->left
+  (implies (setp tree)
+           (setp (tree->left tree)))
+  :enable setp)
+
+(add-to-ruleset break-abstraction '(setp-of-tree->left))
+
+(defruled setp-of-tree->right
+  (implies (setp tree)
+           (setp (tree->right tree)))
+  :enable setp)
+
+(add-to-ruleset break-abstraction '(setp-of-tree->right))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define empty ()
   :returns (set setp)
+  :parents (treeset)
+  :short "The empty @(see treeset)."
   nil
   :inline t)
 
@@ -95,12 +117,30 @@
 
 (add-to-ruleset break-abstraction '((:t empty)))
 
+(defruled treep-of-empty
+  (treep (empty))
+  :enable ((:e empty)))
+
+(add-to-ruleset break-abstraction '(treep-of-empty))
+
+(defruled bstp-of-empty
+  (bstp (empty))
+  :enable ((:e empty)))
+
+(add-to-ruleset break-abstraction '(bstp-of-empty))
+
+(defruled heapp-of-empty
+  (heapp (empty))
+  :enable ((:e empty)))
+
+(add-to-ruleset break-abstraction '(heapp-of-empty))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define fix ((set setp))
-  :parents (set)
-  :short "Fixer for @(see treeset)s."
   :returns (set$ setp)
+  :parents (treeset)
+  :short "Fixer for @(see treeset)s."
   (mbe :logic (if (setp set)
                   set
                 (empty))
@@ -141,14 +181,35 @@
   :rule-classes ((:rewrite :backchain-limit-lst (0)))
   :by fix-when-not-setp)
 
+(defruled treep-of-fix
+  (treep (fix set))
+  :enable (fix
+           break-abstraction))
+
+(add-to-ruleset break-abstraction '(treep-of-fix))
+
+(defruled bstp-of-fix
+  (bstp (fix set))
+  :enable (fix
+           break-abstraction))
+
+(add-to-ruleset break-abstraction '(bstp-of-fix))
+
+(defruled heapp-of-fix
+  (heapp (fix set))
+  :enable (fix
+           break-abstraction))
+
+(add-to-ruleset break-abstraction '(heapp-of-fix))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define equiv
   ((x setp)
    (y setp))
-  :parents (set)
-  :short "Equivalence up to @(tsee fix)."
   :returns (yes/no booleanp :rule-classes (:rewrite :type-prescription))
+  :parents (treeset)
+  :short "Equivalence up to @(tsee fix)."
   (equal (fix x)
          (fix y))
   :inline t
@@ -187,9 +248,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define emptyp ((set setp))
-  :parents (set)
-  :short "Check if a @(see treeset) is empty."
   :returns (yes/no booleanp :rule-classes (:rewrite :type-prescription))
+  :parents (treeset)
+  :short "Check if a @(see treeset) is empty."
   (tree-empty-p (fix set))
   :inline t
   :guard-hints (("Goal" :in-theory (enable setp))))
@@ -251,6 +312,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define head ((set setp))
+  :guard (not (emptyp set))
   :parents (set)
   :short "Get an element of the nonempty @(see treeset)."
   :long
@@ -261,7 +323,6 @@
      "From a user perspective, this should be viewed as an arbitrary element of
       the set. For a description of which element this actually provides, see
       @(tsee tree->head)."))
-  :guard (not (emptyp set))
   (tagged-element->elem (tree->head (fix set)))
   :inline t
   :guard-hints (("Goal" :in-theory (enable setp
@@ -304,6 +365,11 @@
 
 (in-theory (disable (:t set-all-acl2-numberp)))
 
+(defrule set-all-acl2-numberp-of-empty
+  (set-all-acl2-numberp (empty))
+  :enable (set-all-acl2-numberp
+           empty))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define set-all-symbolp ((set setp))
@@ -315,6 +381,11 @@
 
 (in-theory (disable (:t set-all-symbolp)))
 
+(defrule set-all-symbolp-of-empty
+  (set-all-symbolp (empty))
+  :enable (set-all-symbolp
+           empty))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define set-all-eqlablep ((set setp))
@@ -325,6 +396,11 @@
 ;;;;;;;;;;;;;;;;;;;;
 
 (in-theory (disable (:t set-all-eqlablep)))
+
+(defrule set-all-eqlablep-of-empty
+  (set-all-eqlablep (empty))
+  :enable (set-all-eqlablep
+           empty))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

@@ -32,6 +32,8 @@
 
 (local (include-book "std/system/partition-rest-and-keyword-args" :dir :system))
 
+;; TODO: figure out rulesets
+(local (include-book "to-oset"))
 (local (include-book "internal/tree"))
 (local (include-book "internal/join"))
 (local (include-book "internal/delete"))
@@ -42,8 +44,8 @@
 (local (include-book "cardinality"))
 (local (include-book "in"))
 (local (include-book "subset"))
+(local (include-book "extensionality"))
 (local (include-book "insert"))
-(local (include-book "to-oset"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -161,8 +163,7 @@
 (defrule delete-commutative
   (equal (delete y x set)
          (delete x y set))
-  :enable (double-containment
-           pick-a-point))
+  :enable extensionality)
 
 ;;;;;;;;;;;;;;;;;;;;
 
@@ -185,8 +186,7 @@
 ;;   (equal (emptyp (delete x set))
 ;;          (or (emptyp set)
 ;;              (equal set (insert x set))))
-;;   :enable (double-containment
-;;            pick-a-point
+;;   :enable (extensionality
 ;;            emptyp-of-delete-when-emptyp
 ;;            ))
 
@@ -232,8 +232,7 @@
 (defrule from-oset-of-oset-delete
   (equal (from-oset (set::delete x oset))
          (delete x (from-oset oset)))
-  :enable (double-containment
-           pick-a-point))
+  :enable extensionality)
 
 (add-to-ruleset from-oset-theory '(from-oset-of-oset-delete))
 
@@ -259,11 +258,56 @@
 ;; ?
 ;; (acl2::expand-ruleset '(to-oset-theory) (w state))
 
+(defrule oset-emptyp-of-oset-delete
+  (equal (set::emptyp (set::delete x oset))
+         (or (set::emptyp oset)
+             (equal oset (set::insert x nil))))
+  :use oset-emptyp-of-oset-delete-lemma1
+  :prep-lemmas
+  ((defrule oset-emptyp-of-oset-delete-lemma1
+     (implies (and (not (set::emptyp oset))
+                   (set::emptyp (set::delete x oset)))
+              (equal oset (set::insert x nil)))
+     :rule-classes nil
+     :enable set::expensive-rules
+     :prep-lemmas
+     ((defrule oset-emptyp-of-oset-delete-lemma0
+        (implies (and (set::emptyp (set::delete x oset))
+                      (not (equal x y)))
+                 (not (set::in y oset)))
+        :use ((:instance set::delete-in
+                         (acl2::a y)
+                         (acl2::b x)
+                         (acl2::x oset)))
+        :enable set::expensive-rules
+        :disable set::delete-in)))))
+
+#|
+;; MOVE
+(defrule ?
+  (equal (equal (to-oset set)
+                (set::insert x oset))
+         (equal (fix set) (insert x (from-oset oset))))
+  :enable extensionality)
+
+(defrule emptyp-of-delete
+  (equal (emptyp (delete x set))
+         (or (emptyp set)
+             (equal set (insert x set))))
+  :use (:instance oset-emptyp-of-oset-delete
+                  (oset (to-oset set)))
+  ;; :enable to-oset-theory
+  :disable (;; from-oset-theory
+            oset-emptyp-of-oset-delete)
+  )
+|#
+
 ;; (defrule emptyp-of-delete
 ;;   (equal (emptyp (delete x set))
 ;;          (or (emptyp set)
 ;;              (equal set (insert x set))))
 ;;   :enable (to-oset-theory
+;;            ;; set::expensive-rules
 ;;             )
 ;;   :disable from-oset-theory
 ;;   )
@@ -309,7 +353,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; TODO: how should people iterate?
 (define tail
   ((set setp))
   :parents (delete)

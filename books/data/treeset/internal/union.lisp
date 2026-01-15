@@ -243,6 +243,41 @@
     :induct t
     :enable tree-union))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; TODO: stronger rules like these
+;; (defrule tree-all-acl2-numberp-of-tree-union
+;;   (equal (tree-all-acl2-numberp (tree-union x y))
+;;          (and (tree-all-acl2-numberp x)
+;;               (tree-all-acl2-numberp y)))
+;;   :induct t
+;;   :enable (tree-union
+;;            tree-all-acl2-numberp))
+
+(defrule tree-all-acl2-numberp-of-tree-union
+  (implies (and (tree-all-acl2-numberp x)
+                (tree-all-acl2-numberp y))
+           (tree-all-acl2-numberp (tree-union x y)))
+  :induct t
+  :enable (tree-union
+           tree-all-acl2-numberp))
+
+(defrule tree-all-symbolp-of-tree-union
+  (implies (and (tree-all-symbolp x)
+                (tree-all-symbolp y))
+           (tree-all-symbolp (tree-union x y)))
+  :induct t
+  :enable (tree-union
+           tree-all-symbolp))
+
+(defrule tree-all-eqlablep-of-tree-union
+  (implies (and (tree-all-eqlablep x)
+                (tree-all-eqlablep y))
+           (tree-all-eqlablep (tree-union x y)))
+  :induct t
+  :enable (tree-union
+           tree-all-eqlablep))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define acl2-number-tree-union

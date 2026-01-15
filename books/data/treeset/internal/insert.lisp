@@ -20,6 +20,7 @@
 (include-book "rotate-defs")
 (include-book "count-defs")
 (include-book "in-defs")
+(include-book "min-max-defs")
 
 (local (include-book "std/basic/controlled-configuration" :dir :system))
 (local (acl2::controlled-configuration :hooks nil))
@@ -27,6 +28,7 @@
 (local (include-book "kestrel/utilities/ordinals" :dir :system))
 
 (local (include-book "data/utilities/fixed-size-words/u32" :dir :system))
+(local (include-book "data/utilities/total-order/min" :dir :system))
 (local (include-book "data/utilities/total-order/total-order" :dir :system))
 
 (local (include-book "../hash"))
@@ -37,59 +39,9 @@
 (local (include-book "count"))
 (local (include-book "rotate"))
 (local (include-book "in"))
+(local (include-book "min-max"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; (define tree-insert
-;;   (x
-;;    (hash (unsigned-byte-p 32 hash))
-;;    (tree treep))
-;;   :parents (implementation)
-;;   :short "Insert a value into the tree."
-;;   :long
-;;   (xdoc::topstring
-;;    (xdoc::p
-;;      "The element is inserted with respect to the binary search tree ordering
-;;       and then rebalanced with respect to the @(tsee heapp) property."))
-;;   :guard (mbe :logic (equal (hash x) hash)
-;;               :exec (data::u32-equal (hash x) hash))
-;;   :returns (tree$ treep)
-;;   (if (tree-empty-p tree)
-;;       (tree-node (tagged-element hash x) nil nil)
-;;     (let* ((hash (mbe :logic (hash x) :exec hash))
-;;            (head (tree->head tree))
-;;            (head-elem (tagged-element->elem head)))
-;;       (cond ((equal x head-elem)
-;;              (tree-fix tree))
-;;             ((<< x head-elem)
-;;              (let* ((left$ (tree-insert x hash (tree->left tree)))
-;;                     ;; TODO: return boolean flag indicating whether insertion
-;;                     ;; was redundant. If it was, just exit.
-;;                     (head-left$ (tree->head left$))
-;;                     (tree$ (tree-node head
-;;                                       left$
-;;                                       (tree->right tree))))
-;;                (if (heap<-with-hashes head-elem
-;;                                       (tagged-element->elem head-left$)
-;;                                       (tagged-element->hash head)
-;;                                       (tagged-element->hash head-left$))
-;;                    (rotate-right tree$)
-;;                  tree$)))
-;;             (t
-;;              (let* ((right$ (tree-insert x hash (tree->right tree)))
-;;                     ;; TODO: same comment as above.
-;;                     (head-right$ (tree->head right$))
-;;                     (tree$ (tree-node head
-;;                                       (tree->left tree)
-;;                                       right$)))
-;;                (if (heap<-with-hashes head-elem
-;;                                       (tagged-element->elem head-right$)
-;;                                       (tagged-element->hash head)
-;;                                       (tagged-element->hash head-right$))
-;;                    (rotate-left tree$)
-;;                  tree$))))))
-;;   ;; Verified below
-;;   :verify-guards nil)
 
 (define tree-insert
   (x
@@ -347,6 +299,41 @@
            tree-nodes-count
            bstp
            data::<<-rules))
+
+;;;;;;;;;;;;;;;;;;;;
+
+(defruled tree-min-of-tree-insert-when-<<-all-r
+  (implies (<<-all-r x tree)
+           (equal (tree-min (mv-nth 1 (tree-insert x hash tree)))
+                  x))
+  :induct t
+  :enable tree-insert)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defrule tree-all-acl2-numberp-of-tree-insert.tree$
+  (implies (tree-all-acl2-numberp tree)
+           (equal (tree-all-acl2-numberp (mv-nth 1 (tree-insert x hash tree)))
+                  (acl2-numberp x)))
+  :induct t
+  :enable (tree-insert
+           tree-all-acl2-numberp))
+
+(defrule tree-all-symbolp-of-tree-insert.tree$
+  (implies (tree-all-symbolp tree)
+           (equal (tree-all-symbolp (mv-nth 1 (tree-insert x hash tree)))
+                  (symbolp x)))
+  :induct t
+  :enable (tree-insert
+           tree-all-symbolp))
+
+(defrule tree-all-eqlablep-of-tree-insert.tree$
+  (implies (tree-all-eqlablep tree)
+           (equal (tree-all-eqlablep (mv-nth 1 (tree-insert x hash tree)))
+                  (eqlablep x)))
+  :induct t
+  :enable (tree-insert
+           tree-all-eqlablep))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

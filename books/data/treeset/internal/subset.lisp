@@ -140,6 +140,20 @@
 
 ;;;;;;;;;;;;;;;;;;;;
 
+(defrule tree-subset-p-of-arg1-and-tree->left-of-arg1
+  (implies (bstp x)
+           (equal (tree-subset-p x (tree->left x))
+                  (tree-empty-p x)))
+  :enable tree-subset-p)
+
+(defrule tree-subset-p-of-arg1-and-tree->right-of-arg1
+  (implies (bstp x)
+           (equal (tree-subset-p x (tree->right x))
+                  (tree-empty-p x)))
+  :enable tree-subset-p)
+
+;;;;;;;;;;;;;;;;;;;;
+
 (encapsulate ()
   (defrulel tree-subset-p-of-tree->left-tree-subset-p-of-tree->right
     (and (tree-subset-p (tree->left x) x)

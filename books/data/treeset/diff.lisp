@@ -38,6 +38,7 @@
 (local (include-book "insert"))
 (local (include-book "subset"))
 (local (include-book "union"))
+(local (include-book "extensionality"))
 (local (include-book "to-oset"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -48,7 +49,7 @@
   :long
   (xdoc::topstring
     (xdoc::p
-      "Time complexity: @($O(n\\log(m/n))$) (where @($n < m$)).")
+      "Time complexity: @($O(m\\log(n/m))$) (where @($m < n$)).")
     (xdoc::section
       "General form"
       (xdoc::codeblock
@@ -157,8 +158,7 @@
 (defruled diff-of-diff-becomes-diff-of-union
   (equal (diff (diff x y) z)
          (diff x (union y z)))
-  :enable (double-containment
-           pick-a-point))
+  :enable extensionality)
 
 ;;;;;;;;;;;;;;;;;;;;
 
@@ -178,8 +178,7 @@
   (equal (from-oset (set::difference x y))
          (diff (from-oset x)
                (from-oset y)))
-  :enable (double-containment
-           pick-a-point))
+  :enable extensionality)
 
 (add-to-ruleset from-oset-theory '(from-oset-of-oset-difference))
 

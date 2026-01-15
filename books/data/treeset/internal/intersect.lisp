@@ -186,6 +186,18 @@
   :enable (tree-intersect
            tree->head-when-heapp-and-tree-in-tree->head-syntaxp))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; TODO GJ
+;; (And consider sk rules)
+;; (defrule tree-all-acl2-numberp-of-tree-intersect-when-tree-all-acl2-numberp-of-arg1
+;;   (implies (tree-all-acl2-numberp x)
+;;            (tree-all-acl2-numberp (tree-intersect x y)))
+;;   :induct t
+;;   :enable (tree-intersect
+;;            tree-all-acl2-numberp
+;;            tree-join-at))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define acl2-number-tree-intersect
