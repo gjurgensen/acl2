@@ -13,6 +13,7 @@
 
 (include-book "internal/min-max-defs")
 (include-book "set-defs")
+(include-book "to-oset-defs")
 (include-book "in-defs")
 
 (local (include-book "std/basic/controlled-configuration" :dir :system))
@@ -20,7 +21,9 @@
 
 (local (include-book "internal/tree"))
 (local (include-book "internal/min-max"))
+(local (include-book "internal/in-order"))
 (local (include-book "set"))
+(local (include-book "to-oset"))
 (local (include-book "in"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -68,7 +71,16 @@
   :enable (min
            in))
 
-;; TODO: connect to to-oset
+;;;;;;;;;;;;;;;;;;;;
+
+(defrule car-of-to-oset
+  (equal (car (to-oset set))
+         (min set))
+  :enable (to-oset
+           min
+           break-abstraction))
+
+(add-to-ruleset from-oset-theory '(car-of-to-oset))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -115,4 +127,13 @@
   :enable (max
            in))
 
-;; TODO: connect to to-oset
+;;;;;;;;;;;;;;;;;;;;
+
+(defrule car-of-last-of-to-oset
+  (equal (car (last (to-oset set)))
+         (max set))
+  :enable (to-oset
+           max
+           break-abstraction))
+
+(add-to-ruleset from-oset-theory '(car-of-last-of-to-oset))

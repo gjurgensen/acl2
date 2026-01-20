@@ -1,4 +1,4 @@
-; Copyright (C) 2025 Kestrel Institute (http://www.kestrel.edu)
+; Copyright (C) 2025-2026 Kestrel Institute (http://www.kestrel.edu)
 ;
 ; License: A 3-clause BSD license. See the LICENSE file distributed with ACL2.
 ;
@@ -21,6 +21,7 @@
 (include-book "set-defs")
 (include-book "cardinality-defs")
 (include-book "in-defs")
+(include-book "subset-defs")
 (include-book "to-oset-defs")
 
 (local (include-book "std/basic/controlled-configuration" :dir :system))
@@ -34,6 +35,7 @@
 (local (include-book "kestrel/lists-light/subsetp-equal" :dir :system))
 
 (local (include-book "kestrel/utilities/ordinals" :dir :system))
+(local (include-book "kestrel/utilities/equal-of-booleans" :dir :system))
 
 (local (include-book "std/osets/top" :dir :system))
 (local (include-book "std/system/partition-rest-and-keyword-args" :dir :system))
@@ -45,12 +47,16 @@
 (local (include-book "internal/insert"))
 (local (include-book "internal/in-order"))
 (local (include-book "hash"))
+(local (include-book "to-oset"))
 (local (include-book "set"))
 (local (include-book "cardinality"))
 (local (include-book "in"))
 (local (include-book "subset"))
 (local (include-book "extensionality"))
-(local (include-book "to-oset"))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(local (in-theory (disable acl2::equal-of-booleans-cheap)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -181,6 +187,24 @@
          (insert x y set))
   :enable extensionality)
 
+(defrule insert-contraction
+  (equal (insert x x set)
+         (insert x set))
+  :enable extensionality)
+
+(defruled insert-when-in
+  (implies (in x set)
+           (equal (insert x set)
+                  (fix set)))
+  :enable extensionality)
+
+(defrule insert-when-in-cheap
+  (implies (in x set)
+           (equal (insert x set)
+                  (fix set)))
+  :rule-classes ((:rewrite :backchain-limit-lst (0)))
+  :by insert-when-in)
+
 ;;;;;;;;;;;;;;;;;;;;
 
 (defruled cardinality-of-insert
@@ -209,6 +233,24 @@
 
 ;;;;;;;;;;;;;;;;;;;;
 
+(defrule subset-of-insert
+  (equal (subset (insert a x) y)
+         (and (subset x y)
+              (in a y)))
+  :enable (acl2::equal-of-booleans-cheap
+           pick-a-point-polar))
+
+(defrule subset-of-arg1-and-insert
+  (subset set (insert x set))
+  :enable pick-a-point)
+
+(defrule monotonicity-of-insert
+  (implies (subset x0 x1)
+           (subset (insert a x0)
+                   (insert a x1))))
+
+;;;;;;;;;;;;;;;;;;;;
+
 (defrule oset-insert-of-arg1-and-to-oset
   (equal (set::insert x (to-oset set))
          (to-oset (insert x set)))
@@ -225,50 +267,6 @@
          (set::insert x (to-oset set))))
 
 (add-to-ruleset to-oset-theory '(to-oset-of-insert))
-
-;;;;;;;;;;;;;;;;;;;;
-#|
-(defrule set-all-acl2-numberp-of-insert0
-  (implies (and (set-all-acl2-numberp set)
-                (acl2-numberp x)
-                )
-           (set-all-acl2-numberp (insert x set)))
-  :enable (set-all-acl2-numberp-pick-a-point
-           )
-  )
-
-(defrule set-all-acl2-numberp-of-insert1
-  (implies (and (set-all-acl2-numberp set)
-                (set-all-acl2-numberp (insert x set)))
-           (acl2-numberp x))
-  :enable (set-all-acl2-numberp-pick-a-point
-           )
-  )
-
-(defrule set-all-acl2-numberp-of-insert
-  (implies (set-all-acl2-numberp set)
-           (equal (set-all-acl2-numberp (insert x set))
-                  (acl2-numberp x)))
-  ;; :use (:instance set-all-acl2-numberp-becomes-set-all-acl2-numberp-sk
-  ;;                 (set (insert x set)))
-  ;; :enable (set-all-acl2-numberp-sk)
-  :expand ((set-all-acl2-numberp-sk (insert x set)))
-  :enable (set-all-acl2-numberp-becomes-set-all-acl2-numberp-sk
-           set-all-acl2-numberp-sk-necc
-           )
-  :disable in-of-insert
-  )
-|#
-
-(defrule set-all-acl2-numberp-of-insert
-  (implies (set-all-acl2-numberp set)
-           (equal (set-all-acl2-numberp (insert x set))
-                  (acl2-numberp x)))
-  :enable (set-all-acl2-numberp
-           insert
-           break-abstraction
-           fix
-           setp))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -378,7 +376,7 @@
 
 (define from-list
   ((list true-listp))
-  :parents (set)
+  :parents (treeset)
   :short "Create a set from a list of values."
   :long
   (xdoc::topstring
@@ -533,11 +531,17 @@
 
 (add-to-ruleset from-oset-theory '(from-oset-of-to-oset))
 
+(defrule equal-of-from-oset-of-to-oset
+  (equal (equal (from-oset (to-oset set)) set)
+         (setp set)))
+
 (defruled fix-becomes-from-oset
   (equal (fix set)
          (from-oset (to-oset set))))
 
 (add-to-ruleset to-oset-theory '(fix-becomes-from-oset))
+
+;; TODO: subset of from-oset becomes set::subset
 
 (defrule from-oset-of-oset-insert
   (equal (from-oset (set::insert x oset))

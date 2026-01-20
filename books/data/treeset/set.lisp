@@ -207,7 +207,7 @@
 (define equiv
   ((x setp)
    (y setp))
-  :returns (yes/no booleanp :rule-classes (:rewrite :type-prescription))
+  :returns (yes/no booleanp)
   :parents (treeset)
   :short "Equivalence up to @(tsee fix)."
   (equal (fix x)
@@ -221,6 +221,10 @@
 
 (in-theory (disable (:t equiv)))
 
+(defrule equiv-type-prescription
+  (booleanp (equiv x y))
+  :rule-classes ((:type-prescription :typed-term (equiv x y))))
+
 (defruled equiv-when-tree-equiv-refinement
   (implies (tree-equiv tree0 tree1)
            (equiv tree0 tree1))
@@ -233,11 +237,6 @@
 
 (add-to-ruleset break-abstraction '(equiv-when-tree-equiv-refinement))
 
-(defrule fix-under-equiv
-  (equiv (fix set)
-         set)
-  :enable equiv)
-
 (defrule fix-when-equiv-congruence
   (implies (equiv set0 set1)
            (equal (fix set0)
@@ -245,10 +244,15 @@
   :rule-classes :congruence
   :enable equiv)
 
+(defrule fix-under-equiv
+  (equiv (fix set)
+         set)
+  :enable equiv)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define emptyp ((set setp))
-  :returns (yes/no booleanp :rule-classes (:rewrite :type-prescription))
+  :returns (yes/no booleanp)
   :parents (treeset)
   :short "Check if a @(see treeset) is empty."
   (tree-empty-p (fix set))
@@ -258,6 +262,10 @@
 ;;;;;;;;;;;;;;;;;;;;
 
 (in-theory (disable (:t emptyp)))
+
+(defrule emptyp-type-prescription
+  (booleanp (emptyp set))
+  :rule-classes ((:type-prescription :typed-term (emptyp set))))
 
 (defruled emptyp-compound-recognizer
   (implies (not (emptyp set))
@@ -313,7 +321,7 @@
 
 (define head ((set setp))
   :guard (not (emptyp set))
-  :parents (set)
+  :parents (treeset)
   :short "Get an element of the nonempty @(see treeset)."
   :long
   (xdoc::topstring
@@ -357,7 +365,7 @@
 ;; Variants matching the equality primitives
 
 (define set-all-acl2-numberp ((set setp))
-  :returns (yes/no booleanp :rule-classes :type-prescription)
+  :returns (yes/no booleanp)
   (tree-all-acl2-numberp (fix set))
   :guard-hints (("Goal" :in-theory (enable setp))))
 
@@ -365,15 +373,14 @@
 
 (in-theory (disable (:t set-all-acl2-numberp)))
 
-(defrule set-all-acl2-numberp-of-empty
-  (set-all-acl2-numberp (empty))
-  :enable (set-all-acl2-numberp
-           empty))
+(defrule set-all-acl2-numberp-type-prescription
+  (booleanp (set-all-acl2-numberp set))
+  :rule-classes ((:type-prescription :typed-term (set-all-acl2-numberp set))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define set-all-symbolp ((set setp))
-  :returns (yes/no booleanp :rule-classes :type-prescription)
+  :returns (yes/no booleanp)
   (tree-all-symbolp (fix set))
   :guard-hints (("Goal" :in-theory (enable setp))))
 
@@ -381,15 +388,14 @@
 
 (in-theory (disable (:t set-all-symbolp)))
 
-(defrule set-all-symbolp-of-empty
-  (set-all-symbolp (empty))
-  :enable (set-all-symbolp
-           empty))
+(defrule set-all-symbolp-type-prescription
+  (booleanp (set-all-symbolp set))
+  :rule-classes ((:type-prescription :typed-term (set-all-symbolp set))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define set-all-eqlablep ((set setp))
-  :returns (yes/no booleanp :rule-classes :type-prescription)
+  :returns (yes/no booleanp)
   (tree-all-eqlablep (fix set))
   :guard-hints (("Goal" :in-theory (enable setp))))
 
@@ -397,10 +403,9 @@
 
 (in-theory (disable (:t set-all-eqlablep)))
 
-(defrule set-all-eqlablep-of-empty
-  (set-all-eqlablep (empty))
-  :enable (set-all-eqlablep
-           empty))
+(defrule set-all-eqlablep-type-prescription
+  (booleanp (set-all-eqlablep set))
+  :rule-classes ((:type-prescription :typed-term (set-all-eqlablep set))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

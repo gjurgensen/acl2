@@ -17,9 +17,13 @@
 (include-book "internal/tree-defs")
 (include-book "internal/intersect-defs")
 (include-book "set-defs")
+(include-book "cardinality-defs")
 (include-book "subset-defs")
 (include-book "insert-defs")
+(include-book "delete-defs")
+(include-book "union-defs")
 (include-book "to-oset-defs")
+(include-book "generic-typed-defs")
 
 (local (include-book "std/basic/controlled-configuration" :dir :system))
 (local (acl2::controlled-configuration :hooks nil))
@@ -30,6 +34,7 @@
 (local (include-book "kestrel/alists-light/symbol-alistp" :dir :system))
 
 (local (include-book "kestrel/utilities/ordinals" :dir :system))
+(local (include-book "kestrel/utilities/equal-of-booleans" :dir :system))
 
 (local (include-book "std/system/partition-rest-and-keyword-args" :dir :system))
 
@@ -37,12 +42,20 @@
 (local (include-book "internal/intersect"))
 (local (include-book "internal/in"))
 (local (include-book "internal/in-order"))
+(local (include-book "to-oset"))
 (local (include-book "set"))
 (local (include-book "in"))
+(local (include-book "cardinality"))
 (local (include-book "subset"))
-(local (include-book "insert"))
 (local (include-book "extensionality"))
-(local (include-book "to-oset"))
+(local (include-book "insert"))
+(local (include-book "delete"))
+(local (include-book "union"))
+(local (include-book "generic-typed"))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(local (in-theory (disable acl2::equal-of-booleans-cheap)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -186,14 +199,31 @@
 
 ;;;;;;;;;;;;;;;;;;;;
 
-;; TODO: better names?
-
-(defrule subset-of-intersect-left
+(defrule subset-of-intersect0
   (subset (intersect x y) x)
   :enable pick-a-point)
 
-(defrule subset-of-intersect-right
+(defrule subset-of-intersect1
   (subset (intersect x y) y)
+  :enable pick-a-point)
+
+(defrule subset-of-arg1-and-intersect0
+  (equal (subset x (intersect x y))
+         (subset x y))
+  :enable (acl2::equal-of-booleans-cheap
+           pick-a-point-polar))
+
+(defrule subset-of-arg1-and-intersect1
+  (equal (subset x (intersect y x))
+         (subset x y))
+  :enable (acl2::equal-of-booleans-cheap
+           pick-a-point-polar))
+
+(defrule monotonicity-of-intersect
+  (implies (and (subset x0 x1)
+                (subset y0 y1))
+           (subset (intersect x0 y0)
+                   (intersect x1 y1)))
   :enable pick-a-point)
 
 ;;;;;;;;;;;;;;;;;;;;
@@ -207,6 +237,239 @@
   (equal (intersect y x)
          (intersect x y))
   :enable extensionality)
+
+(defrule idempotence-of-intersect
+  (equal (intersect x x)
+         (fix x))
+  :enable extensionality)
+
+(defrule intersect-contraction
+  (equal (intersect x x y)
+         (intersect x y))
+  :enable extensionality)
+
+;;;;;;;;;;;;;;;;;;;;
+
+(defruled intersect-when-emptyp-of-arg1
+  (implies (emptyp x)
+           (equal (intersect x y)
+                  (empty)))
+  :enable extensionality)
+
+(defrule intersect-when-emptyp-of-arg1-cheap
+  (implies (emptyp x)
+           (equal (intersect x y)
+                  (empty)))
+  :rule-classes ((:rewrite :backchain-limit-lst (0)))
+  :by intersect-when-emptyp-of-arg1)
+
+(defrule intersect-of-empty
+  (equal (intersect (empty) y)
+         (empty))
+  :enable intersect-when-emptyp-of-arg1)
+
+(defruled intersect-when-emptyp-of-arg2
+  (implies (emptyp y)
+           (equal (intersect x y)
+                  (empty)))
+  :enable extensionality)
+
+(defrule intersect-when-emptyp-of-arg2-cheap
+  (implies (emptyp y)
+           (equal (intersect x y)
+                  (empty)))
+  :rule-classes ((:rewrite :backchain-limit-lst (0)))
+  :by intersect-when-emptyp-of-arg2)
+
+(defrule intersect-of-arg1-and-empty
+  (equal (intersect x (empty))
+         (empty))
+  :enable intersect-when-emptyp-of-arg2)
+
+(defruled intersect-of-insert
+  (equal (intersect (insert a x) y)
+         (if (in a y)
+             (insert a (intersect x y))
+           (intersect x y)))
+  :enable extensionality)
+
+(defruled intersect-of-insert-when-in-of-arg2
+  (implies (in a y)
+           (equal (intersect (insert a x) y)
+                  (insert a (intersect x y))))
+  :by intersect-of-insert)
+
+(defrule intersect-of-insert-when-in-of-arg2-cheap
+  (implies (in a y)
+           (equal (intersect (insert a x) y)
+                  (insert a (intersect x y))))
+  :rule-classes ((:rewrite :backchain-limit-lst (0)))
+  :by intersect-of-insert-when-in-of-arg2)
+
+(defruled intersect-of-insert-when-not-in-of-arg2
+  (implies (not (in a y))
+           (equal (intersect (insert a x) y)
+                  (intersect x y)))
+  :by intersect-of-insert)
+
+(defrule intersect-of-insert-when-not-in-of-arg2-cheap
+  (implies (not (in a y))
+           (equal (intersect (insert a x) y)
+                  (intersect x y)))
+  :rule-classes ((:rewrite :backchain-limit-lst (0)))
+  :by intersect-of-insert-when-not-in-of-arg2)
+
+(defruled intersect-of-arg1-and-insert
+  (equal (intersect x (insert a y))
+         (if (in a x)
+             (insert a (intersect x y))
+           (intersect x y)))
+  :enable extensionality)
+
+(defruled intersect-of-arg1-and-insert-when-in-of-arg1
+  (implies (in a x)
+           (equal (intersect x (insert a y))
+                  (insert a (intersect x y))))
+  :by intersect-of-arg1-and-insert)
+
+(defrule intersect-of-arg1-and-insert-when-in-of-arg1-cheap
+  (implies (in a x)
+           (equal (intersect x (insert a y))
+                  (insert a (intersect x y))))
+  :rule-classes ((:rewrite :backchain-limit-lst (0)))
+  :by intersect-of-arg1-and-insert-when-in-of-arg1)
+
+(defruled intersect-of-arg1-and-insert-when-not-in-of-arg1
+  (implies (not (in a x))
+           (equal (intersect x (insert a y))
+                  (intersect x y)))
+  :by intersect-of-arg1-and-insert)
+
+(defrule intersect-of-arg1-and-insert-when-not-in-of-arg1-cheap
+  (implies (not (in a x))
+           (equal (intersect x (insert a y))
+                  (intersect x y)))
+  :rule-classes ((:rewrite :backchain-limit-lst (0)))
+  :by intersect-of-arg1-and-insert-when-not-in-of-arg1)
+
+(defrule intersect-of-delete
+  (equal (intersect (delete a x) y)
+         (delete a (intersect x y)))
+  :enable extensionality)
+
+(defrule intersect-of-arg1-and-delete
+  (equal (intersect x (delete a y))
+         (delete a (intersect x y)))
+  :enable extensionality)
+
+(defruled union-over-intersect
+  (equal (union (intersect x y) z)
+         (intersect (union x z) (union y z)))
+  :enable extensionality)
+
+(defruled union-over-arg1-intersect
+  (equal (union x (intersect y z))
+         (intersect (union x y) (union x z)))
+  :enable extensionality)
+
+(defrule intersect-over-union
+  (equal (intersect (union x y) z)
+         (union (intersect x z) (intersect y z)))
+  :enable extensionality)
+
+(defrule intersect-over-arg1-and-union
+  (equal (intersect x (union y z))
+         (union (intersect x y) (intersect x z)))
+  :enable extensionality)
+
+(defruled intersect-when-subset-arg1-arg2
+  (implies (subset x y)
+           (equal (intersect x y)
+                  (fix x)))
+  :enable extensionality)
+
+(defrule intersect-when-subset-arg1-arg2-cheap
+  (implies (subset x y)
+           (equal (intersect x y)
+                  (fix x)))
+  :rule-classes ((:rewrite :backchain-limit-lst (0)))
+  :by intersect-when-subset-arg1-arg2)
+
+(defruled intersect-when-subset-arg2-arg1
+  (implies (subset y x)
+           (equal (intersect x y)
+                  (fix y)))
+  :enable extensionality)
+
+(defrule intersect-when-subset-arg2-arg1-cheap
+  (implies (subset y x)
+           (equal (intersect x y)
+                  (fix y)))
+  :rule-classes ((:rewrite :backchain-limit-lst (0)))
+  :by intersect-when-subset-arg2-arg1)
+
+;;;;;;;;;;;;;;;;;;;;
+
+(defrule set-all-genericp-of-intersect-when-set-all-genericp-of-arg1
+  (implies (set-all-genericp x)
+           (set-all-genericp (intersect x y)))
+  :enable set-all-genericp-pick-a-point-polar)
+
+(defrule set-all-genericp-of-intersect-when-set-all-genericp-of-arg2
+  (implies (set-all-genericp y)
+           (set-all-genericp (intersect x y)))
+  :enable set-all-genericp-pick-a-point-polar)
+
+(defrule set-all-acl2-numberp-of-intersect-when-set-all-acl2-numberp-of-arg1
+  (implies (set-all-acl2-numberp x)
+           (set-all-acl2-numberp (intersect x y)))
+  :use (:functional-instance
+         set-all-genericp-of-intersect-when-set-all-genericp-of-arg1
+         (genericp acl2-numberp)
+         (set-all-genericp set-all-acl2-numberp))
+  :enable set-all-acl2-numberp-alt-definition)
+
+(defrule set-all-acl2-numberp-of-intersect-when-set-all-acl2-numberp-of-arg2
+  (implies (set-all-acl2-numberp y)
+           (set-all-acl2-numberp (intersect x y)))
+  :use (:functional-instance
+         set-all-genericp-of-intersect-when-set-all-genericp-of-arg2
+         (genericp acl2-numberp)
+         (set-all-genericp set-all-acl2-numberp)))
+
+(defrule set-all-symbolp-of-intersect-when-set-all-symbolp-of-arg1
+  (implies (set-all-symbolp x)
+           (set-all-symbolp (intersect x y)))
+  :use (:functional-instance
+         set-all-genericp-of-intersect-when-set-all-genericp-of-arg1
+         (genericp symbolp)
+         (set-all-genericp set-all-symbolp))
+  :enable set-all-symbolp-alt-definition)
+
+(defrule set-all-symbolp-of-intersect-when-set-all-symbolp-of-arg2
+  (implies (set-all-symbolp y)
+           (set-all-symbolp (intersect x y)))
+  :use (:functional-instance
+         set-all-genericp-of-intersect-when-set-all-genericp-of-arg2
+         (genericp symbolp)
+         (set-all-genericp set-all-symbolp)))
+
+(defrule set-all-eqlablep-of-intersect-when-set-all-eqlablep-of-arg1
+  (implies (set-all-eqlablep x)
+           (set-all-eqlablep (intersect x y)))
+  :use (:functional-instance
+         set-all-genericp-of-intersect-when-set-all-genericp-of-arg1
+         (genericp eqlablep)
+         (set-all-genericp set-all-eqlablep))
+  :enable set-all-eqlablep-alt-definition)
+
+(defrule set-all-eqlablep-of-intersect-when-set-all-eqlablep-of-arg2
+  (implies (set-all-eqlablep y)
+           (set-all-eqlablep (intersect x y)))
+  :use (:functional-instance
+         set-all-genericp-of-intersect-when-set-all-genericp-of-arg2
+         (genericp eqlablep)
+         (set-all-genericp set-all-eqlablep)))
 
 ;;;;;;;;;;;;;;;;;;;;
 
@@ -244,6 +507,22 @@
                                     (to-oset y)))))
 
 (add-to-ruleset to-oset-theory '(intersect-becomes-oset-intersect))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defrule cardinality-of-intersect0-linear
+  (<= (cardinality (intersect x y))
+      (cardinality x))
+  :rule-classes :linear
+  :enable to-oset-theory
+  :disable from-oset-theory)
+
+(defrule cardinality-of-intersect1-linear
+  (<= (cardinality (intersect x y))
+      (cardinality y))
+  :rule-classes :linear
+  :enable to-oset-theory
+  :disable from-oset-theory)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

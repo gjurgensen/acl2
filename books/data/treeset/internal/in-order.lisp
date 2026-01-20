@@ -20,6 +20,7 @@
 (include-book "tree-defs")
 (include-book "bst-defs")
 (include-book "in-defs")
+(include-book "min-max-defs")
 (include-book "count-defs")
 (include-book "insert-defs")
 (include-book "delete-defs")
@@ -45,6 +46,7 @@
 (local (include-book "tree"))
 (local (include-book "bst"))
 (local (include-book "in"))
+(local (include-book "min-max"))
 (local (include-book "count"))
 (local (include-book "insert"))
 (local (include-book "delete"))
@@ -152,6 +154,32 @@
 
 (verify-guards tree-in-order
   :hints (("Goal" :in-theory (enable tree-in-order))))
+
+(defrule consp-of-tree-in-order
+  (equal (consp (tree-in-order tree))
+         (and (tree-in-order tree) t)))
+
+(defrule tree-in-order-under-iff
+  (iff (tree-in-order tree)
+       (not (tree-empty-p tree)))
+  :induct t
+  :enable tree-in-order)
+
+(defrule car-of-tree-in-order
+  (equal (car (tree-in-order tree))
+         (tree-leftmost tree))
+  :induct t
+  :expand ((tree-in-order tree))
+  :enable (tree-leftmost
+           irr-tagged-element))
+
+(defrule car-of-last-of-tree-in-order
+  (equal (car (last (tree-in-order tree)))
+         (tree-rightmost tree))
+  :induct t
+  :expand ((tree-in-order tree))
+  :enable (tree-rightmost
+           irr-tagged-element))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

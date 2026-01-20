@@ -20,7 +20,9 @@
 (include-book "in-defs")
 (include-book "subset-defs")
 (include-book "insert-defs")
+(include-book "delete-defs")
 (include-book "to-oset-defs")
+(include-book "generic-typed-defs")
 
 (local (include-book "std/basic/controlled-configuration" :dir :system))
 (local (acl2::controlled-configuration :hooks nil))
@@ -31,6 +33,7 @@
 (local (include-book "kestrel/alists-light/symbol-alistp" :dir :system))
 
 (local (include-book "kestrel/utilities/ordinals" :dir :system))
+(local (include-book "kestrel/utilities/equal-of-booleans" :dir :system))
 
 (local (include-book "std/system/partition-rest-and-keyword-args" :dir :system))
 
@@ -41,9 +44,15 @@
 (local (include-book "cardinality"))
 (local (include-book "in"))
 (local (include-book "insert"))
+(local (include-book "delete"))
 (local (include-book "subset"))
 (local (include-book "extensionality"))
 (local (include-book "to-oset"))
+(local (include-book "generic-typed"))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(local (in-theory (disable acl2::equal-of-booleans-cheap)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -179,17 +188,34 @@
 
 ;;;;;;;;;;;;;;;;;;;;
 
-;; TODO: better names?
-
-(defrule subset-of-union-left
+(defrule subset-of-arg1-and-union0
   (subset x (union x y))
   :enable (pick-a-point
            subset))
 
-(defrule subset-of-union-right
+(defrule subset-of-arg1-and-union1
   (subset x (union y x))
   :enable (pick-a-point
            subset))
+
+(defrule subset-of-union0
+  (equal (subset (union x y) x)
+         (subset y x))
+  :enable (acl2::equal-of-booleans-cheap
+           pick-a-point-polar))
+
+(defrule subset-of-union1
+  (equal (subset (union x y) y)
+         (subset x y))
+  :enable (acl2::equal-of-booleans-cheap
+           pick-a-point-polar))
+
+(defrule monotonicity-of-union
+  (implies (and (subset x0 x1)
+                (subset y0 y1))
+           (subset (union x0 y0)
+                   (union x1 y1)))
+  :enable pick-a-point)
 
 ;;;;;;;;;;;;;;;;;;;;
 
@@ -202,6 +228,192 @@
   (equal (union y x)
          (union x y))
   :enable extensionality)
+
+(defrule idempotence-of-union
+  (equal (union x x)
+         (fix x))
+  :enable extensionality)
+
+(defrule union-contraction
+  (equal (union x x y)
+         (union x y))
+  :enable extensionality)
+
+;;;;;;;;;;;;;;;;;;;;
+
+(defruled union-when-emptyp-of-arg1
+  (implies (emptyp x)
+           (equal (union x y)
+                  (fix y)))
+  :enable extensionality)
+
+(defrule union-when-emptyp-of-arg1-cheap
+  (implies (emptyp x)
+           (equal (union x y)
+                  (fix y)))
+  :rule-classes ((:rewrite :backchain-limit-lst (0)))
+  :by union-when-emptyp-of-arg1)
+
+(defrule union-of-empty
+  (equal (union (empty) y)
+         (fix y))
+  :enable union-when-emptyp-of-arg1)
+
+(defruled union-when-emptyp-of-arg2
+  (implies (emptyp y)
+           (equal (union x y)
+                  (fix x)))
+  :enable extensionality)
+
+(defrule union-when-emptyp-of-arg2-cheap
+  (implies (emptyp y)
+           (equal (union x y)
+                  (fix x)))
+  :rule-classes ((:rewrite :backchain-limit-lst (0)))
+  :by union-when-emptyp-of-arg2)
+
+(defrule union-of-arg1-and-empty
+  (equal (union x (empty))
+         (fix x))
+  :enable union-when-emptyp-of-arg2)
+
+(defrule union-of-insert
+  (equal (union (insert a x) y)
+         (insert a (union x y)))
+  :enable extensionality)
+
+(defrule union-of-arg1-and-insert
+  (equal (union x (insert a y))
+         (insert a (union x y)))
+  :enable extensionality)
+
+(defruled union-of-delete
+  (equal (union (delete a x) y)
+         (if (in a y)
+             (union x y)
+           (delete a (union x y))))
+  :enable extensionality)
+
+(defruled union-of-delete-when-in-arg2
+  (implies (in a y)
+           (equal (union (delete a x) y)
+                  (union x y)))
+  :by union-of-delete)
+
+(defrule union-of-delete-when-in-arg2-cheap
+  (implies (in a y)
+           (equal (union (delete a x) y)
+                  (union x y)))
+  :rule-classes ((:rewrite :backchain-limit-lst (0)))
+  :by union-of-delete-when-in-arg2)
+
+(defruled union-of-delete-when-not-in-arg2
+  (implies (not (in a y))
+           (equal (union (delete a x) y)
+                  (delete a (union x y))))
+  :by union-of-delete)
+
+(defrule union-of-delete-when-not-in-arg2-cheap
+  (implies (not (in a y))
+           (equal (union (delete a x) y)
+                  (delete a (union x y))))
+  :rule-classes ((:rewrite :backchain-limit-lst (0)))
+  :by union-of-delete-when-not-in-arg2)
+
+(defruled union-of-arg1-and-delete
+  (equal (union x (delete a y))
+         (if (in a x)
+             (union x y)
+           (delete a (union x y))))
+  :enable extensionality)
+
+(defruled union-of-arg1-and-delete-when-in-arg1
+  (implies (in a x)
+           (equal (union x (delete a y))
+                  (union x y)))
+  :by union-of-arg1-and-delete)
+
+(defruled union-of-arg1-and-delete-when-in-arg1-cheap
+  (implies (in a x)
+           (equal (union x (delete a y))
+                  (union x y)))
+  :rule-classes ((:rewrite :backchain-limit-lst (0)))
+  :by union-of-arg1-and-delete-when-in-arg1)
+
+(defruled union-of-arg1-and-delete-when-not-in-arg1
+  (implies (not (in a x))
+           (equal (union x (delete a y))
+                  (delete a (union x y))))
+  :by union-of-arg1-and-delete)
+
+(defrule union-of-arg1-and-delete-when-not-in-arg1-cheap
+  (implies (not (in a x))
+           (equal (union x (delete a y))
+                  (delete a (union x y))))
+  :rule-classes ((:rewrite :backchain-limit-lst (0)))
+  :by union-of-arg1-and-delete-when-not-in-arg1)
+
+(defruled union-when-subset-arg1-arg2
+  (implies (subset x y)
+           (equal (union x y)
+                  (fix y)))
+  :enable extensionality)
+
+(defrule union-when-subset-arg1-arg2-cheap
+  (implies (subset x y)
+           (equal (union x y)
+                  (fix y)))
+  :rule-classes ((:rewrite :backchain-limit-lst (0)))
+  :by union-when-subset-arg1-arg2)
+
+(defruled union-when-subset-arg2-arg1
+  (implies (subset y x)
+           (equal (union x y)
+                  (fix x)))
+  :enable extensionality)
+
+(defrule union-when-subset-arg2-arg1-cheap
+  (implies (subset y x)
+           (equal (union x y)
+                  (fix x)))
+  :rule-classes ((:rewrite :backchain-limit-lst (0)))
+  :by union-when-subset-arg2-arg1)
+
+;;;;;;;;;;;;;;;;;;;;
+
+(defrule set-all-genericp-of-union
+  (equal (set-all-genericp (union x y))
+         (and (set-all-genericp x)
+              (set-all-genericp y)))
+  :enable (acl2::equal-of-booleans-cheap
+           set-all-genericp-pick-a-point-polar))
+
+(defrule set-all-acl2-numberp-of-union
+  (equal (set-all-acl2-numberp (union x y))
+         (and (set-all-acl2-numberp x)
+              (set-all-acl2-numberp y)))
+  :use (:functional-instance set-all-genericp-of-union
+                             (genericp acl2-numberp)
+                             (set-all-genericp set-all-acl2-numberp))
+  :enable set-all-acl2-numberp-alt-definition)
+
+(defrule set-all-symbolp-of-union
+  (equal (set-all-symbolp (union x y))
+         (and (set-all-symbolp x)
+              (set-all-symbolp y)))
+  :use (:functional-instance set-all-genericp-of-union
+                             (genericp symbolp)
+                             (set-all-genericp set-all-symbolp))
+  :enable set-all-symbolp-alt-definition)
+
+(defrule set-all-eqlablep-of-union
+  (equal (set-all-eqlablep (union x y))
+         (and (set-all-eqlablep x)
+              (set-all-eqlablep y)))
+  :use (:functional-instance set-all-genericp-of-union
+                             (genericp eqlablep)
+                             (set-all-genericp set-all-eqlablep))
+  :enable set-all-eqlablep-alt-definition)
 
 ;;;;;;;;;;;;;;;;;;;;
 

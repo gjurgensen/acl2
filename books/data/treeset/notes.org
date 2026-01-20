@@ -1,9 +1,21 @@
+- The to-oset-theory and from-oset-theory could use some doc. Especially to say one must be disabled for the other to be enabled.
+
+Are there no intersect of union or union of intersect rules?
+
+expand-cardinality rules?
+
+What is the normal form?
+- look at it like logical connectives
+  - union is or, intersect is and
+    - we do sum of products (i.e. we rewrite to union of intersect
+  - (diff x y) is (and x (not y))
+    - Of course, we can't actually construct the negated set. So we are stuck with diff. But we can attempt to minimize y.
+
+========================================
+
+- set macro (like list. Ends with singleton.)
+
 - delete flag
-  - I'm thinking it is probably to complicated to try to do it for union, intersect, diff
-
-- induction.lisp
-
-- iterator
 
 - port over rules from oset
 

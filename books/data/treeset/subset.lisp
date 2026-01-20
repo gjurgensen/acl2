@@ -1,4 +1,4 @@
-; Copyright (C) 2025 Kestrel Institute (http://www.kestrel.edu)
+; Copyright (C) 2025-2026 Kestrel Institute (http://www.kestrel.edu)
 ;
 ; License: A 3-clause BSD license. See the LICENSE file distributed with ACL2.
 ;
@@ -13,20 +13,29 @@
 (include-book "std/util/defrule" :dir :system)
 (include-book "xdoc/constructors" :dir :system)
 
+(include-book "data/utilities/oset-defs" :dir :system)
+(include-book "kestrel/utilities/polarity" :dir :system)
+
 (include-book "internal/subset-defs")
 (include-book "set-defs")
 (include-book "in-defs")
+(include-book "cardinality-defs")
+(include-book "to-oset-defs")
 
 (local (include-book "std/basic/controlled-configuration" :dir :system))
 (local (acl2::controlled-configuration :hooks nil))
+
+(local (include-book "std/osets/top" :dir :system))
 
 (local (include-book "kestrel/utilities/ordinals" :dir :system))
 
 (local (include-book "internal/tree"))
 (local (include-book "internal/subset"))
 (local (include-book "internal/antisymmetry"))
+(local (include-book "to-oset"))
 (local (include-book "set"))
 (local (include-book "in"))
+(local (include-book "cardinality"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -36,8 +45,8 @@
   :long
   (xdoc::topstring
     (xdoc::p
-      "Time complexity: @($O(n\\log(m))$) (Note: the current implementation is
-       slightly inefficient. This should eventually be @($O(n\\log(m/n))$),
+      "Time complexity: @($O(m\\log(n))$) (Note: the current implementation is
+       slightly inefficient. This should eventually be @($O(m\\log(n/m))$),
        where @($n < m$). This may be implemented similar to @(tsee diff).)")
     (xdoc::section
       "General form"
@@ -67,7 +76,7 @@
 (define subset$inline
   ((x setp)
    (y setp))
-  :returns (yes/no booleanp :rule-classes :type-prescription)
+  :returns (yes/no booleanp)
   (tree-subset-p (fix x) (fix y))
   :guard-hints (("Goal" :in-theory (enable* break-abstraction)))
 
@@ -77,6 +86,10 @@
 ;;;;;;;;;;;;;;;;;;;;
 
 (in-theory (disable (:t subset)))
+
+(defrule subset-type-prescription
+  (booleanp (subset x y))
+  :rule-classes ((:type-prescription :typed-term (subset x y))))
 
 (defrule subset-when-equiv-of-arg1-congruence
   (implies (equiv x0 x1)
@@ -108,13 +121,18 @@
 
 ;; TODO: disable by default?
 (defrule in-when-in-and-subset
-  ;; (implies (and (in a x)
-  ;;               (subset x y))
-  (implies (and (subset x y)
-                (in a x))
+  (implies (and (in a x)
+                (subset x y))
            (in a y))
   :enable (subset
            in))
+
+;; TODO: disable by default?
+(defrule in-when-subset-and-in
+  (implies (and (subset x y)
+                (in a x))
+           (in a y))
+  :by in-when-in-and-subset)
 
 ;;;;;;;;;;;;;;;;;;;;
 
@@ -134,6 +152,21 @@
            setp
            empty))
 
+(defruled subset-antisymmetry-equiv
+  (implies (and (subset x y)
+                (subset y x))
+           (equiv x y))
+  :use subset-antisymmetry
+  :enable equiv)
+
+(defrule subset-antisymmetry-equiv-forward-chaining
+  (implies (and (subset x y)
+                (subset y x))
+           (equiv x y))
+  :rule-classes ((:forward-chaining :trigger-terms ((and (subset x y)
+                                                         (subset y x)))))
+  :by subset-antisymmetry-equiv)
+
 (defrule subset-transitivity
   (implies (and (subset x y)
                 (subset y z))
@@ -142,6 +175,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;
 
+;; TODO: version for min and max? Can be after pick-a-point
 (defruled subset-when-not-in-of-head
   (implies (and (not (emptyp x))
                 (not (in (head x) y)))
@@ -161,7 +195,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defsection double-containment
-  :parents (set)
+  :parents (treeset)
   :short "Prove set equalities via @(see subset) antisymmetry."
   :long
   (xdoc::topstring
@@ -251,6 +285,64 @@
 (defthy pick-a-point
   '(subset-becomes-subset-sk
     subset-sk))
+
+(defruled subset-becomes-subset-sk-polar
+  (implies (syntaxp (acl2::want-to-weaken (subset x y)))
+           (equal (subset x y)
+                  (subset-sk x y)))
+  :by subset-becomes-subset-sk)
+
+(defthy pick-a-point-polar
+  '(subset-becomes-subset-sk-polar
+    subset-sk))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defruled oset-subset-of-to-oset-when-subset
+  (implies (subset x y)
+           (set::subset (to-oset x) (to-oset y)))
+  :enable set::pick-a-point-subset-strategy)
+
+(defruled subset-when-oset-subset-of-to-oset
+  (implies (set::subset (to-oset x) (to-oset y))
+           (subset x y))
+  :enable (pick-a-point
+           to-oset-theory
+           set::subset-in)
+  :disable from-oset-theory)
+
+(defrule oset-subset-of-to-oset
+  (equal (set::subset (to-oset x) (to-oset y))
+         (subset x y))
+  :use (oset-subset-of-to-oset-when-subset
+        subset-when-oset-subset-of-to-oset))
+
+(add-to-ruleset from-oset-theory '(oset-subset-of-to-oset))
+
+(defruled subset-becomes-oset-subset
+  (equal (subset x y)
+         (set::subset (to-oset x) (to-oset y)))
+  :use (oset-subset-of-to-oset-when-subset
+        subset-when-oset-subset-of-to-oset))
+
+(add-to-ruleset to-oset-theory '(subset-becomes-oset-subset))
+
+;;;;;;;;;;;;;;;;;;;;
+
+(defrule cardinality-when-subset-linear
+  (implies (subset x y)
+           (<= (cardinality x) (cardinality y)))
+  :rule-classes :linear
+  :enable to-oset-theory
+  :disable from-oset-theory)
+
+(defrule cardinality-when-proper-subset-linear
+  (implies (and (subset x y)
+                (not (subset y x)))
+           (< (cardinality x) (cardinality y)))
+  :rule-classes :linear
+  :enable to-oset-theory
+  :disable from-oset-theory)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

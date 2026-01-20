@@ -10,15 +10,3 @@
 
 (include-book "hash/top")
 (include-book "treeset/top")
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defxdoc data-lib
-  :parents (acl2::software-verification)
-  :short
-  (xdoc::topstring
-    "A library for efficient data structures.")
-  :long
-  (xdoc::topstring
-    (xdoc::p
-      "TODO.")))

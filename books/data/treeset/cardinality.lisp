@@ -1,4 +1,4 @@
-; Copyright (C) 2025 Kestrel Institute (http://www.kestrel.edu)
+; Copyright (C) 2025-2026 Kestrel Institute (http://www.kestrel.edu)
 ;
 ; License: A 3-clause BSD license. See the LICENSE file distributed with ACL2.
 ;
@@ -32,13 +32,13 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define cardinality ((set setp))
+  :returns (cardinality natp)
   :parents (treeset)
   :short "The number of elements in a @(see treeset)."
   :long
   (xdoc::topstring
    (xdoc::p
      "Time complexity: @($O(n)$)."))
-  :returns (cardinality natp :rule-classes (:rewrite :type-prescription))
   (tree-nodes-count (fix set))
   :inline t
   :guard-hints (("Goal" :in-theory (enable setp))))
@@ -46,6 +46,10 @@
 ;;;;;;;;;;;;;;;;;;;;
 
 (in-theory (disable (:t cardinality)))
+
+(defrule cardinality-type-prescription
+  (natp (cardinality set))
+  :rule-classes ((:type-prescription :typed-term (cardinality set))))
 
 (defrule cardinality-when-set-equiv-congruence
   (implies (equiv set0 set1)

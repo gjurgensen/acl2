@@ -1,4 +1,4 @@
-; Copyright (C) 2025 Kestrel Institute (http://www.kestrel.edu)
+; Copyright (C) 2025-2026 Kestrel Institute (http://www.kestrel.edu)
 ;
 ; License: A 3-clause BSD license. See the LICENSE file distributed with ACL2.
 ;
@@ -14,6 +14,7 @@
 (include-book "xdoc/constructors" :dir :system)
 
 (include-book "data/utilities/oset-defs" :dir :system)
+(include-book "kestrel/utilities/polarity" :dir :system)
 
 (include-book "internal/tree-defs")
 (include-book "internal/in-defs")
@@ -68,7 +69,7 @@
 (define in$inline
   (x
    (set setp))
-  :returns (yes/no booleanp :rule-classes (:rewrite :type-prescription))
+  :returns (yes/no booleanp)
   (mbe :logic (tree-in x (fix set))
        :exec (tree-search-in x set))
   :guard-hints (("Goal" :in-theory (enable* break-abstraction)))
@@ -77,6 +78,12 @@
   (add-macro-fn in in$inline))
 
 ;;;;;;;;;;;;;;;;;;;;
+
+(in-theory (disable (:t in)))
+
+(defrule in-type-prescription
+  (booleanp (in x set))
+  :rule-classes ((:type-prescription :typed-term (in x set))))
 
 (defrule in-when-set-equiv-congruence
   (implies (equiv set0 set1)
@@ -126,255 +133,6 @@
          (set::in x (to-oset set))))
 
 (add-to-ruleset to-oset-theory '(in-becomes-oset-in))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defruled acl2-numberp-when-set-all-acl2-numberp-and-in
-  (implies (and (in x set)
-                (set-all-acl2-numberp set))
-           (acl2-numberp x))
-  :enable (in
-           set-all-acl2-numberp))
-
-(defrule acl2-numberp-when-set-all-acl2-numberp-and-in-cheap
-  (implies (and (in x set)
-                (set-all-acl2-numberp set))
-           (acl2-numberp x))
-  ;; Note: the first hypothesis won't actually backchain, since `set` is free.
-  :rule-classes ((:rewrite :backchain-limit-lst (nil 0)))
-  :by acl2-numberp-when-set-all-acl2-numberp-and-in)
-
-;;;;;;;;;;;;;;;;;;;;
-
-(defruled symbolp-when-set-all-symbolp-and-in
-  (implies (and (in x set)
-                (set-all-symbolp set))
-           (symbolp x))
-  :enable (in
-           set-all-symbolp))
-
-(defrule symbolp-when-set-all-symbolp-and-in-cheap
-  (implies (and (in x set)
-                (set-all-symbolp set))
-           (symbolp x))
-  ;; Note: the first hypothesis won't actually backchain, since `set` is free.
-  :rule-classes ((:rewrite :backchain-limit-lst (nil 0)))
-  :by symbolp-when-set-all-symbolp-and-in)
-
-;;;;;;;;;;;;;;;;;;;;
-
-(defruled eqlablep-when-set-all-eqlablep-and-in
-  (implies (and (in x set)
-                (set-all-eqlablep set))
-           (eqlablep x))
-  :enable (in
-           set-all-eqlablep))
-
-(defrule eqlablep-when-set-all-eqlablep-and-in-cheap
-  (implies (and (in x set)
-                (set-all-eqlablep set))
-           (eqlablep x))
-  ;; Note: the first hypothesis won't actually backchain, since `set` is free.
-  :rule-classes ((:rewrite :backchain-limit-lst (nil 0)))
-  :by eqlablep-when-set-all-eqlablep-and-in)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(define-sk set-all-acl2-numberp-sk (set)
-  :returns (yes/no booleanp :rule-classes :type-prescription)
-  (forall (elem)
-          (implies (in elem set)
-                   (acl2-numberp elem)))
-  :verify-guards nil)
-
-;;;;;;;;;;;;;;;;;;;;
-
-(in-theory (disable (:t set-all-acl2-numberp-sk)))
-
-(defruledl set-all-acl2-numberp-sk-when-set-all-acl2-numberp
-  (implies (set-all-acl2-numberp set)
-           (set-all-acl2-numberp-sk set))
-  :enable set-all-acl2-numberp-sk)
-
-(defrulel set-all-acl2-numberp-sk-of-tree->left
-  (implies (and (setp set)
-                (set-all-acl2-numberp-sk set))
-           (set-all-acl2-numberp-sk (tree->left set)))
-  :expand (set-all-acl2-numberp-sk (tree->left set))
-  :use (:instance set-all-acl2-numberp-sk-necc
-                  (elem (set-all-acl2-numberp-sk-witness (tree->left set))))
-  :enable (break-abstraction
-           in))
-
-(defrulel set-all-acl2-numberp-sk-of-tree->right
-  (implies (and (setp set)
-                (set-all-acl2-numberp-sk set))
-           (set-all-acl2-numberp-sk (tree->right set)))
-  :expand (set-all-acl2-numberp-sk (tree->right set))
-  :use (:instance set-all-acl2-numberp-sk-necc
-                  (elem (set-all-acl2-numberp-sk-witness (tree->right set))))
-  :enable (break-abstraction
-           in))
-
-(defrulel tree-all-acl2-numberp-when-set-all-acl2-numberp-sk
-  (implies (and (setp set)
-                (set-all-acl2-numberp-sk set))
-           (tree-all-acl2-numberp set))
-  :induct t
-  :hints ('(:use (:instance set-all-acl2-numberp-sk-necc
-                            (elem (tagged-element->elem (tree->head set))))))
-  :enable (tree-all-acl2-numberp
-           break-abstraction
-           in))
-
-(defruledl set-all-acl2-numberp-when-set-all-acl2-numberp-sk
-  (implies (set-all-acl2-numberp-sk set)
-           (set-all-acl2-numberp set))
-  :enable (set-all-acl2-numberp
-           fix
-           empty))
-
-(defruled set-all-acl2-numberp-becomes-set-all-acl2-numberp-sk
-  (equal (set-all-acl2-numberp set)
-         (set-all-acl2-numberp-sk set))
-  :use (set-all-acl2-numberp-sk-when-set-all-acl2-numberp
-        set-all-acl2-numberp-when-set-all-acl2-numberp-sk))
-
-(defthy set-all-acl2-numberp-pick-a-point
-  '(set-all-acl2-numberp-becomes-set-all-acl2-numberp-sk
-    set-all-acl2-numberp-sk))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(define-sk set-all-symbolp-sk (set)
-  :returns (yes/no booleanp :rule-classes :type-prescription)
-  (forall (elem)
-          (implies (in elem set)
-                   (symbolp elem)))
-  :verify-guards nil)
-
-;;;;;;;;;;;;;;;;;;;;
-
-(in-theory (disable (:t set-all-symbolp-sk)))
-
-(defruledl set-all-symbolp-sk-when-set-all-symbolp
-  (implies (set-all-symbolp set)
-           (set-all-symbolp-sk set))
-  :enable set-all-symbolp-sk)
-
-(defrulel set-all-symbolp-sk-of-tree->left
-  (implies (and (setp set)
-                (set-all-symbolp-sk set))
-           (set-all-symbolp-sk (tree->left set)))
-  :expand (set-all-symbolp-sk (tree->left set))
-  :use (:instance set-all-symbolp-sk-necc
-                  (elem (set-all-symbolp-sk-witness (tree->left set))))
-  :enable (break-abstraction
-           in))
-
-(defrulel set-all-symbolp-sk-of-tree->right
-  (implies (and (setp set)
-                (set-all-symbolp-sk set))
-           (set-all-symbolp-sk (tree->right set)))
-  :expand (set-all-symbolp-sk (tree->right set))
-  :use (:instance set-all-symbolp-sk-necc
-                  (elem (set-all-symbolp-sk-witness (tree->right set))))
-  :enable (break-abstraction
-           in))
-
-(defrulel tree-all-symbolp-when-set-all-symbolp-sk
-  (implies (and (setp set)
-                (set-all-symbolp-sk set))
-           (tree-all-symbolp set))
-  :induct t
-  :hints ('(:use (:instance set-all-symbolp-sk-necc
-                            (elem (tagged-element->elem (tree->head set))))))
-  :enable (tree-all-symbolp
-           break-abstraction
-           in))
-
-(defruledl set-all-symbolp-when-set-all-symbolp-sk
-  (implies (set-all-symbolp-sk set)
-           (set-all-symbolp set))
-  :enable (set-all-symbolp
-           fix
-           empty))
-
-(defruled set-all-symbolp-becomes-set-all-symbolp-sk
-  (equal (set-all-symbolp set)
-         (set-all-symbolp-sk set))
-  :use (set-all-symbolp-sk-when-set-all-symbolp
-        set-all-symbolp-when-set-all-symbolp-sk))
-
-(defthy set-all-symbolp-pick-a-point
-  '(set-all-symbolp-becomes-set-all-symbolp-sk
-    set-all-symbolp-sk))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(define-sk set-all-eqlablep-sk (set)
-  :returns (yes/no booleanp :rule-classes :type-prescription)
-  (forall (elem)
-          (implies (in elem set)
-                   (eqlablep elem)))
-  :verify-guards nil)
-
-;;;;;;;;;;;;;;;;;;;;
-
-(in-theory (disable (:t set-all-eqlablep-sk)))
-
-(defruledl set-all-eqlablep-sk-when-set-all-eqlablep
-  (implies (set-all-eqlablep set)
-           (set-all-eqlablep-sk set))
-  :enable set-all-eqlablep-sk)
-
-(defrulel set-all-eqlablep-sk-of-tree->left
-  (implies (and (setp set)
-                (set-all-eqlablep-sk set))
-           (set-all-eqlablep-sk (tree->left set)))
-  :expand (set-all-eqlablep-sk (tree->left set))
-  :use (:instance set-all-eqlablep-sk-necc
-                  (elem (set-all-eqlablep-sk-witness (tree->left set))))
-  :enable (break-abstraction
-           in))
-
-(defrulel set-all-eqlablep-sk-of-tree->right
-  (implies (and (setp set)
-                (set-all-eqlablep-sk set))
-           (set-all-eqlablep-sk (tree->right set)))
-  :expand (set-all-eqlablep-sk (tree->right set))
-  :use (:instance set-all-eqlablep-sk-necc
-                  (elem (set-all-eqlablep-sk-witness (tree->right set))))
-  :enable (break-abstraction
-           in))
-
-(defrulel tree-all-eqlablep-when-set-all-eqlablep-sk
-  (implies (and (setp set)
-                (set-all-eqlablep-sk set))
-           (tree-all-eqlablep set))
-  :induct t
-  :hints ('(:use (:instance set-all-eqlablep-sk-necc
-                            (elem (tagged-element->elem (tree->head set))))))
-  :enable (tree-all-eqlablep
-           break-abstraction
-           in))
-
-(defruledl set-all-eqlablep-when-set-all-eqlablep-sk
-  (implies (set-all-eqlablep-sk set)
-           (set-all-eqlablep set))
-  :enable (set-all-eqlablep
-           fix
-           empty))
-
-(defruled set-all-eqlablep-becomes-set-all-eqlablep-sk
-  (equal (set-all-eqlablep set)
-         (set-all-eqlablep-sk set))
-  :use (set-all-eqlablep-sk-when-set-all-eqlablep
-        set-all-eqlablep-when-set-all-eqlablep-sk))
-
-(defthy set-all-eqlablep-pick-a-point
-  '(set-all-eqlablep-becomes-set-all-eqlablep-sk
-    set-all-eqlablep-sk))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

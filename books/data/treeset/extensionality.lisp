@@ -1,4 +1,4 @@
-; Copyright (C) 2025 Kestrel Institute (http://www.kestrel.edu)
+; Copyright (C) 2025-2026 Kestrel Institute (http://www.kestrel.edu)
 ;
 ; License: A 3-clause BSD license. See the LICENSE file distributed with ACL2.
 ;
@@ -41,7 +41,7 @@
 
 (define-sk ext-equal (x y)
   :parents (extensionality)
-  :returns (yes/no booleanp :rule-classes :type-prescription)
+  :returns (yes/no booleanp)
   (forall (elem)
           (equal (in elem x)
                  (in elem y)))
@@ -50,6 +50,10 @@
 ;;;;;;;;;;;;;;;;;;;;
 
 (in-theory (disable (:t ext-equal)))
+
+(defrule ext-equal-type-prescription
+  (booleanp (ext-equal x y))
+  :rule-classes ((:type-prescription :typed-term (ext-equal x y))))
 
 (defrule ext-equal-when-equiv-of-arg1-congruence
   (implies (equiv x0 x1)

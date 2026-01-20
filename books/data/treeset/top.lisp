@@ -1,4 +1,4 @@
-; Copyright (C) 2025 Kestrel Institute (http://www.kestrel.edu)
+; Copyright (C) 2025-2026 Kestrel Institute (http://www.kestrel.edu)
 ;
 ; License: A 3-clause BSD license. See the LICENSE file distributed with ACL2.
 ;
@@ -11,18 +11,19 @@
 (include-book "defs")
 (include-book "hash")
 (include-book "set")
-(include-book "in")
+(include-book "to-oset")
 (include-book "min-max")
+(include-book "in")
 (include-book "cardinality")
 (include-book "subset")
 (include-book "extensionality")
 (include-book "insert")
 (include-book "delete")
+(include-book "generic-typed")
 (include-book "induction")
 (include-book "union")
 (include-book "intersect")
 (include-book "diff")
-(include-book "to-oset")
 (include-book "iter")
 (include-book "fty")
 

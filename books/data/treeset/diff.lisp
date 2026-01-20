@@ -20,26 +20,37 @@
 (include-book "in-defs")
 (include-book "subset-defs")
 (include-book "insert-defs")
+(include-book "delete-defs")
 (include-book "union-defs")
+(include-book "intersect-defs")
 (include-book "to-oset-defs")
+(include-book "generic-typed-defs")
 
 (local (include-book "std/basic/controlled-configuration" :dir :system))
 (local (acl2::controlled-configuration :hooks nil))
 
 (local (include-book "std/osets/top" :dir :system))
+(local (include-book "kestrel/utilities/equal-of-booleans" :dir :system))
 
 (local (include-book "internal/tree"))
 (local (include-book "internal/in"))
 (local (include-book "internal/diff"))
 (local (include-book "internal/in-order"))
 (local (include-book "set"))
+(local (include-book "to-oset"))
 (local (include-book "cardinality"))
 (local (include-book "in"))
-(local (include-book "insert"))
 (local (include-book "subset"))
-(local (include-book "union"))
 (local (include-book "extensionality"))
-(local (include-book "to-oset"))
+(local (include-book "insert"))
+(local (include-book "delete"))
+(local (include-book "union"))
+(local (include-book "intersect"))
+(local (include-book "generic-typed"))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(local (in-theory (disable acl2::equal-of-booleans-cheap)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -152,13 +163,205 @@
   (subset (diff x y) x)
   :enable pick-a-point)
 
+;; MOVE
+(defruled emptyp-alt-definition
+  (equal (emptyp set)
+         (equal (fix set) (empty)))
+  :rule-classes :definition)
+
+;; TODO: clean up proof?
+(defrule subset-of-arg1-and-diff
+  (implies (subset x (diff x y))
+           (emptyp (intersect x y)))
+  :use (:instance in-when-in-and-subset
+                  (a (ext-equal-witness (intersect x y)
+                                        (empty)))
+                  (y (diff x y)))
+  :enable (emptyp-alt-definition
+           extensionality)
+  :disable in-when-in-and-subset)
+
+;; Monotonic on arg1, antitonic on arg2
+(defrule monotonicity-of-diff
+  (implies (and (subset x0 x1)
+                (subset y1 y0))
+           (subset (diff x0 y0)
+                   (diff x1 y1)))
+  :enable pick-a-point)
+
 ;;;;;;;;;;;;;;;;;;;;
 
-;; TODO: enable in general?
+(defruled diff-when-emptyp-of-arg1
+  (implies (emptyp x)
+           (equal (diff x y)
+                  (empty)))
+  :enable extensionality)
+
+(defrule diff-when-emptyp-of-arg1-cheap
+  (implies (emptyp x)
+           (equal (diff x y)
+                  (empty)))
+  :rule-classes ((:rewrite :backchain-limit-lst (0)))
+  :by diff-when-emptyp-of-arg1)
+
+(defrule diff-of-empty
+  (equal (diff (empty) y)
+         (empty))
+  :enable diff-when-emptyp-of-arg1)
+
+(defruled diff-when-emptyp-of-arg2
+  (implies (emptyp y)
+           (equal (diff x y)
+                  (fix x)))
+  :enable extensionality)
+
+(defrule diff-when-emptyp-of-arg2-cheap
+  (implies (emptyp y)
+           (equal (diff x y)
+                  (fix x)))
+  :rule-classes ((:rewrite :backchain-limit-lst (0)))
+  :by diff-when-emptyp-of-arg2)
+
+(defrule diff-of-arg1-and-empty
+  (equal (diff x (empty))
+         (fix x))
+  :enable diff-when-emptyp-of-arg2)
+
+(defrule diff-of-union
+  (equal (diff (union x y) z)
+         (union (diff x z) (diff y z)))
+  :enable extensionality)
+
+(defrule diff-of-arg1-and-union
+  (equal (diff x (union y z))
+         (intersect (diff x y) (diff x z)))
+  :enable extensionality)
+
 (defruled diff-of-diff-becomes-diff-of-union
   (equal (diff (diff x y) z)
          (diff x (union y z)))
   :enable extensionality)
+
+(defrule diff-of-diff
+  (equal (diff (diff x y) z)
+         (intersect (diff x y) (diff x z)))
+  :enable extensionality)
+
+(defrule diff-of-intersect
+  (equal (diff (intersect x y) z)
+         (intersect (diff x z) (diff y z)))
+  :enable extensionality)
+
+(defrule diff-of-arg1-and-intersect
+  (equal (diff x (intersect y z))
+         (union (diff x y) (diff x z)))
+  :enable extensionality)
+
+(defruled diff-of-insert
+  (equal (diff (insert a x) y)
+         (if (in a y)
+             (diff x y)
+           (insert a (diff x y))))
+  :enable extensionality)
+
+(defruled diff-of-insert-when-in-of-arg2
+  (implies (in a y)
+           (equal (diff (insert a x) y)
+                  (diff x y)))
+  :by diff-of-insert)
+
+(defrule diff-of-insert-when-in-of-arg2-cheap
+  (implies (in a y)
+           (equal (diff (insert a x) y)
+                  (diff x y)))
+  :by diff-of-insert-when-in-of-arg2)
+
+(defruled diff-of-insert-when-not-in-of-arg2
+  (implies (not (in a y))
+           (equal (diff (insert a x) y)
+                  (insert a (diff x y))))
+  :by diff-of-insert)
+
+(defrule diff-of-insert-when-not-in-of-arg2-cheap
+  (implies (not (in a y))
+           (equal (diff (insert a x) y)
+                  (insert a (diff x y))))
+  :rule-classes ((:rewrite :backchain-limit-lst (0)))
+  :by diff-of-insert-when-not-in-of-arg2)
+
+(defrule diff-of-arg1-and-insert
+  (equal (diff x (insert a y))
+         (delete a (diff x y)))
+  :enable extensionality)
+
+(defrule diff-of-delete
+  (equal (diff (delete a x) y)
+         (delete a (diff x y)))
+  :enable extensionality)
+
+(defruled diff-of-arg1-and-delete
+  (equal (diff x (delete a y))
+         (if (in a x)
+             (insert a (diff x y))
+           (diff x y)))
+  :enable extensionality)
+
+(defruled diff-of-arg1-and-delete-when-in-of-arg1
+  (implies (in a x)
+           (equal (diff x (delete a y))
+                  (insert a (diff x y))))
+  :by diff-of-arg1-and-delete)
+
+(defrule diff-of-arg1-and-delete-when-in-of-arg1-cheap
+  (implies (in a x)
+           (equal (diff x (delete a y))
+                  (insert a (diff x y))))
+  :rule-classes ((:rewrite :backchain-limit-lst (0)))
+  :by diff-of-arg1-and-delete-when-in-of-arg1)
+
+(defruled diff-of-arg1-and-delete-when-not-in-of-arg1
+  (implies (not (in a x))
+           (equal (diff x (delete a y))
+                  (diff x y)))
+  :by diff-of-arg1-and-delete)
+
+(defrule diff-of-arg1-and-delete-when-not-in-of-arg1-cheap
+  (implies (not (in a x))
+           (equal (diff x (delete a y))
+                  (diff x y)))
+  :rule-classes ((:rewrite :backchain-limit-lst (0)))
+  :by diff-of-arg1-and-delete-when-not-in-of-arg1)
+
+;;;;;;;;;;;;;;;;;;;;
+
+(defrule set-all-genericp-of-diff
+  (implies (set-all-genericp x)
+           (set-all-genericp (diff x y)))
+  :enable set-all-genericp-pick-a-point-polar)
+
+(defrule set-all-acl2-numberp-of-diff
+  (implies (set-all-acl2-numberp x)
+           (set-all-acl2-numberp (diff x y)))
+  :use (:functional-instance set-all-genericp-of-diff
+                             (genericp acl2-numberp)
+                             (set-all-genericp set-all-acl2-numberp))
+  :enable set-all-acl2-numberp-alt-definition)
+
+(defrule set-all-symbolp-of-diff
+  (implies (set-all-symbolp x)
+           (set-all-symbolp (diff x y)))
+  :use (:functional-instance set-all-genericp-of-diff
+                             (genericp symbolp)
+                             (set-all-genericp set-all-symbolp))
+  :enable set-all-symbolp-alt-definition)
+
+(defrule set-all-eqlablep-of-diff
+  (implies (set-all-eqlablep x)
+           (set-all-eqlablep (diff x y)))
+  :use (:functional-instance set-all-genericp-of-diff
+                             (genericp eqlablep)
+                             (set-all-genericp set-all-eqlablep))
+  :enable set-all-eqlablep-alt-definition)
 
 ;;;;;;;;;;;;;;;;;;;;
 

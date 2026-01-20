@@ -17,6 +17,16 @@
               defxdoc+
               int-equiv
               nat-equiv
+              perm
+
+              ;; array-stobj
+              ;; array-stobjp
+              ;; create-array-stobj
+              ;; elems-length
+              ;; elemsi
+              ;; elemsp
+              ;; resize-elems
+              ;; update-elemsi
               )
             (set-difference-eq *std-pkg-symbols*
                                '#!std(list-fix

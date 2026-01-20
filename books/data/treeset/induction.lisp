@@ -15,6 +15,7 @@
 (include-book "set-defs")
 (include-book "cardinality-defs")
 (include-book "in-defs")
+(include-book "min-max-defs")
 (include-book "insert-defs")
 (include-book "delete-defs")
 
@@ -26,6 +27,7 @@
 (local (include-book "set"))
 (local (include-book "cardinality"))
 (local (include-book "in"))
+(local (include-book "min-max"))
 (local (include-book "insert"))
 (local (include-book "delete"))
 (local (include-book "subset"))
@@ -59,7 +61,7 @@
   ///
   (in-theory (enable (:i head-tail-induction))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;
 
 (define head-tail-bi-induction (x y)
   (or (emptyp x)
@@ -71,3 +73,27 @@
 
   ///
   (in-theory (enable (:i head-tail-bi-induction))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define min-delete-induction (set)
+  :parents (inductions)
+  (or (emptyp set)
+      (min-delete-induction (delete (min set) set)))
+  :measure (cardinality set)
+  :verify-guards nil
+
+  ///
+  (in-theory (enable (:i min-delete-induction))))
+
+;;;;;;;;;;;;;;;;;;;;
+
+(define max-delete-induction (set)
+  :parents (inductions)
+  (or (emptyp set)
+      (max-delete-induction (delete (max set) set)))
+  :measure (cardinality set)
+  :verify-guards nil
+
+  ///
+  (in-theory (enable (:i max-delete-induction))))

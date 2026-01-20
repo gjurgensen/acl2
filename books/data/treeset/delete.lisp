@@ -17,6 +17,7 @@
 (include-book "set-defs")
 (include-book "cardinality-defs")
 (include-book "in-defs")
+(include-book "subset-defs")
 (include-book "insert-defs")
 (include-book "to-oset-defs")
 
@@ -29,10 +30,10 @@
 (local (include-book "kestrel/alists-light/symbol-alistp" :dir :system))
 
 (local (include-book "kestrel/utilities/ordinals" :dir :system))
+(local (include-book "kestrel/utilities/equal-of-booleans" :dir :system))
 
 (local (include-book "std/system/partition-rest-and-keyword-args" :dir :system))
 
-;; TODO: figure out rulesets
 (local (include-book "to-oset"))
 (local (include-book "internal/tree"))
 (local (include-book "internal/join"))
@@ -46,6 +47,10 @@
 (local (include-book "subset"))
 (local (include-book "extensionality"))
 (local (include-book "insert"))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(local (in-theory (disable acl2::equal-of-booleans-cheap)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -165,30 +170,33 @@
          (delete x y set))
   :enable extensionality)
 
-;;;;;;;;;;;;;;;;;;;;
+(defrule delete-contraction
+  (equal (delete x x set)
+         (delete x set))
+  :enable extensionality)
 
-(defruled emptyp-of-delete-when-emptyp
-  (implies (emptyp set)
-           (emptyp (delete x set)))
-  :enable (emptyp
-           delete
-           fix
-           empty))
+(defruled delete-when-not-in
+  (implies (not (in x set))
+           (equal (delete x set)
+                  (fix set)))
+  :enable extensionality)
 
-;; MOVE
-;; (defruled emptyp-becomes-equal-empty
-;;   (equal (emptyp set)
-;;          (equal (fix set)
-;;                 (empty))))
+(defrule delete-when-not-in-cheap
+  (implies (not (in x set))
+           (equal (delete x set)
+                  (fix set)))
+  :rule-classes ((:rewrite :backchain-limit-lst (0)))
+  :by delete-when-not-in)
 
-;; TODO: use oset isomorphism
-;; (defrule emptyp-of-delete
-;;   (equal (emptyp (delete x set))
-;;          (or (emptyp set)
-;;              (equal set (insert x set))))
-;;   :enable (extensionality
-;;            emptyp-of-delete-when-emptyp
-;;            ))
+(defrule delete-of-insert
+  (equal (delete x (insert x set))
+         (delete x set))
+  :enable extensionality)
+
+(defrule insert-of-delete
+  (equal (insert x (delete x set))
+         (insert x set))
+  :enable extensionality)
 
 ;;;;;;;;;;;;;;;;;;;;
 
@@ -215,6 +223,28 @@
            (equal (cardinality (delete x set))
                   (cardinality set)))
   :use cardinality-of-delete)
+
+;;;;;;;;;;;;;;;;;;;;
+
+(defrule subset-of-delete
+  (subset (delete x set) set)
+  :enable pick-a-point)
+
+(defrule subset-of-arg1-and-delete
+  (equal (subset set (delete x set))
+         (not (in x set)))
+  :disable (in-when-subset-and-in
+            in-when-in-and-subset)
+  :use (:instance in-when-subset-and-in
+                  (a x)
+                  (x set)
+                  (y (delete x set))))
+
+(defrule monotonicity-of-delete
+  (implies (subset set0 set1)
+           (subset (delete x set0)
+                   (delete x set1)))
+  :enable pick-a-point)
 
 ;;;;;;;;;;;;;;;;;;;;
 
@@ -251,14 +281,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;
 
-;; TODO: why doesn't this have rules like
-;;   insert-becomes-oset-insert
-;; and
-;;   emptyp-becomes-oset-emptyp
-;; ?
-;; (acl2::expand-ruleset '(to-oset-theory) (w state))
-
-(defrule oset-emptyp-of-oset-delete
+(defruled oset-emptyp-of-oset-delete
   (equal (set::emptyp (set::delete x oset))
          (or (set::emptyp oset)
              (equal oset (set::insert x nil))))
@@ -282,35 +305,14 @@
         :enable set::expensive-rules
         :disable set::delete-in)))))
 
-#|
-;; MOVE
-(defrule ?
-  (equal (equal (to-oset set)
-                (set::insert x oset))
-         (equal (fix set) (insert x (from-oset oset))))
-  :enable extensionality)
-
+;; TODO: is this fine to enable by default?
 (defrule emptyp-of-delete
   (equal (emptyp (delete x set))
          (or (emptyp set)
-             (equal set (insert x set))))
-  :use (:instance oset-emptyp-of-oset-delete
-                  (oset (to-oset set)))
-  ;; :enable to-oset-theory
-  :disable (;; from-oset-theory
-            oset-emptyp-of-oset-delete)
-  )
-|#
-
-;; (defrule emptyp-of-delete
-;;   (equal (emptyp (delete x set))
-;;          (or (emptyp set)
-;;              (equal set (insert x set))))
-;;   :enable (to-oset-theory
-;;            ;; set::expensive-rules
-;;             )
-;;   :disable from-oset-theory
-;;   )
+             (equal set (insert x (empty)))))
+  :enable (to-oset-theory
+           oset-emptyp-of-oset-delete)
+  :disable from-oset-theory)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
