@@ -13913,7 +13913,7 @@ A Basic Build
 
     * tools (mostly)
 
-    * [std]
+    * [std] (mostly)
 
     * [xdoc] (in part)
 
@@ -106394,6 +106394,10 @@ Changes to Existing Features
   cleaned up and put in sync.  Thanks to Eric Smith and Grant
   Jurgensen for communication that led to these improvements.
 
+  ACL2 now checks that the value of keyword [47m:OTF-FLG[0m is [47mT[0m or [47mNIL[0m, and
+  causes an error if not.  Thanks to Eric Smith for suggesting that
+  we consider this change.
+
 
 New Features
 
@@ -106485,7 +106489,9 @@ Heuristic and Efficiency Improvements
   pass of the encapsulate.  Implementation-level details are
   explained in the section entitled ``Appendix 2: Extension for
   Encapsulate'' in the ACL2 source code comment, ``Essay on Hash
-  Table Support for Compilation''.
+  Table Support for Compilation''.  In particular, the end of that
+  Essay discusses an enhancement that saves compiled code for
+  redundant [47mdefun[0ms.
 
 
 Bug Fixes
@@ -111387,12 +111393,12 @@ Subtopics
   the Fog'' and complete [waterfall] processing before starting any
   proof by induction.
 
-  The default value for [47m:otf-flg[0m is [47mnil[0m except during processing of
-  [47m[defun][0m events, where the default is [47mt[0m for both termination and
-  [guard] proofs (see [defun]).  Note that the default for [47m:otf-flg[0m
-  is thus [47mt[0m for processing [47m[verify-termination][0m events, since they
-  abbreviate [47mdefun[0m events.  However, the default for [47m:otf-flg[0m is [47mnil[0m
-  for processing [47m[verify-guards][0m events.
+  The value for [47m:otf-flg[0m must be [47mt[0m or [47mnil[0m.  The default is [47mnil[0m except
+  during processing of [47m[defun][0m events, for which the default is [47mt[0m for
+  both termination and [guard] proofs (see [defun]).  Note that the
+  default for [47m:otf-flg[0m is thus [47mt[0m for processing [47m[verify-termination][0m
+  events, since they abbreviate [47mdefun[0m events.  However, the default
+  for [47m:otf-flg[0m is [47mnil[0m for processing [47m[verify-guards][0m events.
 
 
 Further Explanation

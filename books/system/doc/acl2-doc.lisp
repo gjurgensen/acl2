@@ -10978,7 +10978,7 @@ way to split up large ACL2 developments into separate modules."
  <li>@(see ihs)</li>
  <li>misc</li>
  <li>tools (mostly)</li>
- <li>@(see std)</li>
+ <li>@(see std) (mostly)</li>
  <li>@(see xdoc) (in part)</li>
  <li>data-structures</li>
  <li>apply</li>
@@ -109287,6 +109287,10 @@ it."
  cleaned up and put in sync.  Thanks to Eric Smith and Grant Jurgensen for
  communication that led to these improvements.</p>
 
+ <p>ACL2 now checks that the value of keyword @(':OTF-FLG') is @('T') or
+ @('NIL'), and causes an error if not.  Thanks to Eric Smith for suggesting
+ that we consider this change.</p>
+
  <h3>New Features</h3>
 
  <p>The new function symbol @('strict-table-guard') returns its single argument
@@ -109377,7 +109381,9 @@ it."
  can be expected to be compiled twice, once for each pass of the encapsulate.
  Implementation-level details are explained in the section entitled
  &ldquo;Appendix 2: Extension for Encapsulate&rdquo; in the ACL2 source code
- comment, &ldquo;Essay on Hash Table Support for Compilation&rdquo;.</p>
+ comment, &ldquo;Essay on Hash Table Support for Compilation&rdquo;.  In
+ particular, the end of that Essay discusses an enhancement that saves compiled
+ code for redundant @('defun')s.</p>
 
  <h3>Bug Fixes</h3>
 
@@ -113362,12 +113368,13 @@ arithmetic) for libraries of @(see books) for arithmetic reasoning.</p>")
  Fog&rdquo; and complete @(see waterfall) processing before starting any proof
  by induction.</p>
 
- <p>The default value for @(':otf-flg') is @('nil') except during processing of
- @(tsee defun) events, where the default is @('t') for both termination and
- @(see guard) proofs (see @(see defun)).  Note that the default for
- @(':otf-flg') is thus @('t') for processing @(tsee verify-termination) events,
- since they abbreviate @('defun') events.  However, the default for
- @(':otf-flg') is @('nil') for processing @(tsee verify-guards) events.</p>
+ <p>The value for @(':otf-flg') must be @('t') or @('nil').  The default is
+ @('nil') except during processing of @(tsee defun) events, for which the
+ default is @('t') for both termination and @(see guard) proofs (see @(see
+ defun)).  Note that the default for @(':otf-flg') is thus @('t') for
+ processing @(tsee verify-termination) events, since they abbreviate @('defun')
+ events.  However, the default for @(':otf-flg') is @('nil') for processing
+ @(tsee verify-guards) events.</p>
 
  <h3>Further Explanation</h3>
 
