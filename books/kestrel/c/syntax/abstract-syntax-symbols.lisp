@@ -154,6 +154,8 @@
     type-spec-enum
     make-type-spec-typeof-expr
     make-type-spec-typeof-type
+    make-type-spec-struct
+    make-type-spec-union
 
     type-spec-optionp
 

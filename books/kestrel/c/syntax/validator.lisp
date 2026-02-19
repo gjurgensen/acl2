@@ -3384,7 +3384,10 @@
                           ((when info?)
                            (if (equal (valid-tag-info->kind info?)
                                       (tag-kind-struct))
-                               (retok (type-spec-struct new-spec)
+                               (retok (make-type-spec-struct
+                                        :spec new-spec
+                                        :info (type-spec-struct-info
+                                                (valid-tag-info->uid info?)))
                                       (make-type-struct
                                         :uid (valid-tag-info->uid info?)
                                         :tunit? (valid-table->filepath table)
@@ -3409,7 +3412,9 @@
                                                   :kind (tag-kind-struct)
                                                   :uid uid)
                                                 table)))
-                       (retok (type-spec-struct new-spec)
+                       (retok (make-type-spec-struct
+                                :spec new-spec
+                                :info (type-spec-struct-info uid))
                               (make-type-struct
                                 :uid uid
                                 :tunit? (valid-table->filepath table)
@@ -3467,7 +3472,9 @@
                                             uid
                                             type-struni-members
                                             table.completions))))
-                 (retok (type-spec-struct new-spec)
+                 (retok (make-type-spec-struct
+                          :spec new-spec
+                          :info (type-spec-struct-info uid))
                         type
                         nil
                         types
@@ -3486,7 +3493,10 @@
                          ((when info?)
                           (if (equal (valid-tag-info->kind info?)
                                      (tag-kind-union))
-                              (retok (type-spec-union new-spec)
+                              (retok (make-type-spec-union
+                                       :spec new-spec
+                                       :info (type-spec-struct-info
+                                               (valid-tag-info->uid info?)))
                                      (make-type-union
                                        :uid (valid-tag-info->uid info?)
                                        :tunit? (valid-table->filepath table)
@@ -3510,7 +3520,9 @@
                                                  :kind (tag-kind-union)
                                                  :uid uid)
                                                table)))
-                      (retok (type-spec-union new-spec)
+                      (retok (make-type-spec-union
+                               :spec new-spec
+                               :info (type-spec-struct-info uid))
                              (make-type-union
                                :uid uid
                                :tunit? (valid-table->filepath table)
@@ -3568,7 +3580,9 @@
                                            uid
                                            type-struni-members
                                            table.completions))))
-                (retok (type-spec-union new-spec)
+                (retok (make-type-spec-union
+                         :spec new-spec
+                         :info (type-spec-struct-info uid))
                        type
                        nil
                        types
@@ -3668,7 +3682,8 @@
                                                   table.completions))))
                        (retok (make-type-spec-struct-empty
                                 :attribs tyspec.attribs
-                                :name? tyspec.name?)
+                                :name? tyspec.name?
+                                :info (type-spec-struct-info uid))
                               type
                               nil
                               nil

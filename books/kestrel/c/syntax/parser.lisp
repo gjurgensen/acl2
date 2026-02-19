@@ -5580,7 +5580,8 @@
                    ;; we have a structure type specifier with no members.
                    ((token-punctuatorp token3 "}") ; struct [attrs] ident { }
                     (retok (make-type-spec-struct-empty :attribs attrspecs
-                                                        :name? ident)
+                                                        :name? ident
+                                                        :info nil)
                            (span-join struct/union-span span3)
                            parstate))
                    ;; If token3 is not a closed curly brace,
@@ -5598,10 +5599,11 @@
                          ((erp last-span parstate)
                           ;; struct [attrs] ident { structdeclons }
                           (read-punctuator "}" parstate)))
-                      (retok (type-spec-struct
-                              (make-struni-spec :attribs attrspecs
-                                                :name? ident
-                                                :members structdeclons))
+                      (retok (make-type-spec-struct
+                               :spec (make-struni-spec :attribs attrspecs
+                                                       :name? ident
+                                                       :members structdeclons)
+                               :info nil)
                              (span-join struct/union-span last-span)
                              parstate)))))
               ;; if we are parsing a union type specifier
@@ -5615,14 +5617,16 @@
                     ;; union [attrs] ident { structdeclons }
                     (read-punctuator "}" parstate)))
                 (retok (if structp
-                           (type-spec-struct
-                            (make-struni-spec :attribs attrspecs
-                                              :name? ident
-                                              :members structdeclons))
-                         (type-spec-union
-                          (make-struni-spec :attribs attrspecs
-                                            :name? ident
-                                            :members structdeclons)))
+                           (make-type-spec-struct
+                             :spec (make-struni-spec :attribs attrspecs
+                                                     :name? ident
+                                                     :members structdeclons)
+                             :info nil)
+                         (make-type-spec-union
+                           :spec (make-struni-spec :attribs attrspecs
+                                                   :name? ident
+                                                   :members structdeclons)
+                           :info nil))
                        (span-join struct/union-span last-span)
                        parstate))))
            ;; If token2 is not an open curly brace,
@@ -5632,14 +5636,16 @@
             (b* ((parstate ; struct/union [attrs] ident
                   (if token2 (unread-token parstate) parstate)))
               (retok (if structp
-                         (type-spec-struct
-                          (make-struni-spec :attribs attrspecs
-                                            :name? ident
-                                            :members nil))
-                       (type-spec-union
-                        (make-struni-spec :attribs attrspecs
-                                          :name? ident
-                                          :members nil)))
+                         (make-type-spec-struct
+                           :spec (make-struni-spec :attribs attrspecs
+                                                   :name? ident
+                                                   :members nil)
+                           :info nil)
+                       (make-type-spec-union
+                         :spec (make-struni-spec :attribs attrspecs
+                                                 :name? ident
+                                                 :members nil)
+                         :info nil))
                      (span-join struct/union-span span)
                      parstate))))))
        ;; If token is an open curly brace,
@@ -5657,7 +5663,8 @@
                ;; we have a structure type specifier with no members.
                ((token-punctuatorp token3 "}") ; struct [attrs] { }
                 (retok (make-type-spec-struct-empty :attribs attrspecs
-                                                    :name? nil)
+                                                    :name? nil
+                                                    :info nil)
                        (span-join struct/union-span span3)
                        parstate))
                ;; If token3 is not a closed curly brace,
@@ -5675,10 +5682,11 @@
                      ((erp last-span parstate)
                       ;; struct [attrs] { structdeclons }
                       (read-punctuator "}" parstate)))
-                  (retok (type-spec-struct
-                          (make-struni-spec :attribs attrspecs
-                                            :name? nil
-                                            :members structdeclons))
+                  (retok (make-type-spec-struct
+                           :spec (make-struni-spec :attribs attrspecs
+                                                   :name? nil
+                                                   :members structdeclons)
+                           :info nil)
                          (span-join struct/union-span last-span)
                          parstate)))))
           ;; If we are parsing a union type specifier
@@ -5691,14 +5699,16 @@
                 ;; struct/union [attrs] { structdeclons }
                 (read-punctuator "}" parstate)))
             (retok (if structp
-                       (type-spec-struct
-                        (make-struni-spec :attribs attrspecs
-                                          :name? nil
-                                          :members structdeclons))
-                     (type-spec-union
-                      (make-struni-spec :attribs attrspecs
-                                        :name? nil
-                                        :members structdeclons)))
+                       (make-type-spec-struct
+                         :spec (make-struni-spec :attribs attrspecs
+                                                 :name? nil
+                                                 :members structdeclons)
+                         :info nil)
+                     (make-type-spec-union
+                       :spec (make-struni-spec :attribs attrspecs
+                                               :name? nil
+                                               :members structdeclons)
+                       :info nil))
                    (span-join struct/union-span last-span)
                    parstate))))
        ;; If token is neither an identifier nor an open curly brace,

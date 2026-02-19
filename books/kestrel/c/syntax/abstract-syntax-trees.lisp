@@ -2027,7 +2027,7 @@
       "Generic associations are defined in @(tsee genassoc).")
      (xdoc::p
       "This fixtype corresponds to <i>generic-assoc-list</i>
-     in the grammar in [C17]."))
+       in the grammar in [C17]."))
     :elt-type genassoc
     :true-listp t
     :elementp-of-nil nil
@@ -2133,8 +2133,10 @@
     (:bool ())
     (:complex ())
     (:atomic ((type tyname)))
-    (:struct ((spec struni-spec)))
-    (:union ((spec struni-spec)))
+    (:struct ((spec struni-spec)
+              (info any)))
+    (:union ((spec struni-spec)
+             (info any)))
     (:enum ((spec enum-spec)))
     (:typedef ((name ident)))
     ;; GCC extensions:
@@ -2151,7 +2153,8 @@
     (:float128x ())
     (:builtin-va-list ())
     (:struct-empty ((attribs attrib-spec-list)
-                    (name? ident-option)))
+                    (name? ident-option)
+                    (info any)))
     (:typeof-expr ((expr expr)
                    (uscores keyword-uscores-p)))
     (:typeof-type ((type tyname)

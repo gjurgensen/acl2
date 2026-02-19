@@ -637,6 +637,34 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(fty::defprod type-spec-struct-info
+  :short "Fixtype of validation information for struct type specifiers."
+  :long
+  (xdoc::topstring
+   (xdoc::p
+    "This is the type of the annotations that
+     the validator adds to struct type specifiers,
+     i.e. the @(':struct') and @(':struct-empty') cases of @(tsee type-spec).
+     The information for a struct type specifier consists of its @(see UID)."))
+  ((uid uid))
+  :pred type-spec-struct-infop)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(fty::defprod type-spec-union-info
+  :short "Fixtype of validation information for union type specifiers."
+  :long
+  (xdoc::topstring
+   (xdoc::p
+    "This is the type of the annotations that
+     the validator adds to union type specifiers,
+     i.e. the @(':union') case of @(tsee type-spec).
+     The information for a union type specifier consists of its @(see UID)."))
+  ((uid uid))
+  :pred type-spec-union-infop)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (fty::defprod param-declor-nonabstract-info
   :short "Fixtype of validation information for
           non-abstract parameter declarators."
@@ -830,6 +858,12 @@
                                   (expr-fix expr)))
      (expr :cast/logand-ambig (raise "Internal error: ambiguous ~x0."
                                      (expr-fix expr)))
+     (type-spec :struct (and (struni-spec-annop type-spec.spec)
+                             (type-spec-struct-infop type-spec.info)))
+     (type-spec :union (and (struni-spec-annop type-spec.spec)
+                            (type-spec-union-infop type-spec.info)))
+     (type-spec :struct-empty (and (attrib-spec-list-annop type-spec.attribs)
+                                   (type-spec-struct-infop type-spec.info)))
      (type-spec :typeof-ambig (raise "Internal error: ambiguous ~x0."
                                      (type-spec-fix type-spec)))
      (align-spec :alignas-ambig (raise "Internal error: ambiguous ~x0."
@@ -946,6 +980,27 @@
                 (expr-annop arg2)
                 (expr-binary-infop info)))
     :expand (expr-annop (expr-binary op arg1 arg2 info))
+    :enable identity)
+
+  (defruled type-spec-annop-of-type-spec-struct
+    (equal (type-spec-annop (type-spec-struct spec info))
+           (and (struni-spec-annop spec)
+                (type-spec-struct-infop info)))
+    :expand (type-spec-annop (type-spec-struct spec info))
+    :enable identity)
+
+  (defruled type-spec-annop-of-type-spec-union
+    (equal (type-spec-annop (type-spec-union spec info))
+           (and (struni-spec-annop spec)
+                (type-spec-union-infop info)))
+    :expand (type-spec-annop (type-spec-union spec info))
+    :enable identity)
+
+  (defruled type-spec-annop-of-type-spec-struct-empty
+    (equal (type-spec-annop (type-spec-struct-empty attribs name? info))
+           (and (attrib-spec-list-annop attribs)
+                (type-spec-struct-infop info)))
+    :expand (type-spec-annop (type-spec-struct-empty attribs name? info))
     :enable identity)
 
   (defruled tyname-annop-of-tyname
@@ -1094,6 +1149,24 @@
              (expr-binary-infop (expr-binary->info expr)))
     :enable expr-annop)
 
+  (defruled type-spec-struct-infop-of-type-spec-struct->info
+    (implies (and (type-spec-annop type-spec)
+                  (type-spec-case type-spec :struct))
+             (type-spec-struct-infop (type-spec-struct->info type-spec)))
+    :enable type-spec-annop)
+
+  (defruled type-spec-union-infop-of-type-spec-union->info
+    (implies (and (type-spec-annop type-spec)
+                  (type-spec-case type-spec :union))
+             (type-spec-union-infop (type-spec-union->info type-spec)))
+    :enable type-spec-annop)
+
+  (defruled type-spec-struct-infop-of-type-spec-struct-empty->info
+    (implies (and (type-spec-annop type-spec)
+                  (type-spec-case type-spec :struct-empty))
+             (type-spec-struct-infop (type-spec-struct-empty->info type-spec)))
+    :enable type-spec-annop)
+
   (defruled declor-annop-of-init-declor->declor
     (implies (init-declor-annop init-declor)
              (declor-annop (init-declor->declor init-declor)))
@@ -1203,6 +1276,9 @@
      expr-annop-of-expr-funcall
      expr-annop-of-expr-unary
      expr-annop-of-expr-binary
+     type-spec-annop-of-type-spec-struct
+     type-spec-annop-of-type-spec-union
+     type-spec-annop-of-type-spec-struct-empty
      tyname-annop-of-tyname
      param-declor-annop-of-param-declor-nonabstract
      param-declor-nonabstract-infop-of-param-declor-nonabstract->info
@@ -1226,6 +1302,9 @@
      expr-annop-of-expr-binary->arg1
      expr-annop-of-expr-binary->arg2
      expr-binary-infop-of-expr-binary->info
+     type-spec-struct-infop-of-type-spec-struct->info
+     type-spec-union-infop-of-type-spec-union->info
+     type-spec-struct-infop-of-type-spec-struct-empty->info
      declor-annop-of-init-declor->declor
      initer-option-annop-of-init-declor->initer?
      init-declor-infop-of-init-declor->info
