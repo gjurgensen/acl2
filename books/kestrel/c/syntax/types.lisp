@@ -617,6 +617,8 @@
   :enable (type-completions-fix
            alistp))
 
+;; TODO: this is already proved: type-struni-member-listp-of-cdr-of-assoc-when-type-completions-p
+;; Remove this and use the above theorem elsewhere
 (defrule type-struni-member-listp-of-cdr-of-assoc-equal
   (implies (type-completions-p completions)
            (type-struni-member-listp (cdr (assoc-equal key completions))))

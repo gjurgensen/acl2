@@ -3568,6 +3568,17 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(fty::defoption designor-option
+  designor
+  :short "Fixtype of optional designators."
+  :long
+  (xdoc::topstring
+   (xdoc::p
+    "Designators are defined in @(tsee designor)."))
+  :pred designor-optionp)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (fty::defoption init-declor-option
   init-declor
   :short "Fixtype of optional initializer declarators."

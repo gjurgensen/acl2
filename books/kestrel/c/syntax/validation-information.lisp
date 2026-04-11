@@ -15,6 +15,9 @@
 (include-book "unambiguity")
 
 (include-book "kestrel/fty/deffold-reduce" :dir :system)
+(include-book "kestrel/fty/nat-option" :dir :system)
+(include-book "kestrel/utilities/messages" :dir :system)
+(include-book "std/util/error-value-tuples" :dir :system)
 
 (local (include-book "kestrel/utilities/nfix" :dir :system))
 (local (include-book "kestrel/utilities/ordinals" :dir :system))
@@ -23,6 +26,10 @@
 
 (include-book "std/basic/controlled-configuration" :dir :system)
 (acl2::controlled-configuration)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(local (in-theory (enable hons-equal hons-get)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -43,6 +50,312 @@
      the predicates just say that information of the right type is present."))
   :order-subtopics t
   :default-parent t)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+#|
+Subobjects are
+- struct members
+- union members (or just one)
+- array indices after some point
+- NOTE: we identify an object with its "complete" subobjects
+  - Actually, let's try to identify objects with types
+
+Subobjects stack
+- list of subobjects
+|#
+
+(fty::deftagsum initer-subobjects
+  :short "Fixtype of initializer subobjects."
+  :long
+  (xdoc::topstring
+   (xdoc::p
+    "Subobjects are defined in [C17:6.7.9/17]
+     to characterize the meaning of initializers.
+     This fixtype effectively describes
+     the remainder of the current object type
+     which has not yet been initialized.")
+   ;; TODO: is this "see" correct?
+   (xdoc::p
+    "We include an @(':unknown') case to accommodate imprecise analysis.
+     For instance, we may produce unknown initializer subobjects
+     when taking the subobjects of an unknown type,
+     or when progressing the subobjects from an @(':array-index')
+     (see @(see advance-subobjects)).")
+   ;; (xdoc::p
+   ;;  "The @(':empty') case represents an empty sequence of subobjects.")
+   (xdoc::p
+    "The @(':array-index') case represents the elements of an array
+     including and following the specified index.
+     Optionally, it may include the end of an index range.
+     This supports the GCC extension for designator ranges
+     (see @(see designor)).
+     Eventually, we may wish to extend this case
+     to also track the size of the array object.
+     This will be necessary to determine
+     whether we can advance the array-index without reaching the end.
+     Currently, we do not track the length of array @(see types)
+     and so never have this information.")
+   (xdoc::p
+    "The @(':struct') case represents the remaining members of a structure.
+     We require a non-empty list of members.
+     (A structure with no more remaining members
+     would be represented by @(':empty') case.)")
+   (xdoc::p
+    "Finally, the @(':union') case considers
+     only the first member of the union [C17:6.7.9/20]."))
+  (:unknown ())
+  ;; (:empty ())
+  ;; TODO: can also loosen index to maybe-nat, where nil means unknown (for
+  ;; instance in the case that we cannot resolve the constant expression).
+  ;; (We could use intervals for this.)
+  ;; TODO: we might consider making this index optional,
+  ;;   to reflect the case where we could not evaluate
+  ;;   the integer constant expression of the designator.
+  ;;   At the moment, we use the unknown initializer subobjects in this case.
+  (:array-index ((of type) (index nat) (range? acl2::nat-option)))
+  (:struct ((members type-struni-member-list
+                     :reqfix (if (endp members)
+                                 (list (irr-type-struni-member))
+                               members)))
+   :require (not (endp members)))
+  (:union ((first-member type-struni-member)))
+  :pred initer-subobjects-p
+  :layout :fulltree)
+
+(defirrelevant irr-initer-subobjects
+  :short "Irrelevant initializer subobjects."
+  :type initer-subobjects-p
+  :body (initer-subobjects-unknown))
+
+(fty::defoption initer-subobjects-option
+  initer-subobjects
+  :short "Fixtype of optional initializer objects."
+  :pred initer-subobjects-optionp)
+
+(fty::deflist initer-subobjects-list
+  :short "Fixtype of a list of initializer subobjects."
+  :long
+   (xdoc::topstring-p
+    "Initializer subobjects are defined in @(tsee initer-subobjects).")
+  :elt-type initer-subobjects
+  :true-listp t
+  :elementp-of-nil nil
+  :pred initer-subobjects-listp)
+
+;;;;;;;;;;;;;;;;;;;;
+
+;; Unused?
+;; (define subobjects-stack-empty-p ((subobjects subobjects-stack-p))
+;;   :returns (yes/no booleanp)
+;;   :short "Recognizer for initializer subobjects
+;;           that cannot be advanced any further."
+;;   (subobjects-stack-case
+;;     subobjects
+;;     :object (initer-object-empty-p subobjects.object)
+;;     :recursive (and (subobjects-stack-empty-p subobjects.first)
+;;                     (initer-object-option-case
+;;                       subobjects.next?
+;;                       :some (initer-object-empty-p subobjects.next?.val)
+;;                       :none t)))
+;;   :measure (subobjects-stack-count subobjects))
+
+;;;;;;;;;;;;;;;;;;;;
+
+;; MOVE
+(define nat-to-const-expr ((n natp) (ienv ienvp))
+  :returns (expr? const-expr-optionp)
+  (b* ((n (lnfix n))
+       ((ienv ienv) ienv)
+       (core (if (= (the unsigned-byte n) 0)
+                 (make-dec/oct/hex-const-oct :leading-zeros 1 :value 0)
+               (dec/oct/hex-const-dec n)))
+       ((mv too-big-p suffix?)
+        (cond ((signed-byte-p n ienv.int-bytes)
+               (mv nil nil))
+              ((signed-byte-p n ienv.long-bytes)
+               (mv nil (isuffix-l (lsuffix-locase-l))))
+              ((signed-byte-p n ienv.llong-bytes)
+               (mv nil (isuffix-l (lsuffix-locase-ll))))
+              ((unsigned-byte-p n ienv.llong-bytes)
+               (mv nil
+                   (make-isuffix-ul :unsigned (usuffix-locase-u)
+                                    :length (lsuffix-locase-ll))))
+              (t (mv t nil)))))
+    (if too-big-p
+        nil
+      (const-expr
+        (make-expr-const
+          :const (const-int (make-iconst :core core :suffix? suffix?)))))))
+
+(define peek-initer-subobjects ((subobjects initer-subobjects-p)
+                                (ienv ienvp))
+  :returns (mv (designor? designor-optionp)
+               (type typep))
+  (initer-subobjects-case
+    subobjects
+    :unknown (mv nil (type-unknown))
+    :array-index (b* ((expr? (nat-to-const-expr subobjects.index ienv)))
+                   (mv (and expr? (make-designor-sub :index (expr?)))
+                       subobjects.of))
+    :struct (b* (((type-struni-member member) (first subobjects.members)))
+              ;; GJ resume here
+              (if member.name?
+                  .
+                ))
+    :union nil
+    ))
+
+;;;;;;;;;;;;;;;;;;;;
+
+;; TODO: function to get type of current subobject and return advanced
+;;   either guard non-empty or return some signal on empty
+
+(define advance-initer-subobjects ((subobjects initer-subobjects-p))
+  ;; :returns (new-subobjects initer-subobjects-p)
+  :returns (subobjects? initer-subobjects-optionp)
+  (initer-subobjects-case
+    subobjects
+    :unknown (initer-subobjects-unknown)
+    ;; :empty (initer-subobjects-empty)
+    ;; We can't advance the array without knowing the size.
+    :array-index (initer-subobjects-unknown)
+    :struct (if (endp (cdr subobjects.members))
+                ;; (initer-subobjects-empty)
+                nil
+              (initer-subobjects-struct (cdr subobjects.members)))
+    ;; :union (initer-subobjects-empty)
+    :union nil
+    ))
+
+(define advance-initer-subobjects-stack ((stack initer-subobjects-listp))
+  :returns (new-stack initer-subobjects-listp)
+  (b* (((when (endp stack))
+        nil)
+       (head? (advance-initer-subobjects (first stack)))
+       (tail (initer-subobjects-list-fix (rest stack))))
+    (if head?
+        (cons head? tail)
+      tail)))
+
+;;;;;;;;;;;;;;;;;;;;
+
+;; TODO: this rule is also in types.lisp
+(defrulel hons-assoc-equal-when-assoc-equal
+  (implies (alistp alist)
+           (equal (hons-assoc-equal x alist)
+                  (assoc-equal x alist)))
+  :induct t
+  :enable (hons-assoc-equal
+           alistp)
+  :prep-books ((include-book "kestrel/alists-light/assoc-equal" :dir :system)))
+
+(define initer-subobjects-from-type ((type typep)
+                                     (completions type-completions-p))
+  :guard (or (type-aggregatep type)
+             (type-case type :union))
+  :returns (mv (erp maybe-msgp)
+               (subobjects? initer-subobjects-optionp))
+  (b* (((reterr) nil)
+       (type (type-fix type))
+       (completions (type-completions-fix completions)))
+    (type-case
+      type
+      :struct (b* ((members? (hons-get type.uid completions)))
+                (if members?
+                    (retok (if (cdr members?)
+                               (initer-subobjects-struct (cdr members?))
+                             nil))
+                  ;; TODO: the error message should be tailored to the usage.
+                  (retmsg$ "Type ~x0 is incomplete. ~
+                            Therefore, we cannot get the subobjects-stack."
+                           type)))
+      :union (b* ((members? (hons-get type.uid completions)))
+                (if members?
+                    (if (endp (cdr members?))
+                        (retmsg$ "Complete union type ~x0 has no members."
+                                 type)
+                      (retok (initer-subobjects-union (cadr members?))))
+                  ;; TODO: the error message should be tailored to the usage.
+                  (retmsg$ "Type ~x0 is incomplete. ~
+                            Therefore, we cannot get the subobjects-stack."
+                           type)))
+      :array (retok (make-initer-subobjects-array-index
+                      :of type.of
+                      :index 0))
+      :unknown (retok (initer-subobjects-unknown))
+      :otherwise (retmsg$ "Internal error.")))
+  ;; TODO: improve guard proof
+  :guard-hints
+  (("Goal"
+     :use ((:instance type-struni-member-listp-of-cdr-of-assoc-equal
+                      (key (type-struct->uid type)))
+           (:instance type-struni-member-listp-of-cdr-of-assoc-equal
+                      (key (type-union->uid type))))
+     :in-theory (disable type-struni-member-listp-of-cdr-of-assoc-equal
+                         type-struni-member-listp-of-cdr-of-assoc-when-type-completions-p)
+     )))
+
+;; (define type-to-subobjects ((type typep) (completions type-completions-p))
+;;   :returns (mv (erp maybe-msgp)
+;;                (subobjects subobjects-stack-p))
+;;   (b* (((reterr) (irr-subobjects-stack))
+;;        ((erp object) (type-to-current-object type completions)))
+;;     (retok (subobjects-stack-object object))))
+
+;;;;;;;;;;;;;;;;;;;;
+
+;; Introduce `peek` function (which gets designator and type)
+
+;; `enter` pops the head and conses the subobject of that head type
+
+;;;;;;;;;;;;;;;;;;;;
+
+(include-book "evaluation")
+
+;; With each designator, we advance (or create) the subobjects to the
+;; designator.
+;; Then pop, and do the same for the subobjects of that
+
+(define initer-object-apply-designator ((object initer-object-p)
+                                        (designor designorp)
+                                        (ienv ienvp))
+  :returns (mv (erp maybe-msgp)
+               (subobject initer-subobject-p))
+  (b* (((reterr) (irr-initer-subobject))
+       (object (initer-object-fix object))
+       (designor (designor-fix designor)))
+    (initer-object-case
+      object
+      :unknown
+      (initer-subobject-object (initer-object-unknown))
+      :array-index
+      (designor-case
+        designor
+        ;; Case split on object
+        ;; TODO but wait, shouldn't the current object be an array? Not an
+        ;; array index
+        :sub (b* ((index? (eval-constant-expr designor.index ienv))
+                  (range? (if designor.range?
+                              (eval-constant-expr designor.range? ienv)
+                            nil)))
+               (if index?
+                   ()
+                 (initer-subobject-object (initer-object-unknown))))
+        :dot (retmsg$ "Cannot apply designator ~x0 ~
+                       to current object ~x1."
+                      designor
+                      object))
+      :members .)))
+
+(define current-object-apply-designator ((subobjects-stack subobjects-stack-p)
+                                         (designor designorp))
+  :returns (new-subobjects-stack subobjects-stack-p)
+  )
+
+;; TODO:
+;; subobjects-stack * designator list -> subobjects-stack
+(define )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
