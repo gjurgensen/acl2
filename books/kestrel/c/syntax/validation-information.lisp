@@ -665,6 +665,20 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(fty::defprod param-declon-info
+  :short "Fixtype of validation information for parameter declarations."
+  :long
+  (xdoc::topstring
+   (xdoc::p
+    "This is the type of the annotations that
+     the validator adds to parameter declarations,
+     i.e. the @(tsee param-declon) fixtype.
+     The information consists of the type of the parameter."))
+  ((type type))
+  :pred param-declon-infop)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (fty::defprod param-declor-nonabstract-info
   :short "Fixtype of validation information for
           non-abstract parameter declarators."
@@ -694,6 +708,20 @@
      The information for a type name consists of its denoted type."))
   ((type type))
   :pred tyname-infop)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(fty::defprod struct-declor-info
+  :short "Fixtype of validation information for structure declarators."
+  :long
+  (xdoc::topstring
+   (xdoc::p
+    "This is the type of the annotations that
+     the validator adds to structure declarators,
+     i.e. the @(tsee struct-declor) fixtype.
+     The information for a structure declarator consists of its type."))
+  ((type type))
+  :pred struct-declor-infop)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -874,6 +902,20 @@
      (tyname (and (spec/qual-list-annop (tyname->specquals tyname))
                   (absdeclor-option-annop (tyname->declor? tyname))
                   (tyname-infop (tyname->info tyname))))
+     (struct-declor (and (declor-option-annop
+                           (struct-declor->declor? struct-declor))
+                         (const-expr-option-annop
+                           (struct-declor->expr? struct-declor))
+                         (struct-declor-infop
+                           (struct-declor->info struct-declor))))
+     (param-declon (and (decl-spec-list-annop
+                          (param-declon->specs param-declon))
+                        (param-declor-annop
+                          (param-declon->declor param-declon))
+                        (attrib-spec-list-annop
+                          (param-declon->attribs param-declon))
+                        (param-declon-infop
+                          (param-declon->info param-declon))))
      (param-declor :nonabstract (and (declor-annop
                                       (param-declor-nonabstract->declor
                                        param-declor))
@@ -1009,6 +1051,23 @@
                 (absdeclor-option-annop declor?)
                 (tyname-infop info)))
     :expand (tyname-annop (tyname specquals declor? info))
+    :enable identity)
+
+  (defruled struct-declor-annop-of-struct-declor
+    (equal (struct-declor-annop (struct-declor declor? expr? info))
+           (and (declor-option-annop declor?)
+                (const-expr-option-annop expr?)
+                (struct-declor-infop info)))
+    :expand (struct-declor-annop (struct-declor declor? expr? info))
+    :enable identity)
+
+  (defruled param-declon-annop-of-param-declon
+    (equal (param-declon-annop (param-declon specs declor attribs info))
+           (and (decl-spec-list-annop specs)
+                (param-declor-annop declor)
+                (attrib-spec-list-annop attribs)
+                (param-declon-infop info)))
+    :expand (param-declon-annop (param-declon specs declor attribs info))
     :enable identity)
 
   (defruled param-declor-annop-of-param-declor-nonabstract
@@ -1197,6 +1256,47 @@
              (tyname-infop (tyname->info tyname)))
     :enable tyname-annop)
 
+  (defruled declor-option-annop-of-struct-declor->declor?
+    (implies (struct-declor-annop struct-declor)
+             (declor-option-annop (struct-declor->declor? struct-declor)))
+    :enable struct-declor-annop)
+
+  (defruled const-expr-option-annop-of-struct-declor->expr?
+    (implies (struct-declor-annop struct-declor)
+             (const-expr-option-annop (struct-declor->expr? struct-declor)))
+    :enable struct-declor-annop)
+
+  (defruled struct-declor-infop-of-struct-declor->info
+    (implies (struct-declor-annop struct-declor)
+             (struct-declor-infop (struct-declor->info struct-declor)))
+    :enable struct-declor-annop)
+
+  (defruled declor-annop-of-param-declor-nonabstract->declor
+    (implies (and (param-declor-annop param-declor)
+                  (param-declor-case param-declor :nonabstract))
+             (declor-annop (param-declor-nonabstract->declor param-declor)))
+    :enable param-declor-annop)
+
+  (defruled decl-spec-list-annop-of-param-declon->specs
+    (implies (param-declon-annop param-declon)
+             (decl-spec-list-annop (param-declon->specs param-declon)))
+    :enable param-declon-annop)
+
+  (defruled param-declor-annop-of-param-declon->declor
+    (implies (param-declon-annop param-declon)
+             (param-declor-annop (param-declon->declor param-declon)))
+    :enable param-declon-annop)
+
+  (defruled attrib-spec-list-annop-of-param-declon->attribs
+    (implies (param-declon-annop param-declon)
+             (attrib-spec-list-annop (param-declon->attribs param-declon)))
+    :enable param-declon-annop)
+
+  (defruled param-declon-infop-of-param-declon->info
+    (implies (param-declon-annop param-declon)
+             (param-declon-infop (param-declon->info param-declon)))
+    :enable param-declon-annop)
+
   (defruled declor-annop-of-param-declor-nonabstract->declor
     (implies (and (param-declor-annop param-declor)
                   (param-declor-case param-declor :nonabstract))
@@ -1280,8 +1380,9 @@
      type-spec-annop-of-type-spec-union
      type-spec-annop-of-type-spec-struct-empty
      tyname-annop-of-tyname
+     struct-declor-annop-of-struct-declor
+     param-declon-annop-of-param-declon
      param-declor-annop-of-param-declor-nonabstract
-     param-declor-nonabstract-infop-of-param-declor-nonabstract->info
      init-declor-annop-of-init-declor
      fundef-annop-of-fundef
      transunit-annop-of-transunit
@@ -1311,6 +1412,15 @@
      spec/qual-list-annop-of-tyname->specquals
      absdeclor-option-annop-of-tyname->declor?
      tyname-infop-of-tyname->info
+     declor-option-annop-of-struct-declor->declor?
+     const-expr-option-annop-of-struct-declor->expr?
+     struct-declor-infop-of-struct-declor->info
+     decl-spec-list-annop-of-param-declon->specs
+     param-declor-annop-of-param-declon->declor
+     attrib-spec-list-annop-of-param-declon->attribs
+     param-declon-infop-of-param-declon->info
+     declor-annop-of-param-declor-nonabstract->declor
+     param-declor-nonabstract-infop-of-param-declor-nonabstract->info
      declor-annop-of-param-declor-nonabstract->declor
      decl-spec-list-annop-of-fundef->specs
      declor-annop-of-fundef->declor

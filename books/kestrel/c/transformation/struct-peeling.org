@@ -1,0 +1,88 @@
+* Inputs
+- A UID, representing the struct type.
+  - Actually, the "same" struct type will have different UIDs in different translation units. How do we want to identify the struct type? Perhaps we use a UID (resolved from some higher level description), and then for each translation unit outside of the "main one" (the one in which the struct with the particular UID is defined), we try to find compatible struct types and split those accordingly.
+    - Note that there may be multiple struct types in a translation unit which are all compatible with the primary struct type. We would need to transform all of them.
+- The name of the new struct, as well as which fields of the original to move to the new struct.
+  - Note: we will need to make sure that the new struct name does not shadow another name where it matters.
+    - We might insist in the short-term that the name is globally unique.
+* Implementation sketch
+- Assuming we are skipping checks, or checks have already been done.
+  - Note: there are three modes for checking safety. First, the default, is check that we know the transformation is safe. Second, the compromise, is try to check, and go ahead with the transformation if we can't determine that it is safe, but neither can we determine that it is unsafe. Finally, there is no checking at all, where we do the transformation even if we could determine it to be unsafe. The medium option seems very useful. The third option may be useful for debugging.
+- Iterate over the the translation unit (the transformation can largely be seen as operating over individual translation units).
+  - Variables maintained during iteration:
+    - Map of old objects (identified by UID) to the split pair of objects (just names are fine, assuming we ensure that new names are globally unique).
+- For each:
+  - Declaration of the struct type:
+    - Modify the original to contain a subset of fields
+    - Introduce the second struct type declaration immediately following the first.
+  - Typedef:
+    - Assume illegal for the first version. (Doesn't seem fundamentally difficult to support later.)
+  - Type definitions for derivative types
+    - I.e., structs and unions.
+    - Assume illegal for now (including self-referencing struct).
+  - Types outside of type definitions:
+    - Arrays: assume illegal
+    - Function types: replace parameter of the struct type with two parameters of the two struct types.
+    - Pointers: I think this depends on the context. Usually we will want to split this and create two types.
+  - Object declaration of the struct type:
+    - Create two object declarations.
+      - An initializer may need to be spilt accordingly.
+      - Add this to the objects -> split objects map.
+  - Unary expressions:
+    - address
+      - either motivated or unmotivated.
+    - indir
+      - either motivated or unmotivated.
+    - TODO
+  - Binary expressions:
+    - member
+      - If LHS has the target struct type, "rewrite" it to the correct new struct object expression.
+        - If the LHS is a "simple" lvalue (just a variable), this is a lookup in the object map.
+        - We'll need a mechanism for rewriting lvalues in general. A common case may be a chain of member or memberps.
+          - We might introduce a notion of "motivated" rewriting (motivated by which of the two types we need) of the lvalue
+            - And also, unmotivated rewriting that will produce two results, one for each of the new type.
+    - memberp
+      - Similar to the above.
+  - Function calls:
+    - Replace each relevant argument expression with two argument expressions, obtained via unmotivated (double) rewriting.
+      - It seems like we need a notion of unmotivated/double rewriting that avoids doubling effects.
+        - I think this may involve sort of lazily making relevant expressions into single assignment (so that we can use the value of that assignment, without re-effecting.)
+
+* Scratch
+Fold over AST.
+Inputs: term (obviously), mode (unmotivated, or motivated toward left/right), object map.
+Expressions will call the xform recursively on their subexpressions.
+If it is the simple case, it is just a regular map (recreate the expression using the modified subexpressions).
+
+* Tests
+** 1
+#+BEGIN_SRC c
+// Let's say we want to split the `y` member into a new struct (call it `bar`).
+struct foo {
+  int x;
+  int y;
+}
+
+// ...
+
+int f(struct foo foo_arr[10]) {
+  struct foo a = (foo_arr + 3) < (foo_arr + 4) : ? &foo_arr : foo_arr[9];
+  return a.x + a.y;
+}
+#+END_SRC
+#+BEGIN_SRC c
+struct foo {
+  int x;
+}
+struct bar {
+  int y;
+}
+
+// ...
+
+int f(struct foo foo_arr[10], struct bar bar_arr[10]) {
+  struct foo a = (foo_arr + 3) < (foo_arr + 4) : ? &foo_arr : foo_arr[9];
+  struct bar b = (bar_arr + 3) < (bar_arr + 4) : ? &bar_arr : bar_arr[9];
+  return a.x + b.y;
+}
+#+END_SRC

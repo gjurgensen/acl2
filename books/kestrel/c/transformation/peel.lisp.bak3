@@ -1,0 +1,1868 @@
+; C Library
+;
+; Copyright (C) 2026 Kestrel Institute (http://www.kestrel.edu)
+;
+; License: A 3-clause BSD license. See the LICENSE file distributed with ACL2.
+;
+; Author: Grant Jurgensen (grant@kestrel.edu)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(in-package "C2C")
+
+(include-book "std/util/define" :dir :system)
+(include-book "std/util/defrule" :dir :system)
+(include-book "std/util/error-value-tuples" :dir :system)
+
+(include-book "centaur/fty/deftypes" :dir :system)
+
+(include-book "kestrel/utilities/messages" :dir :system)
+
+(include-book "../syntax/abstract-syntax-operations")
+(include-book "../syntax/code-ensembles")
+(include-book "../syntax/unambiguity")
+(include-book "../syntax/validation-information")
+(include-book "utilities/collect-idents")
+(include-book "utilities/fresh-ident")
+
+(include-book "std/basic/controlled-configuration" :dir :system)
+(acl2::controlled-configuration)
+
+(local (include-book "kestrel/utilities/ordinals" :dir :system))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(fty::deftagsum direction
+  (:left ())
+  (:right ())
+  :pred directionp
+  ;; Note: fulltree is not documented
+  :layout :fulltree)
+
+(fty::defoption direction-option
+  direction
+  :pred direction-optionp)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(fty::defomap uid-ident-map
+  :key-type c$::uid
+  :val-type ident
+  :pred uid-ident-mapp)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defines exprs/decls/stmts-peel
+  (define expr-peel
+    ((expr exprp)
+     (struct-uid uidp)
+     (right-name identp)
+     (right-set ident-setp)
+     (dir? direction-optionp)
+     (objs uid-ident-mapp))
+    :guard (and (expr-unambp expr)
+                (expr-annop expr))
+    :returns (mv (er? maybe-msgp)
+                 (splitp booleanp)
+                 (expr1 exprp)
+                 (expr2 exprp)
+                 (objs$ uid-ident-mapp))
+    (b* ((expr (expr-fix expr))
+         (objs (uid-ident-map-fix objs))
+         ((reterr) nil expr (irr-expr) objs))
+      (expr-case
+        expr
+        :ident
+        (b* (((when (and dir? (direction-case dir? :left)))
+              (retok nil expr (irr-expr) objs))
+             ((var-info info) expr.info)
+             (ident? (omap::assoc info.uid objs))
+             ((unless ident?)
+              (retok nil expr (irr-expr) objs))
+             (expr-right (make-expr-ident :ident ident? :info nil)))
+          (if dir? ;; dir? = :right
+              (retok nil expr-right (irr-expr) objs)
+            (retok t expr expr-right objs)))
+        :const
+        (retok nil expr (irr-expr) objs)
+        :string
+        (retok nil expr (irr-expr) objs)
+        :paren
+        (b* (((erp splitp expr1 expr2 objs)
+              (expr-peel
+                expr.inner struct-uid right-name right-set dir? objs)))
+          (retok splitp
+                 (expr-paren expr1)
+                 (if splitp (expr-paren expr2) (irr-expr))
+                 objs))
+        :gensel
+        (b* (((erp control-splitp control - objs)
+              (expr-peel
+                expr.control struct-uid right-name right-set dir? objs))
+             ((erp assocs objs)
+              (genassoc-list-peel
+                expr.assocs struct-uid right-name right-set dir? objs))
+             ((when control-splitp)
+              ;; TODO: think about whether this can be supported.
+              (retmsg$ "Splits are not supported in ~
+                        generic selection expressions.")))
+          (retok nil
+                 (make-expr-gensel :control control :assocs assocs)
+                 (irr-expr)
+                 objs))
+        :arrsub
+        (b* (((erp arg1-splitp arg1 - objs)
+              (expr-peel expr.arg1 struct-uid right-name right-set dir? objs))
+             ((when arg1-splitp)
+              ;; TODO: support this once array types derived from the
+              ;;   target struct type is supported.
+              (retmsg$ "Splits are not supported in ~
+                        array subscripting expressions."))
+             ((erp arg2-slitp arg2 - objs)
+              (expr-peel expr.arg2 struct-uid right-name right-set dir? objs))
+             ((when arg2-splitp)
+              (retmsg$ "Splits are not supported in array subscripts.")))
+          (retok nil
+                 (change-expr-arrsub expr :arg1 arg1 :arg2 arg2)
+                 (irr-expr)
+                 objs))
+        :funcall
+        (b* (((erp fun-splitp fun - objs)
+              (expr-peel expr.fun struct-uid right-name right-set dir? objs))
+             ((when fun2?)
+              (retmsg$ "Splits are not supported in function expressions."))
+             ((erp args-splitp args - objs)
+              ;; TODO GJ: this list xform needs to know the expected
+              ;; type of each argument (derived from the expr.fun
+              ;; type) to direct each xform.
+              ;; Perhaps expr-list-peel can take a list of dir?s.
+              ;; We could calculate this list outside the clique.
+              ;; Let's see how else we need to xform expr-lists.
+              (expr-list-peel
+                expr.args struct-uid right-name right-set dir? objs))
+             ((when args-splitp)
+              (retmsg$ "Splits are not supported in ~
+                        function call argument lists.")))
+          (retok nil
+                 (change-expr-funcall expr :fun fun :args args)
+                 (irr-expr)
+                 objs))
+        :member
+        (b* ((arg-type (expr-type expr.arg)))
+          (type-case
+            arg-type
+            :struct
+            (b* ((arg-dir
+                   (cond ((not (c$::uid-equal arg-type.uid struct-uid))
+                          dir?)
+                         ((in expr.name right-set)
+                          (direction-right))
+                         (t
+                          (direction-left))))
+                 ((erp arg-splitp arg - objs)
+                  (expr-peel
+                    expr.arg struct-uid right-name right-set arg-dir objs))
+                 ((when arg-splitp)
+                  (retmsg$ "Splits are not supported in ~
+                            member access expression lvalues.")))
+              (retok nil
+                     (make-expr-member :arg arg :name expr.name)
+                     (irr-expr)
+                     objs))
+            :unknown
+            ;; TODO: If we had the full set of struct names handy,
+            ;;   we could determine that many such cases are safe
+            ;;   (when the name is not a member of the set).
+            (retmsg$ "Cannot transform member access expression ~
+                      with lvalue of unknown type.")
+            :otherwise ;; :union, if well-typed.
+            (b* (((erp arg-splitp arg - objs)
+                  (expr-peel
+                    expr.arg struct-uid right-name right-set dir? objs))
+                 ((when arg-splitp)
+                  (retmsg$ "Splits are not supported in ~
+                            member access expression lvalues.")))
+              (retok nil
+                     (make-expr-member :arg arg :name expr.name)
+                     (irr-expr)
+                     objs))))
+        :memberp
+        (b* ((arg-type (expr-type expr.arg))
+             ((erp arg-pointer-type)
+              (b* (((reterr) nil))
+                (type-case
+                  arg-type
+                  :pointer (retok arg-type.to)
+                  :unknown ;; TODO: same as other unknown cases.
+                  (retmsg$ "Cannot transform member access expression ~
+                            with lvalue of unknown type.")
+                  :otherwise
+                  (retmsg$ "Ill-typed indirect member access expression.")))))
+          (type-case
+            arg-pointer-type
+            :struct
+            (b* ((arg-dir
+                   (cond ((not (c$::uid-equal arg-type.uid struct-uid))
+                          dir?)
+                         ((in expr.name right-set)
+                          (direction-right))
+                         (t
+                          (direction-left))))
+                 ((erp arg-splitp arg - objs)
+                  (expr-peel
+                    expr.arg struct-uid right-name right-set arg-dir objs))
+                 ((when arg-splitp)
+                  (retmsg$ "Splits are not supported in ~
+                            member access expression lvalues.")))
+              (retok nil
+                     (make-expr-member :arg arg :name expr.name)
+                     (irr-expr)
+                     objs))
+            :unknown
+            ;; TODO: If we had the full set of struct names handy,
+            ;;   we could determine that many such cases are safe
+            ;;   (when the name is not a member of the set).
+            (retmsg$ "Cannot transform member access expression ~
+                      with lvalue of unknown type.")
+            :otherwise ;; :union, if well-typed.
+            (b* (((erp arg-splitp arg - objs)
+                  (expr-peel
+                    expr.arg struct-uid right-name right-set dir? objs))
+                 ((when arg-splitp)
+                  (retmsg$ "Splits are not supported in ~
+                            member access expression lvalues.")))
+              (retok nil
+                     (make-expr-member :arg arg :name expr.name)
+                     (irr-expr)
+                     objs))))
+        :complit ;; TODO: support
+        (retmsg$ "Compound literals are not yet supported.")
+        :unary
+        (b* (((erp arg-splitp arg1 arg2 objs)
+              (expr-peel expr.arg struct-uid right-name right-set dir? objs))
+             ((unless arg-splitp)
+              (retok nil
+                     (make-expr-unop :unop expr.unop :arg arg1 :info nil)
+                     (irr-expr)
+                     objs))
+             ;; We disallow impure operators.
+             ((when (member-eq (unop-kind expr.unop)
+                               '(:preinc :predec :postinc :postdec)))
+              (retmsg$ "Splits are not supported for unary operator ~x0."
+                       (unop-kind expr.unop))))
+          (retok t
+                 (make-expr-unary :unop expr.unop :arg arg1 :info nil)
+                 (make-expr-unary :unop expr.unop :arg arg2 :info nil)
+                 objs))
+        :label-addr (b* (((erp arg-splitp arg - objs)
+                          (expr-peel
+                            expr.arg struct-uid right-name right-set dir? objs))
+                         ((when arg-splitp)
+                          (retmsg$ "Splits are not supported in ~
+                                    label address expressions.")))
+                      (retok nil
+                             (expr-label-addr arg)
+                             (irr-expr)
+                             objs))
+        :sizeof
+        (b* (((erp tyname-splitp tyname1 tyname2 objs)
+              (tyname-peel
+                expr.type struct-uid right-name right-set dir? objs)))
+          (retok tyname-splitp
+                 (expr-sizeof tyname1)
+                 (if tyname-splitp (expr-sizeof tyname1) (irr-expr))
+                 objs))
+
+        :alignof
+        (b* (((erp tyname-splitp tyname1 tyname2 objs)
+              (tyname-peel
+                expr.type struct-uid right-name right-set dir? objs)))
+          (retok tyname-splitp
+                 (change-expr-alignof expr :type tyname1)
+                 (if tyname-splitp
+                     (change-expr-alignof expr :type tyname2)
+                   (irr-expr))
+                 objs))
+        ;; TODO: definitely have a test case for casts
+        ;; Such as `x = (struct foo *)y`.
+        :cast
+        (expr-cast (tyname-peel (c$::expr-cast->type expr)
+                                dir? objs)
+                   (expr-peel (c$::expr-cast->arg expr)
+                              dir? objs))
+
+        ;; Only allow for simple assignment (binop :asg)
+        :binary
+        (b* (((erp arg1-splitp arg1$1 arg1$2 objs)
+              (expr-peel expr.arg1 struct-uid right-name right-set dir? objs))
+             ((erp arg1-splitp arg2$1 arg2$2 objs)
+              (expr-peel expr.arg2 struct-uid right-name right-set dir? objs))
+             ((unless (or arg1-splitp arg2-splitp))
+              (retok nil
+                     (make-expr-binary :op expr.binop
+                                       :arg1 arg1$1
+                                       :arg2 arg2$1
+                                       :info nil)
+                     (irr-expr)
+                     objs))
+             ((unless (and arg1-splitp arg2-splitp))
+              ;; This might occur if an integer is added to a struct pointer.
+              ;; For now we disallow it.
+              (retmsg$ "Binary operator expression can only be split if ~
+                        both arguments are split."))
+             ;; Outside of simple assignment, we could also see struct pointers
+             ;; involved in comparison expressions.
+             ;; For now, we disallow them.
+             ((unless (binop-case expr.op :asg))
+              (retmsg$ "Splits are not supported for ~
+                        binary operator expressions ~
+                        other than simple assignment.")))
+          (retok t
+                 (make-expr-binary :op expr.binop
+                                   :arg1 arg1$1
+                                   :arg2 arg2$1
+                                   :info nil)
+                 (make-expr-binary :op expr.binop
+                                   :arg1 arg1$2
+                                   :arg2 arg2$2
+                                   :info nil)
+                 objs))
+        ;; TODO: definitely test
+        :cond
+        (b* (((erp test-splitp test - objs)
+              (expr-peel expr.test struct-uid right-name right-set dir? objs))
+             ((when test-slitp)
+              (retmsg "Splits are not supported in the test expression of ~
+                       conditional expressions."))
+             ((erp then?-splitp then?1 then?2 objs)
+              (expr-option-peel
+                expr.then struct-uid right-name right-set dir? objs))
+             ((erp else-splitp else1 else2 objs)
+              (expr-peel expr.else struct-uid right-name right-set dir? objs))
+             ((unless (or then?-splitp else-splitp))
+              (retok nil
+                     (make-expr-cond :test test :then then?1 :else else1)
+                     (irr-expr)
+                     objs))
+             ((unless (and then?-splitp else-splitp))
+              (retmsg$ "Conditional expression can only be split if ~
+                        both the \"then\" and \"else\" arguments are split.")))
+          (retok t
+                 (make-expr-cond :test test :then then?1 :else else1)
+                 (make-expr-cond :test test :then then?2 :else else2)
+                 objs))
+        :comma
+        (b* (((erp first-splitp first - objs)
+              (expr-peel expr.first struct-uid right-name right-set dir? objs))
+             ((erp next-splitp next - objs)
+              (expr-peel expr.next struct-uid right-name right-set dir? objs))
+             ((when (or first-splitp next-slitp))
+              (retmsg$ "Splits are not supported in comma expressions.")))
+          (retok nil
+                 (make-expr-comma :first first :next next)
+                 (irr-expr)
+                 objs))
+        :stmt
+        ;; Assuming signature of stmt-peel
+        (b* (((erp stmt objs)
+              (stmt-peel expr.stmt struct-uid right-name right-set objs)))
+          (retok nil
+                 (expr-stmt stmt)
+                 (irr-expr)
+                 objs))
+        :tycompat
+        (b* (((erp tyname1-splitp tyname1 - objs)
+              (tyname-peel
+                expr.type1 struct-uid right-name right-set dir? objs))
+             ((erp tyname2-splitp tyname2 - objs)
+              (tyname-peel
+                expr.type2 struct-uid right-name right-set dir? objs))
+             ;; TODO: it may be possible to split such expressions.
+             ((when (or tyname1-splitp tyname2-splitp))
+              (retmsg$ "Splits are not supported in ~
+                        __builtin-types_compatible_p expressions.")))
+          (retok nil
+                 (expr-tycompat :type1 tyname1 :type2 tyname2)
+                 (irr-expr)
+                 objs))
+        ;; TODO GJ: This should get a direction from the member designator,
+        ;;   to be used in the type name xform.
+        :offsetof
+        (b* (((erp tyname-splitp tyname - objs)
+              (tyname-peel
+                expr.type struct-uid right-name right-set dir? objs))
+             ((erp member-splitp member - objs)
+              (member-designor-peel
+                expr.member struct-uid right-name right-set dir? objs))
+             ;; TODO: consider whether it is possible to split such
+             ;; expressions.
+             ((when (or tyname-splitp member-splitp))
+              (retmsg$ "Splits are not supported in ~
+                        __builtin_offsetof expressions.")))
+          (retok nil
+                 (expr-offsetof :type tyname :member member)
+                 (irr-expr)
+                 objs))
+        :va-arg
+        (b* (((erp list-splitp list - objs)
+              (expr-peel expr.list struct-uid right-name right-set dir? objs))
+             ((erp tyname-splitp tyname - objs)
+              (tyname-peel
+                expr.type struct-uid right-name right-set dir? objs))
+             ;; TODO: consider whether it is possible to split such
+             ;; expressions.
+             ((when (or list-splitp tyname-splitp))
+              (retmsg$ "Splits are not supported in ~
+                        __builtin_va_arg expressions.")))
+          (retok nil
+                 (expr-var-arg :list list :type tyname)
+                 (irr-expr)
+                 objs))
+        :extension
+        (b* (((erp splitp expr1 expr2 objs)
+              (expr-peel
+                expr.expr struct-uid right-name right-set dir? objs)))
+          (retok splitp
+                 (expr-extension expr1)
+                 (if splitp (expr-extension expr2) (irr-expr))
+                 objs))
+        :sizeof-ambig (retmsg$ "Ambiguous expressions are disallowed.")
+        :alignof-ambig (retmsg$ "Ambiguous expressions are disallowed.")
+        :cast/call-ambig (retmsg$ "Ambiguous expressions are disallowed.")
+        :cast/mul-ambig (retmsg$ "Ambiguous expressions are disallowed.")
+        :cast/add-ambig (retmsg$ "Ambiguous expressions are disallowed.")
+        :cast/sub-ambig (retmsg$ "Ambiguous expressions are disallowed.")
+        :cast/and-ambig (retmsg$ "Ambiguous expressions are disallowed.")
+        :cast/logand-ambig (retmsg$ "Ambiguous expressions are disallowed.")))
+    :measure (expr-count expr))
+
+  ;; TODO GJ: come back to this after checking that we indeed always want a
+  ;;   list of dir?s.
+  ;;   Although, now that I think about it, we may always want undirected.
+  (define expr-list-peel
+    ((exprs expr-listp)
+     (dir? direction-optionp)
+     (objs uid-ident-mapp))
+    :guard (and (expr-list-unambp exprs)
+                (expr-list-annop exprs))
+    :returns (result expr-listp)
+    (if (endp exprs)
+        nil
+      (cons (expr-peel (car exprs) dir? objs)
+            (expr-list-peel (cdr exprs) dir? objs)))
+    :measure (expr-list-count exprs))
+
+  (define expr-option-peel
+    ((expr? expr-optionp)
+     (struct-uid uidp)
+     (right-name identp)
+     (right-set ident-setp)
+     (dir? direction-optionp)
+     (objs uid-ident-mapp))
+    :guard (and (expr-option-unambp expr?)
+                (expr-option-annop expr?))
+    :returns (mv (er? maybe-msgp)
+                 (splitp booleanp)
+                 (expr1? expr-optionp)
+                 (expr2? expr-optionp)
+                 (objs$ uid-ident-mapp))
+    (b* ((objs (uid-ident-map-fix objs))
+         ((reterr) nil (expr-option-fix expr) nil objs))
+      (expr-option-case
+        expr?
+        :some
+        (b* (((erp splitp expr1 expr2 objs)
+              (expr-peel expr?.val struct-uid right-name right-set dir? objs)))
+          (retok splitp
+                 expr1
+                 (if splitp expr2 nil)
+                 objs))
+        :none
+        (retok nil nil nil objs)))
+    :measure (expr-option-count expr?))
+
+  (define const-expr-peel
+    ((const-expr const-exprp)
+     (struct-uid uidp)
+     (right-name identp)
+     (right-set ident-setp)
+     (dir? direction-optionp)
+     (objs uid-ident-mapp))
+    :guard (and (const-expr-unambp const-expr)
+                (const-expr-annop const-expr))
+    :returns (mv (er? maybe-msgp)
+                 (splitp booleanp)
+                 (const-expr1 const-exprp)
+                 (const-expr2 const-exprp)
+                 (objs$ uid-ident-mapp))
+    (b* ((objs (uid-ident-map-fix objs))
+         ((reterr) nil (expr-option-fix expr) nil objs)
+         ((erp splitp expr1 expr2 objs)
+          (expr-peel expr.expr struct-uid right-name right-set dir? objs)))
+      (retok splitp
+             (const-expr expr1)
+             (if splitp (const-expr expr2) (irr-const-expr))
+             objs))
+    :measure (const-expr-count const-expr))
+
+  (define const-expr-option-peel
+    ((const-expr? const-expr-optionp)
+     (struct-uid uidp)
+     (right-name identp)
+     (right-set ident-setp)
+     (dir? direction-optionp)
+     (objs uid-ident-mapp))
+    :guard (and (const-expr-option-unambp const-expr?)
+                (const-expr-option-annop const-expr?))
+    :returns (mv (er? maybe-msgp)
+                 (splitp booleanp)
+                 (const-expr?1 const-expr-optionp)
+                 (const-expr?2 const-expr-optionp)
+                 (objs$ uid-ident-mapp))
+    (b* ((objs (uid-ident-map-fix objs))
+         ((reterr) nil (expr-option-fix expr) nil objs))
+      (const-expr-option-case
+        const-expr?
+        :some
+        (b* (((erp splitp const-expr1 const-expr2 objs)
+              (const-expr-peel
+                const-expr?.val struct-uid right-name right-set dir? objs)))
+          (retok splitp
+                 const-expr1
+                 (if splitp const-expr2 nil)
+                 objs))
+        :none
+        (retok nil nil nil objs)))
+    :measure (const-expr-option-count const-expr?))
+
+  (define genassoc-peel
+    ((genassoc genassocp)
+     (struct-uid uidp)
+     (right-name identp)
+     (right-set ident-setp)
+     (dir? direction-optionp)
+     (objs uid-ident-mapp))
+    :guard (and (genassoc-unambp genassoc)
+                (genassoc-annop genassoc))
+    :returns (mv (er? maybe-msgp)
+                 (genassoc$ genassocp)
+                 (objs$ uid-ident-mapp))
+    (b* ((objs (uid-ident-map-fix objs))
+         ((reterr) (genassoc-fix genassoc) objs))
+      (genassoc-case
+        genassoc
+        :type
+        (b* (((erp tyname-splitp tyname - objs)
+              (tyname-peel
+                genassoc.type struct-uid right-name right-set dir? objs))
+             ((erp expr-splitp expr - objs)
+              (expr-peel
+                genassoc.expr struct-uid right-name right-set dir? objs))
+             ((when (or tyname-splitp expr-splitp))
+              (retmsg$ "Splits are not supported in ~
+                        generic associations expressions.")))
+          (make-genassoc-type :type tyname :expr expr))
+        :default
+        (b* (((erp expr-splitp expr - objs)
+              (expr-peel
+                genassoc.expr struct-uid right-name right-set dir? objs))
+             ((when (or tyname-splitp expr-splitp))
+              (retmsg$ "Splits are not supported in ~
+                        generic associations expressions.")))
+          (make-genassoc-default :expr expr))))
+    :measure (genassoc-count genassoc))
+
+  (define genassoc-list-peel
+    ((genassocs genassoc-listp)
+     (struct-uid uidp)
+     (right-name identp)
+     (right-set ident-setp)
+     (dir? direction-optionp)
+     (objs uid-ident-mapp))
+    :guard (and (genassoc-list-unambp genassocs)
+                (genassoc-list-annop genassocs))
+    :returns (mv (er? maybe-msgp)
+                 (genassocs$ genassoc-listp)
+                 (objs$ uid-ident-mapp))
+    (b* ((objs (uid-ident-map-fix objs))
+         ((reterr) (genassoc-list-fix genassocs) objs)
+         ((when (endp genassocs))
+          (retok nil objs))
+         ((erp genassoc objs)
+          (genassoc-peel
+            (first genassocs) struct-uid right-name right-set dir? objs))
+         ((erp genassocs objs)
+          (genassoc-list-peel
+            (rest genassocs) struct-uid right-name right-set dir? objs)))
+      (retok (cons genassoc genassocs)
+             objs))
+    :measure (genassoc-list-count genassocs))
+
+  ;; TODO GJ: This should never split, but it should probably return a direction.
+  ;; - Actually, we could have a function outside the clique to get the direction.
+  (define member-designor-peel
+    ((member-designor member-designorp)
+     (struct-uid uidp)
+     (right-name identp)
+     (right-set ident-setp)
+     (dir? direction-optionp)
+     (objs uid-ident-mapp))
+    :guard (and (member-designor-unambp member-designor)
+                (member-designor-annop member-designor))
+    :returns (mv (er? maybe-msgp)
+                 (member-designor$ member-designorp)
+                 (objs$ uid-ident-mapp))
+    (b* ((member-designor (member-designor-fix member-designor))
+         (objs (uid-ident-map-fix objs))
+         ((reterr) member-designor objs))
+      (member-designor-case
+        member-designor
+        :ident
+        (retok member-designor objs)
+        :dot
+        (b* (((erp member objs)
+              (member-designor-peel
+                member-designor.member struct-uid right-name right-set dir? objs)))
+          (retok (make-member-designor-dot :member member
+                                           :name member-designor.name)
+                 objs))
+        :sub
+        (b* (((erp member objs)
+              (member-designor-peel
+                member-designor.member struct-uid right-name right-set dir? objs))
+             ((erp splitp index - objs)
+              (expr-peel
+                member-designor.index struct-uid right-name right-set dir? objs))
+             ((when splitp)
+              (retmsg$ "Splits are not supported in member designators.")))
+          (retok (make-member-designor-sub :member member
+                                           :index index)
+                 objs))))
+    :measure (member-designor-count member-designor))
+
+  (define type-spec-peel
+    ((type-spec type-specp)
+     (struct-uid uidp)
+     (right-name identp)
+     (right-set ident-setp)
+     (dir? direction-optionp)
+     (objs uid-ident-mapp))
+    :guard (and (type-spec-unambp type-spec)
+                (type-spec-annop type-spec))
+    :returns (mv (er? maybe-msgp)
+                 (splitp booleanp)
+                 (type-spec1 type-specp)
+                 (type-spec2 type-specp)
+                 (objs$ uid-ident-mapp))
+    (b* ((type-spec (type-spec-fix type-spec))
+         (objs (uid-ident-map-fix objs))
+         ((reterr) nil type-spec (irr-type-spec) objs))
+      (type-spec-case
+        type-spec
+        :atomic
+        (b* (((erp splitp tyname1 tyname2 objs)
+              (tyname-peel
+                type-spec.type struct-uid right-name right-set dir? objs)))
+          (retok splitp
+                 (type-spec-atomic tyname1)
+                 (if splitp (type-spec-atomic tyname1) (irr-type-spec))
+                 objs))
+        :struct
+        ;; TODO GJ: We probably need to look at the UID and set the direction
+        ;;   accordingly.
+        ;;   Except, this is different from the usual notion of direction. I
+        ;;   think we just need a new boolean argument, splitp (argument, not
+        ;;   return).
+        (b* (((erp splitp spec1 spec2 objs)
+              (struni-spec-peel
+                type-spec.spec struct-uid right-name right-set dir? objs)))
+          (retok splitp
+                 (type-spec-struct spec1)
+                 (if splitp (type-spec-struct spec2) (irr-type-spec))
+                 objs))
+        :union
+        ;; TODO GJ: We may adjust the signature of struni-spec-peel to adjust
+        ;;   the :struct case above.
+        (b* (((erp splitp spec - objs)
+              (struni-spec-peel
+                type-spec.spec struct-uid right-name right-set dir? objs))
+             ((when splitp)
+              (retmsg$ "Splits are not supported in union type specifiers.")))
+          (retok nil
+                 (type-spec-union spec)
+                 (irr-type-spec)
+                 objs))
+        :enum
+        (b* (((erp splitp spec - objs)
+              (enum-spec-peel
+                type-spec.spec struct-uid right-name right-set dir? objs))
+             ((when splitp)
+              (retmsg$ "Splits are not supported in ~
+                        enumeration type specifiers.")))
+          (retok nil
+                 (type-spec-union spec1)
+                 (irr-type-spec)
+                 objs))
+        :struct-empty
+        (b* (((erp attribs objs)
+              (attrib-spec-list-peel
+                type-spec.attribs struct-uid right-name right-set dir? objs))
+             ((type-spec-struct-info info) type-spec.info)
+             (matchp (c$::uid-equal info.uid struct-uid)))
+          (retok matchp
+                 (change-type-spec-struct-empty type-spec :attribs attribs)
+                 (if matchp
+                     (change-type-spec-struct-empty
+                       type-spec
+                       :attribs attribs
+                       :name? right-name)
+                   (irr-type-spec))
+                 objs))
+        ;; TODO GJ: test this case.
+        :typeof-expr
+        (b* (((erp splitp expr1 expr2 objs)
+              (expr-peel
+                type-spec.expr struct-uid right-name right-set dir? objs)))
+          (retok splitp
+                 (change-type-spec-typeof-expr type-spec :expr expr1)
+                 (if slitp
+                     (change-type-spec-typeof-expr type-spec :expr expr2)
+                   (irr-type-spec))
+                 objs))
+        :typeof-type
+        (b* (((erp splitp tyname1 tyname2 objs)
+              (tyname-peel
+                type-spec.type struct-uid right-name right-set dir? objs)))
+          (retok splitp
+                 (change-type-spec-typeof-type type-spec :type tyname1)
+                 (if slitp
+                     (change-type-spec-typeof-type type-spec :type tyname2)
+                   (irr-type-spec))
+                 objs))
+        :typeof-ambig (retmsg$ "Ambiguous type specifiers are disallowed.")
+        :otherwise (retok nil type-spec (irr-type-spec) objs)))
+    :measure (type-spec-count type-spec))
+
+  (define spec/qual-peel
+    ((spec/qual spec/qual-p)
+     (struct-uid uidp)
+     (right-name identp)
+     (right-set ident-setp)
+     (dir? direction-optionp)
+     (objs uid-ident-mapp))
+    :guard (and (spec/qual-unambp spec/qual)
+                (spec/qual-annop spec/qual))
+    :returns (mv (er? maybe-msgp)
+                 (splitp booleanp)
+                 (spec/qual1 spec/qual-p)
+                 (spec/qual2 spec/qual-p)
+                 (objs$ uid-ident-mapp))
+    (b* ((spec/qual (spec/qual-fix spec/qual))
+         (objs (uid-ident-map-fix objs))
+         ((reterr) nil spec/qual (irr-spec/qual) objs))
+      (spec/qual-case
+        spec/qual
+        :typespec
+        (b* (((erp splitp type-spec1 type-spec2 objs)
+              (type-spec-peel
+                spec/qual.spec struct-uid right-name right-set dir?)))
+          (retok splitp
+                 (spec/qual-typespec type-spec1)
+                 (if splitp (spec/qual-typespec type-spec2) (irr-spec/qual))
+                 objs))
+        :typequal
+        (retok nil
+               (spec/qual-fix spec/qual)
+               (irr-spec/qual)
+               objs)
+        :align
+        (b* (((erp spec objs)
+              (align-spec-peel
+                spec/qual.spec struct-uid right-name right-set dir? objs)))
+          (retok nil
+                 (spec/qual-align spec)
+                 (irr-spec/qual)
+                 objs))
+        ;; GJ: Assuming here that attrib-spec-peel doesn't split
+        :attrib
+        (b* (((erp spec objs)
+              (attrib-spec-peel
+                spec/qual.spec struct-uid right-name right-set dir? objs)))
+          (retok nil
+                 (spec/qual-attrib spec)
+                 (irr-spec/qual)
+                 objs))))
+    :measure (spec/qual-count spec/qual))
+
+  (define spec/qual-list-peel
+    ((spec/quals spec/qual-listp)
+     (struct-uid uidp)
+     (right-name identp)
+     (right-set ident-setp)
+     (dir? direction-optionp)
+     (objs uid-ident-mapp))
+    :guard (and (spec/qual-list-unambp spec/quals)
+                (spec/qual-list-annop spec/quals))
+    :returns (mv (er? maybe-msgp)
+                 (splitp booleanp)
+                 (spec/quals1 spec/qual-listp)
+                 (spec/quals2 spec/qual-listp)
+                 (objs$ uid-ident-mapp))
+    (b* ((spec/quals (spec/qual-list-fix spec/quals))
+         (objs (uid-ident-map-fix objs))
+         ((reterr) nil spec/quals nil objs)
+         ((erp first-splitp spec/qual1 spec/qual2 objs)
+          (spec/qual-peel
+            (first spec/quals) struct-uid right-name right-set dir? objs))
+         ((erp rest-splitp spec/quals1 spec/quals2 objs)
+          (spec/qual-list-peel
+            (rest spec/quals) struct-uid right-name right-set dir? objs))
+         (splitp (or first-splitp rest-splitp)))
+      (retok splitp
+             (cons spec/qual1 spec/quals1)
+             (if first-splitp
+                 (if rest-splitp
+                     (cons spec/qual2 spec/quals2)
+                   (cons spec/qual2 spec/quals1))
+               (if rest-splitp
+                   (cons spec/qual1 spec/quals2)
+                 (cons spec/qual1 spec/quals1)))
+             objs))
+    :measure (spec/qual-list-count spec/quals))
+
+  (define align-spec-peel
+    ((align-spec align-specp)
+     (struct-uid uidp)
+     (right-name identp)
+     (right-set ident-setp)
+     (dir? direction-optionp)
+     (objs uid-ident-mapp))
+    :guard (and (align-spec-unambp align-spec)
+                (align-spec-annop align-spec))
+    :returns (mv (er? maybe-msgp)
+                 (align-spec$ align-spec)
+                 (objs$ uid-ident-mapp))
+    (b* ((align-spec (align-spec-fix align-spec))
+         (objs (uid-ident-map-fix objs))
+         ((reterr) align-spec objs))
+      (align-spec-case
+        align-spec
+        :alignas-type
+        (b* (((erp splitp tyname - objs)
+              (tyname-peel
+                align-spec.tyname struct-uid right-name right-set dir? objs))
+             ((when splitp)
+              (retmsg$ "Splits not allowed in align specifiers.")))
+          (retok (align-spec-alignas-type tyname) objs))
+        :alignas-expr
+        (b* (((erp splitp expr - objs)
+              (const-expr-peel
+                align-spec.expr struct-uid right-name right-set dir? objs))
+             ((when splitp)
+              (retmsg$ "Splits not allowed in align specifiers.")))
+          (retok (align-spec-alignas-expr expr) objs))
+        :alignas-ambig
+        (retmsg$ "Ambiguous alignment specifiers are disallowed.")))
+    :measure (align-spec-count align-spec))
+
+  (define decl-spec-peel
+    ((decl-spec decl-specp)
+     (struct-uid uidp)
+     (right-name identp)
+     (right-set ident-setp)
+     (dir? direction-optionp)
+     (objs uid-ident-mapp))
+    :guard (and (decl-spec-unambp decl-spec)
+                (decl-spec-annop decl-spec))
+    :returns (mv (er? maybe-msgp)
+                 (splitp booleanp)
+                 (decl-spec1 decl-specp)
+                 (decl-spec1 decl-specp)
+                 (objs$ uid-ident-mapp))
+    (b* ((decl-spec (decl-spec-fix decl-spec))
+         (objs (uid-ident-map-fix objs))
+         ((reterr) nil decl-spec (irr-decl-spec) objs))
+      (decl-spec-case
+        decl-spec
+        :typespec
+        (b* (((erp splitp spec1 spec2 objs)
+              (type-spec-peel
+                decl-spec.spec struct-uid right-name right-set dir? objs)))
+          (retok splitp
+                 (decl-spec-typespec spec1)
+                 (if splitp
+                     (decl-spec-typespec spec2)
+                   (irr-decl-spec))
+                 objs))
+        :align
+        (b* (((erp spec objs)
+              (align-spec-peel
+                decl-spec.spec struct-uid right-name right-set dir? objs)))
+          (retok nil
+                 (decl-spec-alignspec spec)
+                 (irr-decl-spec)
+                 objs))
+        :attrib
+        (b* (((erp spec objs)
+              (attrib-spec-peel
+                decl-spec.spec struct-uid right-name right-set dir? objs)))
+          (retok nil
+                 (decl-spec-attribspec spec)
+                 (irr-decl-spec)
+                 objs))
+        :otherwise
+        (retok nil decl-spec (irr-decl-spec) objs))
+    :measure (decl-spec-count decl-spec))
+
+  (define decl-spec-list-peel
+    ((decl-specs decl-spec-listp)
+     (struct-uid uidp)
+     (right-name identp)
+     (right-set ident-setp)
+     (dir? direction-optionp)
+     (objs uid-ident-mapp))
+    :guard (and (decl-spec-list-unambp decl-specs)
+                (decl-spec-list-annop decl-specs))
+    :returns (mv (er? maybe-msgp)
+                 (splitp booleanp)
+                 (decl-specs1 decl-spec-listp)
+                 (decl-specs2 decl-spec-listp)
+                 (objs$ uid-ident-mapp))
+    (b* ((decl-specs (decl-spec-list-fix decl-specs))
+         (objs (uid-ident-map-fix objs))
+         ((reterr) nil decl-specs nil objs)
+         ((erp first-splitp decl-spec1 decl-spec2 objs)
+          (decl-spec-peel
+            (first decl-specs) struct-uid right-name right-set dir? objs))
+         ((erp rest-splitp decl-specs1 decl-specs2 objs)
+          (decl-spec-list-peel
+            (rest decl-specs) struct-uid right-name right-set dir? objs))
+         (splitp (or first-splitp rest-splitp)))
+      (retok splitp
+             (cons decl-spec1 decl-specs1)
+             (if first-splitp
+                 (if rest-splitp
+                     (cons decl-spec2 decl-specs2)
+                   (cons decl-spec2 decl-specs1))
+               (if rest-splitp
+                   (cons decl-spec1 decl-specs2)
+                 (cons decl-spec1 decl-specs1)))
+             objs))
+    :measure (decl-spec-list-count decl-specs))
+
+  (define typequal/attribspec-peel
+    ((typequal/attribspec c$::typequal/attribspec-p)
+     (struct-uid uidp)
+     (right-name identp)
+     (right-set ident-setp)
+     (dir? direction-optionp)
+     (objs uid-ident-mapp))
+    :guard (and (typequal/attribspec-unambp typequal/attribspec)
+                (typequal/attribspec-annop typequal/attribspec))
+    :returns (mv (er? maybe-msgp)
+                 (typequal/attribspec$ typequal/attribspecp)
+                 (objs$ uid-ident-mapp))
+    (b* ((typequal/attribspec (typequal/attribspec-fix typequal/attribspec))
+         (objs (uid-ident-map-fix objs))
+         ((reterr) nil typequal/attribspec (irr-typequal/attribspec) objs))
+      (c$::typequal/attribspec-case
+        typequal/attribspec
+        :type
+        (retok typequal/attribspec objs)
+        :attrib
+        (b* (((erp spec objs)
+              (attrib-spec-peel
+                typequal/attribspec.spec struct-uid right-name right-set dir? objs)))
+          (retok (decl-spec-attribspec spec) objs))))
+    :measure (c$::typequal/attribspec-count typequal/attribspec))
+
+  (define typequal/attribspec-list-peel
+    ((typequal/attribspecs c$::typequal/attribspec-listp)
+     (struct-uid uidp)
+     (right-name identp)
+     (right-set ident-setp)
+     (dir? direction-optionp)
+     (objs uid-ident-mapp))
+    :guard (and (typequal/attribspec-list-unambp typequal/attribspecs)
+                (typequal/attribspec-list-annop typequal/attribspecs))
+    :returns (mv (er? maybe-msgp)
+                 (typequal/attribspecs$ typequal/attribspec-listp)
+                 (objs$ uid-ident-mapp))
+    (b* ((objs (uid-ident-map-fix objs))
+         ((reterr) (typequal/attribspec-list-fix typequal/attribspecs) objs)
+         ((when (endp typequal/attribspecs))
+          (retok nil objs))
+         ((erp typequal/attribspec objs)
+          (typequal/attribspec-peel
+            (first typequal/attribspecs) struct-uid right-name right-set dir? objs))
+         ((erp typequal/attribspecs objs)
+          (typequal/attribspec-list-peel
+            (rest typequal/attribspecs) struct-uid right-name right-set dir? objs)))
+      (retok (cons typequal/attribspec typequal/attribspecs)
+             objs))
+    :measure (c$::typequal/attribspec-list-count typequal/attribspecs))
+
+  (define typequal/attribspec-list-list-peel
+    ((typequal/attribspec-lists typequal/attribspec-list-listp)
+     (struct-uid uidp)
+     (right-name identp)
+     (right-set ident-setp)
+     (dir? direction-optionp)
+     (objs uid-ident-mapp))
+    :guard (and (typequal/attribspec-list-list-unambp
+                  typequal/attribspec-lists)
+                (typequal/attribspec-list-list-annop
+                  typequal/attribspec-lists))
+    :returns (mv (er? maybe-msgp)
+                 (typequal/attribspec-lists$ typequal/attribspec-list-listp)
+                 (objs$ uid-ident-mapp))
+    (b* ((typequal/attribspec-lists
+           (typequal/attribspec-list-list-fix typequal/attribspec-lists))
+         (objs (uid-ident-map-fix objs))
+         ((reterr) typequal/attribspec-lists objs)
+         ((when (endp typequal/attribspec-lists))
+          (retok nil objs))
+         ((erp typequal/attribspecs objs)
+          (typequal/attribspec-list-peel
+            (first typequal/attribspec-lists) struct-uid right-name right-set dir? objs))
+         ((erp typequal/attribspec-lists objs)
+          (typequal/attribspec-list-list-peel
+            (rest typequal/attribspec-lists) struct-uid right-name right-set dir? objs)))
+      (retok (cons typequal/attribspecs typequal/attribspec-lists)
+             objs))
+    :measure (c$::typequal/attribspec-list-list-count
+              typequal/attribspec-lists))
+
+  (define initer-peel
+    ((initer initerp)
+     (struct-uid uidp)
+     (right-name identp)
+     (right-set ident-setp)
+     (dir? direction-optionp)
+     (objs uid-ident-mapp))
+    :guard (and (initer-unambp initer)
+                (initer-annop initer))
+    :returns (mv (er? maybe-msgp)
+                 (splitp booleanp)
+                 (initer1 initerp)
+                 (initer2 initerp)
+                 (objs$ uid-ident-mapp))
+    (b* ((initer (initer-fix initer))
+         (objs (uid-ident-map-fix objs))
+         ((reterr) nil initer (irr-initer) objs))
+      (retmsg$ "Initializers are not yet supported.")
+      ;; (initer-case
+      ;;   initer
+      ;;   :single
+      ;;   (b* (((mv splitp expr1 expr2 objs)
+      ;;         (expr-peel
+      ;;           initer.expr struct-uid right-name right-set dir? objs)))
+      ;;     (retok splitp
+      ;;            (initer-single expr1)
+      ;;            (if splitp (initer-single expr2) (c$::irr-initer))
+      ;;            objs))
+      ;;   :list
+      ;;   (b* (((mv splitp desiniters1 desiniters2 objs)
+      ;;         (desiniter-list-peel
+      ;;           initer.elems struct-uid right-name right-set dir? objs)))
+      ;;     (retok splitp
+      ;;            (make-initer-list :elems elems1 :final-comma initer.final-comma)
+      ;;            (if splitp
+      ;;                (make-initer-list :elems elems2
+      ;;                                  :final-comma initer.final-comma)
+      ;;              (c$::irr-initer))
+      ;;            objs)))
+      )
+    :measure (initer-count initer))
+
+  (define initer-option-peel
+    ((initer? initer-optionp)
+     (struct-uid uidp)
+     (right-name identp)
+     (right-set ident-setp)
+     (dir? direction-optionp)
+     (objs uid-ident-mapp))
+    :guard (and (initer-option-unambp initer?)
+                (initer-option-annop initer?))
+    :returns (mv (er? maybe-msgp)
+                 (splitp booleanp)
+                 (initer?1 initer-optionp)
+                 (initer?2 initer-optionp)
+                 (objs$ uid-ident-mapp))
+    (b* ((objs (uid-ident-map-fix objs))
+         ((reterr) nil (initer-option-fix initer?) nil objs))
+      (initer-option-case
+        initer?
+        :some
+        (b* (((erp splitp initer1 initer2 objs)
+              (initer-peel
+                initer?.val struct-uid right-name right-set dir? objs)))
+          (retok splitp
+                 initer1
+                 (if splitp initer2 nil)
+                 objs))
+        :none
+        (retok nil nil nil objs)))
+    :measure (initer-option-count initer?))
+
+  ;; Assumption: only called if the type at init-declor level (or whatever
+  ;; higher level) has confirmed that this must be split/specialized.
+  (define declor-peel
+    ((declor declorp)
+     (struct-uid uidp)
+     (right-name identp)
+     (right-set ident-setp)
+     (dir? direction-optionp)
+     (objs uid-ident-mapp))
+    :guard (and (declor-unambp declor)
+                (declor-annop declor))
+    :returns (mv (er? maybe-msgp)
+                 (splitp booleanp)
+                 (declor1 declorp)
+                 (declor2 declorp)
+                 (objs$ uid-ident-mapp))
+    (b* ((objs (uid-ident-map-fix objs))
+         ((reterr) nil (declor-fix declor) (c$::irr-declor) objs)
+         ((erp pointers objs)
+          (typequal/attribspec-peel
+            declor.pointers struct-uid right-name right-set dir? objs))
+         ((erp splitp direct1 direct2 objs)
+          (dirdeclor-peel
+            declor.direct struct-uid right-name right-set dir? objs)))
+      (retok splitp
+             (make-declor :pointers declor.pointers :direct direct1)
+             (if splitp
+                 (make-declor :pointers declor.pointers :direct direct1)
+               (c$::irr-declor))
+             objs))
+    :measure (declor-count declor))
+
+  (define declor-option-peel
+    ((declor? declor-optionp)
+     (struct-uid uidp)
+     (right-name identp)
+     (right-set ident-setp)
+     (dir? direction-optionp)
+     (objs uid-ident-mapp))
+    :guard (and (declor-option-unambp declor?)
+                (declor-option-annop declor?))
+    :returns (mv (er? maybe-msgp)
+                 (splitp booleanp)
+                 (declor?1 declor-optionp)
+                 (declor?2 declor-optionp)
+                 (objs$ uid-ident-mapp))
+    (b* ((objs (uid-ident-map-fix objs))
+         ((reterr) nil (declor-option-fix declor?) nil objs))
+      (declor-option-case
+        declor?
+        :some
+        (b* (((erp splitp declor1 declor2 objs)
+              (declor-peel
+                declor?.val struct-uid right-name right-set dir? objs)))
+          (retok splitp
+                 declor1
+                 (if splitp declor2 nil)
+                 objs))
+        :none
+        (retok nil nil nil objs)))
+    :measure (declor-option-count declor?))
+
+  (define dirdeclor-peel
+    ((dirdeclor dirdeclorp)
+     (struct-uid uidp)
+     (right-name identp)
+     (right-set ident-setp)
+     (dir? direction-optionp)
+     (objs uid-ident-mapp))
+    :guard (and (dirdeclor-unambp dirdeclor)
+                (dirdeclor-annop dirdeclor))
+    :returns (mv (er? maybe-msgp)
+                 (splitp booleanp)
+                 (dirdeclor1 dirdeclorp)
+                 (dirdeclor2 dirdeclorp)
+                 (objs$ uid-ident-mapp))
+    (b* ((objs (uid-ident-map-fix objs))
+         ((reterr) nil (declor-option-fix declor?) nil objs))
+      (dirdeclor-case
+        dirdeclor
+        :ident
+        (b* (())
+          )
+        (dirdeclor-fix dirdeclor)
+        :paren
+        (dirdeclor-paren
+          (declor-peel (c$::dirdeclor-paren->inner dirdeclor)
+                       dir? objs))
+        :array
+        (c$::dirdeclor-array
+          (dirdeclor-peel (c$::dirdeclor-array->declor dirdeclor)
+                          dir? objs)
+          (typequal/attribspec-list-peel
+            (c$::dirdeclor-array->qualspecs dirdeclor)
+            dir? objs)
+          (expr-option-peel (c$::dirdeclor-array->size? dirdeclor)
+                            dir? objs))
+        :array-static1
+        (c$::dirdeclor-array-static1
+          (dirdeclor-peel
+            (c$::dirdeclor-array-static1->declor dirdeclor)
+            dir? objs)
+          (typequal/attribspec-list-peel
+            (c$::dirdeclor-array-static1->qualspecs dirdeclor)
+            dir? objs)
+          (expr-peel (c$::dirdeclor-array-static1->size dirdeclor)
+                     dir? objs))
+        :array-static2
+        (c$::dirdeclor-array-static2
+          (dirdeclor-peel
+            (c$::dirdeclor-array-static2->declor dirdeclor)
+            dir? objs)
+          (typequal/attribspec-list-peel
+            (c$::dirdeclor-array-static2->qualspecs dirdeclor)
+            dir? objs)
+          (expr-peel (c$::dirdeclor-array-static2->size dirdeclor)
+                     dir? objs))
+        :array-star (c$::dirdeclor-array-star
+                      (dirdeclor-peel
+                        (c$::dirdeclor-array-star->declor dirdeclor)
+                        dir? objs)
+                      (typequal/attribspec-list-peel
+                        (c$::dirdeclor-array-star->qualspecs dirdeclor)
+                        dir? objs))
+        :function-params
+        (c$::dirdeclor-function-params
+          (dirdeclor-peel
+            (dirdeclor-function-params->declor dirdeclor)
+            dir? objs)
+          (param-declon-list-peel
+            (dirdeclor-function-params->params dirdeclor)
+            dir? objs)
+          (c$::dirdeclor-function-params->ellipsis dirdeclor))
+        :function-names
+        (c$::dirdeclor-function-names
+          (dirdeclor-peel
+            (c$::dirdeclor-function-names->declor dirdeclor)
+            dir? objs)
+          (dirdeclor-function-names->names dirdeclor))))
+    :measure (dirdeclor-count dirdeclor))
+
+  (define absdeclor-peel ((absdeclor absdeclorp)
+                          (dir? direction-optionp)
+                          (objs uid-ident-mapp))
+    :returns (result absdeclorp)
+    (absdeclor (typequal/attribspec-list-list-peel
+                 (c$::absdeclor->pointers absdeclor)
+                 dir? objs)
+               (dirabsdeclor-option-peel
+                 (c$::absdeclor->direct? absdeclor)
+                 dir? objs))
+    :measure (absdeclor-count absdeclor))
+
+  (define absdeclor-option-peel
+    ((absdeclor-option absdeclor-optionp)
+     (dir? direction-optionp)
+     (objs uid-ident-mapp))
+    :returns (result absdeclor-optionp)
+    (absdeclor-option-case
+     absdeclor-option
+     :some
+     (absdeclor-fix (absdeclor-peel
+                      (c$::absdeclor-option-some->val absdeclor-option)
+                      dir? objs))
+     :none nil)
+    :measure (absdeclor-option-count absdeclor-option))
+
+  (define dirabsdeclor-peel ((dirabsdeclor dirabsdeclorp)
+                             (dir? direction-optionp)
+                             (objs uid-ident-mapp))
+    :returns (result dirabsdeclorp)
+    (dirabsdeclor-case
+     dirabsdeclor
+     :dummy-base (dirabsdeclor-fix dirabsdeclor)
+     :paren
+     (dirabsdeclor-paren (absdeclor-peel
+                           (c$::dirabsdeclor-paren->inner dirabsdeclor)
+                           dir? objs))
+     :array (c$::dirabsdeclor-array
+              (dirabsdeclor-option-peel
+                (c$::dirabsdeclor-array->declor? dirabsdeclor)
+                dir? objs)
+              (typequal/attribspec-list-peel
+                (c$::dirabsdeclor-array->qualspecs dirabsdeclor)
+                dir? objs)
+              (expr-option-peel
+                (c$::dirabsdeclor-array->size? dirabsdeclor)
+                dir? objs))
+     :array-static1
+     (c$::dirabsdeclor-array-static1
+       (dirabsdeclor-option-peel
+         (c$::dirabsdeclor-array-static1->declor? dirabsdeclor)
+         dir? objs)
+       (typequal/attribspec-list-peel
+         (c$::dirabsdeclor-array-static1->qualspecs dirabsdeclor)
+         dir? objs)
+       (expr-peel
+         (c$::dirabsdeclor-array-static1->size dirabsdeclor)
+         dir? objs))
+     :array-static2
+     (c$::dirabsdeclor-array-static2
+       (dirabsdeclor-option-peel
+         (c$::dirabsdeclor-array-static2->declor? dirabsdeclor)
+         dir? objs)
+       (typequal/attribspec-list-peel
+         (c$::dirabsdeclor-array-static2->qualspecs dirabsdeclor)
+         dir? objs)
+       (expr-peel
+         (c$::dirabsdeclor-array-static2->size dirabsdeclor)
+         dir? objs))
+     :array-star
+     (dirabsdeclor-array-star
+       (dirabsdeclor-option-peel
+         (c$::dirabsdeclor-array-star->declor? dirabsdeclor)
+         dir? objs))
+     :function (c$::dirabsdeclor-function
+                 (dirabsdeclor-option-peel
+                   (c$::dirabsdeclor-function->declor? dirabsdeclor)
+                   dir? objs)
+                 (param-declon-list-peel
+                   (c$::dirabsdeclor-function->params dirabsdeclor)
+                   dir? objs)
+                 (c$::dirabsdeclor-function->ellipsis dirabsdeclor)))
+    :measure (dirabsdeclor-count dirabsdeclor))
+
+  (define dirabsdeclor-option-peel
+    ((dirabsdeclor-option dirabsdeclor-optionp)
+     (dir? direction-optionp)
+     (objs uid-ident-mapp))
+    :returns (result dirabsdeclor-optionp)
+    (dirabsdeclor-option-case
+     dirabsdeclor-option
+     :some
+     (dirabsdeclor-fix
+       (dirabsdeclor-peel
+         (c$::dirabsdeclor-option-some->val dirabsdeclor-option)
+         dir? objs))
+     :none nil)
+    :measure (dirabsdeclor-option-count dirabsdeclor-option))
+
+  (define param-declon-peel ((param-declon param-declonp)
+                             (dir? direction-optionp)
+                             (objs uid-ident-mapp))
+    :returns (result param-declonp)
+    (param-declon (decl-spec-list-peel
+                    (c$::param-declon->specs param-declon)
+                    dir? objs)
+                  (param-declor-peel
+                    (c$::param-declon->declor param-declon)
+                    dir? objs)
+                  (attrib-spec-list-peel
+                    (c$::param-declon->attribs param-declon)
+                    dir? objs))
+    :measure (param-declon-count param-declon))
+
+  (define param-declon-list-peel
+    ((param-declon-list param-declon-listp)
+     (dir? direction-optionp)
+     (objs uid-ident-mapp))
+    :returns (result param-declon-listp)
+    (if (endp param-declon-list)
+        nil
+      (cons (param-declon-peel (car param-declon-list)
+                               dir? objs)
+            (param-declon-list-peel (cdr param-declon-list)
+                                    dir? objs)))
+    :measure (param-declon-list-count param-declon-list))
+
+  (define param-declor-peel ((param-declor param-declorp)
+                             (dir? direction-optionp)
+                             (objs uid-ident-mapp))
+    :returns (result param-declorp)
+    (param-declor-case
+     param-declor
+     :nonabstract
+     (c$::param-declor-nonabstract
+       (declor-peel
+         (param-declor-nonabstract->declor param-declor)
+         dir? objs)
+       (c$::param-declor-nonabstract->info param-declor))
+     :abstract (param-declor-abstract
+                 (absdeclor-peel
+                   (c$::param-declor-abstract->declor param-declor)
+                   dir? objs))
+     :none (param-declor-fix param-declor)
+     :ambig (param-declor-fix param-declor))
+    :measure (param-declor-count param-declor))
+
+  (define tyname-peel ((tyname tynamep)
+                       (dir? direction-optionp)
+                       (objs uid-ident-mapp))
+    :returns (result tynamep)
+    (tyname
+     (spec/qual-list-peel (c$::tyname->specquals tyname)
+                          dir? objs)
+     (absdeclor-option-peel (c$::tyname->declor? tyname)
+                            dir? objs)
+     (tyname->info tyname))
+    :measure (tyname-count tyname))
+
+  (define struni-spec-peel ((struni-spec struni-specp)
+                            (dir? direction-optionp)
+                            (objs uid-ident-mapp))
+    :returns (result struni-specp)
+    (struni-spec (attrib-spec-list-peel
+                   (c$::struni-spec->attribs struni-spec)
+                   dir? objs)
+                 (c$::struni-spec->name? struni-spec)
+                 (struct-declon-list-peel
+                   (c$::struni-spec->members struni-spec)
+                   dir? objs))
+    :measure (struni-spec-count struni-spec))
+
+  (define struct-declon-peel
+    ((struct-declon struct-declonp)
+     (dir? direction-optionp)
+     (objs uid-ident-mapp))
+    :returns (result struct-declonp)
+    (struct-declon-case
+     struct-declon
+     :member (c$::struct-declon-member
+               (c$::struct-declon-member->extension struct-declon)
+               (spec/qual-list-peel
+                 (c$::struct-declon-member->specquals struct-declon)
+                 dir? objs)
+               (struct-declor-list-peel
+                 (c$::struct-declon-member->declors struct-declon)
+                 dir? objs)
+               (attrib-spec-list-peel
+                 (c$::struct-declon-member->attribs struct-declon)
+                 dir? objs))
+     :statassert
+     (struct-declon-statassert
+       (statassert-peel
+         (c$::struct-declon-statassert->statassert struct-declon)
+         dir? objs))
+     :empty (struct-declon-fix struct-declon))
+    :measure (struct-declon-count struct-declon))
+
+  (define struct-declon-list-peel
+    ((struct-declon-list struct-declon-listp)
+     (dir? direction-optionp)
+     (objs uid-ident-mapp))
+    :returns (result struct-declon-listp)
+    (if (endp struct-declon-list)
+        nil
+      (cons
+        (struct-declon-peel (car struct-declon-list)
+                            dir? objs)
+        (struct-declon-list-peel (cdr struct-declon-list)
+                                 dir? objs)))
+    :measure (struct-declon-list-count struct-declon-list))
+
+  (define struct-declor-peel ((struct-declor struct-declorp)
+                              (dir? direction-optionp)
+                              (objs uid-ident-mapp))
+    :returns (result struct-declorp)
+    (struct-declor (declor-option-peel
+                     (c$::struct-declor->declor? struct-declor)
+                     dir? objs)
+                   (const-expr-option-peel
+                     (c$::struct-declor->expr? struct-declor)
+                     dir? objs))
+    :measure (struct-declor-count struct-declor))
+
+  (define struct-declor-list-peel
+    ((struct-declor-list struct-declor-listp)
+     (dir? direction-optionp)
+     (objs uid-ident-mapp))
+    :returns (result struct-declor-listp)
+    (if (endp struct-declor-list)
+        nil
+      (cons
+        (struct-declor-peel (car struct-declor-list)
+                            dir? objs)
+        (struct-declor-list-peel (cdr struct-declor-list)
+                                 dir? objs)))
+    :measure (struct-declor-list-count struct-declor-list))
+
+  (define enum-spec-peel ((enum-spec enum-specp)
+                          (dir? direction-optionp)
+                          (objs uid-ident-mapp))
+    :returns (result enum-specp)
+    (enum-spec
+     (c$::enum-spec->name? enum-spec)
+     (enumer-list-peel (c$::enum-spec->enumers enum-spec)
+                       dir? objs)
+     (c$::enum-spec->final-comma enum-spec))
+    :measure (enum-spec-count enum-spec))
+
+  (define enumer-peel ((enumer enumerp)
+                       (dir? direction-optionp)
+                       (objs uid-ident-mapp))
+    :returns (result enumerp)
+    (enumer
+     (c$::enumer->name enumer)
+     (const-expr-option-peel (c$::enumer->value? enumer)
+                             dir? objs))
+    :measure (enumer-count enumer))
+
+  (define enumer-list-peel ((enumer-list enumer-listp)
+                            (dir? direction-optionp)
+                            (objs uid-ident-mapp))
+    :returns (result enumer-listp)
+    (if (endp enumer-list)
+        nil
+      (cons (enumer-peel (car enumer-list)
+                         dir? objs)
+            (enumer-list-peel (cdr enumer-list)
+                              dir? objs)))
+    :measure (enumer-list-count enumer-list))
+
+  (define statassert-peel ((statassert statassertp)
+                           (dir? direction-optionp)
+                           (objs uid-ident-mapp))
+    :returns (result statassertp)
+    (statassert
+     (const-expr-peel (c$::statassert->test statassert)
+                      dir? objs)
+     (c$::statassert->message statassert))
+    :measure (statassert-count statassert))
+
+  (define attrib-peel ((attrib c$::attribp)
+                       (dir? direction-optionp)
+                       (objs uid-ident-mapp))
+    :returns (result c$::attribp)
+    (c$::attrib-case
+     attrib
+     :name (c$::attrib-fix attrib)
+     :name-params
+     (c$::attrib-name-params (c$::attrib-name-params->name attrib)
+                             (expr-list-peel
+                               (c$::attrib-name-params->params attrib)
+                               dir? objs)))
+    :measure (c$::attrib-count attrib))
+
+  (define attrib-list-peel
+    ((attrib-list c$::attrib-listp)
+     (dir? direction-optionp)
+     (objs uid-ident-mapp))
+    :returns (result c$::attrib-listp)
+    (if (endp attrib-list)
+        nil
+      (cons (attrib-peel (car attrib-list)
+                         dir? objs)
+            (attrib-list-peel (cdr attrib-list)
+                              dir? objs)))
+    :measure (c$::attrib-list-count attrib-list))
+
+  (define attrib-spec-peel
+    ((attrib-spec c$::attrib-specp)
+     (dir? direction-optionp)
+     (objs uid-ident-mapp))
+    :returns (result c$::attrib-specp)
+    (c$::attrib-spec (c$::attrib-spec->uscores attrib-spec)
+                     (attrib-list-peel
+                       (c$::attrib-spec->attribs attrib-spec)
+                       dir? objs))
+    :measure (c$::attrib-spec-count attrib-spec))
+
+  (define attrib-spec-list-peel
+    ((attrib-spec-list attrib-spec-listp)
+     (dir? direction-optionp)
+     (objs uid-ident-mapp))
+    :returns (result attrib-spec-listp)
+    (if (endp attrib-spec-list)
+        nil
+      (cons (attrib-spec-peel (car attrib-spec-list)
+                              dir? objs)
+            (attrib-spec-list-peel (cdr attrib-spec-list)
+                                   dir? objs)))
+    :measure (c$::attrib-spec-list-count attrib-spec-list))
+
+  (define init-declor-peel ((init-declor init-declorp)
+                            (dir? direction-optionp)
+                            (objs uid-ident-mapp))
+    :returns (result init-declorp)
+    (init-declor
+     (declor-peel (init-declor->declor init-declor)
+                  dir? objs)
+     (c$::init-declor->asm? init-declor)
+     (attrib-spec-list-peel
+       (c$::init-declor->attribs init-declor)
+       dir? objs)
+     (initer-option-peel (init-declor->initer? init-declor)
+                         dir? objs)
+     (c$::init-declor->info init-declor))
+    :measure (init-declor-count init-declor))
+
+  (define init-declor-list-peel
+    ((init-declor-list init-declor-listp)
+     (dir? direction-optionp)
+     (objs uid-ident-mapp))
+    :returns (result init-declor-listp)
+    (if (endp init-declor-list)
+        nil
+      (cons (init-declor-peel (car init-declor-list)
+                              dir? objs)
+            (init-declor-list-peel (cdr init-declor-list)
+                                   dir? objs)))
+    :measure (init-declor-list-count init-declor-list))
+
+  (define declon-peel ((declon declonp)
+                       (dir? direction-optionp)
+                       (objs uid-ident-mapp))
+    :returns (result declonp)
+    (declon-case
+     declon
+     :declon
+     (declon-declon
+       (declon-declon->extension declon)
+       (decl-spec-list-peel (declon-declon->specs declon)
+                            dir? objs)
+       (init-declor-list-peel (declon-declon->declors declon)
+                              dir? objs))
+     :statassert
+     (declon-statassert (statassert-peel
+                          (c$::declon-statassert->statassert declon)
+                          dir? objs)))
+    :measure (declon-count declon))
+
+  (define declon-list-peel ((declon-list declon-listp)
+                            (dir? direction-optionp)
+                            (objs uid-ident-mapp))
+    :returns (result declon-listp)
+    (if (endp declon-list)
+        nil
+      (cons (declon-peel (car declon-list)
+                         dir? objs)
+            (declon-list-peel (cdr declon-list)
+                              dir? objs)))
+    :measure (declon-list-count declon-list))
+
+  (define label-peel ((label labelp)
+                      (dir? direction-optionp)
+                      (objs uid-ident-mapp))
+    :returns (result labelp)
+    (label-case
+     label
+     :name (c$::label-name (c$::label-name->name label)
+                           (attrib-spec-list-peel
+                             (c$::label-name->attribs label)
+                             dir? objs))
+     :casexpr
+     (c$::label-casexpr
+       (const-expr-peel (c$::label-casexpr->expr label)
+                        dir? objs)
+       (const-expr-option-peel
+         (c$::label-casexpr->range? label)
+         dir? objs))
+     :default (label-fix label))
+    :measure (label-count label))
+
+  (define asm-output-peel ((asm-output c$::asm-outputp)
+                           (dir? direction-optionp)
+                           (objs uid-ident-mapp))
+    :returns (result c$::asm-outputp)
+    (c$::asm-output
+     (c$::asm-output->name? asm-output)
+     (c$::asm-output->constraint asm-output)
+     (expr-peel (c$::asm-output->lvalue asm-output)
+                dir? objs))
+    :measure (c$::asm-output-count asm-output))
+
+  (define asm-output-list-peel
+    ((asm-output-list c$::asm-output-listp)
+     (dir? direction-optionp)
+     (objs uid-ident-mapp))
+    :returns (result c$::asm-output-listp)
+    (if (endp asm-output-list)
+        nil
+      (cons (asm-output-peel (car asm-output-list)
+                             dir? objs)
+            (asm-output-list-peel (cdr asm-output-list)
+                                  dir? objs)))
+    :measure (c$::asm-output-list-count asm-output-list))
+
+  (define asm-input-peel ((asm-input c$::asm-inputp)
+                          (dir? direction-optionp)
+                          (objs uid-ident-mapp))
+    :returns (result c$::asm-inputp)
+    (c$::asm-input
+     (c$::asm-input->name? asm-input)
+     (c$::asm-input->constraint asm-input)
+     (expr-peel (c$::asm-input->rvalue asm-input)
+                dir? objs))
+    :measure (c$::asm-input-count asm-input))
+
+  (define asm-input-list-peel
+    ((asm-input-list c$::asm-input-listp)
+     (dir? direction-optionp)
+     (objs uid-ident-mapp))
+    :returns (result c$::asm-input-listp)
+    (if (endp asm-input-list)
+        nil
+      (cons (asm-input-peel (car asm-input-list)
+                            dir? objs)
+            (asm-input-list-peel (cdr asm-input-list)
+                                 dir? objs)))
+    :measure (c$::asm-input-list-count asm-input-list))
+
+  (define asm-stmt-peel ((asm-stmt c$::asm-stmtp)
+                         (dir? direction-optionp)
+                         (objs uid-ident-mapp))
+    :returns (result c$::asm-stmtp)
+    (c$::asm-stmt
+     (c$::asm-stmt->uscores asm-stmt)
+     (c$::asm-stmt->quals asm-stmt)
+     (c$::asm-stmt->template asm-stmt)
+     (c$::asm-stmt->num-colons asm-stmt)
+     (asm-output-list-peel
+       (c$::asm-stmt->outputs asm-stmt)
+       dir? objs)
+     (asm-input-list-peel (c$::asm-stmt->inputs asm-stmt)
+                          dir? objs)
+     (c$::asm-stmt->clobbers asm-stmt)
+     (c$::asm-stmt->labels asm-stmt))
+    :measure (c$::asm-stmt-count asm-stmt))
+
+  (define stmt-peel ((stmt stmtp)
+                     (dir? direction-optionp)
+                     (objs uid-ident-mapp))
+    :returns (result stmtp)
+    (stmt-case
+     stmt
+     :labeled
+     (c$::stmt-labeled
+       (label-peel (c$::stmt-labeled->label stmt)
+                   dir? objs)
+       (stmt-peel (c$::stmt-labeled->stmt stmt)
+                  dir? objs))
+     :compound
+     (stmt-compound
+       (comp-stmt-peel (stmt-compound->stmt stmt)
+                       dir? objs))
+     :expr
+     (stmt-expr
+       (expr-option-peel (c$::stmt-expr->expr? stmt)
+                         dir? objs)
+       (c$::stmt-expr->info stmt))
+     :null-attrib
+     (stmt-null-attrib (attrib-spec-peel
+                         (c$::stmt-null-attrib->attrib stmt)
+                         dir? objs))
+     :if (stmt-if (expr-peel (c$::stmt-if->test stmt)
+                             dir? objs)
+                  (stmt-peel (c$::stmt-if->then stmt)
+                             dir? objs))
+     :ifelse
+     (stmt-ifelse (expr-peel (c$::stmt-ifelse->test stmt)
+                             dir? objs)
+                  (stmt-peel (c$::stmt-ifelse->then stmt)
+                             dir? objs)
+                  (stmt-peel (c$::stmt-ifelse->else stmt)
+                             dir? objs))
+     :switch
+     (c$::stmt-switch
+       (expr-peel (c$::stmt-switch->target stmt)
+                  dir? objs)
+       (stmt-peel (c$::stmt-switch->body stmt)
+                  dir? objs))
+     :while
+     (stmt-while (expr-peel (c$::stmt-while->test stmt)
+                            dir? objs)
+                 (stmt-peel (c$::stmt-while->body stmt)
+                            dir? objs))
+     :dowhile
+     (stmt-dowhile
+       (stmt-peel (c$::stmt-dowhile->body stmt)
+                  dir? objs)
+       (expr-peel (c$::stmt-dowhile->test stmt)
+                  dir? objs))
+     :for-expr
+     (c$::stmt-for-expr
+       (expr-option-peel (c$::stmt-for-expr->init stmt)
+                         dir? objs)
+       (expr-option-peel (c$::stmt-for-expr->test stmt)
+                         dir? objs)
+       (expr-option-peel (c$::stmt-for-expr->next stmt)
+                         dir? objs)
+       (stmt-peel (c$::stmt-for-expr->body stmt)
+                  dir? objs))
+     :for-declon
+     (c$::stmt-for-declon
+       (declon-peel (c$::stmt-for-declon->init stmt)
+                    dir? objs)
+       (expr-option-peel (c$::stmt-for-declon->test stmt)
+                         dir? objs)
+       (expr-option-peel (c$::stmt-for-declon->next stmt)
+                         dir? objs)
+       (stmt-peel (c$::stmt-for-declon->body stmt)
+                  dir? objs))
+     :goto (stmt-fix stmt)
+     :gotoe
+     (stmt-gotoe (expr-peel (c$::stmt-gotoe->label stmt)
+                            dir? objs))
+     :continue (stmt-fix stmt)
+     :break (stmt-fix stmt)
+     :return
+     (stmt-return
+       (expr-option-peel (c$::stmt-return->expr? stmt)
+                         dir? objs)
+       (c$::stmt-return->info stmt))
+     :return-attrib
+     (stmt-return-attrib
+       (attrib-spec-peel
+         (c$::stmt-return-attrib->attrib stmt)
+         dir? objs)
+       (expr-peel (c$::stmt-return-attrib->expr stmt)
+                  dir? objs))
+     :asm (c$::stmt-asm
+            (asm-stmt-peel (c$::stmt-asm->stmt stmt)
+                           dir? objs))
+     :for-ambig (stmt-fix stmt))
+    :measure (stmt-count stmt))
+
+  (define comp-stmt-peel ((comp-stmt comp-stmtp)
+                          (dir? direction-optionp)
+                          (objs uid-ident-mapp))
+    :returns (result comp-stmtp)
+    (comp-stmt
+     (comp-stmt->labels comp-stmt)
+     (block-item-list-peel (comp-stmt->items comp-stmt)
+                           dir? objs))
+    :measure (comp-stmt-count comp-stmt))
+
+  (define block-item-peel ((block-item block-itemp)
+                           (dir? direction-optionp)
+                           (objs uid-ident-mapp))
+    :returns (result block-itemp)
+    (block-item-case
+     block-item
+     :declon
+     (block-item-declon (declon-peel
+                          (c$::block-item-declon->declon block-item)
+                          dir? objs)
+                        (c$::block-item-declon->info block-item))
+     :stmt
+     (block-item-stmt
+       (stmt-peel (c$::block-item-stmt->stmt block-item)
+                  dir? objs)
+       (c$::block-item-stmt->info block-item))
+     :ambig (block-item-fix block-item))
+    :measure (block-item-count block-item))
+
+  (define block-item-list-peel
+    ((block-item-list block-item-listp)
+     (dir? direction-optionp)
+     (objs uid-ident-mapp))
+    :returns (result block-item-listp)
+    (if (endp block-item-list)
+        nil
+      (cons (block-item-peel (car block-item-list)
+                             dir? objs)
+            (block-item-list-peel (cdr block-item-list)
+                                  dir? objs)))
+    :measure (block-item-list-count block-item-list))
+
+  :verify-guards :after-returns
+  ;; :flag-local nil
+  )

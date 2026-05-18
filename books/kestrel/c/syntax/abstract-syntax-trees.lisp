@@ -2634,7 +2634,8 @@
        as a GCC extension (see ABNF grammar)."))
     ((specs decl-spec-list)
      (declor param-declor)
-     (attribs attrib-spec-list)) ; GCC extension
+     (attribs attrib-spec-list) ; GCC extension
+     (info any))
     :pred param-declonp
     :layout :fulltree
     :measure (two-nats-measure (acl2-count x) 1))
@@ -2811,7 +2812,8 @@
        we allow an absent declarator and an absent expression,
        even though this is disallowed in the concrete syntax."))
     ((declor? declor-option)
-     (expr? const-expr-option))
+     (expr? const-expr-option)
+     (info any))
     :pred struct-declorp
     :layout :fulltree
     :measure (two-nats-measure (acl2-count x) 3))
@@ -3530,6 +3532,17 @@
              (type-spec-listp (remove1-equal tyspec tyspecs)))
     :induct t
     :enable remove1-equal))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(fty::defoption struct-declon-option
+  struct-declon
+  :short "Fixtype of optional structure declarations."
+  :long
+  (xdoc::topstring
+   (xdoc::p
+    "Structure declarations are defined in @(tsee struct-declon)."))
+  :pred struc-declon-optionp)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

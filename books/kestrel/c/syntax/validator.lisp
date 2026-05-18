@@ -5737,8 +5737,11 @@
           (retmsg$ "The structure declarator ~x0 ~
                     has a width of type ~x1."
                    (struct-declor-fix structdeclor)
-                   width-type?)))
-      (retok (make-struct-declor :declor? new-declor? :expr? new-expr?)
+                   width-type?))
+         (info (make-struct-declor-info :type new-type)))
+      (retok (make-struct-declor :declor? new-declor?
+                                 :expr? new-expr?
+                                 :info info)
              previous
              (make-type-struni-member
                :name? (and structdeclor.declor?
