@@ -1379,6 +1379,136 @@ int main(void) {
   :with-output-off nil)
 
 (acl2::must-succeed*
+  ;; The callback member refers to the target struct through a parameter,
+  ;; but its function-pointer type is not itself splittable.  Splitting
+  ;; that parameter requires a forward declaration of point_right before
+  ;; the definition of point.  Without it, point_right has prototype scope
+  ;; in the callback declaration, so assigning setz to the callback fails
+  ;; revalidation because the parameter types refer to different structs.
+  (c$::input-files :files '("self-ref-callback.c")
+                   :const *old*)
+
+  ;; Exercise block-level insertion directly: public STS currently selects
+  ;; only file-scope types.  Wrap the annotated definition in a compound
+  ;; statement and verify that the forward stays inside that compound.
+  ;; A request from an enclosing item must survive without being consumed.
+  (assert-event
+    (b* ((code *old*)
+         (tunits (code-ensemble->trans-units code))
+         (units (trans-ensemble->units tunits))
+         (tunit (omap::head-val units))
+         (item (car (c$::trans-unit->items tunit)))
+         (declon (c$::ext-declon-declon->declon
+                   (c$::trans-item-declon->declon item)))
+         ((mv er type)
+          (sts-find-struct-type nil (c$::ident "point") nil tunits))
+         ((when er) nil)
+         (tag (c$::ident "point_right"))
+         (st (make-sts-split-state
+               :target-struct-uid (c$::type-struct->uid type)
+               :right-set (list (c$::ident "z"))
+               :right-name tag
+               :filepath (omap::head-key units)
+               :ienv (code-ensemble->ienv code)
+               :dialect (c$::ienv->dialect (code-ensemble->ienv code))
+               :completions (c$::trans-ensemble-vinfo->completions
+                              (c$::trans-ensemble->info tunits))
+               :right-forward-needed t))
+         (items (list (c$::make-block-item-stmt
+                        :stmt (c$::make-stmt-compound
+                                :stmt (c$::make-comp-stmt
+                                        :items (list (c$::make-block-item-declon
+                                                       :declon declon)))))))
+         ((mv er result st-out) (block-item-list-sts-split items st))
+         ((when er) nil)
+         ((mv er result-requested st-requested)
+          (block-item-list-sts-split
+            items (change-sts-split-state st :right-forward-requested t)))
+         ((when er) nil)
+         ((unless (and (equal result result-requested)
+                       (not (sts-split-state->right-forward-requested st-out))
+                       (sts-split-state->right-forward-requested st-requested)
+                       (equal (len result) 1)))
+          nil)
+         (inner (c$::comp-stmt->items
+                  (c$::stmt-compound->stmt
+                    (c$::block-item-stmt->stmt (car result))))))
+      (and (equal (len inner) 3)
+           (equal (car inner)
+                  (c$::make-block-item-declon
+                    :declon (sts-right-forward-declon tag))))))
+
+  (struct-type-split *old*
+                     *new*
+                     :struct-tag "point"
+                     :right-members ("z")
+                     :new-tag "point_right")
+
+  (c$::output-files :const *new* :base-dir "new")
+
+  (assert-file-contents
+    :file "new/self-ref-callback.c"
+    :content "struct point_right;
+
+struct point {
+  int x;
+  void (*setz)(struct point *p, struct point_right *p_0);
+};
+
+struct point_right {
+  int z;
+};
+
+void setz(struct point *p, struct point_right *p_1) {
+  p_1->z = 2;
+}
+
+int main(void) {
+  struct point p;
+  struct point_right p_2;
+  p.setz = setz;
+  p.setz(&p, &p_2);
+  return p_2.z;
+}
+")
+
+  ;; If the callback goes right, the right definition itself introduces
+  ;; its tag before the callback prototype, so no forward is requested.
+  (struct-type-split *old*
+                     *new-right*
+                     :struct-tag "point"
+                     :right-members ("z" "setz")
+                     :new-tag "point_right")
+
+  (c$::output-files :const *new-right* :base-dir "new")
+
+  (assert-file-contents
+    :file "new/self-ref-callback.c"
+    :content "struct point {
+  int x;
+};
+
+struct point_right {
+  int z;
+  void (*setz)(struct point *p, struct point_right *p_0);
+};
+
+void setz(struct point *p, struct point_right *p_1) {
+  p_1->z = 2;
+}
+
+int main(void) {
+  struct point p;
+  struct point_right p_2;
+  p_2.setz = setz;
+  p_2.setz(&p, &p_2);
+  return p_2.z;
+}
+")
+
+  :with-output-off nil)
+
+(acl2::must-succeed*
   ;; A splittable member of an untagged (e.g. typedef'd) struct type
   ;; is split in place, like a member of a tagged struct type.
   (c$::input-files :files '("untagged-member.c")

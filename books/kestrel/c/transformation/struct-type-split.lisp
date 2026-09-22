@@ -160,7 +160,12 @@
     The @('completions') field holds the struct/union type completions
     of the code ensemble (constant);
     it is used to look up the types of struct members
-    when transforming initializers.")
+    when transforming initializers.
+    The @('right-forward-needed') field is set per translation unit when
+    a retained nonsplittable member may refer to the target struct.
+    The @('right-forward-requested') field is set when its tagged definition
+    is visited, and consumed by the enclosing block item or translation
+    item to emit a forward declaration before that item.")
   ((target-struct-uid c$::uid)
    (right-set ident-set)
    (right-name ident)
@@ -171,7 +176,9 @@
    (warnings acl2::msg-list)
    (filepath c$::filepath)
    (member-map member-map)
-   (completions c$::type-completions))
+   (completions c$::type-completions)
+   (right-forward-needed bool)
+   (right-forward-requested bool))
   :pred sts-split-statep)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -360,6 +367,37 @@
              (or (acl2::3definitely (sts-splittablep member.type struct-uid))
                  (and (in member.name? right-members) t)))
         (sts-any-right-members-p (rest members) struct-uid right-members)))
+  :verify-guards :after-returns)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define sts-right-forward-needed-p
+  ((members c$::type-struni-member-listp)
+   (struct-uid c$::uidp)
+   (right-members ident-setp)
+   (vtable c$::valid-tablep)
+   (completions c$::type-completions-p))
+  :returns (yes/no booleanp)
+  :short "Check whether a retained nonsplittable member may refer to the target."
+  :long
+  (xdoc::topstring-p
+   "Such a member may introduce the new right tag in prototype scope
+    before the right definition is emitted.  Conservatively request a
+    forward declaration, even if the reference would have file scope or
+    an earlier declaration already introduced the tag.
+    Unnamed members stay left; named members stay left when not selected.
+    Directly splittable members need no forward declaration here because
+    their left counterparts refer only to the original type.")
+  (b* (((when (endp members)) nil)
+       ((c$::type-struni-member member) (first members)))
+    (or (and (or (not member.name?)
+                 (not (in member.name? right-members)))
+             (not (acl2::3definitely (sts-splittablep member.type struct-uid)))
+             (type-may-refer-to-struct-spec-p
+               member.type (make-sts-struct-spec :uid struct-uid)
+               vtable completions nil 1000000))
+        (sts-right-forward-needed-p
+          (rest members) struct-uid right-members vtable completions)))
   :verify-guards :after-returns)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1398,6 +1436,14 @@
                                            (sts-split-state->dialect st)))
                  st)))
         (retok (c$::attrib-fix attrib) st)))))
+
+(define sts-right-forward-declon ((tag identp))
+  :returns (declon declonp)
+  :short "Make a forward declaration for the right struct tag."
+  (c$::make-declon-declon
+    :specs (list (c$::make-decl-spec-typespec
+                   :spec (c$::make-type-spec-struct
+                           :spec (c$::make-struni-spec :name? tag))))))
 
 (defines sts-split
   :short "The core splitting phase of STS."
@@ -3554,6 +3600,12 @@
           (struni-spec-fix struni-spec)
           st)
          ((struni-spec struni-spec) struni-spec)
+         (st (if (and splitp
+                      struni-spec.name?
+                      (consp struni-spec.members)
+                      (sts-split-state->right-forward-needed st))
+                 (change-sts-split-state st :right-forward-requested t)
+               st))
          ((erp attribs st)
           (attrib-spec-list-sts-split struni-spec.attribs st))
          ;; Blacklist for fresh right member names.
@@ -4510,18 +4562,32 @@
     :short "Transform a block item list."
     :long
     (xdoc::topstring-p
-     "Splits within block items are spliced in-place.")
+     "Splits within block items are spliced in-place.
+      A requested right-tag forward declaration is inserted before the
+      block item that contains the definition.  Requests already present
+      on entry belong to an enclosing item and are preserved, so that a
+      nested block cannot consume an enclosing item's request.")
     (b* ((st (sts-split-state-fix st))
          ((reterr) (block-item-list-fix block-items) st)
          ((when (endp block-items))
           (retok nil st))
+         (outer-requested (sts-split-state->right-forward-requested st))
+         (st (change-sts-split-state st :right-forward-requested nil))
          ((erp splitp left right st)
           (block-item-sts-split (car block-items) st))
+         (first-items (if splitp (list left right) (list left)))
+         (first-items
+           (if (sts-split-state->right-forward-requested st)
+               (cons (c$::make-block-item-declon
+                       :declon (sts-right-forward-declon
+                                 (sts-split-state->right-name st)))
+                     first-items)
+             first-items))
+         (st (change-sts-split-state st :right-forward-requested nil))
          ((erp rest st)
-          (block-item-list-sts-split (cdr block-items) st)))
-      (if splitp
-          (retok (list* left right rest) st)
-        (retok (cons left rest) st)))
+          (block-item-list-sts-split (cdr block-items) st))
+         (st (change-sts-split-state st :right-forward-requested outer-requested)))
+      (retok (append first-items rest) st))
     :measure (block-item-list-count block-items))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -4631,18 +4697,27 @@
   :long
   (xdoc::topstring-p
    "An external declaration which splits
-    becomes two translation items.")
+    becomes two translation items.
+    If the target definition requests a right-tag forward declaration,
+    it is inserted before this item's transformed declarations.")
   (b* ((st (sts-split-state-fix st))
        ((reterr) nil st))
     (trans-item-case
       item
       :declon
       (b* (((erp splitp left-ext-declon right-ext-declon st)
-            (ext-declon-sts-split item.declon st)))
-        (retok (c$::trans-item-list-declon
-                 (if splitp
-                     (list left-ext-declon right-ext-declon)
-                   (list left-ext-declon)))
+            (ext-declon-sts-split item.declon st))
+           (declons (if splitp
+                        (list left-ext-declon right-ext-declon)
+                      (list left-ext-declon)))
+           (declons (if (sts-split-state->right-forward-requested st)
+                        (cons (c$::make-ext-declon-declon
+                                :declon (sts-right-forward-declon
+                                          (sts-split-state->right-name st)))
+                              declons)
+                      declons))
+           (st (change-sts-split-state st :right-forward-requested nil)))
+        (retok (c$::trans-item-list-declon declons)
                st))
       :include (retmsg$ "#include directives are not supported.")
       :define (retmsg$ "#define directives are not supported.")
@@ -4995,7 +5070,15 @@
                   st)))
        ((mv erp tunit st)
         (trans-unit-sts-split tunit
-                              (change-sts-split-state st :target-struct-uid uid)))
+          (change-sts-split-state
+            st
+            :target-struct-uid uid
+            :right-forward-needed
+            (and (c$::type-struct->tag? current-type?)
+                 (sts-right-forward-needed-p
+                   members uid (sts-split-state->right-set st)
+                   tunit-vtable completions))
+            :right-forward-requested nil)))
        ((when erp)
         (reterr (sts-error-in-translation-unit erp st)))
        ((erp rest st)
